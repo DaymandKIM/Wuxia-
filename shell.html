@@ -46,8 +46,9 @@
   #tbtn.on{display:block;}
   #tbtn:active{background:#7a5238;}
   #tspd{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px;}
+  /* overflow:hidden — 닫힌 시트(아래로 밀린 상태)가 컨테이너 밖 탭바 위로 삐져나오지 않게 */
   #zpanel,#tpanel,#trpanel{position:absolute;inset:0 0 var(--tabh) 0;pointer-events:none;
-    background:rgba(6,8,11,0);transition:background .2s;display:flex;align-items:flex-end;}
+    overflow:hidden;background:rgba(6,8,11,0);transition:background .2s;display:flex;align-items:flex-end;}
   #zpanel.show,#tpanel.show,#trpanel.show{pointer-events:auto;background:rgba(6,8,11,.72);}
   .zsheet{width:100%;background:#12161c;border-top:1.5px solid #2b333d;
     border-radius:16px 16px 0 0;padding:0 0 calc(env(safe-area-inset-bottom) + 14px);
