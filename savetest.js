@@ -16,15 +16,17 @@ const ctxStub=new Proxy({},{get:(t,k)=>{
 },set:()=>true});
 
 function boot(preSave){
-  const errs=[];
+  const errs=[],navs=[];                             // navs: location.reload 시도 횟수
+  const vc=new (require('jsdom').VirtualConsole)();
+  vc.on('jsdomError',e=>{ if(e.message.includes('navigation')) navs.push(1); });
   const dom=new JSDOM(html,{url:'http://wuxia.test/',runScripts:'dangerously',
-    pretendToBeVisual:true,beforeParse(w){
+    pretendToBeVisual:true,virtualConsole:vc,beforeParse(w){
     w.HTMLCanvasElement.prototype.getContext=function(){return ctxStub;};
     Object.defineProperty(w,'devicePixelRatio',{value:3});
     w.addEventListener('error',e=>errs.push(e.message));
     if(preSave!==undefined) w.localStorage.setItem('wuxia1',preSave);
   }});
-  return {w:dom.window,errs};
+  return {w:dom.window,errs,navs};
 }
 
 let bad=0;
@@ -32,12 +34,18 @@ const ok=(cond,msg)=>{ console.log((cond?'  ':'  ★실패 ')+msg); if(!cond)bad
 
 // ── 1) 새 게임 → 자동 저장 ───────────────────────────
 {
-  const {w,errs}=boot();
+  const {w,errs,navs}=boot();
   setTimeout(()=>{
     w.eval('saveNow()');
     const d=JSON.parse(w.localStorage.getItem('wuxia1'));
     ok(d && d.v===1 && d.zi===0 && d.stage>=1 && typeof d.at==='number',
       '새 게임 저장: '+JSON.stringify({zi:d.zi,stage:d.stage,kills:d.kills}));
+    // 저장 초기화 버튼 — 단계 이동 핸들러(.sb)가 덮어쓴 사고가 있었다
+    w.document.getElementById('zbtn').click();
+    w.document.getElementById('zreset').click();
+    ok(navs.length>0 && Number.isInteger(w.eval('S.zi')),
+      '저장 초기화 버튼 → 새로고침 시도 (S.zi='+w.eval('S.zi')+')');
+    w.document.getElementById('zclose').click();
     ok(errs.length===0,'런타임 오류 0 (새 게임)'+(errs.length?': '+errs[0]:''));
 
     // ── 2) 3시간 전 저장을 불러온다 ────────────────────

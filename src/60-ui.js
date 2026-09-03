@@ -86,7 +86,8 @@ function buildZonePanel(){
     el.onclick = e => { if (e.target.classList.contains('sb')) return;
       gotoZone(parseInt(el.dataset.z, 10)); };
   });
-  b.querySelectorAll('.sb').forEach(el => {
+  // data-z 있는 것만 — 저장 초기화 버튼도 .sb 라 전체에 걸면 덮어써진다
+  b.querySelectorAll('.sb[data-z]').forEach(el => {
     el.onclick = e => { e.stopPropagation();
       gotoZone(parseInt(el.dataset.z, 10), parseInt(el.dataset.s, 10)); };
   });
