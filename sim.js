@@ -9,17 +9,17 @@ global.document={getElementById:mk,createElement:()=>mk('x'),body:{appendChild:n
 global.window=global;global.innerWidth=390;global.innerHeight=844;global.devicePixelRatio=3;
 global.addEventListener=noop;
 global.Image=class{constructor(){}set src(v){}get complete(){return true;}get naturalWidth(){return 56;}};
-const R=new Function(code+`;return {S,P,step:dt=>step(dt),stage:()=>stage(),STAGES,ZONES,zone:()=>zone(),lv:()=>lv(),FOES};`)();
+const R=new Function(code+`;return {S,P,step:dt=>step(dt),stage:()=>stage(),STAGES,ZONES,zone:()=>zone(),lv:()=>lv(),realmInfo:()=>realmInfo(),FOES};`)();
 const {S,P}=R;
 const dt=1/60; const marks=[1,3,5,10,15,20,30,45,60];
 let mi=0;
-console.log('시간   구역        단계  해금  누적처치  쓰러짐');
+console.log('시간   구역        단계  해금  누적처치  쓰러짐  경지');
 for(let i=0;i<60*60*60;i++){
   R.step(dt);
   if(mi<marks.length && S.t>=marks[mi]*60){
     console.log(String(marks[mi]).padStart(3)+'분   '+R.zone().n.padEnd(6)+
       '  '+String(S.stage).padStart(2)+'   '+String(S.unlocked).padStart(2)+
-      '  '+String(S.totalKills).padStart(7)+'   '+String(S.downs).padStart(4));
+      '  '+String(S.totalKills).padStart(7)+'   '+String(S.downs).padStart(4)+'   '+R.realmInfo().name);
     mi++;
   }
 }

@@ -135,6 +135,14 @@ function hurtFoe(f, dmg, crit){
   if (f.hp <= 0 && !f.dead){
     f.dead = true; f.dying = 0.22;
     S.kills++; S.totalKills++;
+    // 수련치 — 강한 구역일수록 크게. 경지가 오르면 알린다
+    const k0 = realmLv();
+    S.rexp += zone().mul * (f.boss ? REALM.bossExp : REALM.killExp);
+    if (realmLv() > k0){
+      toast(realmInfo().name + '에 올랐다');
+      S.fx.push({ k:'burst', x:P.x, y:P.y - HERO.h*0.5, life:0.5, t:0.5 });
+      shake(6); sfx('down');
+    }
     // 은자 드랍 — 보스는 크게, 구역 첫 격파면 보너스까지
     let sv = killSilver() * (f.boss ? SILVER.bossKill : 1);
     if (f.boss && !S.bossDone[S.zi]){

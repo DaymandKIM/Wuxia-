@@ -27,6 +27,8 @@ function hud(){
   }
   $('hpt').textContent = Math.ceil(P.hp) + ' / ' + P.hpMax;
   $('silver').textContent = S.silver.toLocaleString();
+  const ri = realmInfo();
+  $('realm').textContent = ri.name + ' · ' + Math.floor(ri.cur / ri.need * 100) + '%';
   $('hp').firstElementChild.style.width = (P.hp/P.hpMax*100).toFixed(1) + '%';
   const b2 = S.foes.find(f=>f.boss && !f.dead);
   $('kn').firstElementChild.style.width =
@@ -49,6 +51,8 @@ function enterStage(){
 function gotoZone(i, st){
   if (!TEST && i >= S.unlocked) return;
   S.zi = i; S.stage = st || 1; S.kills = 0;
+  // [테스트 전용] 앞 구역으로 점프하면 걸맞은 수련치를 채워준다 — 안 그러면 못 버틴다
+  if (TEST) S.rexp = Math.max(S.rexp, seedExp(i, st));
   closeZonePanel();
   enterStage();
 }

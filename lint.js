@@ -10,7 +10,7 @@ for(const m of code.matchAll(/(?:const|let|var)\s+(\w+)\s*=/g)) defined.add(m[1]
 // 내장·브라우저 것
 const builtin=new Set(['Math','Object','Array','JSON','String','Number','Boolean','Date',
  'Image','Audio','parseInt','parseFloat','isNaN','setTimeout','setInterval','clearTimeout',
- 'requestAnimationFrame','addEventListener','console','document','window','performance',
+ 'requestAnimationFrame','addEventListener','console','document','window','performance','clearInterval',
  'navigator','AudioContext','webkitAudioContext','Set','Map','Promise','Error','ErrorEvent',
  'if','for','while','switch','return','catch','function','typeof','new']);
 const missing=new Set();

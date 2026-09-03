@@ -241,14 +241,47 @@ const QI = {
   r:      1.9,    // 방울 반지름
 };
 
-// 성장 — 단계를 깰 때마다 주인공도 강해진다
-// 적 체력이 6씩 오르니 피해도 그에 맞춰 올린다
-const GROW = {
-  dmg:  2.6,                     // 단계당 정권 피해 +2.6
-  hp:   36,                      // 단계당 최대 체력 +36
-  regen:0.68,                    // 단계당 회복 +0.68
+// 경지 — 처치로 쌓이는 수련치(rexp)로 오른다 (사용자 확정). 무한 성장.
+// 9경지 × (초입·소성·대성·극성) = 36구간, 그 뒤는 신화경 1중, 2중, … 끝없이.
+// 승급 필요량은 기하 증가 — 끝판 반복 사냥도 계속 경지에 기여한다.
+const REALM = {
+  names: ['삼류','이류','일류','절정','초절정','화경','현경','생사경','자연경'],
+  subs:  ['초입','소성','대성','극성'],
+  last:  '신화경',               // 이후는 1중·2중·… (무공 층수 표기)
+  expBase: 20,                   // k번째 승급 필요 수련치 = expBase × expGrow^k
+  expGrow: 1.18,
+  killExp: 1,                    // 잡몹 처치 수련치 = 구역배율 × killExp
+  bossExp: 25,                   // 보스 처치 수련치 = 구역배율 × bossExp
+  // 이 구역·단계쯤이면 대략 이 경지 레벨 (sim 실측 근사) — 테스트 이동·도구용
+  seed: [0, 10, 15, 18, 22, 30],
 };
-const lv        = ()=> S.zi*10 + S.stage;      // 누적 성장 단계
+const realmNeed = k => Math.round(REALM.expBase * Math.pow(REALM.expGrow, k));
+// 수련치 → { k: 경지 레벨, name: 이름, cur/need: 현 구간 진행 }
+function realmInfo(){
+  let e = S.rexp, k = 0;
+  while (e >= realmNeed(k)){ e -= realmNeed(k); k++; }
+  const name = k < REALM.names.length * 4
+    ? REALM.names[k >> 2] + ' ' + REALM.subs[k % 4]
+    : REALM.last + ' ' + (k - REALM.names.length * 4 + 1) + '중';
+  return { k, name, cur: e, need: realmNeed(k) };
+}
+const realmLv = ()=> realmInfo().k;
+// 구역·단계에 걸맞은 누적 수련치 — 테스트 단계 이동과 검증 도구가 쓴다
+function seedExp(zi, st){
+  const a = REALM.seed[zi], b = REALM.seed[zi + 1] || (a + 8);
+  const k = Math.round(a + (b - a) * Math.min(st || 1, 11) / 11);
+  let t = 0;
+  for (let i = 0; i < k; i++) t += realmNeed(i);
+  return t;
+}
+
+// 성장 — 경지가 오를 때마다 주인공이 강해진다 (단계가 아니라 경지 기준)
+const GROW = {
+  dmg:  5,                       // 경지 승급당 정권 피해
+  hp:   70,                      // 경지 승급당 최대 체력
+  regen:1.3,                     // 경지 승급당 회복
+};
+const lv        = ()=> S.zi*10 + S.stage;      // 누적 단계 (구역 진행도)
 
 // 수련 — 은자 소비처. 쉬운 말로 쓴다 (무협 맛은 설명 문구로만).
 // 상한은 경지가 연다: 스텟당 최대 성장 = 경지 × capPer.
@@ -282,11 +315,11 @@ const statBonus = (k, n) => {
   return s.asym ? asym(n, s.asym[0], s.asym[1]) : n * s.inc;
 };
 const trainCost = n => Math.round(TRAIN.costBase * Math.pow(TRAIN.costGrow, n));
-const trainCap  = ()=> Math.max(S.best, lv()) * TRAIN.capPer;   // 최고 경지 기준
+const trainCap  = ()=> (realmLv() + 1) * TRAIN.capPer;          // 경지가 상한을 연다
 
-const heroDmg   = ()=> HERO.atkDmg + (lv()-1) * GROW.dmg + statBonus('atk');
-const heroHpMax = ()=> HERO.hp     + (lv()-1) * GROW.hp  + statBonus('hp');
-const heroRegen = ()=> HERO.regen  + (lv()-1) * GROW.regen + statBonus('regen');
+const heroDmg   = ()=> HERO.atkDmg + realmLv() * GROW.dmg + statBonus('atk');
+const heroHpMax = ()=> HERO.hp     + realmLv() * GROW.hp  + statBonus('hp');
+const heroRegen = ()=> HERO.regen  + realmLv() * GROW.regen + statBonus('regen');
 const heroSpd   = ()=> HERO.spd * (1 + statBonus('spd')/100);
 const critCh    = ()=> statBonus('crit') / 100;
 

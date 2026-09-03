@@ -9,7 +9,7 @@ function saveNow(){
       zi: S.zi, stage: S.stage, kills: S.kills,
       best: S.best, unlocked: S.unlocked,
       totalKills: S.totalKills, downs: S.downs,
-      silver: S.silver, bossDone: S.bossDone, stats: S.stats,
+      silver: S.silver, bossDone: S.bossDone, stats: S.stats, rexp: S.rexp,
     }));
   }catch(e){}                    // 시크릿 모드 등 — 저장만 못 할 뿐 게임은 돈다
 }
@@ -36,6 +36,7 @@ function applySave(d){
   S.stats = {};
   if (d.stats && typeof d.stats === 'object')
     for (const s of TRAIN.list) S.stats[s.k] = Math.max(0, d.stats[s.k]|0);
+  S.rexp = Math.max(0, +d.rexp || 0);
 }
 
 function resetSave(){
@@ -63,6 +64,7 @@ function offlineGains(awaySec){
       budget -= OFFLINE.boss;
       stages++;
       silver += killSilver() * SILVER.bossKill;      // 보스 드랍 — 첫 격파 보너스는 직접 잡을 때만
+      S.rexp += zone().mul * REALM.bossExp;
       if (S.zi + 1 < ZONES.length){
         if (S.unlocked < S.zi + 2) S.unlocked = S.zi + 2;
         S.zi++; zones++;
@@ -77,12 +79,14 @@ function offlineGains(awaySec){
       budget -= remain * tpk;
       kills += remain;
       silver += killSilver() * remain;
+      S.rexp += zone().mul * REALM.killExp * remain;   // 오프라인에도 경지가 오른다
       S.kills = 0; S.stage++; stages++;
       S.best = Math.max(S.best, lv());
     } else {
       const k = Math.floor(budget / tpk);
       kills += k; S.kills += k;
       silver += killSilver() * k;
+      S.rexp += zone().mul * REALM.killExp * k;
       budget = 0;
     }
   }
