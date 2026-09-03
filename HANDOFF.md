@@ -46,6 +46,7 @@ node hittest.js      방향별 명중 (아래쪽 못 때리는 문제 잡을 때
 node sweeptest.js    클리어 연출
 node bosstest.js     보스 5종 격파
 node shamantest.js   주술사 원거리·마법
+node savetest.js     저장·오프라인 진행
 node frogtest.js     개구리 혀 사거리·규격
 python demonsheet.py 마왕 시트 → 24프레임 (뒤에 demonclean.py 를 돌린다)
 python demonclean.py 마왕 테두리 잔재·마젠타 잔털 손질 (--dry 로 미리보기)

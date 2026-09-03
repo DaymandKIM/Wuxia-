@@ -77,7 +77,10 @@ function buildZonePanel(){
   h += '<div class="znote">' + (TEST
       ? '테스트 모드 — 모든 구역으로 이동할 수 있다.'
       : (ZONES.length > S.unlocked ? '구역을 끝까지 깨면 다음 구역이 열린다.' : '모든 구역을 열었다.')) + '</div>';
+  if (TEST) h += '<div class="znote"><button class="sb" id="zreset">저장 초기화</button></div>';
   b.innerHTML = h;
+  const zr = $('zreset');
+  if (zr) zr.onclick = resetSave;
   b.querySelectorAll('.zrow[data-z]').forEach(el => {
     el.onclick = e => { if (e.target.classList.contains('sb')) return;
       gotoZone(parseInt(el.dataset.z, 10)); };

@@ -1,7 +1,7 @@
 /* 호출하는데 정의가 없는 함수를 찾는다 */
 const fs=require('fs');
 const O=['00-data.js','10-engine.js','15-audio.js','20-state.js','30-combat.js',
-         '40-step.js','50-render.js','60-ui.js','70-main.js'];
+         '40-step.js','50-render.js','60-ui.js','65-save.js','70-main.js'];
 const code=O.map(f=>fs.readFileSync(__dirname+'/src/'+f,'utf8')).join('\n');
 // 정의된 이름
 const defined=new Set();

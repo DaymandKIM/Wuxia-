@@ -252,3 +252,23 @@ const lv        = ()=> S.zi*10 + S.stage;      // 누적 성장 단계
 const heroDmg   = ()=> HERO.atkDmg + (lv()-1) * GROW.dmg;
 const heroHpMax = ()=> HERO.hp     + (lv()-1) * GROW.hp;
 const heroRegen = ()=> HERO.regen  + (lv()-1) * GROW.regen;
+
+// 저장 — 껐다 켜도 이어진다. 방치형의 최소 조건.
+const SAVE = {
+  key: 'wuxia1',                 // localStorage 키
+  ver: 1,                        // 구조가 바뀌면 올린다 (다르면 버리고 새로 시작)
+  every: 10,                     // 자동 저장 간격(초)
+};
+
+// 오프라인 진행 — 자리 비운 동안도 수련한다 (설계: 온라인의 70~80%, 상한 8시간)
+// 근사 모델: 처치당 시간 = 정권 횟수×간격÷동시타격 + 접근·대기.
+// sim.js(실제 step 60분) 실측과 대조해 보정했다 — 모델이 실측의 약 87%라
+// rate 0.8을 곱하면 온라인의 약 70%가 된다. 보정 근거는 VERSION.md 참고.
+const OFFLINE = {
+  rate: 0.8,                     // 온라인 대비 효율
+  cap:  8*3600,                  // 상한 8시간
+  min:  60,                      // 이보다 짧게 비웠으면 무시
+  aoe:  2.3,                     // 정권 한 방이 평균 몇 마리를 때리나 (sim 보정값)
+  walk: 0.5,                     // 처치당 이동·대기 평균(초)
+  boss: 60,                      // 보스 한 번 잡는 평균(초, bosstest.js 실측 40~51초)
+};

@@ -28,8 +28,28 @@ if (TEST){
 }
 $('zclose').onclick = closeZonePanel;
 $('zpanel').onclick = e => { if (e.target.id === 'zpanel') closeZonePanel(); };
+$('obtn').onclick   = closeOffline;
+$('opanel').onclick = e => { if (e.target.id === 'opanel') closeOffline(); };
+addEventListener('keydown', e => {
+  if (e.key === 'Escape'){ closeOffline(); closeZonePanel(); }
+});
 
-beginIntro('1단계', zone().n);
+// 저장 불러오기 → 자리 비운 만큼 진행 → 시작
+const sv = loadSave();
+let og = null;
+if (sv){
+  applySave(sv);
+  const away = (Date.now() - sv.at) / 1000;
+  if (away >= OFFLINE.min) og = offlineGains(away);
+}
+enterStage();
+if (og && og.kills > 0) showOffline(og);
+
+saveNow();
+setInterval(saveNow, SAVE.every * 1000);
+document.addEventListener('visibilitychange',
+  () => { if (document.visibilityState === 'hidden') saveNow(); });
+addEventListener('pagehide', saveNow);
 
 let last = performance.now();
 function loop(now){
