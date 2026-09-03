@@ -9,7 +9,7 @@ function saveNow(){
       zi: S.zi, stage: S.stage, kills: S.kills,
       best: S.best, unlocked: S.unlocked,
       totalKills: S.totalKills, downs: S.downs,
-      silver: S.silver, bossDone: S.bossDone,
+      silver: S.silver, bossDone: S.bossDone, stats: S.stats,
     }));
   }catch(e){}                    // 시크릿 모드 등 — 저장만 못 할 뿐 게임은 돈다
 }
@@ -33,6 +33,9 @@ function applySave(d){
   S.silver     = Math.max(0, d.silver|0);           // 예전 저장엔 없다 → 0
   S.bossDone   = Array.isArray(d.bossDone)
     ? d.bossDone.slice(0, ZONES.length).map(v => v ? 1 : 0) : [];
+  S.stats = {};
+  if (d.stats && typeof d.stats === 'object')
+    for (const s of TRAIN.list) S.stats[s.k] = Math.max(0, d.stats[s.k]|0);
 }
 
 function resetSave(){

@@ -113,7 +113,9 @@ function heroHitCheck(){
     // 세로는 눌러서 잰다 — 바닥이 기울어 보이는 시점이라 위아래가 가깝게 느껴진다
     const dx = f.x - cx, dy = (f.y - cy) / HERO.atkFlat;   // 나누면 세로가 넓어진다
     if (Math.hypot(dx, dy) < HERO.atkRange){
-      hurtFoe(f, heroDmg());
+      // 치명타 — 급소를 때리면 배수 피해, 노란 숫자로 알린다
+      const crit = Math.random() < critCh();
+      hurtFoe(f, heroDmg() * (crit ? TRAIN.critMul : 1), crit);
       n++;
     }
   }
@@ -122,9 +124,11 @@ function heroHitCheck(){
   }
 }
 
-function hurtFoe(f, dmg){
+function hurtFoe(f, dmg, crit){
   f.hp -= dmg;
   f.hit = 0.26;
+  if (crit) S.fx.push({ k:'crit', x:f.x, y:f.y - (foeM(f).bh||foeM(f).h),
+                        v:Math.round(dmg), life:0.55, t:0.55 });
   // 맞은 방향으로 살짝 밀린다
   const d = dist(P.x,P.y,f.x,f.y) || 1;
   f.kx = (f.x-P.x)/d; f.ky = (f.y-P.y)/d; f.kb = 0.09;

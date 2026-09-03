@@ -22,7 +22,7 @@ const dom=new JSDOM(html,{runScripts:'dangerously',pretendToBeVisual:true,before
 setTimeout(()=>{
   const w=dom.window, d=w.document;
   try{
-    d.getElementById('zbtn').onclick();
+    d.getElementById('tab-zone').onclick();
     const rows=d.querySelectorAll('.zrow');
     console.log('사냥터 패널: '+rows.length+'개 구역');
     rows.forEach(r=>{
@@ -32,7 +32,7 @@ setTimeout(()=>{
     });
     // 해금 늘려서 이동 테스트
     w.eval('S.unlocked=5');
-    d.getElementById('zbtn').onclick();
+    d.getElementById('tab-zone').onclick();
     const rows2=d.querySelectorAll('.zrow[data-z]');
     console.log('해금 후 이동 가능: '+rows2.length+'개');
     const sbs=d.querySelectorAll('.sb');

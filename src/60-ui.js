@@ -11,9 +11,10 @@ function hud(){
   // 진입 연출 중엔 HUD를 감춘다
   const showing = S.intro <= 0;
   $('card').style.opacity = showing ? '1' : '0';
-  $('zbtn').style.opacity = showing ? '1' : '0';
+  $('tabs').style.opacity = showing ? '1' : '0';
   const tb = $('tbtn'); if (tb) tb.style.opacity = showing ? '1' : '0';   // [테스트 전용]
   if (!showing) return;
+  trainHud();                                    // 수련 탭 알림점·열린 패널 갱신
 
   const st = stage();
   if (isBoss()){

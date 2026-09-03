@@ -249,9 +249,46 @@ const GROW = {
   regen:0.68,                    // 단계당 회복 +0.68
 };
 const lv        = ()=> S.zi*10 + S.stage;      // 누적 성장 단계
-const heroDmg   = ()=> HERO.atkDmg + (lv()-1) * GROW.dmg;
-const heroHpMax = ()=> HERO.hp     + (lv()-1) * GROW.hp;
-const heroRegen = ()=> HERO.regen  + (lv()-1) * GROW.regen;
+
+// 수련 — 은자 소비처. 쉬운 말로 쓴다 (무협 맛은 설명 문구로만).
+// 상한은 경지가 연다: 스텟당 최대 성장 = 경지 × capPer.
+// %짜리(이동·치명타)는 점근식이라 아무리 올려도 max를 못 넘는다.
+// ※ 비용·효과 수치는 임시. 심법 들어올 때 sim으로 다시 잡는다.
+const TRAIN = {
+  costBase: 12,                  // 0→1 비용
+  costGrow: 1.16,                // 레벨당 비용 배율
+  capPer:   10,                  // 경지당 열리는 상한 (경지×10)
+  critMul:  1.5,                 // 치명타 배수
+  list: [
+    // inc: 레벨당 고정 증가 · asym:[최대치, 절반점]: 점근 % 증가
+    { k:'atk',   n:'공격',      d:'주먹이 매워진다', inc:2,
+      f:v=>'+'+Math.round(v) },
+    { k:'hp',    n:'체력',      d:'몸이 단단해진다', inc:25,
+      f:v=>'+'+Math.round(v) },
+    { k:'regen', n:'회복',      d:'숨이 깊어진다',   inc:0.5,
+      f:v=>'+'+v.toFixed(1)+'/초' },
+    { k:'spd',   n:'이동 속도', d:'발이 빨라진다',   asym:[60,40],
+      f:v=>'+'+v.toFixed(1)+'%' },
+    { k:'crit',  n:'치명타',    d:'급소가 보인다',   asym:[50,60],
+      f:v=>v.toFixed(1)+'%' },
+  ],
+};
+const statLv    = k => S.stats[k] | 0;
+const asym      = (n, max, half) => max * n / (n + half);
+const statDef   = k => TRAIN.list.find(s => s.k === k);
+// 스텟 k의 현재 보너스 (n을 주면 그 레벨 기준 — 다음 레벨 미리보기용)
+const statBonus = (k, n) => {
+  const s = statDef(k); if (n === undefined) n = statLv(k);
+  return s.asym ? asym(n, s.asym[0], s.asym[1]) : n * s.inc;
+};
+const trainCost = n => Math.round(TRAIN.costBase * Math.pow(TRAIN.costGrow, n));
+const trainCap  = ()=> Math.max(S.best, lv()) * TRAIN.capPer;   // 최고 경지 기준
+
+const heroDmg   = ()=> HERO.atkDmg + (lv()-1) * GROW.dmg + statBonus('atk');
+const heroHpMax = ()=> HERO.hp     + (lv()-1) * GROW.hp  + statBonus('hp');
+const heroRegen = ()=> HERO.regen  + (lv()-1) * GROW.regen + statBonus('regen');
+const heroSpd   = ()=> HERO.spd * (1 + statBonus('spd')/100);
+const critCh    = ()=> statBonus('crit') / 100;
 
 // 은자 — 첫 재화. 처치 드랍 + 보스 첫 격파 + 오프라인 정산.
 // ※ 수치는 임시. 쓸 곳(심법)이 들어오면 sim으로 다시 잡는다.

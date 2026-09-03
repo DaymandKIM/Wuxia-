@@ -3,7 +3,7 @@
 import base64, os, glob
 R = os.path.dirname(os.path.abspath(__file__))
 ORDER = ['00-data.js','10-engine.js','15-audio.js','20-state.js','30-combat.js',
-         '40-step.js','50-render.js','60-ui.js','65-save.js','70-main.js']
+         '40-step.js','50-render.js','60-ui.js','62-train.js','65-save.js','70-main.js']
 # 에셋 → base64
 assets = {}
 for p in sorted(glob.glob(R + '/assets/*.png')):

@@ -74,8 +74,8 @@ function step(dt){
   const closeIn = (tgt && foeM(tgt).ranged) ? 0.42 : 0.72;
   if (P.atkT <= 0 && tgt && td > HERO.atkRange*closeIn){
     const a = Math.atan2(tgt.y-P.y, tgt.x-P.x);
-    P.x += Math.cos(a) * HERO.spd * dt;
-    P.y += Math.sin(a) * HERO.spd * dt;
+    P.x += Math.cos(a) * heroSpd() * dt;
+    P.y += Math.sin(a) * heroSpd() * dt;
     P.dir = Math.cos(a) >= 0 ? 1 : -1;
     moving = true;
   }

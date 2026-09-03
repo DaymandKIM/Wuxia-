@@ -20,7 +20,19 @@ loadImg('fx_aura', ASSET.fx_aura);
 loadImg('fx_dark', ASSET.fx_dark);
 loadImg('shaman_m2', ASSET.shaman_m2);
 
-$('zbtn').onclick   = openZonePanel;
+// 하단 탭 — 같은 탭 재클릭이면 닫고, 다른 패널은 접는다
+$('tab-zone').onclick = () => {
+  const open = $('zpanel').classList.contains('show');
+  closeTrain();
+  if (open) closeZonePanel(); else openZonePanel();
+};
+$('tab-train').onclick = () => {
+  const open = $('trpanel').classList.contains('show');
+  closeZonePanel();
+  if (open) closeTrain(); else openTrain();
+};
+$('trclose').onclick = closeTrain;
+$('trpanel').onclick = e => { if (e.target.id === 'trpanel') closeTrain(); };
 // [테스트 전용] 시험 패널 — 배속·강제 쓰러짐·저장 초기화를 한곳에 모았다.
 // TEST를 끄면 버튼째 사라진다.
 let TESTSPEED = 1;
@@ -49,7 +61,7 @@ $('obtn').onclick   = closeOffline;
 $('opanel').onclick = e => { if (e.target.id === 'opanel') closeOffline(); };
 addEventListener('keydown', e => {
   if (e.key === 'Escape'){
-    closeOffline(); closeZonePanel();
+    closeOffline(); closeZonePanel(); closeTrain();
     $('tpanel').classList.remove('show');    // [테스트 전용]
   }
 });

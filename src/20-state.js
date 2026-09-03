@@ -21,6 +21,7 @@ const S = {
   downs: 0,
   silver: 0,                     // 은자
   bossDone: [],                  // 구역별 보스 첫 격파 여부 (0/1)
+  stats: {},                     // 수련 레벨 { atk, hp, regen, spd, crit }
   intro: 0,                      // >0 이면 진입 연출 중
   introMsg: '',                   // 아래 (단계)
   introTop: '',                   // 위 (구역)

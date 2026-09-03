@@ -142,6 +142,17 @@ function drawFx(ox, oy){
         ctx.fillRect(x+Math.cos(ang)*r-1, y+Math.sin(ang)*r-1, 3, 3);
       }
       ctx.restore();
+    } else if (e.k === 'crit'){
+      // 치명타 숫자 — 노랗게 떠오르며 사라진다
+      ctx.save();
+      ctx.globalAlpha = Math.min(1, a * 1.6);
+      ctx.font = '900 9px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#1a1206';
+      ctx.fillText(e.v, x, y - (1-a)*14 + 1);
+      ctx.fillStyle = '#ffd95e';
+      ctx.fillText(e.v, x, y - (1-a)*14);
+      ctx.restore();
     }
   }
 }
