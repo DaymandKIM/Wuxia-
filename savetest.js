@@ -49,6 +49,7 @@ const ok=(cond,msg)=>{ console.log((cond?'  ':'  ★실패 ')+msg); if(!cond)bad
       ok(S2.zi*10+S2.stage>4 || S2.zi>0,'3시간 오프라인: 4단계 → '+
         w2.eval('zone()').n+' '+S2.stage+'단계 (총처치 '+S2.totalKills+')');
       ok(S2.totalKills>100,'처치가 늘었다: 100 → '+S2.totalKills);
+      ok(S2.silver>0,'은자 정산: +'+S2.silver.toLocaleString()+' (예전 저장에 은자 없음 → 0에서 시작)');
       const op=w2.document.getElementById('opanel');
       ok(op.classList.contains('show'),'돌아온 패널이 떴다: "'+
         w2.document.getElementById('otime').textContent+'"');

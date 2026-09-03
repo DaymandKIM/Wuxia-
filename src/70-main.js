@@ -21,10 +21,23 @@ loadImg('fx_dark', ASSET.fx_dark);
 loadImg('shaman_m2', ASSET.shaman_m2);
 
 $('zbtn').onclick   = openZonePanel;
-// 테스트 모드에서만 보이는 운기조식 버튼
+// [테스트 전용] 강제 쓰러짐 · 배속 — TEST를 끄면 전부 사라진다
+let TESTSPEED = 1;
 if (TEST){
   $('dbtn').classList.add('on');
   $('dbtn').onclick = () => { if (!P.dead && S.intro <= 0) downHero(); };
+  const sp = $('spd');
+  sp.classList.add('on');
+  for (const m of [1, 2, 3, 5, 10, 100]){
+    const b = document.createElement('button');
+    b.textContent = 'x' + m;
+    if (m === 1) b.classList.add('on');
+    b.onclick = () => {
+      TESTSPEED = m;
+      sp.querySelectorAll('button').forEach(e => e.classList.toggle('on', e === b));
+    };
+    sp.appendChild(b);
+  }
 }
 $('zclose').onclick = closeZonePanel;
 $('zpanel').onclick = e => { if (e.target.id === 'zpanel') closeZonePanel(); };
@@ -55,7 +68,8 @@ let last = performance.now();
 function loop(now){
   try{
     const dt = Math.min(0.05, (now - last) / 1000); last = now;
-    step(dt);
+    // [테스트 전용] 배속 — 같은 dt로 여러 번 밟아야 물리가 안 깨진다
+    for (let i = 0; i < (TEST ? TESTSPEED : 1); i++) step(dt);
     render();
     hud();
     if (toastT > 0){ toastT -= dt; if (toastT <= 0) $('toast').classList.remove('show'); }

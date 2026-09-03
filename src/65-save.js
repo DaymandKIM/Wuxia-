@@ -9,6 +9,7 @@ function saveNow(){
       zi: S.zi, stage: S.stage, kills: S.kills,
       best: S.best, unlocked: S.unlocked,
       totalKills: S.totalKills, downs: S.downs,
+      silver: S.silver, bossDone: S.bossDone,
     }));
   }catch(e){}                    // 시크릿 모드 등 — 저장만 못 할 뿐 게임은 돈다
 }
@@ -29,6 +30,9 @@ function applySave(d){
   S.unlocked   = clamp(d.unlocked|0, 1, ZONES.length);
   S.totalKills = Math.max(0, d.totalKills|0);
   S.downs      = Math.max(0, d.downs|0);
+  S.silver     = Math.max(0, d.silver|0);           // 예전 저장엔 없다 → 0
+  S.bossDone   = Array.isArray(d.bossDone)
+    ? d.bossDone.slice(0, ZONES.length).map(v => v ? 1 : 0) : [];
 }
 
 function resetSave(){
@@ -45,16 +49,17 @@ function offKillTime(){
   return punches * HERO.atkCd / OFFLINE.aoe + OFFLINE.walk;
 }
 
-// 자리 비운 시간만큼 S를 전진시킨다. 보고용 {sec, kills, stages, zones}를 준다.
+// 자리 비운 시간만큼 S를 전진시킨다. 보고용 {sec, kills, stages, zones, silver}를 준다.
 function offlineGains(awaySec){
   const sec = Math.min(awaySec, OFFLINE.cap);
   let budget = sec * OFFLINE.rate;
-  let kills = 0, stages = 0, zones = 0;
+  let kills = 0, stages = 0, zones = 0, silver = 0;
   while (budget > 0){
     if (isBoss()){
       if (budget < OFFLINE.boss) break;              // 남은 시간으론 보스를 못 잡는다
       budget -= OFFLINE.boss;
       stages++;
+      silver += killSilver() * SILVER.bossKill;      // 보스 드랍 — 첫 격파 보너스는 직접 잡을 때만
       if (S.zi + 1 < ZONES.length){
         if (S.unlocked < S.zi + 2) S.unlocked = S.zi + 2;
         S.zi++; zones++;
@@ -68,16 +73,19 @@ function offlineGains(awaySec){
     if (budget >= remain * tpk){
       budget -= remain * tpk;
       kills += remain;
+      silver += killSilver() * remain;
       S.kills = 0; S.stage++; stages++;
       S.best = Math.max(S.best, lv());
     } else {
       const k = Math.floor(budget / tpk);
       kills += k; S.kills += k;
+      silver += killSilver() * k;
       budget = 0;
     }
   }
   S.totalKills += kills;
-  return { sec, kills, stages, zones };
+  S.silver += silver;
+  return { sec, kills, stages, zones, silver };
 }
 
 /* ── 돌아온 화면 ──────────────────────────────────── */
@@ -91,6 +99,7 @@ function fmtDur(sec){
 function showOffline(g){
   $('otime').textContent = fmtDur(g.sec) + ' 동안 수련했다';
   let h = '<div class="orow"><span>처치</span><b>' + g.kills.toLocaleString() + '</b></div>';
+  if (g.silver) h += '<div class="orow"><span>은자</span><b>+' + g.silver.toLocaleString() + '</b></div>';
   if (g.stages) h += '<div class="orow"><span>단계 전진</span><b>' + g.stages + '</b></div>';
   if (g.zones)  h += '<div class="orow"><span>구역 돌파</span><b>' + g.zones + '</b></div>';
   $('obody').innerHTML = h;

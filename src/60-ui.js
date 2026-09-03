@@ -25,6 +25,7 @@ function hud(){
     $('kills').textContent = S.kills + ' / ' + st.need;
   }
   $('hpt').textContent = Math.ceil(P.hp) + ' / ' + P.hpMax;
+  $('silver').textContent = S.silver.toLocaleString();
   $('hp').firstElementChild.style.width = (P.hp/P.hpMax*100).toFixed(1) + '%';
   const b2 = S.foes.find(f=>f.boss && !f.dead);
   $('kn').firstElementChild.style.width =

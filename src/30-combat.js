@@ -131,6 +131,15 @@ function hurtFoe(f, dmg){
   if (f.hp <= 0 && !f.dead){
     f.dead = true; f.dying = 0.22;
     S.kills++; S.totalKills++;
+    // 은자 드랍 — 보스는 크게, 구역 첫 격파면 보너스까지
+    let sv = killSilver() * (f.boss ? SILVER.bossKill : 1);
+    if (f.boss && !S.bossDone[S.zi]){
+      S.bossDone[S.zi] = 1;
+      const bonus = Math.round(SILVER.first * zone().mul);
+      sv += bonus;
+      toast(zone().boss + ' 첫 격파 · 은자 +' + bonus.toLocaleString());
+    }
+    S.silver += sv;
     S.fx.push({ k:'burst', x:f.x, y:f.y - (foeM(f).bh||foeM(f).h)*0.4, life:0.3, t:0.3 });
     sfx('kill');
   }

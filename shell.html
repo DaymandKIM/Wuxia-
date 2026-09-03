@@ -15,6 +15,10 @@
     background:rgba(13,16,21,.86);border:1.5px solid #262e38;border-radius:12px;padding:8px 10px 7px;}
   .row1{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;
     font-size:12px;font-weight:900;color:#e8eef6;letter-spacing:.05em;}
+  .row2{display:flex;justify-content:space-between;align-items:center;margin-top:6px;
+    font-size:11px;font-weight:900;letter-spacing:.05em;}
+  .row2 .slabel{color:#8b97a5;}
+  .row2 #silver{color:#e8c96a;font-variant-numeric:tabular-nums;}
   .bar{position:relative;height:13px;margin-bottom:5px;border-radius:7px;overflow:hidden;
     background:#0a0d12;border:1.5px solid #222932;}
   .bar>i{display:block;height:100%;width:0%;transition:width .12s linear;}
@@ -33,6 +37,13 @@
     display:none;}
   #dbtn.on{display:block;}
   #dbtn:active{background:#7a5238;}
+  /* [테스트 전용] 배속 버튼 — TEST 끄면 안 보인다. 출시 전에 걷어낸다 */
+  #spd{position:absolute;left:10px;bottom:calc(env(safe-area-inset-bottom) + 58px);
+    display:none;gap:4px;pointer-events:auto;}
+  #spd.on{display:flex;}
+  #spd button{background:rgba(20,25,32,.92);border:1px solid #39434f;border-radius:7px;
+    color:#9fb0c2;font:800 11px/1 inherit;padding:7px 8px;min-width:30px;}
+  #spd button.on{background:#2f5f8c;border-color:#4a86bd;color:#eaf3ff;}
   #zpanel{position:absolute;inset:0;pointer-events:none;background:rgba(6,8,11,0);
     transition:background .2s;display:flex;align-items:flex-end;}
   #zpanel.show{pointer-events:auto;background:rgba(6,8,11,.72);}
@@ -87,10 +98,13 @@
     <div class="row1"><span id="stage">죽림 1단계</span><span id="kills">0 / 10</span></div>
     <div class="bar" id="hp"><i></i><span id="hpt"></span></div>
     <div class="bar" id="kn"><i></i></div>
+    <div class="row2"><span class="slabel">은자</span><span id="silver">0</span></div>
   </div>
   <div id="toast"></div>
   <button id="zbtn">사냥터</button>
   <button id="dbtn">운기조식</button>
+  <div id="spd"></div><!-- [테스트 전용] 배속 -->
+
   <div id="zpanel">
     <div class="zsheet">
       <div class="zhd">사냥터<button id="zclose">✕</button></div>

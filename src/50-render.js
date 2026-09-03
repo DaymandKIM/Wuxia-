@@ -50,6 +50,14 @@ function drawHero(ox, oy){
     ctx.globalCompositeOperation = 'source-over';
   }
   ctx.restore();
+  // 체력바 — 다치면 머리 위에 뜬다. 적(빨강)과 구분되게 초록.
+  if (!P.dead && P.hp < P.hpMax - 0.5){
+    const w = 30, h = 3;
+    const by = y - HERO.h - 6;
+    ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.fillRect(x-w/2, by, w, h);
+    ctx.fillStyle = '#63b06a';
+    ctx.fillRect(x-w/2, by, w*(P.hp/P.hpMax), h);
+  }
   // 운기조식 — 기운 방울은 몸 위에 얹는다
   if (P.anim === 'medit') drawQi(x, y);
 }

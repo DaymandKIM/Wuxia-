@@ -19,6 +19,8 @@ const S = {
   summonX: 0, summonY: 0,
   totalKills: 0,
   downs: 0,
+  silver: 0,                     // 은자
+  bossDone: [],                  // 구역별 보스 첫 격파 여부 (0/1)
   intro: 0,                      // >0 이면 진입 연출 중
   introMsg: '',                   // 아래 (단계)
   introTop: '',                   // 위 (구역)

@@ -253,6 +253,16 @@ const heroDmg   = ()=> HERO.atkDmg + (lv()-1) * GROW.dmg;
 const heroHpMax = ()=> HERO.hp     + (lv()-1) * GROW.hp;
 const heroRegen = ()=> HERO.regen  + (lv()-1) * GROW.regen;
 
+// 은자 — 첫 재화. 처치 드랍 + 보스 첫 격파 + 오프라인 정산.
+// ※ 수치는 임시. 쓸 곳(심법)이 들어오면 sim으로 다시 잡는다.
+const SILVER = {
+  base:     2,                   // 한 마리당 기본
+  perStage: 1,                   // 단계당 가산
+  bossKill: 10,                  // 보스는 잡몹 드랍의 몇 배인가
+  first:    80,                  // 보스 첫 격파 보너스 (구역 배율 곱함)
+};
+const killSilver = ()=> Math.round((SILVER.base + SILVER.perStage*Math.min(S.stage,10)) * zone().mul);
+
 // 저장 — 껐다 켜도 이어진다. 방치형의 최소 조건.
 const SAVE = {
   key: 'wuxia1',                 // localStorage 키
