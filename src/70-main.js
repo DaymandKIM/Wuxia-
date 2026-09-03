@@ -21,20 +21,24 @@ loadImg('fx_dark', ASSET.fx_dark);
 loadImg('shaman_m2', ASSET.shaman_m2);
 
 $('zbtn').onclick   = openZonePanel;
-// [테스트 전용] 강제 쓰러짐 · 배속 — TEST를 끄면 전부 사라진다
+// [테스트 전용] 시험 패널 — 배속·강제 쓰러짐·저장 초기화를 한곳에 모았다.
+// TEST를 끄면 버튼째 사라진다.
 let TESTSPEED = 1;
 if (TEST){
-  $('dbtn').classList.add('on');
-  $('dbtn').onclick = () => { if (!P.dead && S.intro <= 0) downHero(); };
-  const sp = $('spd');
-  sp.classList.add('on');
+  $('tbtn').classList.add('on');
+  $('tbtn').onclick   = () => $('tpanel').classList.toggle('show');
+  $('tclose').onclick = () => $('tpanel').classList.remove('show');
+  $('tpanel').onclick = e => { if (e.target.id === 'tpanel') $('tpanel').classList.remove('show'); };
+  $('tdown').onclick  = () => { if (!P.dead && S.intro <= 0) downHero(); };
+  $('treset').onclick = resetSave;
+  const sp = $('tspd');
   for (const m of [1, 2, 3, 5, 10, 100]){
     const b = document.createElement('button');
+    b.className = 'sb' + (m === 1 ? ' on' : '');
     b.textContent = 'x' + m;
-    if (m === 1) b.classList.add('on');
     b.onclick = () => {
       TESTSPEED = m;
-      sp.querySelectorAll('button').forEach(e => e.classList.toggle('on', e === b));
+      sp.querySelectorAll('.sb').forEach(e => e.classList.toggle('on', e === b));
     };
     sp.appendChild(b);
   }
@@ -44,7 +48,10 @@ $('zpanel').onclick = e => { if (e.target.id === 'zpanel') closeZonePanel(); };
 $('obtn').onclick   = closeOffline;
 $('opanel').onclick = e => { if (e.target.id === 'opanel') closeOffline(); };
 addEventListener('keydown', e => {
-  if (e.key === 'Escape'){ closeOffline(); closeZonePanel(); }
+  if (e.key === 'Escape'){
+    closeOffline(); closeZonePanel();
+    $('tpanel').classList.remove('show');    // [테스트 전용]
+  }
 });
 
 // 저장 불러오기 → 자리 비운 만큼 진행 → 시작

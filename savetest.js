@@ -40,12 +40,12 @@ const ok=(cond,msg)=>{ console.log((cond?'  ':'  ★실패 ')+msg); if(!cond)bad
     const d=JSON.parse(w.localStorage.getItem('wuxia1'));
     ok(d && d.v===1 && d.zi===0 && d.stage>=1 && typeof d.at==='number',
       '새 게임 저장: '+JSON.stringify({zi:d.zi,stage:d.stage,kills:d.kills}));
-    // 저장 초기화 버튼 — 단계 이동 핸들러(.sb)가 덮어쓴 사고가 있었다
-    w.document.getElementById('zbtn').click();
-    w.document.getElementById('zreset').click();
+    // 저장 초기화 버튼 — 다른 핸들러가 덮어쓴 사고가 있었다 (시험 패널 안에 있다)
+    w.document.getElementById('tbtn').click();
+    w.document.getElementById('treset').click();
     ok(navs.length>0 && Number.isInteger(w.eval('S.zi')),
       '저장 초기화 버튼 → 새로고침 시도 (S.zi='+w.eval('S.zi')+')');
-    w.document.getElementById('zclose').click();
+    w.document.getElementById('tclose').click();
     ok(errs.length===0,'런타임 오류 0 (새 게임)'+(errs.length?': '+errs[0]:''));
 
     // ── 2) 3시간 전 저장을 불러온다 ────────────────────

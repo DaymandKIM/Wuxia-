@@ -20,8 +20,8 @@ const dom=new JSDOM(html,{runScripts:'dangerously',pretendToBeVisual:true,before
 }});
 setTimeout(()=>{
   const w=dom.window, d=w.document;
-  const btn=d.getElementById('dbtn');
-  console.log('버튼 표시: '+(btn.className.includes('on')?'예':'아니오'));
+  const btn=d.getElementById('tdown');   // 시험 패널 안 강제 쓰러짐
+  console.log('버튼 표시: '+(d.getElementById('tbtn').className.includes('on')?'예':'아니오'));
   w.eval('S.intro=0');
   btn.onclick();
   console.log('누른 직후: dead='+w.eval('P.dead')+' downT='+w.eval('S.downT').toFixed(1)+' anim='+w.eval('P.anim'));
