@@ -1,0 +1,15 @@
+{
+ "w": 164,
+ "h": 43,
+ "lash": 80,
+ "frames": [
+  "atk1",
+  "atk2",
+  "atk3",
+  "hop",
+  "idle0",
+  "idle1",
+  "idle2",
+  "idle3"
+ ]
+}

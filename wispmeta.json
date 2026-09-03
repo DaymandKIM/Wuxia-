@@ -1,0 +1,11 @@
+{
+ "w": 32,
+ "h": 37,
+ "frames": [
+  "atk",
+  "death",
+  "float",
+  "hit",
+  "idle"
+ ]
+}

@@ -1,0 +1,16 @@
+{
+ "w": 198,
+ "h": 63,
+ "body_w": 68,
+ "body_h": 56,
+ "frames": [
+  "atk",
+  "cast",
+  "idle",
+  "m0",
+  "m1",
+  "m3",
+  "run",
+  "walk"
+ ]
+}

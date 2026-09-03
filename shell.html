@@ -1,0 +1,88 @@
+<!doctype html><html lang="ko"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>무협</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;background:#05070a;overflow:hidden;
+    font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;
+    -webkit-user-select:none;user-select:none;}
+  #cv{position:fixed;display:block;image-rendering:pixelated;background:#0e1116;}
+  #ui{position:fixed;pointer-events:none;overflow:hidden;}
+
+  #card{position:absolute;left:10px;right:10px;top:calc(env(safe-area-inset-top) + 8px);
+    transition:opacity .22s;
+    background:rgba(13,16,21,.86);border:1.5px solid #262e38;border-radius:12px;padding:8px 10px 7px;}
+  .row1{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;
+    font-size:12px;font-weight:900;color:#e8eef6;letter-spacing:.05em;}
+  .bar{position:relative;height:13px;margin-bottom:5px;border-radius:7px;overflow:hidden;
+    background:#0a0d12;border:1.5px solid #222932;}
+  .bar>i{display:block;height:100%;width:0%;transition:width .12s linear;}
+  #hp>i{background:linear-gradient(90deg,#c8453c,#e0655a);}
+  #kn>i{background:linear-gradient(90deg,#3f7fb8,#69a8dd);}
+  .bar>span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-size:10px;font-weight:900;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.9);letter-spacing:.04em;}
+
+  #zbtn{position:absolute;right:10px;bottom:calc(env(safe-area-inset-bottom) + 12px);transition:opacity .22s;
+    pointer-events:auto;background:rgba(20,25,32,.92);border:1.5px solid #39434f;
+    border-radius:10px;color:#dbe6f2;font:900 13px/1 inherit;padding:11px 16px;letter-spacing:.05em;}
+  #zbtn:active{background:#2f5f8c;}
+  #dbtn{position:absolute;left:10px;bottom:calc(env(safe-area-inset-bottom) + 12px);transition:opacity .22s;
+    pointer-events:auto;background:rgba(32,24,20,.92);border:1.5px solid #5a4438;
+    border-radius:10px;color:#e0c8a8;font:900 13px/1 inherit;padding:11px 16px;letter-spacing:.05em;
+    display:none;}
+  #dbtn.on{display:block;}
+  #dbtn:active{background:#7a5238;}
+  #zpanel{position:absolute;inset:0;pointer-events:none;background:rgba(6,8,11,0);
+    transition:background .2s;display:flex;align-items:flex-end;}
+  #zpanel.show{pointer-events:auto;background:rgba(6,8,11,.72);}
+  .zsheet{width:100%;background:#12161c;border-top:1.5px solid #2b333d;
+    border-radius:16px 16px 0 0;padding:0 0 calc(env(safe-area-inset-bottom) + 14px);
+    transform:translateY(100%);transition:transform .24s cubic-bezier(.2,.8,.3,1);
+    max-height:76%;overflow:auto;}
+  #zpanel.show .zsheet{transform:translateY(0);}
+  .zhd{position:sticky;top:0;background:#12161c;display:flex;justify-content:space-between;
+    align-items:center;padding:14px 16px 10px;font-size:14px;font-weight:900;color:#e8eef6;
+    letter-spacing:.06em;border-bottom:1px solid #1e242c;}
+  .zhd button{background:none;border:0;color:#7f8b99;font-size:17px;padding:2px 6px;}
+  .zrow{margin:8px 12px;padding:12px 14px;background:#171d25;border:1.5px solid #232b35;
+    border-radius:11px;}
+  .zrow.on{border-color:#3c6f9e;background:#1a2430;}
+  .zrow.lock{opacity:.42;}
+  .zn{font-size:14px;font-weight:900;color:#e8eef6;letter-spacing:.05em;}
+  .zn em{font-style:normal;font-size:10px;color:#69a8dd;font-weight:800;margin-left:5px;}
+  .zd{font-size:11px;color:#8b97a5;margin-top:4px;line-height:1.45;}
+  .zst{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px;}
+  .sb{flex:0 0 auto;min-width:30px;background:#1e252e;border:1px solid #2c3540;
+    border-radius:6px;color:#9fb0c2;font:800 11px/1 inherit;padding:6px 0;}
+  .sb.on{background:#2f5f8c;border-color:#4a86bd;color:#eaf3ff;}
+  .sb.bs{min-width:38px;background:#2e1c1a;border-color:#5a3330;color:#e0a094;}
+  .sb.bs.on{background:#8c3f2f;border-color:#bd6a4a;color:#ffeee8;}
+  .znote{margin:6px 14px 4px;font-size:10px;color:#5d6773;line-height:1.5;}
+
+  #toast{position:absolute;left:50%;top:36%;transform:translate(-50%,-50%) scale(.9);
+    background:rgba(12,15,20,.92);border:1.5px solid #3a4553;border-radius:10px;
+    padding:10px 20px;font-size:15px;font-weight:900;color:#f0e2b8;letter-spacing:.06em;
+    opacity:0;transition:opacity .18s,transform .18s;}
+  #toast.show{opacity:1;transform:translate(-50%,-50%) scale(1);}
+</style></head><body>
+<canvas id="cv"></canvas>
+<div id="ui">
+  <div id="card">
+    <div class="row1"><span id="stage">죽림 1단계</span><span id="kills">0 / 10</span></div>
+    <div class="bar" id="hp"><i></i><span id="hpt"></span></div>
+    <div class="bar" id="kn"><i></i></div>
+  </div>
+  <div id="toast"></div>
+  <button id="zbtn">사냥터</button>
+  <button id="dbtn">운기조식</button>
+  <div id="zpanel">
+    <div class="zsheet">
+      <div class="zhd">사냥터<button id="zclose">✕</button></div>
+      <div id="zbody"></div>
+    </div>
+  </div>
+</div>
+<script>/*ASSETS*/</script>
+<script>/*CODE*/</script>
+</body></html>
