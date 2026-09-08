@@ -37,16 +37,17 @@ let artSel = null;                 // 상세 칸에 떠 있는 무공
 function buildArtsPanel(){
   const b = $('abody');
   let h = '<div class="adet" id="adet"></div>';
-  // 문파별 섹션 — SCHOOLS 정의 순서대로
-  for (const sk in SCHOOLS){
-    const list = ARTS.list.filter(a => (a.school || 'none') === sk);
-    if (!list.length) continue;
-    const sc = SCHOOLS[sk];
-    h += '<div class="znote asec" style="color:' + sc.c + '">' + sc.n + '</div>' +
-         '<div class="agrid">';
+  // 섹션은 초식/심법 둘뿐 — 문파는 타일 위 색띠로 보인다.
+  // 문파별로 쪼개면 한 줄에 한두 개뿐이라 세로로 길어진다는 피드백.
+  for (const sec of [['초식 — 스스로 펼친다', 'active'], ['심법 — 몸에 스민다', 'passive']]){
+    const list = ARTS.list.filter(a => a.type === sec[1])
+      .sort((a, b) => (a.fate ? 999 : a.need) - (b.fate ? 999 : b.need));
+    h += '<div class="znote asec">' + sec[0] + '</div><div class="agrid">';
     for (const a of list){
+      const sc = SCHOOLS[a.school] || SCHOOLS.none;
       h += '<button class="atile' + (a.fate ? ' fate' : '') + '" data-k="' + a.k +
-           '"><span class="g">' + a.h[0] + '</span>' +
+           '"><i class="sc" style="background:' + sc.c + '"></i>' +
+           '<span class="g">' + a.h[0] + '</span>' +
            '<span class="nm">' + a.n + '</span></button>';
     }
     h += '</div>';
@@ -75,7 +76,7 @@ function refreshArts(){
     el.classList.toggle('lock', !got && !open && !a.fate);
     el.classList.toggle('sel', el.dataset.k === artSel);
     el.style.borderColor = got ? sc.c : '';
-    el.firstElementChild.style.color = got ? sc.c : '';
+    el.querySelector('.g').style.color = got ? sc.c : '';
   });
   const a = artDef(artSel);
   if (!a) return;
