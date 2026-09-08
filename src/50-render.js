@@ -191,15 +191,18 @@ function drawFx(ox, oy){
       ctx.stroke();
       ctx.restore();
     } else if (e.k === 'artname'){
-      // 무공 이름 — 푸르게 떠오른다
+      // 초식명 외치기 — 「파공권!」 무협답게. 외치는 순간 커졌다 잦아든다
+      const p = 1 - a;
+      const t = '「' + e.v + '!」';
       ctx.save();
-      ctx.globalAlpha = Math.min(1, a * 1.4);
-      ctx.font = '900 8px sans-serif';
+      ctx.globalAlpha = Math.min(1, a * 1.5);
+      ctx.font = '900 ' + (p < 0.14 ? 10.5 : 8.5) + 'px sans-serif';
       ctx.textAlign = 'center';
       ctx.fillStyle = '#0a1420';
-      ctx.fillText(e.v, x, y - (1-a)*10 + 1);
-      ctx.fillStyle = '#9fd0ff';
-      ctx.fillText(e.v, x, y - (1-a)*10);
+      ctx.fillText(t, x + 1, y - p*9 + 1);
+      ctx.fillText(t, x - 1, y - p*9 + 1);
+      ctx.fillStyle = '#dcefff';
+      ctx.fillText(t, x, y - p*9);
       ctx.restore();
     }
   }
