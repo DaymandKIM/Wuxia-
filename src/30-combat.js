@@ -140,6 +140,9 @@ function hurtFoe(f, dmg, crit){
     // 수련치 — 강한 구역일수록 크게. 경지가 오르면 알린다
     const k0 = realmLv();
     S.rexp += zone().mul * (f.boss ? REALM.bossExp : REALM.killExp);
+    // 인연 — 기연의 재료
+    S.karma += f.boss ? FATE.bossKarma : zone().mul * FATE.killKarma;
+    if (S.karma >= karmaNeed()) S.fatePending = 1;
     if (realmLv() > k0){
       toast(realmInfo().name + '에 올랐다');
       S.fx.push({ k:'burst', x:P.x, y:P.y - HERO.h*0.5, life:0.5, t:0.5 });
@@ -171,6 +174,8 @@ function downHero(){
   P.dead = true;
   S.downT = DOWN_TIME;
   S.downs++;
+  S.karma += FATE.downKarma;      // 고난이 기연의 씨앗이 된다 (장무기 공식)
+  if (S.karma >= karmaNeed()) S.fatePending = 1;
   S.kills = Math.max(0, Math.floor(S.kills * 0.5));
   sfx('down');
   toast('쓰러졌다 · 운기조식');

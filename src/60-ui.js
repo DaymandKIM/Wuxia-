@@ -47,6 +47,9 @@ function enterStage(){
   S.camX = 0; S.camY = -24;
   S.foes.length = 0; S.fx.length = 0; S.shots.length = 0; S.bossAlive = false;
   beginIntro(isBoss() ? zone().boss : (S.stage + '단계'), zone().n);
+  // 인연이 차 있으면 기연이 나타난다.
+  // sim.js 등 검증 도구는 64-fate 없이 60-ui까지만 이어붙이므로 가드가 필요하다.
+  if (typeof maybeFate === 'function') maybeFate();
 }
 
 function gotoZone(i, st){

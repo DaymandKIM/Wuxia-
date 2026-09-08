@@ -10,7 +10,7 @@ function saveNow(){
       best: S.best, unlocked: S.unlocked,
       totalKills: S.totalKills, downs: S.downs,
       silver: S.silver, bossDone: S.bossDone, stats: S.stats, rexp: S.rexp,
-      arts: S.arts,
+      arts: S.arts, karma: S.karma, fates: S.fates, fatebits: S.fatebits,
     }));
   }catch(e){}                    // 시크릿 모드 등 — 저장만 못 할 뿐 게임은 돈다
 }
@@ -41,6 +41,13 @@ function applySave(d){
   S.arts = {};
   if (d.arts && typeof d.arts === 'object')
     for (const a of ARTS.list) if (d.arts[a.k]) S.arts[a.k] = 1;
+  S.karma = Math.max(0, +d.karma || 0);
+  S.fates = Math.max(0, d.fates | 0);
+  S.fatebits = {};
+  if (d.fatebits && typeof d.fatebits === 'object')
+    for (const k of ['guyang', 'geongon'])
+      S.fatebits[k] = Math.min(FATE.fragNeed, Math.max(0, d.fatebits[k] | 0));
+  S.fatePending = S.karma >= karmaNeed() ? 1 : 0;
 }
 
 function resetSave(){
@@ -69,6 +76,7 @@ function offlineGains(awaySec){
       stages++;
       silver += killSilver() * SILVER.bossKill;      // 보스 드랍 — 첫 격파 보너스는 직접 잡을 때만
       S.rexp += zone().mul * REALM.bossExp;
+      S.karma += FATE.bossKarma;
       if (S.zi + 1 < ZONES.length){
         if (S.unlocked < S.zi + 2) S.unlocked = S.zi + 2;
         S.zi++; zones++;
@@ -84,6 +92,7 @@ function offlineGains(awaySec){
       kills += remain;
       silver += killSilver() * remain;
       S.rexp += zone().mul * REALM.killExp * remain;   // 오프라인에도 경지가 오른다
+      S.karma += zone().mul * FATE.killKarma * remain;
       S.kills = 0; S.stage++; stages++;
       S.best = Math.max(S.best, lv());
     } else {
@@ -91,12 +100,14 @@ function offlineGains(awaySec){
       kills += k; S.kills += k;
       silver += killSilver() * k;
       S.rexp += zone().mul * REALM.killExp * k;
+      S.karma += zone().mul * FATE.killKarma * k;
       budget = 0;
     }
   }
   S.totalKills += kills;
   S.silver += silver;
-  return { sec, kills, stages, zones, silver };
+  if (S.karma >= karmaNeed()) S.fatePending = 1;
+  return { sec, kills, stages, zones, silver, fate: S.fatePending };
 }
 
 /* ── 돌아온 화면 ──────────────────────────────────── */
@@ -113,7 +124,8 @@ function showOffline(g){
   if (g.silver) h += '<div class="orow"><span>은자</span><b>+' + g.silver.toLocaleString() + '</b></div>';
   if (g.stages) h += '<div class="orow"><span>단계 전진</span><b>' + g.stages + '</b></div>';
   if (g.zones)  h += '<div class="orow"><span>구역 돌파</span><b>' + g.zones + '</b></div>';
+  if (g.fate)   h += '<div class="orow"><span>✦ 기연</span><b>기다리고 있다</b></div>';
   $('obody').innerHTML = h;
   $('opanel').classList.add('show');
 }
-function closeOffline(){ $('opanel').classList.remove('show'); }
+function closeOffline(){ $('opanel').classList.remove('show'); maybeFate(); }

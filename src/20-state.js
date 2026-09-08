@@ -24,6 +24,10 @@ const S = {
   stats: {},                     // 수련 레벨 { atk, hp, regen, spd, crit }
   rexp: 0,                       // 수련치 — 경지의 재료
   arts: {},                      // 익힌 무공 { key: 1 }
+  karma: 0,                      // 인연 — 기연의 재료
+  fates: 0,                      // 만난 기연 횟수
+  fatePending: 0,                // >0 이면 기연이 기다린다
+  fatebits: {},                  // 실전 비급 조각 { guyang: 0~3, geongon: 0~3 }
   intro: 0,                      // >0 이면 진입 연출 중
   introMsg: '',                   // 아래 (단계)
   introTop: '',                   // 위 (구역)

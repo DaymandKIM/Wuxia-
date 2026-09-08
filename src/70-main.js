@@ -70,6 +70,7 @@ if (TEST){
 $('zclose').onclick = closeZonePanel;
 $('zpanel').onclick = e => { if (e.target.id === 'zpanel') closeZonePanel(); };
 $('obtn').onclick   = closeOffline;
+$('fbtn').onclick   = applyFate;         // 기연은 받아들이는 것뿐 — 닫기 없음
 $('opanel').onclick = e => { if (e.target.id === 'opanel') closeOffline(); };
 addEventListener('keydown', e => {
   if (e.key === 'Escape'){

@@ -398,6 +398,28 @@ const SILVER = {
 };
 const killSilver = ()=> Math.round((SILVER.base + SILVER.perStage*Math.min(S.stage,10)) * zone().mul);
 
+// 기연 — 공짜 랜덤이 아니라 누적의 정산 (조사 결론·장무기 공식).
+// 인연(緣)이 쌓이면 단계 제패 순간 기연이 나타난다. 고난(쓰러짐)이 크게 쌓인다.
+const FATE = {
+  killKarma: 1,                  // 처치당 인연 = 구역배율 × 이 값
+  bossKarma: 120,                // 보스 격파
+  downKarma: 60,                 // 쓰러짐 — 고난이 기연의 씨앗
+  needBase:  400,                // 첫 기연까지 필요한 인연
+  needGrow:  1.4,                // 회차마다 필요량 배율
+  fragNeed:  3,                  // 실전 비급 조각 수 (모으면 해금)
+  fragFrom:  4,                  // 몇 번째 기연부터 조각이 섞이나
+  fragW:     0.35,               // 조각이 뽑힐 가중치 (그 외엔 균등)
+  scrollMul: 250,                // 낡은 비급 은자 = 현재 처치 드랍 × 이 값
+  elixirExp: 0.6,                // 영약 수련치 = 다음 승급 필요량 × 이 값
+  pool: [
+    { k:'scroll', n:'낡은 비급',   d:'바위 틈에서 손때 묻은 책이 나왔다' },
+    { k:'elixir', n:'천년 영약',   d:'달빛 아래 향긋한 열매가 익어 있었다' },
+    { k:'master', n:'은거기인',    d:'지나가던 노인이 걸음을 멈추고 웃었다' },
+    { k:'frag',   n:'실전 비급 조각', d:'찢어진 책장이 바람에 날아와 붙었다' },
+  ],
+};
+const karmaNeed = ()=> Math.round(FATE.needBase * Math.pow(FATE.needGrow, S.fates));
+
 // 저장 — 껐다 켜도 이어진다. 방치형의 최소 조건.
 const SAVE = {
   key: 'wuxia1',                 // localStorage 키

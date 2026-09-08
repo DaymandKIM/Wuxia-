@@ -108,9 +108,14 @@
   .sb.bs.on{background:#8c3f2f;border-color:#bd6a4a;color:#ffeee8;}
   .znote{margin:6px 14px 4px;font-size:10px;color:#5d6773;line-height:1.5;}
 
-  #opanel{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  #opanel,#fpanel{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
     pointer-events:none;opacity:0;background:rgba(6,8,11,.66);transition:opacity .2s;}
-  #opanel.show{pointer-events:auto;opacity:1;}
+  #opanel.show,#fpanel.show{pointer-events:auto;opacity:1;}
+  .fcard{border-color:#8a6d2f;}
+  .fcard .oh{color:#e8c96a;}
+  #ftitle{font-size:14px;font-weight:900;color:#e8eef6;margin-top:9px;letter-spacing:.05em;}
+  #ftext{font-size:11.5px;color:#9fb0c2;margin-top:7px;line-height:1.7;}
+  #ftext b{color:#e8c96a;}
   .ocard{background:#12161c;border:1.5px solid #2b333d;border-radius:14px;
     padding:18px 22px 16px;min-width:232px;text-align:center;}
   .oh{font-size:15px;font-weight:900;color:#f0e2b8;letter-spacing:.08em;}
@@ -185,6 +190,14 @@
     <div class="zsheet">
       <div class="zhd">사냥터<button id="zclose">✕</button></div>
       <div id="zbody"></div>
+    </div>
+  </div>
+  <div id="fpanel">
+    <div class="ocard fcard">
+      <div class="oh">기연 奇緣</div>
+      <div id="ftitle"></div>
+      <div id="ftext"></div>
+      <button id="fbtn" class="trbuy" style="width:100%;margin-top:14px">받아들인다</button>
     </div>
   </div>
   <div id="opanel">
