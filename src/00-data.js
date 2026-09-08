@@ -53,7 +53,7 @@ const HFX = {
     hwalin:  { c:'130,230,160', r:11, dx:0,  dy:24 },
     geongon: { c:'255,215,120', r:10, dx:0,  dy:26 },
   },
-  taijiW: 70, taijiH: 38, taijiN: 5, taijiT: 0.55,   // 건곤이형 태극 원반 연출
+  taijiW: 76, taijiH: 80, taijiN: 7, taijiT: 0.6,    // 건곤이형 태극 원반 연출
   shotW: 46, shotH: 30,          // 파공권 권기 탄
   bshotW: 140, bshotH: 49,       // 암향지 지풍 — 두 칸을 관통하던 빔을 이어 붙인 통짜 1프레임
   katkRealm: 12,                 // 절정부터 정권에 권기가 붙는다 (권기의 경지)
