@@ -761,4 +761,4 @@ SIM_MIN=240: 5분 죽림6 / 30분 동굴1 / 1h 동굴9 / 2h 설산8 / 4h 천산4
 - spritetest·fxtest가 프레임 수·폭을 HFX에서 읽는다 (하드코딩 제거)
 
 ## 크기
-`dist/wuxia.html` **1214KB** · 에셋 101개
+`dist/wuxia.html` **1283KB**
