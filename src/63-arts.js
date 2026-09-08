@@ -6,9 +6,25 @@
 function canLearn(a){
   return !a.fate && !S.arts[a.k] && realmLv() >= a.need && S.silver >= a.cost;
 }
+function canBreak(a){
+  return S.arts[a.k] && artStar(a.k) < MASTERY.maxStar &&
+         (S.artXp[a.k] | 0) >= artXpNeed(a.k) && S.silver >= artBreakCost(a.k);
+}
 function canLearnArt(){
-  for (const a of ARTS.list) if (canLearn(a)) return true;
+  for (const a of ARTS.list) if (canLearn(a) || canBreak(a)) return true;
   return false;
+}
+// 성 돌파 — 숙련이 차야 하고 은자가 든다 (재료·기연 조건은 나중에 얹는다)
+// 돌파하면 숙련은 0부터 — 이월되면 몰아친 사용량으로 성이 연달아 뚫려 벽이 안 된다
+function breakArt(k){
+  const a = artDef(k);
+  if (!canBreak(a)) return false;
+  S.silver -= artBreakCost(k);
+  S.artXp[k] = 0;
+  S.artStar[k] = artStar(k) + 1;
+  toast(a.n + ' ' + S.artStar[k] + '성 — 손에 익었다');
+  sfx('down');
+  return true;
 }
 function learnArt(k){
   const a = artDef(k);
@@ -77,6 +93,8 @@ function refreshArts(){
     el.classList.toggle('sel', el.dataset.k === artSel);
     el.style.borderColor = got ? sc.c : '';
     el.querySelector('.g').style.color = got ? sc.c : '';
+    el.querySelector('.nm').textContent =
+      a.n + (got && artStar(a.k) > 1 ? ' ' + artStar(a.k) + '성' : '');
   });
   const a = artDef(artSel);
   if (!a) return;
@@ -87,7 +105,20 @@ function refreshArts(){
           ' <i class="sch" style="color:' + sc.c + '">' + sc.n + '</i>' +
           (got ? ' <em>익힘</em>' : (a.fate ? ' <em class="fate">기연</em>' : '')) + '</div>' +
           '<div class="zd">' + a.d + (artFxText(a) ? ' · ' + artFxText(a) : '') + '</div>';
-  if (a.fate){
+  if (got){
+    const st = artStar(a.k), xp = S.artXp[a.k] | 0;
+    if (st < MASTERY.maxStar){
+      const need = artXpNeed(a.k), cost = artBreakCost(a.k);
+      d += '<div class="zd">숙련 ' + st + '성 · ' + Math.min(xp, need) + ' / ' + need +
+           (a.type === 'active' ? ' (시전 횟수)' : ' (처치 수)') + '</div>';
+      if (xp >= need)
+        d += '<button class="trbuy" id="abrk"' + (S.silver >= cost ? '' : ' disabled') +
+             '><span>' + cost.toLocaleString() + '</span><i>은자 · 돌파</i></button>';
+    } else {
+      d += '<div class="zd">숙련 ' + st + '성 — 극에 달했다</div>';
+    }
+  }
+  if (a.fate && !got){
     d += '<div class="zd need">기연으로만 얻는다 — 언젠가 강호에서 만난다.</div>';
   } else if (!got){
     d += open
@@ -99,18 +130,21 @@ function refreshArts(){
   $('adet').innerHTML = d;
   const btn = $('abuy');
   if (btn) btn.onclick = () => { if (learnArt(artSel)) refreshArts(); };
+  const bbtn = $('abrk');
+  if (bbtn) bbtn.onclick = () => { if (breakArt(artSel)) refreshArts(); };
 }
 
 function openArts(){ buildArtsPanel(); $('apanel').classList.add('show'); }
 function closeArts(){ $('apanel').classList.remove('show'); }
 
-let artLastSilver = -1, artLastRealm = -1;
+let artLastSilver = -1, artLastRealm = -1, artLastXp = -1;
 function artsHud(){
   const dot = $('tab-arts').firstElementChild;
   if (dot && dot.classList) dot.classList.toggle('on', canLearnArt());
   if (!$('apanel').classList.contains('show')) return;
-  if (artLastSilver !== S.silver || artLastRealm !== realmLv()){
-    artLastSilver = S.silver; artLastRealm = realmLv();
+  const xp = S.artXp[artSel] | 0;
+  if (artLastSilver !== S.silver || artLastRealm !== realmLv() || artLastXp !== xp){
+    artLastSilver = S.silver; artLastRealm = realmLv(); artLastXp = xp;
     refreshArts();
   }
 }

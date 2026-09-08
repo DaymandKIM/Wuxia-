@@ -148,6 +148,9 @@ function hurtFoe(f, dmg, crit){
       S.fx.push({ k:'burst', x:P.x, y:P.y - HERO.h*0.5, life:0.5, t:0.5 });
       shake(6); sfx('down');
     }
+    // 심법 숙련 — 지닌 채 싸우면 몸에 스민다 (처치 수)
+    for (const a of ARTS.list)
+      if (a.type === 'passive' && S.arts[a.k]) S.artXp[a.k] = (S.artXp[a.k] | 0) + 1;
     // 은자 드랍 — 보스는 크게, 구역 첫 격파면 보너스까지
     let sv = killSilver() * (f.boss ? SILVER.bossKill : 1);
     if (f.boss && !S.bossDone[S.zi]){
@@ -201,7 +204,10 @@ function stepArts(dt){
     if (a.type !== 'active' || !S.arts[a.k]) continue;
     if (P.artCd[a.k] === undefined) P.artCd[a.k] = a.cd * 0.5;   // 첫 시전은 반 쿨
     if (P.artCd[a.k] > 0){ P.artCd[a.k] -= dt; continue; }
-    if (castArt(a)) P.artCd[a.k] = a.cd;
+    if (castArt(a)){
+      P.artCd[a.k] = a.cd;
+      S.artXp[a.k] = (S.artXp[a.k] | 0) + 1;   // 초식 숙련 — 시전 횟수
+    }
   }
 }
 
@@ -210,7 +216,7 @@ function castArt(a){
   // 활인기공 — 위태로울 때만
   if (a.heal){
     if (P.hp > P.hpMax * a.below) return false;
-    P.hp = Math.min(P.hpMax, P.hp + P.hpMax * a.heal);
+    P.hp = Math.min(P.hpMax, P.hp + P.hpMax * a.heal * artEff(a.k));
     S.fx.push({ k:'heal', x:P.x, y:P.y, life:0.7, t:0.7 });
     S.fx.push({ k:'artname', x:P.x, y:P.y - HERO.h - 10, v:a.n, life:0.8, t:0.8 });
     sfx('kill');
@@ -218,7 +224,7 @@ function castArt(a){
   }
   const alive = S.foes.filter(f => !f.dead);
   if (!alive.length) return false;
-  const dmg = heroDmg() * a.mul;
+  const dmg = heroDmg() * a.mul * artEff(a.k);   // 숙련 성이 오르면 더 아프다
   const hits = [];
   if (a.k === 'pagong' || a.k === 'baekbo'){
     // 단일 강타 — 파공권은 가장 가까운, 백보신권은 가장 먼 적

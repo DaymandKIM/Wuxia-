@@ -53,8 +53,8 @@ for (let i = 1; i <= 10; i++) {
   STAGES.push({
     n: i,
     need: 10 + i * 4,            // 처치 목표 14 → 50
-    hp:   16 + i * 9,            // 적 체력 (구역 배율 곱함)
-    dmg:  2.8 + i * 0.7,         // 적 피해
+    hp:   20 + i * 13,           // 적 체력 (구역 배율 곱함) — 성장 대비 약하다는 피드백으로 상향
+    dmg:  3.0 + i * 0.85,        // 적 피해 — 상향하되 후반 쓰러짐이 과하지 않게
     spd:  38 + i * 2,            // 적 속도
     max:  Math.min(3 + i, 7),    // 동시 등장 수
   });
@@ -374,11 +374,26 @@ const ARTS = { list: [
     d:'상대의 힘을 그대로 되돌린다 — 기연으로만 얻는다' },
 ]};
 const artDef = k => ARTS.list.find(a => a.k === k);
-// 익힌 심법들의 증폭 배수 (1 + 합)
+
+// 무공 숙련도 — 쓸수록 오른다 (사용자 확정). 초식은 시전 횟수, 심법은
+// 지닌 채 처치한 수. 게이지가 차면 은자를 들여 성을 돌파한다 — 돌파
+// 재료·기연 조건은 재료 시스템이 들어오면 얹는다 (지금은 은자만).
+const MASTERY = {
+  maxStar: 4,                    // 무공 성 상한 (경지 표기와 통일)
+  useBase: 40,                   // 1성→2성 필요 숙련도
+  useGrow: 3,                    // 성마다 필요 숙련도 배율 (40→120→360)
+  costMul: 3,                    // 돌파 은자 = 습득 비용 × costMul^(현재 성)
+  effPer:  0.25,                 // 성당 효과 +25% (4성 = 1.75배)
+};
+const artStar   = k => Math.max(1, S.artStar[k] | 0);
+const artEff    = k => 1 + MASTERY.effPer * (artStar(k) - 1);
+const artXpNeed = k => Math.round(MASTERY.useBase * Math.pow(MASTERY.useGrow, artStar(k) - 1));
+const artBreakCost = k => Math.round(artDef(k).cost * Math.pow(MASTERY.costMul, artStar(k)));
+// 익힌 심법들의 증폭 배수 (1 + 합) — 숙련 성이 오르면 효과도 커진다
 function artMul(kind){
   let m = 1;
   for (const a of ARTS.list)
-    if (S.arts[a.k] && a.type === 'passive' && a[kind]) m += a[kind];
+    if (S.arts[a.k] && a.type === 'passive' && a[kind]) m += a[kind] * artEff(a.k);
   return m;
 }
 
@@ -437,5 +452,6 @@ const OFFLINE = {
   min:  60,                      // 이보다 짧게 비웠으면 무시
   aoe:  2.3,                     // 정권 한 방이 평균 몇 마리를 때리나 (sim 보정값)
   walk: 0.5,                     // 처치당 이동·대기 평균(초)
-  boss: 60,                      // 보스 한 번 잡는 평균(초, bosstest.js 실측 40~51초)
+  expLv8h: 3,                    // 오프라인 수련치 = 8시간에 승급 이만큼 분량 (시간 비례)
+  karmaCap: 1.5,                 // 오프라인 인연 상한 = 현재 필요량 × 이 값
 };

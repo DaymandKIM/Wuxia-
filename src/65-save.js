@@ -11,6 +11,7 @@ function saveNow(){
       totalKills: S.totalKills, downs: S.downs,
       silver: S.silver, bossDone: S.bossDone, stats: S.stats, rexp: S.rexp,
       arts: S.arts, karma: S.karma, fates: S.fates, fatebits: S.fatebits,
+      artXp: S.artXp, artStar: S.artStar,
     }));
   }catch(e){}                    // 시크릿 모드 등 — 저장만 못 할 뿐 게임은 돈다
 }
@@ -41,6 +42,13 @@ function applySave(d){
   S.arts = {};
   if (d.arts && typeof d.arts === 'object')
     for (const a of ARTS.list) if (d.arts[a.k]) S.arts[a.k] = 1;
+  S.artXp = {}; S.artStar = {};
+  for (const a of ARTS.list){
+    if (!S.arts[a.k]) continue;
+    if (d.artXp && typeof d.artXp === 'object') S.artXp[a.k] = Math.max(0, d.artXp[a.k] | 0);
+    if (d.artStar && typeof d.artStar === 'object')
+      S.artStar[a.k] = clamp(d.artStar[a.k] | 0, 1, MASTERY.maxStar);
+  }
   S.karma = Math.max(0, +d.karma || 0);
   S.fates = Math.max(0, d.fates | 0);
   S.fatebits = {};
@@ -64,50 +72,36 @@ function offKillTime(){
   return punches * HERO.atkCd / OFFLINE.aoe + OFFLINE.walk;
 }
 
-// 자리 비운 시간만큼 S를 전진시킨다. 보고용 {sec, kills, stages, zones, silver}를 준다.
+// 자리 비운 시간만큼 정산한다. 보고용 {sec, kills, silver, fate}를 준다.
+// 단계는 넘어가지 않는다(사용자 확정) — 지금 단계에서 제자리 사냥으로
+// 은자·수련치·인연만 쌓는다. 진행은 돌아와서 직접 본다.
 function offlineGains(awaySec){
   const sec = Math.min(awaySec, OFFLINE.cap);
   let budget = sec * OFFLINE.rate;
-  let kills = 0, stages = 0, zones = 0, silver = 0;
+  let kills = 0, silver = 0;
   while (budget > 0){
-    if (isBoss()){
-      if (budget < OFFLINE.boss) break;              // 남은 시간으론 보스를 못 잡는다
-      budget -= OFFLINE.boss;
-      stages++;
-      silver += killSilver() * SILVER.bossKill;      // 보스 드랍 — 첫 격파 보너스는 직접 잡을 때만
-      S.rexp += zone().mul * REALM.bossExp;
-      S.karma += FATE.bossKarma;
-      if (S.zi + 1 < ZONES.length){
-        if (S.unlocked < S.zi + 2) S.unlocked = S.zi + 2;
-        S.zi++; zones++;
-      }                                              // 마지막 구역은 처음부터 (step과 동일)
-      S.stage = 1; S.kills = 0;
-      S.best = Math.max(S.best, lv());
-      continue;
-    }
-    const tpk = offKillTime();
-    const remain = stage().need - S.kills;
-    if (budget >= remain * tpk){
-      budget -= remain * tpk;
-      kills += remain;
-      silver += killSilver() * remain;
-      S.rexp += zone().mul * REALM.killExp * remain;   // 오프라인에도 경지가 오른다
-      S.karma += zone().mul * FATE.killKarma * remain;
-      S.kills = 0; S.stage++; stages++;
-      S.best = Math.max(S.best, lv());
-    } else {
-      const k = Math.floor(budget / tpk);
-      kills += k; S.kills += k;
-      silver += killSilver() * k;
-      S.rexp += zone().mul * REALM.killExp * k;
-      S.karma += zone().mul * FATE.killKarma * k;
-      budget = 0;
-    }
+    const chunk = Math.min(budget, 600);
+    kills += Math.floor(chunk / offKillTime());
+    budget -= chunk;
   }
+  silver = killSilver() * kills;   // 은자는 후하게 전부 (방침: 확실한 오프라인 보상)
+  // 수련치는 시간 기준 — 약한 적을 3만 번 잡아도 경지가 폭주하지 않게.
+  // 8시간 꽉 채우면 승급 약 expLv8h회 분량. 필요량이 기하라 승급 단위로 준다.
+  let grant = OFFLINE.expLv8h * (sec / OFFLINE.cap);
+  while (grant > 0){
+    const take = Math.min(1, grant);
+    S.rexp += realmNeed(realmLv()) * take;
+    grant -= take;
+  }
+  // 심법 숙련도 오프라인에도 스민다
+  for (const a of ARTS.list)
+    if (a.type === 'passive' && S.arts[a.k]) S.artXp[a.k] = (S.artXp[a.k] | 0) + kills;
+  // 인연도 상한 — 자리 비움 한 번에 기연 하나 반쯤
+  S.karma += Math.min(kills * zone().mul * FATE.killKarma, karmaNeed() * OFFLINE.karmaCap);
   S.totalKills += kills;
   S.silver += silver;
   if (S.karma >= karmaNeed()) S.fatePending = 1;
-  return { sec, kills, stages, zones, silver, fate: S.fatePending };
+  return { sec, kills, silver, fate: S.fatePending };
 }
 
 /* ── 돌아온 화면 ──────────────────────────────────── */
@@ -122,8 +116,6 @@ function showOffline(g){
   $('otime').textContent = fmtDur(g.sec) + ' 동안 수련했다';
   let h = '<div class="orow"><span>처치</span><b>' + g.kills.toLocaleString() + '</b></div>';
   if (g.silver) h += '<div class="orow"><span>은자</span><b>+' + g.silver.toLocaleString() + '</b></div>';
-  if (g.stages) h += '<div class="orow"><span>단계 전진</span><b>' + g.stages + '</b></div>';
-  if (g.zones)  h += '<div class="orow"><span>구역 돌파</span><b>' + g.zones + '</b></div>';
   if (g.fate)   h += '<div class="orow"><span>✦ 기연</span><b>기다리고 있다</b></div>';
   $('obody').innerHTML = h;
   $('opanel').classList.add('show');

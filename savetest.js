@@ -54,9 +54,8 @@ const ok=(cond,msg)=>{ console.log((cond?'  ':'  ★실패 ')+msg); if(!cond)bad
     const {w:w2,errs:e2}=boot(past);
     setTimeout(()=>{
       const S2=w2.eval('S');
-      ok(S2.zi*10+S2.stage>4 || S2.zi>0,'3시간 오프라인: 4단계 → '+
-        w2.eval('zone()').n+' '+S2.stage+'단계 (총처치 '+S2.totalKills+')');
-      ok(S2.totalKills>100,'처치가 늘었다: 100 → '+S2.totalKills);
+      ok(S2.zi===0 && S2.stage===4,'3시간 오프라인: 단계는 그대로 (죽림 '+S2.stage+'단계 유지 — 진행은 직접)');
+      ok(S2.totalKills>100,'제자리 사냥 정산: 처치 100 → '+S2.totalKills);
       ok(S2.silver>0,'은자 정산: +'+S2.silver.toLocaleString()+' (예전 저장에 은자 없음 → 0에서 시작)');
       const op=w2.document.getElementById('opanel');
       ok(op.classList.contains('show'),'돌아온 패널이 떴다: "'+
@@ -77,10 +76,10 @@ const ok=(cond,msg)=>{ console.log((cond?'  ':'  ★실패 ')+msg); if(!cond)bad
       const {w:w8}=boot(mk(8)); const {w:w24}=boot(mk(24));
       setTimeout(()=>{
         const a=w8.eval('S'), b=w24.eval('S');
-        ok(b.totalKills===a.totalKills && b.zi===a.zi && b.stage===a.stage,
-          '상한 8시간: 8h='+a.totalKills+'처치 '+a.zi+'구역'+a.stage+'단계 · 24h='+
-          b.totalKills+'처치 '+b.zi+'구역'+b.stage+'단계');
-        ok(a.totalKills>1000,'8시간 진행이 넉넉하다: '+a.totalKills+'처치 (온라인 60분 ≈ 2600)');
+        ok(b.totalKills===a.totalKills && b.silver===a.silver,
+          '상한 8시간: 8h='+a.totalKills+'처치·은자'+a.silver+' · 24h='+b.totalKills+'처치·은자'+b.silver);
+        ok(a.totalKills>1000,'8시간 정산이 넉넉하다: '+a.totalKills+'처치');
+        ok(a.stage===1 && a.zi===0,'상한 케이스도 단계는 그대로');
 
         // ── 4) 깨진 저장은 버린다 ───────────────────────
         const {w:w4,errs:e4}=boot('{깨진 json');

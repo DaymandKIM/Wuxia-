@@ -57,13 +57,20 @@ setTimeout(()=>{
     const cast=w.eval('S.fx.some(e=>e.k==="artname"||e.k==="streak") || P.artCd.pagong!==undefined && P.artCd.pagong<6');
     ok(w.eval('P.artCd.pagong!==undefined'),'파공권 쿨다운이 돈다 ('+w.eval('P.artCd.pagong && P.artCd.pagong.toFixed(1)')+'초 남음)');
     ok(cast,'초식이 실제로 펼쳐졌다 (이펙트/쿨다운 확인)');
-    // 5) 저장 왕복
+    // 5) 숙련도 — 심법은 처치로 쌓이고, 차면 은자로 돌파한다
+    ok(w.eval('(S.artXp.chulwoo|0)')>=0,'숙련도 필드 존재');
+    w.eval('S.artXp.chulwoo=999; S.silver=999999');
+    ok(w.eval('breakArt("chulwoo")')===true,'청죽공 돌파 → '+w.eval('artStar("chulwoo")')+'성');
+    ok(Math.abs(w.eval('artMul("hp")')-1.25)<0.001,'2성 심법 효과 1.25배 (0.20×1.25)');
+    ok(w.eval('breakArt("chulwoo")')===false,'숙련이 다시 찰 때까지 재돌파 불가');
+    // 6) 저장 왕복
     w.eval('saveNow()');
     const save=w.localStorage.getItem('wuxia1');
     const {w:w2}=boot(save);
     setTimeout(()=>{
       ok(w2.eval('S.arts.pagong===1 && S.arts.samjae===1 && S.arts.chulwoo===1'),
         '다시 열어도 익힌 무공이 남아 있다');
+      ok(w2.eval('artStar("chulwoo")')===2,'숙련 성도 저장된다 (청죽공 2성)');
       ok(errs.length===0,'런타임 오류 0'+(errs.length?': '+errs[0]:''));
       console.log(bad?('\n★ 실패 '+bad+'건'):'\n문제 없음');
       process.exit(bad?1:0);
