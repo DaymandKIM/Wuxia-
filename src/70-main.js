@@ -33,6 +33,10 @@ $('tab-train').onclick = () => {
 };
 $('trclose').onclick = closeTrain;
 $('trpanel').onclick = e => { if (e.target.id === 'trpanel') closeTrain(); };
+// HUD의 경지 표시를 누르면 전체 사다리를 보여준다
+$('realm').onclick  = () => { closeZonePanel(); closeTrain(); openRealmPanel(); };
+$('rclose').onclick = closeRealmPanel;
+$('rpanel').onclick = e => { if (e.target.id === 'rpanel') closeRealmPanel(); };
 // [테스트 전용] 시험 패널 — 배속·강제 쓰러짐·저장 초기화를 한곳에 모았다.
 // TEST를 끄면 버튼째 사라진다.
 let TESTSPEED = 1;
@@ -61,7 +65,7 @@ $('obtn').onclick   = closeOffline;
 $('opanel').onclick = e => { if (e.target.id === 'opanel') closeOffline(); };
 addEventListener('keydown', e => {
   if (e.key === 'Escape'){
-    closeOffline(); closeZonePanel(); closeTrain();
+    closeOffline(); closeZonePanel(); closeTrain(); closeRealmPanel();
     $('tpanel').classList.remove('show');    // [테스트 전용]
   }
 });

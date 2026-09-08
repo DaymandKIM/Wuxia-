@@ -242,12 +242,13 @@ const QI = {
 };
 
 // 경지 — 처치로 쌓이는 수련치(rexp)로 오른다 (사용자 확정). 무한 성장.
-// 9경지 × (초입·소성·대성·극성) = 36구간, 그 뒤는 신화경 1중, 2중, … 끝없이.
+// 9경지 × 1~4성 = 36구간, 그 뒤는 신화경 1성, 2성, … 끝없이.
+// 세부 단계는 숫자 성 — 초입·소성 같은 말은 순서가 안 읽힌다는 피드백.
 // 승급 필요량은 기하 증가 — 끝판 반복 사냥도 계속 경지에 기여한다.
 const REALM = {
   names: ['삼류','이류','일류','절정','초절정','화경','현경','생사경','자연경'],
-  subs:  ['초입','소성','대성','극성'],
-  last:  '신화경',               // 이후는 1중·2중·… (무공 층수 표기)
+  per:   4,                      // 경지당 성 수 (신화경만 무한)
+  last:  '신화경',
   expBase: 20,                   // k번째 승급 필요 수련치 = expBase × expGrow^k
   expGrow: 1.18,
   killExp: 1,                    // 잡몹 처치 수련치 = 구역배율 × killExp
@@ -260,9 +261,10 @@ const realmNeed = k => Math.round(REALM.expBase * Math.pow(REALM.expGrow, k));
 function realmInfo(){
   let e = S.rexp, k = 0;
   while (e >= realmNeed(k)){ e -= realmNeed(k); k++; }
-  const name = k < REALM.names.length * 4
-    ? REALM.names[k >> 2] + ' ' + REALM.subs[k % 4]
-    : REALM.last + ' ' + (k - REALM.names.length * 4 + 1) + '중';
+  const top = REALM.names.length * REALM.per;
+  const name = k < top
+    ? REALM.names[Math.floor(k / REALM.per)] + ' ' + (k % REALM.per + 1) + '성'
+    : REALM.last + ' ' + (k - top + 1) + '성';
   return { k, name, cur: e, need: realmNeed(k) };
 }
 const realmLv = ()=> realmInfo().k;

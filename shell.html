@@ -17,7 +17,8 @@
     font-size:12px;font-weight:900;color:#e8eef6;letter-spacing:.05em;}
   .row2{display:flex;justify-content:space-between;align-items:center;margin-top:6px;
     font-size:11px;font-weight:900;letter-spacing:.05em;}
-  .row2 #realm{color:#9fd0ff;}
+  .row2 #realm{color:#9fd0ff;pointer-events:auto;cursor:pointer;
+    border-bottom:1px dotted #4a6a88;padding-bottom:1px;}
   .row2 #silver{color:#e8c96a;font-variant-numeric:tabular-nums;}
   .row2 #silver::before{content:'은자 ';color:#8b97a5;}
   .bar{position:relative;height:13px;margin-bottom:5px;border-radius:7px;overflow:hidden;
@@ -48,14 +49,14 @@
   #tbtn:active{background:#7a5238;}
   #tspd{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px;}
   /* overflow:hidden — 닫힌 시트(아래로 밀린 상태)가 컨테이너 밖 탭바 위로 삐져나오지 않게 */
-  #zpanel,#tpanel,#trpanel{position:absolute;inset:0 0 var(--tabh) 0;pointer-events:none;
+  #zpanel,#tpanel,#trpanel,#rpanel{position:absolute;inset:0 0 var(--tabh) 0;pointer-events:none;
     overflow:hidden;background:rgba(6,8,11,0);transition:background .2s;display:flex;align-items:flex-end;}
-  #zpanel.show,#tpanel.show,#trpanel.show{pointer-events:auto;background:rgba(6,8,11,.72);}
+  #zpanel.show,#tpanel.show,#trpanel.show,#rpanel.show{pointer-events:auto;background:rgba(6,8,11,.72);}
   .zsheet{width:100%;background:#12161c;border-top:1.5px solid #2b333d;
     border-radius:16px 16px 0 0;padding:0 0 calc(env(safe-area-inset-bottom) + 14px);
     transform:translateY(100%);transition:transform .24s cubic-bezier(.2,.8,.3,1);
     max-height:76%;overflow:auto;}
-  #zpanel.show .zsheet,#tpanel.show .zsheet,#trpanel.show .zsheet{transform:translateY(0);}
+  #zpanel.show .zsheet,#tpanel.show .zsheet,#trpanel.show .zsheet,#rpanel.show .zsheet{transform:translateY(0);}
   /* 수련 패널 줄 */
   .trow{display:flex;align-items:center;gap:10px;}
   .trl{flex:1;min-width:0;}
@@ -119,6 +120,12 @@
   <div id="tabs">
     <button id="tab-train">수련<i class="dot"></i></button>
     <button id="tab-zone">사냥터</button>
+  </div>
+  <div id="rpanel">
+    <div class="zsheet">
+      <div class="zhd">경지<button id="rclose">✕</button></div>
+      <div id="rbody"></div>
+    </div>
   </div>
   <div id="trpanel">
     <div class="zsheet">
