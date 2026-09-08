@@ -1,4 +1,6 @@
 /* ── HUD ──────────────────────────────────────────── */
+// 은자 아이콘 — "글자 말고 아이콘으로" (사용자). 은원보 그림을 인라인으로 쓴다
+const coin = () => '<img class="coin" src="' + ASSET.silver + '" alt="은자">';
 let toastT = 0;
 function toast(msg){
   const el = $('toast');
@@ -27,7 +29,7 @@ function hud(){
     $('kills').textContent = S.kills + ' / ' + stageNeed();
   }
   $('hpt').textContent = Math.ceil(P.hp) + ' / ' + P.hpMax;
-  $('silver').textContent = S.silver.toLocaleString();
+  $('silvern').textContent = S.silver.toLocaleString();
   const ri = realmInfo();
   $('realm').textContent = ri.name + ' · ' + Math.floor(ri.cur / ri.need * 100) + '%';
   $('hp').firstElementChild.style.width = (P.hp/P.hpMax*100).toFixed(1) + '%';

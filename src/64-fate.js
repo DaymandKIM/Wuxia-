@@ -18,7 +18,7 @@ function rollFate(){
   const ev = { k, n: def.n, d: def.d };
   if (k === 'scroll'){
     ev.sv = Math.round(killSilver() * FATE.scrollMul);
-    ev.r = '은자 +' + ev.sv.toLocaleString();
+    ev.r = coin() + ' 은자 +' + ev.sv.toLocaleString();
   } else if (k === 'elixir'){
     ev.xp = Math.round(realmNeed(realmLv()) * FATE.elixirExp);
     ev.r = '기력이 차오른다 · 수련치 +' + ev.xp.toLocaleString();

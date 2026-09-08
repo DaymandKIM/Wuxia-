@@ -20,6 +20,7 @@ loadImg('hero_katk', ASSET.katk);            // 권기 정권 (절정부터)
 loadImg('pashot',    ASSET.pashot);          // 파공권 권기 탄
 loadImg('bshot',     ASSET.bshot);           // 암향지 지풍 빔
 loadImg('gshield',   ASSET.gshield);         // 건곤이형 태극 원반
+$('coinhud').src = ASSET.silver;             // HUD 은자 아이콘
 for (const t of ['w','g','b','p']) loadImg('aidle_' + t, ASSET['aidle_' + t]);
 loadImg('fx_gate', ASSET.fx_gate);
 loadImg('fx_aura', ASSET.fx_aura);

@@ -158,7 +158,7 @@ function refreshArts(){
       if (lv < cap){
         d += '</div><button class="trbuy" id="alvl"' +
              (S.silver >= artLvCost(a.k) ? '' : ' disabled') +
-             '><span>' + artLvCost(a.k).toLocaleString() + '</span><i>은자 · 연마</i></button>';
+             '><span>' + artLvCost(a.k).toLocaleString() + '</span><i>' + coin() + ' 연마</i></button>';
       } else {
         d += (st < MASTERY.maxStar ? ' — 성을 돌파하면 상한이 열린다' : ' — 극에 달했다') + '</div>';
       }
@@ -172,7 +172,7 @@ function refreshArts(){
       const lvFull = a.cost === undefined || artLv(a.k) >= artLvCap(a.k);
       if (xp >= need && lvFull)
         d += '<button class="trbuy" id="abrk"' + (S.silver >= cost ? '' : ' disabled') +
-             '><span>' + cost.toLocaleString() + '</span><i>은자 · 돌파</i></button>';
+             '><span>' + cost.toLocaleString() + '</span><i>' + coin() + ' 돌파</i></button>';
       else if (xp >= need)
         d += '<div class="zd need">연마를 상한(Lv ' + artLvCap(a.k) + ')까지 채우면 돌파가 열린다</div>';
     } else {
@@ -184,8 +184,8 @@ function refreshArts(){
   } else if (!got){
     d += open
       ? '<button class="trbuy" id="abuy"' + (S.silver >= a.cost ? '' : ' disabled') +
-        '><span>' + a.cost.toLocaleString() + '</span><i>은자</i></button>'
-      : '<div class="zd need">' + realmName(a.need) + '에 열린다 · 은자 ' +
+        '><span>' + a.cost.toLocaleString() + '</span><i>' + coin() + '</i></button>'
+      : '<div class="zd need">' + realmName(a.need) + '에 열린다 · ' + coin() + ' ' +
         a.cost.toLocaleString() + '</div>';
   }
   $('adet').innerHTML = d;

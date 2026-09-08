@@ -55,7 +55,7 @@ function buildTrainPanel(){
     h += '<div class="zrow trow" id="tr-' + s.k + '">' +
          '<div class="trl"><div class="zn">' + s.n + ' <em id="trlv-' + s.k + '"></em></div>' +
          '<div class="zd" id="trfx-' + s.k + '">' + s.d + '</div></div>' +
-         '<button class="trbuy" data-k="' + s.k + '"><span id="trc-' + s.k + '"></span><i>은자</i></button>' +
+         '<button class="trbuy" data-k="' + s.k + '"><span id="trc-' + s.k + '"></span><i>' + coin() + '</i></button>' +
          '</div>';
   }
   h += '<div class="znote">경지가 오르면 수련 상한이 열린다 (스텟당 경지×' + TRAIN.capPer + ').</div>';
@@ -85,7 +85,7 @@ function buildTrainPanel(){
 
 // 열려 있는 동안 값만 갱신한다 — 줄을 다시 만들면 누르던 버튼이 끊긴다
 function refreshTrain(){
-  $('trsilver').textContent = '은자 ' + S.silver.toLocaleString();
+  $('trsilver').innerHTML = coin() + ' ' + S.silver.toLocaleString();
   const cap = trainCap();
   for (const s of TRAIN.list){
     const n = statLv(s.k);
