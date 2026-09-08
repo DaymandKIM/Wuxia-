@@ -32,13 +32,13 @@ setTimeout(()=>{
   const d=w.document;
   // 1) 표 전체 노출
   d.getElementById('tab-arts').click();
-  const rows=d.querySelectorAll('#abody .zrow').length;
-  ok(rows===w.eval('ARTS.list.length'),'표에 무공 '+rows+'종 전부 보인다');
-  ok(d.querySelectorAll('#abody em.fate').length===2,'기연 전용 2종이 표시된다');
-  // 2) 경지 미달 → 구매 불가
-  const pg=d.querySelector('.trbuy[data-k="pagong"]');
+  const rows=d.querySelectorAll('#abody .atile').length;
+  ok(rows===w.eval('ARTS.list.length'),'타일 그리드에 무공 '+rows+'종 전부 보인다');
+  ok(d.querySelectorAll('#abody .atile.fate').length===2,'기연 전용 2종이 표시된다');
+  // 2) 경지 미달 → 구매 불가 (타일 선택 → 상세에 구매 버튼이 없어야 한다)
   w.eval('S.silver=99999');
-  ok(pg && pg.disabled,'경지 미달이면 파공권을 못 산다 (이류 1성 필요)');
+  d.querySelector('.atile[data-k="pagong"]').click();
+  ok(!d.getElementById('abuy'),'경지 미달이면 파공권 구매 버튼이 없다 (조건 문구만)');
   ok(w.eval('learnArt("pagong")')===false,'코드로도 못 산다');
   // 조건 충족 → 구매
   w.eval('S.rexp=seedExp(1,5)');                 // 이류 중반쯤

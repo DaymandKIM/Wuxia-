@@ -127,8 +127,10 @@ function heroHitCheck(){
 function hurtFoe(f, dmg, crit){
   f.hp -= dmg;
   f.hit = 0.26;
-  if (crit) S.fx.push({ k:'crit', x:f.x, y:f.y - (foeM(f).bh||foeM(f).h),
-                        v:Math.round(dmg), life:0.55, t:0.55 });
+  // 타격 숫자 — 매 타격 조그맣게, 회심(치명타)은 크고 노랗게
+  S.fx.push({ k:'dmg', x:f.x + rnd(-7, 7), y:f.y - (foeM(f).bh||foeM(f).h),
+              v:Math.round(dmg), c:crit ? 1 : 0,
+              life:crit ? 0.6 : 0.42, t:crit ? 0.6 : 0.42 });
   // 맞은 방향으로 살짝 밀린다
   const d = dist(P.x,P.y,f.x,f.y) || 1;
   f.kx = (f.x-P.x)/d; f.ky = (f.y-P.y)/d; f.kb = 0.09;

@@ -1,6 +1,6 @@
 /* ── 무공 — 경지에 닿으면 은자로 익힌다 ─────────────
-   표에는 모든 무공이 보인다 (사다리 패널과 같은 철학 —
-   뭐가 있는지 보여야 다음 경지를 오를 이유가 생긴다).
+   표는 문파별 섹션 + 아이콘 타일 그리드 — 전 무공이 한눈에 보인다.
+   타일을 누르면 위 상세 칸에 설명·조건·구매가 뜬다.
    숫자는 전부 00-data.js의 ARTS.
 */
 function canLearn(a){
@@ -20,7 +20,7 @@ function learnArt(k){
   return true;
 }
 
-// 심법 효과 요약 ("공격 +15%")
+// 효과 요약 ("공격 +15%")
 function artFxText(a){
   const parts = [];
   if (a.dmg)   parts.push('공격 +' + Math.round(a.dmg*100) + '%');
@@ -32,46 +32,72 @@ function artFxText(a){
   return parts.join(' · ');
 }
 
+let artSel = null;                 // 상세 칸에 떠 있는 무공
+
 function buildArtsPanel(){
   const b = $('abody');
-  const k = realmLv();
-  let h = '';
-  for (const sec of [['초식 — 스스로 펼친다','active'], ['심법 — 몸에 스민다','passive']]){
-    h += '<div class="znote asec">' + sec[0] + '</div>';
-    for (const a of ARTS.list){
-      if (a.type !== sec[1]) continue;
-      const got = !!S.arts[a.k];
-      const open = !a.fate && k >= a.need;
-      const sc = SCHOOLS[a.school] || SCHOOLS.none;
-      h += '<div class="zrow trow' + (got ? ' on' : (open ? '' : ' lock')) + '">' +
-           '<div class="trl"><div class="zn">' + a.n + ' <small>' + a.h + '</small>' +
-           ' <i class="sch" style="color:' + sc.c + '">' + sc.n + '</i>' +
-           (got ? ' <em>익힘</em>' : (a.fate ? ' <em class="fate">기연</em>' : '')) + '</div>' +
-           '<div class="zd">' + a.d + (artFxText(a) ? ' · ' + artFxText(a) : '') + '</div>' +
-           (!got && !a.fate && !open
-             ? '<div class="zd need">' + realmName(a.need) + '에 열린다</div>' : '') +
-           '</div>' +
-           (got || a.fate ? ''
-             : '<button class="trbuy" data-k="' + a.k + '"' + (open ? '' : ' disabled') + '>' +
-               '<span>' + a.cost.toLocaleString() + '</span><i>은자</i></button>') +
-           '</div>';
+  let h = '<div class="adet" id="adet"></div>';
+  // 문파별 섹션 — SCHOOLS 정의 순서대로
+  for (const sk in SCHOOLS){
+    const list = ARTS.list.filter(a => (a.school || 'none') === sk);
+    if (!list.length) continue;
+    const sc = SCHOOLS[sk];
+    h += '<div class="znote asec" style="color:' + sc.c + '">' + sc.n + '</div>' +
+         '<div class="agrid">';
+    for (const a of list){
+      h += '<button class="atile' + (a.fate ? ' fate' : '') + '" data-k="' + a.k +
+           '"><span class="g">' + a.h[0] + '</span>' +
+           '<span class="nm">' + a.n + '</span></button>';
     }
+    h += '</div>';
   }
-  h += '<div class="znote">경지가 오르면 새 무공이 열린다. 기연 무공은 언젠가 강호에서 만난다.</div>';
   b.innerHTML = h;
-  b.querySelectorAll('.trbuy').forEach(el => {
-    el.onclick = () => { if (learnArt(el.dataset.k)) buildArtsPanel(); };
+  b.querySelectorAll('.atile').forEach(el => {
+    el.onclick = () => { artSel = el.dataset.k; refreshArts(); };
   });
+  // 처음엔 살 수 있는 것, 없으면 첫 무공
+  if (!artSel || !artDef(artSel)){
+    const buyable = ARTS.list.find(a => canLearn(a));
+    artSel = (buyable || ARTS.list[0]).k;
+  }
   refreshArts();
 }
 
-// 열려 있는 동안 은자 변화에 따라 버튼 활성만 갱신
+// 타일 상태와 상세 칸만 갱신 — 패널을 다시 만들지 않는다
 function refreshArts(){
   const k = realmLv();
-  $('abody').querySelectorAll('.trbuy').forEach(el => {
+  $('abody').querySelectorAll('.atile').forEach(el => {
     const a = artDef(el.dataset.k);
-    el.disabled = !(k >= a.need && S.silver >= a.cost);
+    const sc = SCHOOLS[a.school] || SCHOOLS.none;
+    const got = !!S.arts[a.k];
+    const open = !a.fate && k >= a.need;
+    el.classList.toggle('got', got);
+    el.classList.toggle('lock', !got && !open && !a.fate);
+    el.classList.toggle('sel', el.dataset.k === artSel);
+    el.style.borderColor = got ? sc.c : '';
+    el.firstElementChild.style.color = got ? sc.c : '';
   });
+  const a = artDef(artSel);
+  if (!a) return;
+  const sc = SCHOOLS[a.school] || SCHOOLS.none;
+  const got = !!S.arts[a.k];
+  const open = !a.fate && k >= a.need;
+  let d = '<div class="zn">' + a.n + ' <small>' + a.h + '</small>' +
+          ' <i class="sch" style="color:' + sc.c + '">' + sc.n + '</i>' +
+          (got ? ' <em>익힘</em>' : (a.fate ? ' <em class="fate">기연</em>' : '')) + '</div>' +
+          '<div class="zd">' + a.d + (artFxText(a) ? ' · ' + artFxText(a) : '') + '</div>';
+  if (a.fate){
+    d += '<div class="zd need">기연으로만 얻는다 — 언젠가 강호에서 만난다.</div>';
+  } else if (!got){
+    d += open
+      ? '<button class="trbuy" id="abuy"' + (S.silver >= a.cost ? '' : ' disabled') +
+        '><span>' + a.cost.toLocaleString() + '</span><i>은자</i></button>'
+      : '<div class="zd need">' + realmName(a.need) + '에 열린다 · 은자 ' +
+        a.cost.toLocaleString() + '</div>';
+  }
+  $('adet').innerHTML = d;
+  const btn = $('abuy');
+  if (btn) btn.onclick = () => { if (learnArt(artSel)) refreshArts(); };
 }
 
 function openArts(){ buildArtsPanel(); $('apanel').classList.add('show'); }

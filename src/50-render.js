@@ -142,16 +142,26 @@ function drawFx(ox, oy){
         ctx.fillRect(x+Math.cos(ang)*r-1, y+Math.sin(ang)*r-1, 3, 3);
       }
       ctx.restore();
-    } else if (e.k === 'crit'){
-      // 치명타 숫자 — 노랗게 떠오르며 사라진다
+    } else if (e.k === 'dmg'){
+      // 타격 숫자 — 평타는 조그맣게 희끗, 회심은 크고 노랗게 튄다
+      const p = 1 - a;
       ctx.save();
       ctx.globalAlpha = Math.min(1, a * 1.6);
-      ctx.font = '900 9px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillStyle = '#1a1206';
-      ctx.fillText(e.v, x, y - (1-a)*14 + 1);
-      ctx.fillStyle = '#ffd95e';
-      ctx.fillText(e.v, x, y - (1-a)*14);
+      if (e.c){
+        ctx.font = '900 ' + (p < 0.15 ? 11 : 9) + 'px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#1a1206';
+        ctx.fillText(e.v, x, y - p*15 + 1);
+        ctx.fillStyle = '#ffd95e';
+        ctx.fillText(e.v, x, y - p*15);
+      } else {
+        ctx.font = '800 6.5px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = 'rgba(10,14,20,.8)';
+        ctx.fillText(e.v, x, y - p*10 + 1);
+        ctx.fillStyle = 'rgba(232,238,246,.92)';
+        ctx.fillText(e.v, x, y - p*10);
+      }
       ctx.restore();
     } else if (e.k === 'streak'){
       // 기파 — 손에서 적까지 빛줄기가 쏘아진다
@@ -191,9 +201,9 @@ function drawFx(ox, oy){
       ctx.stroke();
       ctx.restore();
     } else if (e.k === 'artname'){
-      // 초식명 외치기 — 「파공권!」 무협답게. 외치는 순간 커졌다 잦아든다
+      // 초식명 외치기 — 파공권! 외치는 순간 커졌다 잦아든다 (낫표는 뺐다)
       const p = 1 - a;
-      const t = '「' + e.v + '!」';
+      const t = e.v + '!';
       ctx.save();
       ctx.globalAlpha = Math.min(1, a * 1.5);
       ctx.font = '900 ' + (p < 0.14 ? 10.5 : 8.5) + 'px sans-serif';
