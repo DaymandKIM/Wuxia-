@@ -33,11 +33,15 @@ const HFX = {
   castFps: 16,                   // 시전 재생 속도 — 무공은 재빨라야 한다 (사용자)
   shotT: 0.28,                   // 권기 탄 비행 시간 (구 streak과 동일)
   fadeT: 0.22,                   // 탄 소멸 연출
-  aw: { katk: 64, aidle: 50 },   // 특수 동작 프레임 폭 (기본 HERO.w)
+  aw: { katk: 66, aidle: 50 },   // 특수 동작 프레임 폭 (기본 HERO.w)
+  katkN: 8,                      // 권기 정권 — 오른손 4 + 왼손 4 (양손 교대)
   // 초식별 시전 스트립 [에셋 키, 프레임 폭, 프레임 수] — 시트 칸을 최대한 쓴다
   // ("4장이면 이펙트가 빈약하다"는 피드백으로 6~9프레임 확장)
   cast: { pagong:['cast',50,7], whirl:['castw',94,9], baekbo:['castb',68,6],
           bungsan:['castm',90,6], hwalin:['casth',36,8] },
+  // 시전 컷 수는 숙련 성에 비례 — 1성은 뼈대만, 성이 오르면 중간 컷이
+  // 늘어 동작이 유려해진다 (사용자 확정: "성급이 오르면 신컷을 더 써서")
+  castStar: [0.55, 0.7, 0.85, 1.0],
   shotW: 46, shotH: 30,          // 파공권 권기 탄
   bshotW: 72, bshotH: 25,        // 암향지 지풍 빔
   katkRealm: 12,                 // 절정부터 정권에 권기가 붙는다 (권기의 경지)
@@ -47,6 +51,17 @@ function auraKey(){
   const k = realmLv();
   for (const a of HFX.auras) if (k >= a[0]) return 'aidle_' + a[1];
   return null;
+}
+// 이번 성에서 쓰는 시전 컷 수 — 최소 3, 4성이면 전부
+function castN(k){
+  const c = HFX.cast[k];
+  const s = Math.min(Math.max(artStar(k), 1), HFX.castStar.length);
+  return Math.max(3, Math.round(c[2] * HFX.castStar[s - 1]));
+}
+// 뽑아 쓸 원본 프레임 번호 — 처음과 끝은 지키고 중간을 고르게 덜어낸다
+function castFrame(k, i){
+  const c = HFX.cast[k], n = castN(k);
+  return n >= c[2] ? i : Math.round(i * (c[2] - 1) / (n - 1));
 }
 const HITFRAME = 2;              // 공격 몇 번째 프레임에서 판정하나
 // 공격 프레임별 주먹 끝 위치 (프레임 중앙·바닥 기준 오프셋)

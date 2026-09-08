@@ -29,13 +29,15 @@ function drawHero(ox, oy){
   if (P.anim === 'atk' && realmLv() >= HFX.katkRealm){ key = 'katk'; fw = HFX.aw.katk; }
   else if (P.anim === 'cast'){
     const ck = HFX.cast[P.castK] || HFX.cast.pagong;
-    key = ck[0]; fw = ck[1]; n = ck[2];
+    key = ck[0]; fw = ck[1]; n = castN(P.castK);   // 성이 낮으면 컷을 덜어낸 판
   }
   else if (HFX.aw[key]) fw = HFX.aw[key];
   const im = IMG['hero_' + key];
   let fi = Math.floor(P.af);
   fi = (P.anim === 'atk' || P.anim === 'hit' || P.anim === 'cast')
        ? Math.min(fi, n-1) : (fi % n);
+  if (P.anim === 'cast') fi = castFrame(P.castK, fi);       // 성긴 판 → 원본 칸 번호
+  if (key === 'katk') fi += P.atkAlt * (HFX.katkN >> 1);    // 양손 교대 — 뒷절반이 왼손
   ctx.save();
   ctx.translate(x, y);
   if (P.dir < 0) ctx.scale(-1, 1);
@@ -196,7 +198,10 @@ function drawFx(ox, oy){
                                 : fn + (pa && el - HFX.shotT >= HFX.fadeT * 0.5 ? 1 : 0);
       ctx.save();
       ctx.translate(Math.round(sx), Math.round(sy));
-      if (e.tx < e.x) ctx.scale(-1, 1);
+      // 날아가는 방향으로 기운다 — 왼쪽이면 거울 뒤 반전각 (뒤집힘 방지)
+      const dx = e.tx - e.x, dy = e.ty - e.y;
+      if (dx < 0){ ctx.scale(-1, 1); ctx.rotate(Math.atan2(dy, -dx)); }
+      else ctx.rotate(Math.atan2(dy, dx));
       ctx.globalAlpha = el < HFX.shotT ? 1 : Math.min(1, a * 2);
       draw(IMG[e.k], fi*bw, 0, bw, bh, -Math.round(bw/2), -Math.round(bh/2), bw, bh);
       ctx.restore();

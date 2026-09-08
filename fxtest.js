@@ -11,7 +11,7 @@ const html=fs.readFileSync(process.env.WUXIA_OUT || __dirname+'/dist/wuxia.html'
 const draws=[];                                  // render가 그린 것들 {im, sw}
 const ctxStub=new Proxy({},{get:(t,k)=>{
   if(k==='canvas') return {width:1170,height:2532};
-  if(k==='drawImage') return (im,sx,sy,sw)=>{ draws.push({im, sw}); };
+  if(k==='drawImage') return (im,sx,sy,sw)=>{ draws.push({im, sx, sw}); };
   if(['imageSmoothingEnabled','globalAlpha','fillStyle','strokeStyle','lineWidth',
       'globalCompositeOperation','font','textAlign','textBaseline'].includes(k)) return 0;
   if(k==='createLinearGradient') return ()=>({addColorStop(){}});
@@ -70,6 +70,23 @@ setTimeout(()=>{
   w.eval('S.rexp=0;');                                     // 삼류로
   renderNow();
   ok(drew('hero_atk',w.eval('HERO.w')),'절정 미만 정권 = 맨손 스트립');
+
+  // 3.5) 양손 교대 — 뒷절반(왼손) 칸이 실제로 그려지나
+  w.eval('S.rexp=1e12; P.atkT=0.3; P.anim="atk"; P.af=1; P.atkAlt=0;');
+  renderNow();
+  ok(draws.some(d=>d.im===w.eval('IMG.hero_katk')&&d.sx===1*w.eval('HFX.aw.katk')),'오른손 정권 (앞절반 칸)');
+  w.eval('P.atkAlt=1;');
+  renderNow();
+  ok(draws.some(d=>d.im===w.eval('IMG.hero_katk')&&d.sx===(1+(w.eval('HFX.katkN')>>1))*w.eval('HFX.aw.katk')),'왼손 정권 (뒷절반 칸)');
+  // 3.6) 시전 컷 수 = 숙련 성 비례
+  w.eval('S.artStar.pagong=1;');
+  const n1=w.eval('castN("pagong")');
+  w.eval('S.artStar.pagong=4;');
+  const n4=w.eval('castN("pagong")');
+  ok(n1<n4 && n4===w.eval('HFX.cast.pagong[2]'),'시전 컷: 1성 '+n1+' < 4성 '+n4+' (성이 오르면 신컷)');
+  ok(w.eval('castFrame("pagong",0)')===0 && w.eval('S.artStar.pagong=1, castFrame("pagong",'+(n1-1)+')')===w.eval('HFX.cast.pagong[2]')-1,
+    '성긴 판도 처음·끝 컷은 지킨다');
+  w.eval('S.artStar.pagong=0; S.rexp=0;');   // 다음 검사(기운 없음)를 위해 삼류로
 
   // 4) 경지 기운 — 문턱·색
   w.eval('P.atkT=0; P.anim="idle";');
