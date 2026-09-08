@@ -70,6 +70,17 @@ setTimeout(()=>{
     w.eval('S.artLv.chulwoo=20');
     ok(w.eval('levelArt("chulwoo")')===false,'연마 상한에서 더 못 올린다 (돌파가 문)');
     w.eval('S.artLv.chulwoo=2');
+    // 5.7) 건곤이형 — 반격형: 맞는 순간 절반을 흘리고 3배로 되돌린다
+    w.eval('S.arts.geongon=1; P.artCd.geongon=0; S.foes.length=0; spawnFoe();' +
+           'S.foes[0].x=P.x+30; S.foes[0].y=P.y; S.foes[0].hp=1e9; S.foes[0].hpMax=1e9;' +
+           'P.hpMax=1000; P.hp=1000;');
+    w.eval('hurtHero(100)');
+    ok(Math.abs(w.eval('P.hp')-950)<0.5,'건곤이형: 받은 피해 절반을 흘린다 (100→50)');
+    ok(w.eval('S.foes[0].hp')<1e9-250,'3배로 되돌린다 (적 피해 '+Math.round(w.eval('1e9-S.foes[0].hp'))+')');
+    ok(w.eval('P.artCd.geongon')>0,'반격 쿨다운이 돈다');
+    w.eval('hurtHero(100)');
+    ok(Math.abs(w.eval('P.hp')-850)<0.5,'쿨다운 중엔 그대로 맞는다');
+    w.eval('delete S.arts.geongon; S.foes.length=0; P.anim="idle";');
     // 6) 저장 왕복
     w.eval('saveNow()');
     const save=w.localStorage.getItem('wuxia1');

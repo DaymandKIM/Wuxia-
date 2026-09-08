@@ -1,6 +1,6 @@
 {
   "name": "wuxia-idle",
-  "version": "2.5.1",
+  "version": "2.6.0",
   "private": true,
   "description": "무협 방치형 — 단일 HTML로 빌드되는 세로 화면 방치형 RPG",
   "scripts": {

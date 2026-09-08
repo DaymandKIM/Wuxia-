@@ -232,6 +232,15 @@ function drawFx(ox, oy){
       if (gk) glowBall(pa ? 0 : Math.round(bw * 0.4), 0, gk,
                        bh * 0.5, (el < HFX.shotT ? 1 : a) * 0.55);
       ctx.restore();
+    } else if (e.k === 'taiji'){
+      // 건곤이형 — 태극 원반이 돌다가 힘을 되쏜다
+      const fi = Math.min(HFX.taijiN - 1, Math.floor((1 - a) * HFX.taijiN));
+      ctx.save();
+      ctx.globalAlpha = Math.min(1, a * 3);
+      draw(IMG.gshield, fi * HFX.taijiW, 0, HFX.taijiW, HFX.taijiH,
+           Math.round(e.x - ox - HFX.taijiW/2), Math.round(e.y - oy - HFX.taijiH/2),
+           HFX.taijiW, HFX.taijiH);
+      ctx.restore();
     } else if (e.k === 'streak'){
       // 기파 — 손에서 적까지 빛줄기가 쏘아진다
       const tx = Math.round(e.tx - ox), ty = Math.round(e.ty - oy);

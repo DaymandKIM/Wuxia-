@@ -88,6 +88,12 @@ setTimeout(()=>{
     '성긴 판도 처음·끝 컷은 지킨다');
   w.eval('S.artStar.pagong=0; S.rexp=0;');   // 다음 검사(기운 없음)를 위해 삼류로
 
+  // 3.7) 건곤이형 태극 원반 연출이 그려진다
+  w.eval('S.fx.push({k:"taiji", x:P.x, y:P.y-25, life:0.4, t:0.55})');
+  renderNow();
+  ok(draws.some(d=>d.im===w.eval('IMG.gshield')&&d.sw===w.eval('HFX.taijiW')),'태극 원반 스트립이 그려진다');
+  w.eval('S.fx.length=0;');
+
   // 4) 경지 기운 — 문턱·색
   w.eval('P.atkT=0; P.anim="idle";');
   renderNow();

@@ -168,6 +168,25 @@ function hurtFoe(f, dmg, crit){
 
 function hurtHero(dmg){
   if (P.dead) return;
+  // 건곤이형 — 맞는 순간 힘을 흘리고(guard) 몇 배로 되돌린다(ref). 반격형 기연 무공
+  const gg = artDef('geongon');
+  if (S.arts.geongon && !(P.artCd.geongon > 0)){
+    P.artCd.geongon = gg.cd;
+    S.artXp.geongon = (S.artXp.geongon | 0) + 1;   // 숙련 — 되돌린 횟수
+    const ret = dmg * gg.ref * artEff('geongon');
+    dmg *= 1 - gg.guard;
+    let best = null, bd = 1e9;
+    for (const f of S.foes){
+      if (f.dead) continue;
+      const d = dist(P.x, P.y, f.x, f.y);
+      if (d < bd){ bd = d; best = f; }
+    }
+    if (best) hurtFoe(best, ret);
+    beginCast('geongon');
+    S.fx.push({ k:'taiji', x:P.x, y:P.y - HERO.h*0.55, life:HFX.taijiT, t:HFX.taijiT });
+    S.fx.push({ k:'artname', x:P.x, y:P.y - HERO.h - 10, v:gg.n, life:0.8, t:0.8 });
+    sfx('kill');
+  }
   P.hp -= dmg;
   P.hitT = 0.34;
   shake(4);
@@ -203,6 +222,11 @@ function shake(v){ shakeV = Math.max(shakeV, v); }
 function stepArts(dt){
   for (const a of ARTS.list){
     if (a.type !== 'active' || !S.arts[a.k]) continue;
+    if (a.ref){                                    // 반격형(건곤이형) — 쿨만 돌고 피격 때 발동
+      if (P.artCd[a.k] === undefined) P.artCd[a.k] = 0;
+      if (P.artCd[a.k] > 0) P.artCd[a.k] -= dt;
+      continue;
+    }
     if (P.artCd[a.k] === undefined) P.artCd[a.k] = a.cd * 0.5;   // 첫 시전은 반 쿨
     if (P.artCd[a.k] > 0){ P.artCd[a.k] -= dt; continue; }
     if (castArt(a)){

@@ -60,6 +60,8 @@ function artFxText(a, star, lv){
   if (a.spd)   parts.push('이동 +' + Math.round(a.spd*100*e) + '%');
   if (a.mul)   parts.push('정권 ' + (a.mul*e).toFixed(1).replace(/\.0$/,'') + '배 · ' + a.cd + '초마다');
   if (a.heal)  parts.push('체력 ' + Math.round(a.heal*100*e) + '% 회복 · ' + a.cd + '초마다');
+  if (a.ref)   parts.push('받은 피해 ' + Math.round(a.guard*100) + '% 흘리고 ' +
+                          (a.ref*e).toFixed(1).replace(/\.0$/,'') + '배 되돌림 · ' + a.cd + '초마다');
   return parts.join(' · ');
 }
 

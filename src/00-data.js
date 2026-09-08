@@ -38,7 +38,7 @@ const HFX = {
   // 초식별 시전 스트립 [에셋 키, 프레임 폭, 프레임 수] — 시트 칸을 최대한 쓴다
   // ("4장이면 이펙트가 빈약하다"는 피드백으로 6~9프레임 확장)
   cast: { pagong:['cast',50,7], whirl:['castw',94,9], baekbo:['castb',68,6],
-          bungsan:['castm',90,6], hwalin:['casth',36,8] },
+          bungsan:['castm',90,6], hwalin:['casth',36,8], geongon:['castg',60,5] },
   // 시전 컷 수는 숙련 성에 비례 — 1성은 뼈대만, 성이 오르면 중간 컷이
   // 늘어 동작이 유려해진다 (사용자 확정: "성급이 오르면 신컷을 더 써서")
   castStar: [0.55, 0.7, 0.85, 1.0],
@@ -51,7 +51,9 @@ const HFX = {
     baekbo:  { c:'196,110,255', r:7,  dx:16, dy:28 },
     bungsan: { c:'255,80,60',   r:10, dx:11, dy:25 },
     hwalin:  { c:'130,230,160', r:11, dx:0,  dy:24 },
+    geongon: { c:'255,215,120', r:10, dx:0,  dy:26 },
   },
+  taijiW: 70, taijiH: 38, taijiN: 5, taijiT: 0.55,   // 건곤이형 태극 원반 연출
   shotW: 46, shotH: 30,          // 파공권 권기 탄
   bshotW: 140, bshotH: 49,       // 암향지 지풍 — 두 칸을 관통하던 빔을 이어 붙인 통짜 1프레임
   katkRealm: 12,                 // 절정부터 정권에 권기가 붙는다 (권기의 경지)
@@ -432,10 +434,13 @@ const ARTS = { list: [
   { k:'taeheo',  n:'태허진경',   h:'太虛眞經',   type:'passive', school:'mudang', need:27, cost:150000,
     d:'비어 있어 오히려 가득하다', dmg:0.10, hp:0.10, regen:0.10 },
   // ── 기연 전용 (예약) ──────────────────────────────
+  // 기연 무공 — 표에는 보이지만 기연으로만 얻는다. cost는 연마·돌파용
   { k:'guyang',  n:'구양신결',   h:'九陽神訣',   type:'passive', school:'lost', fate:true,
-    d:'아홉 개의 태양이 몸에 뜬다 — 기연으로만 얻는다' },
+    cost:200000, d:'아홉 개의 태양이 몸에 뜬다 — 기연으로만 얻는다',
+    dmg:0.2, hp:0.2, regen:0.3 },
   { k:'geongon', n:'건곤이형',   h:'乾坤移形',   type:'active',  school:'lost', fate:true,
-    d:'상대의 힘을 그대로 되돌린다 — 기연으로만 얻는다' },
+    cost:200000, d:'상대의 힘을 그대로 되돌린다 — 기연으로만 얻는다',
+    cd:14, ref:3, guard:0.5 },     // 반격형 — 맞는 순간 발동 (자동 시전 없음)
 ]};
 const artDef = k => ARTS.list.find(a => a.k === k);
 
