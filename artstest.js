@@ -59,14 +59,17 @@ setTimeout(()=>{
     // 5) 숙련도 — 심법은 처치로 쌓이고, 차면 은자로 돌파한다
     ok(w.eval('(S.artXp.chulwoo|0)')>=0,'숙련도 필드 존재');
     w.eval('S.artXp.chulwoo=999; S.silver=999999');
-    ok(w.eval('breakArt("chulwoo")')===true,'청죽공 돌파 → '+w.eval('artStar("chulwoo")')+'성');
-    ok(Math.abs(w.eval('artMul("hp")')-1.25)<0.001,'2성 심법 효과 1.25배 (0.20×1.25)');
+    ok(w.eval('breakArt("chulwoo")')===false,'숙련만 차선 못 뚫는다 — 연마 상한도 필요');
+    w.eval('S.artLv.chulwoo=10');                  // 1성 연마 상한까지
+    ok(w.eval('breakArt("chulwoo")')===true,'연마 상한 + 숙련 만충 → 돌파 '+w.eval('artStar("chulwoo")')+'성');
+    ok(Math.abs(w.eval('artMul("hp")')-(1+0.20*(1+0.015*9)*1.25))<0.001,
+      '2성 심법 효과 (0.20×연마Lv10×1.25)');
     ok(w.eval('breakArt("chulwoo")')===false,'숙련이 다시 찰 때까지 재돌파 불가');
     // 5.5) 연마 — 은자로 레벨, 상한은 성×10, 효과가 실제로 오른다
     ok(w.eval('artLvCap("chulwoo")')===20,'연마 상한 = 성×10 (2성 청죽공 = 20)');
     ok(w.eval('levelArt("chulwoo")')===true,'청죽공 연마 → Lv '+w.eval('artLv("chulwoo")'));
-    ok(Math.abs(w.eval('artMul("hp")')-(1+0.20*1.015*1.25))<0.001,
-      '연마 Lv2 효과 (0.20×1.015×1.25)');
+    ok(Math.abs(w.eval('artMul("hp")')-(1+0.20*(1+0.015*10)*1.25))<0.001,
+      '연마 Lv11 효과 (0.20×1.15×1.25)');
     w.eval('S.artLv.chulwoo=20');
     ok(w.eval('levelArt("chulwoo")')===false,'연마 상한에서 더 못 올린다 (돌파가 문)');
     w.eval('S.artLv.chulwoo=2');

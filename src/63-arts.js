@@ -6,8 +6,11 @@
 function canLearn(a){
   return !a.fate && !S.arts[a.k] && realmLv() >= a.need && S.silver >= a.cost;
 }
+// 돌파 조건 = 연마 상한 도달 + 숙련 게이지 만충 + 은자 (사용자 확정:
+// "레벨이랑 횟수 다 차야 업글") — 갈고, 손에 익히고, 그다음에야 벽을 넘는다
 function canBreak(a){
   return S.arts[a.k] && artStar(a.k) < MASTERY.maxStar &&
+         artLv(a.k) >= artLvCap(a.k) &&
          (S.artXp[a.k] | 0) >= artXpNeed(a.k) && S.silver >= artBreakCost(a.k);
 }
 // 연마 — 은자로 레벨을 올린다. 상한은 성×10이라 돌파가 상한을 연다
@@ -166,9 +169,12 @@ function refreshArts(){
            Math.min(xp, need) + ' / ' + need + '</span>' +
            (a.type === 'active' ? ' (시전 횟수)' : ' (처치 수)') + '</div>' +
            '<div class="zd need">돌파하면 → ' + artFxText(a, st + 1) + '</div>';
-      if (xp >= need)
+      const lvFull = a.cost === undefined || artLv(a.k) >= artLvCap(a.k);
+      if (xp >= need && lvFull)
         d += '<button class="trbuy" id="abrk"' + (S.silver >= cost ? '' : ' disabled') +
              '><span>' + cost.toLocaleString() + '</span><i>은자 · 돌파</i></button>';
+      else if (xp >= need)
+        d += '<div class="zd need">연마를 상한(Lv ' + artLvCap(a.k) + ')까지 채우면 돌파가 열린다</div>';
     } else {
       d += '<div class="zd">숙련 ' + st + '성 — 극에 달했다</div>';
     }
