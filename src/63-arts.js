@@ -64,6 +64,7 @@ function artFxText(a, star, lv){
 }
 
 let artSel = null;                 // 상세 칸에 떠 있는 무공
+let artDetSig = '';                // 상세 칸 구조 서명 — 같으면 DOM을 안 갈아엎는다
 
 function buildArtsPanel(){
   const b = $('abody');
@@ -84,8 +85,9 @@ function buildArtsPanel(){
     h += '</div>';
   }
   b.innerHTML = h;
+  artDetSig = '';                  // 패널을 새로 만들었으니 상세 칸도 다시 그린다
   b.querySelectorAll('.atile').forEach(el => {
-    el.onclick = () => { artSel = el.dataset.k; refreshArts(); };
+    el.onclick = () => { artSel = el.dataset.k; artDetSig = ''; refreshArts(); };
   });
   // 처음엔 살 수 있는 것, 없으면 첫 무공
   if (!artSel || !artDef(artSel)){
@@ -124,12 +126,26 @@ function refreshArts(){
   const sc = SCHOOLS[a.school] || SCHOOLS.none;
   const got = !!S.arts[a.k];
   const open = !a.fate && k >= a.need;
+  const st = got ? artStar(a.k) : 0, xp = S.artXp[a.k] | 0;
+  const need = got && st < MASTERY.maxStar ? artXpNeed(a.k) : 0;
+  // 구조 서명 — 이게 그대로면 innerHTML을 다시 만들지 않는다.
+  // 전투 중 처치마다 은자·숙련이 변해 매번 다시 만들면, 손가락이 버튼을
+  // 누르는 도중 DOM이 교체돼 클릭이 증발한다 ("무공창 클릭 안 됨"의 원인).
+  const sig = [artSel, got, st, got ? artLv(a.k) : 0, xp >= need && need > 0, open,
+               got && a.cost !== undefined && S.silver >= artLvCost(a.k),
+               need > 0 && S.silver >= artBreakCost(a.k),
+               !got && open && S.silver >= a.cost].join('|');
+  if (sig === artDetSig){
+    const ax = $('axp');                          // 숙련 숫자만 제자리 갱신
+    if (ax) ax.textContent = Math.min(xp, need) + ' / ' + need;
+    return;
+  }
+  artDetSig = sig;
   let d = '<div class="zn">' + a.n + ' <small>' + a.h + '</small>' +
           ' <i class="sch" style="color:' + sc.c + '">' + sc.n + '</i>' +
           (got ? ' <em>익힘</em>' : (a.fate ? ' <em class="fate">기연</em>' : '')) + '</div>' +
           '<div class="zd">' + a.d + (artFxText(a) ? ' · ' + artFxText(a) : '') + '</div>';
   if (got){
-    const st = artStar(a.k), xp = S.artXp[a.k] | 0;
     // 연마 — 은자로 바로 올린다. 상한에 닿으면 돌파가 다음 문이다
     if (a.cost !== undefined){
       const lv = artLv(a.k), cap = artLvCap(a.k);
@@ -143,8 +159,9 @@ function refreshArts(){
       }
     }
     if (st < MASTERY.maxStar){
-      const need = artXpNeed(a.k), cost = artBreakCost(a.k);
-      d += '<div class="zd">숙련 ' + st + '성 · ' + Math.min(xp, need) + ' / ' + need +
+      const cost = artBreakCost(a.k);
+      d += '<div class="zd">숙련 ' + st + '성 · <span id="axp">' +
+           Math.min(xp, need) + ' / ' + need + '</span>' +
            (a.type === 'active' ? ' (시전 횟수)' : ' (처치 수)') + '</div>' +
            '<div class="zd need">돌파하면 → ' + artFxText(a, st + 1) + '</div>';
       if (xp >= need)
