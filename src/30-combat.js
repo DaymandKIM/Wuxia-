@@ -211,12 +211,18 @@ function stepArts(dt){
   }
 }
 
+// 시전 동작 진입 — 초식별 스트립 길이만큼 (프레임 수 / castFps)
+function beginCast(k){
+  const c = HFX.cast[k];
+  if (!c) return;
+  P.castK = k; P.castT = c[2] / HFX.castFps; P.anim = 'cast'; P.af = 0;
+}
 // 시전 성공 여부를 돌려준다 — 대상이 없으면 쿨을 아낀다
 function castArt(a){
   // 활인기공 — 위태로울 때만
   if (a.heal){
     if (P.hp > P.hpMax * a.below) return false;
-    if (HFX.cast[a.k]){ P.castK = a.k; P.castT = HFX.castT; P.anim = 'cast'; P.af = 0; }
+    beginCast(a.k);
     P.hp = Math.min(P.hpMax, P.hp + P.hpMax * a.heal * artEff(a.k));
     S.fx.push({ k:'heal', x:P.x, y:P.y, life:0.7, t:0.7 });
     S.fx.push({ k:'artname', x:P.x, y:P.y - HERO.h - 10, v:a.n, life:0.8, t:0.8 });
@@ -238,7 +244,7 @@ function castArt(a){
     if (!best) return false;
     hits.push(best);
     // 시전 동작 + 탄 — 파공권은 권기 주먹, 암향지는 지풍 빔이 날아간다
-    P.castK = a.k; P.castT = HFX.castT; P.anim = 'cast'; P.af = 0;
+    beginCast(a.k);
     P.dir = best.x >= P.x ? 1 : -1;
     S.fx.push({ k: a.k === 'pagong' ? 'pashot' : 'bshot',
                 x:P.x, y:P.y - HERO.h*0.55,
@@ -248,7 +254,7 @@ function castArt(a){
     // 광역 — 선풍퇴·붕산장
     for (const f of alive) if (dist(f.x, f.y, P.x, P.y) <= a.range) hits.push(f);
     if (!hits.length) return false;
-    if (HFX.cast[a.k]){ P.castK = a.k; P.castT = HFX.castT; P.anim = 'cast'; P.af = 0; }
+    beginCast(a.k);
     S.fx.push({ k:'ring', x:P.x, y:P.y, r:a.range, life:0.4, t:0.4 });
     shake(a.k === 'bungsan' ? 10 : 4);
   }

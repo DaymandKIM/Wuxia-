@@ -30,13 +30,14 @@ const ANIM = {
 };
 // 눈에 보이는 성장 — 경지가 오르면 기운이 돌고 정권에 권기가 붙는다 (v2.3)
 const HFX = {
-  castT: 0.5,                    // 시전 동작 길이 (ANIM.cast 4프레임 × 8fps)
+  castFps: 16,                   // 시전 재생 속도 — 무공은 재빨라야 한다 (사용자)
   shotT: 0.28,                   // 권기 탄 비행 시간 (구 streak과 동일)
   fadeT: 0.22,                   // 탄 소멸 연출
   aw: { katk: 64, aidle: 50 },   // 특수 동작 프레임 폭 (기본 HERO.w)
-  // 초식별 시전 스트립 [에셋 키, 프레임 폭] — 시트가 없는 초식은 시전 동작 없음
-  cast: { pagong:['cast',44], whirl:['castw',64], baekbo:['castb',50],
-          bungsan:['castm',82], hwalin:['casth',34] },
+  // 초식별 시전 스트립 [에셋 키, 프레임 폭, 프레임 수] — 시트 칸을 최대한 쓴다
+  // ("4장이면 이펙트가 빈약하다"는 피드백으로 6~9프레임 확장)
+  cast: { pagong:['cast',50,7], whirl:['castw',94,9], baekbo:['castb',68,6],
+          bungsan:['castm',90,6], hwalin:['casth',36,8] },
   shotW: 46, shotH: 30,          // 파공권 권기 탄
   bshotW: 72, bshotH: 25,        // 암향지 지풍 빔
   katkRealm: 12,                 // 절정부터 정권에 권기가 붙는다 (권기의 경지)

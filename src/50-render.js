@@ -22,14 +22,14 @@ function shadow(x, y, w){
 function drawHero(ox, oy){
   const x = Math.round(P.x - ox), y = Math.round(P.y - oy);
   shadow(x, y, HERO.w);
-  const [n] = ANIM[P.anim];
+  let [n] = ANIM[P.anim];
   // 절정부터 정권에 권기가 붙는다 — 같은 동작, 다른 그림.
-  // 시전(cast)은 초식마다 스트립이 다르다.
+  // 시전(cast)은 초식마다 스트립·프레임 수가 다르다.
   let key = P.anim, fw = HERO.w;
   if (P.anim === 'atk' && realmLv() >= HFX.katkRealm){ key = 'katk'; fw = HFX.aw.katk; }
   else if (P.anim === 'cast'){
     const ck = HFX.cast[P.castK] || HFX.cast.pagong;
-    key = ck[0]; fw = ck[1];
+    key = ck[0]; fw = ck[1]; n = ck[2];
   }
   else if (HFX.aw[key]) fw = HFX.aw[key];
   const im = IMG['hero_' + key];

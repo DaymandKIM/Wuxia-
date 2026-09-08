@@ -82,7 +82,7 @@ function check(label, file, w, h, noEdge) {
 console.log('주인공');
 for (const ck in HFX.cast)   // 시전 스트립은 초식마다 별도
   // 시전 스트립은 원본 칸이 이펙트를 경계까지 그려 접촉이 정상 — 크기만 본다
-  check('hero cast ' + ck, HFX.cast[ck][0] + '.png', HFX.cast[ck][1] * ANIM.cast[0], HERO.h, true);
+  check('hero cast ' + ck, HFX.cast[ck][0] + '.png', HFX.cast[ck][1] * HFX.cast[ck][2], HERO.h, true);
 for (const a in ANIM) {
   if (a === 'cast') continue;
   const n = ANIM[a][0];

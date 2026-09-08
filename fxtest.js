@@ -54,7 +54,7 @@ setTimeout(()=>{
   ok(w.eval('castArt(artDef("hwalin"))')===true,'활인기공 시전(체력 20%)');
   ok(w.eval('P.hp')>w.eval('P.hpMax')*0.2,'체력이 실제로 회복됐다');
   renderNow();
-  ok(drew('hero_casth',34),'활인기공 시전 스트립이 그려진다');
+  ok(drew('hero_'+w.eval('HFX.cast.hwalin[0]'), w.eval('HFX.cast.hwalin[1]')),'활인기공 시전 스트립이 그려진다');
 
   // 2) 탄 — 파공권 권기 주먹·암향지 지풍 빔
   ok(w.eval('S.fx.some(e=>e.k==="pashot")'),'파공권 권기 탄이 날아간다');
