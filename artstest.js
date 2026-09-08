@@ -65,8 +65,8 @@ setTimeout(()=>{
     // 5.5) 연마 — 은자로 레벨, 상한은 성×10, 효과가 실제로 오른다
     ok(w.eval('artLvCap("chulwoo")')===20,'연마 상한 = 성×10 (2성 청죽공 = 20)');
     ok(w.eval('levelArt("chulwoo")')===true,'청죽공 연마 → Lv '+w.eval('artLv("chulwoo")'));
-    ok(Math.abs(w.eval('artMul("hp")')-(1+0.20*1.02*1.25))<0.001,
-      '연마 Lv2 효과 (0.20×1.02×1.25)');
+    ok(Math.abs(w.eval('artMul("hp")')-(1+0.20*1.015*1.25))<0.001,
+      '연마 Lv2 효과 (0.20×1.015×1.25)');
     w.eval('S.artLv.chulwoo=20');
     ok(w.eval('levelArt("chulwoo")')===false,'연마 상한에서 더 못 올린다 (돌파가 문)');
     w.eval('S.artLv.chulwoo=2');

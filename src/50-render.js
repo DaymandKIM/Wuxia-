@@ -23,17 +23,38 @@ function drawHero(ox, oy){
   const x = Math.round(P.x - ox), y = Math.round(P.y - oy);
   shadow(x, y, HERO.w);
   const [n] = ANIM[P.anim];
-  const im = IMG['hero_' + P.anim];
+  // 절정부터 정권에 권기가 붙는다 — 같은 동작, 다른 그림.
+  // 시전(cast)은 초식마다 스트립이 다르다.
+  let key = P.anim, fw = HERO.w;
+  if (P.anim === 'atk' && realmLv() >= HFX.katkRealm){ key = 'katk'; fw = HFX.aw.katk; }
+  else if (P.anim === 'cast'){
+    const ck = HFX.cast[P.castK] || HFX.cast.pagong;
+    key = ck[0]; fw = ck[1];
+  }
+  else if (HFX.aw[key]) fw = HFX.aw[key];
+  const im = IMG['hero_' + key];
   let fi = Math.floor(P.af);
-  fi = (P.anim === 'atk' || P.anim === 'hit') ? Math.min(fi, n-1) : (fi % n);
+  fi = (P.anim === 'atk' || P.anim === 'hit' || P.anim === 'cast')
+       ? Math.min(fi, n-1) : (fi % n);
   ctx.save();
   ctx.translate(x, y);
   if (P.dir < 0) ctx.scale(-1, 1);
+  // 경지 기운 — 서 있거나 걸을 때 몸 뒤에 은은히 돈다. 색이 경지를 말해준다
+  // (사냥 중엔 거의 늘 걷고 있어서 idle 한정이면 보이지 않는다)
+  if (P.anim === 'idle' || P.anim === 'run'){
+    const ak = auraKey();
+    if (ak && IMG[ak]){
+      const aw = HFX.aw.aidle, af = Math.floor(S.t * 4) % 4;
+      ctx.globalAlpha = 0.85;
+      draw(IMG[ak], af*aw, 0, aw, HERO.h, -Math.round(aw/2), -HERO.h, aw, HERO.h);
+      ctx.globalAlpha = 1;
+    }
+  }
   const hurt = P.hitT > 0;
   if (hurt) ctx.globalAlpha = 0.62 + Math.sin(S.t*46)*0.22;
-  draw(im, fi*HERO.w, 0, HERO.w, HERO.h, -Math.round(HERO.w/2), -HERO.h, HERO.w, HERO.h);
-  // 주먹 끝 — 원본에 손 끝이 없어 여기서 마무리한다
-  if (P.anim === 'atk'){
+  draw(im, fi*fw, 0, fw, HERO.h, -Math.round(fw/2), -HERO.h, fw, HERO.h);
+  // 주먹 끝 — 원본에 손 끝이 없어 여기서 마무리한다 (권기 정권은 자체 이펙트)
+  if (P.anim === 'atk' && key !== 'katk'){
     const F = FIST[Math.min(fi, FIST.length-1)];
     ctx.globalAlpha = 0.95;
     ctx.fillStyle = '#f0f6ff';
@@ -46,7 +67,7 @@ function drawHero(ox, oy){
   if (hurt){                       // 붉게 번쩍여 맞은 것을 알린다
     ctx.globalCompositeOperation = 'lighter';
     ctx.globalAlpha = Math.min(0.5, P.hitT*2.4);
-    draw(im, fi*HERO.w, 0, HERO.w, HERO.h, -Math.round(HERO.w/2), -HERO.h, HERO.w, HERO.h);
+    draw(im, fi*fw, 0, fw, HERO.h, -Math.round(fw/2), -HERO.h, fw, HERO.h);
     ctx.globalCompositeOperation = 'source-over';
   }
   ctx.restore();
@@ -162,6 +183,22 @@ function drawFx(ox, oy){
         ctx.fillStyle = 'rgba(232,238,246,.92)';
         ctx.fillText(e.v, x, y - p*10);
       }
+      ctx.restore();
+    } else if (e.k === 'pashot' || e.k === 'bshot'){
+      // 초식 탄 — 권기 주먹(파공권)·지풍 빔(암향지)이 실제로 날아간다
+      const pa = e.k === 'pashot';
+      const bw = pa ? HFX.shotW : HFX.bshotW, bh = pa ? HFX.shotH : HFX.bshotH;
+      const fn = pa ? 2 : 1;                        // 비행 프레임 수 (뒤는 소멸)
+      const el = e.t - e.life;
+      const p = Math.min(1, el / HFX.shotT);
+      const sx = e.x + (e.tx - e.x) * p - ox, sy = e.y + (e.ty - e.y) * p - oy;
+      const fi = el < HFX.shotT ? (Math.floor(el * 22) % fn)
+                                : fn + (pa && el - HFX.shotT >= HFX.fadeT * 0.5 ? 1 : 0);
+      ctx.save();
+      ctx.translate(Math.round(sx), Math.round(sy));
+      if (e.tx < e.x) ctx.scale(-1, 1);
+      ctx.globalAlpha = el < HFX.shotT ? 1 : Math.min(1, a * 2);
+      draw(IMG[e.k], fi*bw, 0, bw, bh, -Math.round(bw/2), -Math.round(bh/2), bw, bh);
       ctx.restore();
     } else if (e.k === 'streak'){
       // 기파 — 손에서 적까지 빛줄기가 쏘아진다

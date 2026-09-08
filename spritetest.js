@@ -57,12 +57,12 @@ function png(buf) {
 
 // ── 게임 데이터 읽기 ────────────────────────────────────
 const data = fs.readFileSync(__dirname+'/src/00-data.js', 'utf8');
-const { FOES, ANIM, HERO } = new Function(
+const { FOES, ANIM, HERO, HFX } = new Function(
   data.replace('"use strict";', '').replace(/const zone\s*=[\s\S]*?;\n/, '') +
-  ';return {FOES, ANIM, HERO};')();
+  ';return {FOES, ANIM, HERO, HFX};')();
 
 let bad = 0;
-function check(label, file, w, h) {
+function check(label, file, w, h, noEdge) {
   if (!fs.existsSync(DIR + file)) { console.log('  ★없음 ' + file); bad++; return null; }
   const im = png(fs.readFileSync(DIR + file));
   const note = [];
@@ -73,16 +73,20 @@ function check(label, file, w, h) {
   for (let x = 0; x < im.w; x++) { if (im.al[(im.h - 1) * im.w + x] > 0) { e.push('하'); break; } }
   for (let y = 0; y < im.h; y++) { if (im.al[y * im.w] > 0) { e.push('좌'); break; } }
   for (let y = 0; y < im.h; y++) { if (im.al[y * im.w + im.w - 1] > 0) { e.push('우'); break; } }
-  const side = e.filter(s => s !== '하');       // 바닥은 발이 닿는 게 맞다
+  const side = noEdge ? [] : e.filter(s => s !== '하');   // 바닥은 발이 닿는 게 맞다
   if (side.length) { note.push('가장자리 접촉 ' + side.join('')); bad++; }
   if (note.length) console.log('  ★' + label.padEnd(20) + note.join(' · '));
   return im;
 }
 
 console.log('주인공');
+for (const ck in HFX.cast)   // 시전 스트립은 초식마다 별도
+  // 시전 스트립은 원본 칸이 이펙트를 경계까지 그려 접촉이 정상 — 크기만 본다
+  check('hero cast ' + ck, HFX.cast[ck][0] + '.png', HFX.cast[ck][1] * ANIM.cast[0], HERO.h, true);
 for (const a in ANIM) {
+  if (a === 'cast') continue;
   const n = ANIM[a][0];
-  check('hero ' + a, a === 'idle' ? 'idle.png' : a + '.png', HERO.w * n, HERO.h);
+  check('hero ' + a, a === 'idle' ? 'idle.png' : a + '.png', (HFX.aw[a] || HERO.w) * n, HERO.h);
 }
 
 for (const k in FOES) {

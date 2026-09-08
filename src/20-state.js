@@ -43,6 +43,8 @@ const P = {
   hp: HERO.hp, hpMax: HERO.hp,
   anim: 'idle', af: 0,
   atkT: 0,                       // >0 이면 공격 동작 중
+  castT: 0,                      // >0 이면 초식 시전 동작 중
+  castK: 'pagong',               // 시전 중인 초식 키 (스트립 선택)
   atkCd: 0,
   artCd: {},                     // 초식별 남은 쿨다운 (저장 안 함)
   hitT: 0,
