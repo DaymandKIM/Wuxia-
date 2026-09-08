@@ -17,7 +17,8 @@ global.Image=class{constructor(){}set src(v){}get complete(){return true;}get na
 const R=new Function(code+`;return {S,P,step:dt=>step(dt),zone:()=>zone(),lv:()=>lv(),gstage:()=>gstage(),
   realmInfo:()=>realmInfo(),statLv:k=>statLv(k),trainCost:(k,n)=>trainCost(k,n),trainCap:()=>trainCap(),
   buyStat:k=>buyStat(k),TRAIN,ARTS,canLearn:a=>canLearn(a),learnArt:k=>learnArt(k),
-  canBreak:a=>canBreak(a),breakArt:k=>breakArt(k)};`)();
+  canBreak:a=>canBreak(a),breakArt:k=>breakArt(k),
+  canLevel:a=>canLevel(a),levelArt:k=>levelArt(k)};`)();
 const {S,P}=R;
 
 // 플레이어 흉내 — 30초마다: 가장 싼 수련 스텟 1개, 배울 수 있는 무공, 가능한 돌파
@@ -35,6 +36,12 @@ function spend(){
   for(const a of R.ARTS.list){
     if(R.canLearn(a))R.learnArt(a.k);
     else if(R.canBreak(a))R.breakArt(a.k);
+  }
+  // 연마 — 틱당 최대 5회 (수련 구매와 균형)
+  for(let n=0;n<5;n++){
+    let hit=false;
+    for(const a of R.ARTS.list)if(R.canLevel(a)){R.levelArt(a.k);hit=true;}
+    if(!hit)break;
   }
 }
 

@@ -10,8 +10,20 @@ function canBreak(a){
   return S.arts[a.k] && artStar(a.k) < MASTERY.maxStar &&
          (S.artXp[a.k] | 0) >= artXpNeed(a.k) && S.silver >= artBreakCost(a.k);
 }
+// 연마 — 은자로 레벨을 올린다. 상한은 성×10이라 돌파가 상한을 연다
+function canLevel(a){
+  return S.arts[a.k] && a.cost !== undefined &&
+         artLv(a.k) < artLvCap(a.k) && S.silver >= artLvCost(a.k);
+}
+function levelArt(k){
+  const a = artDef(k);
+  if (!canLevel(a)) return false;
+  S.silver -= artLvCost(k);
+  S.artLv[k] = artLv(k) + 1;
+  return true;
+}
 function canLearnArt(){
-  for (const a of ARTS.list) if (canLearn(a) || canBreak(a)) return true;
+  for (const a of ARTS.list) if (canLearn(a) || canBreak(a) || canLevel(a)) return true;
   return false;
 }
 // 성 돌파 — 숙련이 차야 하고 은자가 든다 (재료·기연 조건은 나중에 얹는다)
@@ -38,8 +50,9 @@ function learnArt(k){
 
 // 효과 요약 — 숙련 성이 반영된 실효값으로 보여준다 ("성이 올라도 안 좋아져
 // 보인다"는 피드백: 실제론 +25%/성인데 표기가 기본값이라 안 보였다)
-function artFxText(a, star){
-  const e = 1 + MASTERY.effPer * ((star !== undefined ? star : artStar(a.k)) - 1);
+function artFxText(a, star, lv){
+  const e = (1 + MASTERY.lvPer * ((lv !== undefined ? lv : artLv(a.k)) - 1))
+          * (1 + MASTERY.effPer * ((star !== undefined ? star : artStar(a.k)) - 1));
   const parts = [];
   if (a.dmg)   parts.push('공격 +' + Math.round(a.dmg*100*e) + '%');
   if (a.hp)    parts.push('체력 +' + Math.round(a.hp*100*e) + '%');
@@ -102,6 +115,7 @@ function refreshArts(){
     // 배지 — ▲ 돌파 가능 · + 배울 수 있음 ("뭘 할 수 있는지 안 보인다"는 피드백)
     const bd = el.querySelector('.bd');
     if (canBreak(a))      { bd.className = 'bd up';  bd.textContent = '▲'; }
+    else if (canLevel(a)) { bd.className = 'bd lv';  bd.textContent = '↑'; }
     else if (canLearn(a)) { bd.className = 'bd can'; bd.textContent = '+'; }
     else                  { bd.className = 'bd';     bd.textContent = ''; }
   });
@@ -116,6 +130,18 @@ function refreshArts(){
           '<div class="zd">' + a.d + (artFxText(a) ? ' · ' + artFxText(a) : '') + '</div>';
   if (got){
     const st = artStar(a.k), xp = S.artXp[a.k] | 0;
+    // 연마 — 은자로 바로 올린다. 상한에 닿으면 돌파가 다음 문이다
+    if (a.cost !== undefined){
+      const lv = artLv(a.k), cap = artLvCap(a.k);
+      d += '<div class="zd">연마 Lv ' + lv + ' / ' + cap;
+      if (lv < cap){
+        d += '</div><button class="trbuy" id="alvl"' +
+             (S.silver >= artLvCost(a.k) ? '' : ' disabled') +
+             '><span>' + artLvCost(a.k).toLocaleString() + '</span><i>은자 · 연마</i></button>';
+      } else {
+        d += (st < MASTERY.maxStar ? ' — 성을 돌파하면 상한이 열린다' : ' — 극에 달했다') + '</div>';
+      }
+    }
     if (st < MASTERY.maxStar){
       const need = artXpNeed(a.k), cost = artBreakCost(a.k);
       d += '<div class="zd">숙련 ' + st + '성 · ' + Math.min(xp, need) + ' / ' + need +
@@ -142,6 +168,8 @@ function refreshArts(){
   if (btn) btn.onclick = () => { if (learnArt(artSel)) refreshArts(); };
   const bbtn = $('abrk');
   if (bbtn) bbtn.onclick = () => { if (breakArt(artSel)) refreshArts(); };
+  const lbtn = $('alvl');
+  if (lbtn) lbtn.onclick = () => { if (levelArt(artSel)) refreshArts(); };
 }
 
 function openArts(){ buildArtsPanel(); $('apanel').classList.add('show'); }

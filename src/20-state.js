@@ -26,6 +26,7 @@ const S = {
   arts: {},                      // 익힌 무공 { key: 1 }
   artXp: {},                     // 무공 숙련도 { key: 사용 횟수 }
   artStar: {},                   // 무공 성 { key: 1~4 }
+  artLv: {},                     // 무공 연마 레벨 { key: 1~성×10 }
   karma: 0,                      // 인연 — 기연의 재료
   fates: 0,                      // 만난 기연 횟수
   fatePending: 0,                // >0 이면 기연이 기다린다

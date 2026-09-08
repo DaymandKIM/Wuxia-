@@ -402,9 +402,21 @@ const MASTERY = {
   useGrow: 3,                    // 성마다 필요 숙련도 배율 (40→120→360)
   costMul: 3,                    // 돌파 은자 = 습득 비용 × costMul^(현재 성)
   effPer:  0.25,                 // 성당 효과 +25% (4성 = 1.75배)
+  // 연마 — 은자로 올리는 무공 레벨 (v2.2). 상한은 성×lvCapPer라
+  // 성 돌파(숙련 게이지)가 상한을 여는 벽이 된다. 발동 3모드는
+  // 내공(마나) 재화가 들어와야 의미가 생겨 보류 (사용자 확정).
+  lvPer:    0.02,                // 연마 레벨당 효과 +2% (수련과 같은 결)
+  lvCapPer: 10,                  // 연마 상한 = 성 × 10 (4성 = 40)
+  lvMul:    0.25,                // 연마 비용 기초 = 습득 비용 × lvMul
+  lvGrow:   1.2,                 // 연마 비용 배율 (레벨마다)
 };
 const artStar   = k => Math.max(1, S.artStar[k] | 0);
-const artEff    = k => 1 + MASTERY.effPer * (artStar(k) - 1);
+const artLv     = k => Math.max(1, S.artLv[k] | 0);
+const artLvCap  = k => artStar(k) * MASTERY.lvCapPer;
+const artLvCost = k => Math.round(artDef(k).cost * MASTERY.lvMul *
+                                  Math.pow(MASTERY.lvGrow, artLv(k) - 1));
+const artEff    = k => (1 + MASTERY.lvPer * (artLv(k) - 1))
+                     * (1 + MASTERY.effPer * (artStar(k) - 1));
 const artXpNeed = k => Math.round(MASTERY.useBase * Math.pow(MASTERY.useGrow, artStar(k) - 1));
 const artBreakCost = k => Math.round(artDef(k).cost * Math.pow(MASTERY.costMul, artStar(k)));
 // 익힌 심법들의 증폭 배수 (1 + 합) — 숙련 성이 오르면 효과도 커진다

@@ -11,6 +11,7 @@
 | 수련 8스텟 (스텟별 cb·cg 곡선) | `TRAIN` | spend()가 싼 것부터 구매 |
 | 무공 습득 — 초식 자동 시전·심법 % | `ARTS` | spend()의 learnArt + 전투 코드가 실제 시전 |
 | 숙련 성 돌파 — 계수 ×(1+0.25×(성−1)) | `MASTERY` | spend()의 breakArt, artEff가 전투에 적용 |
+| 무공 연마 — 레벨당 +2%, 상한 성×10 | `MASTERY` (lv*) | spend()의 levelArt (틱당 최대 5회) |
 | 경지 배수 성장 (×1.31/승급) | `REALM` `GROW` | 처치 수련치로 자동 |
 | 은자 수입 (+은자 획득 스텟) | `SILVER` | killSilver |
 | 적 강도 지수 곡선 | `DIFF` `BOSS` | foeHp/foeDmg |

@@ -62,6 +62,14 @@ setTimeout(()=>{
     ok(w.eval('breakArt("chulwoo")')===true,'청죽공 돌파 → '+w.eval('artStar("chulwoo")')+'성');
     ok(Math.abs(w.eval('artMul("hp")')-1.25)<0.001,'2성 심법 효과 1.25배 (0.20×1.25)');
     ok(w.eval('breakArt("chulwoo")')===false,'숙련이 다시 찰 때까지 재돌파 불가');
+    // 5.5) 연마 — 은자로 레벨, 상한은 성×10, 효과가 실제로 오른다
+    ok(w.eval('artLvCap("chulwoo")')===20,'연마 상한 = 성×10 (2성 청죽공 = 20)');
+    ok(w.eval('levelArt("chulwoo")')===true,'청죽공 연마 → Lv '+w.eval('artLv("chulwoo")'));
+    ok(Math.abs(w.eval('artMul("hp")')-(1+0.20*1.02*1.25))<0.001,
+      '연마 Lv2 효과 (0.20×1.02×1.25)');
+    w.eval('S.artLv.chulwoo=20');
+    ok(w.eval('levelArt("chulwoo")')===false,'연마 상한에서 더 못 올린다 (돌파가 문)');
+    w.eval('S.artLv.chulwoo=2');
     // 6) 저장 왕복
     w.eval('saveNow()');
     const save=w.localStorage.getItem('wuxia1');
@@ -70,6 +78,7 @@ setTimeout(()=>{
       ok(w2.eval('S.arts.pagong===1 && S.arts.samjae===1 && S.arts.chulwoo===1'),
         '다시 열어도 익힌 무공이 남아 있다');
       ok(w2.eval('artStar("chulwoo")')===2,'숙련 성도 저장된다 (청죽공 2성)');
+      ok(w2.eval('artLv("chulwoo")')===2,'연마 레벨도 저장된다 (청죽공 Lv2)');
       ok(errs.length===0,'런타임 오류 0'+(errs.length?': '+errs[0]:''));
       console.log(bad?('\n★ 실패 '+bad+'건'):'\n문제 없음');
       process.exit(bad?1:0);
