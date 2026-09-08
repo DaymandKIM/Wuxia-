@@ -190,12 +190,13 @@ function drawFx(ox, oy){
       // 초식 탄 — 권기 주먹(파공권)·지풍 빔(암향지)이 실제로 날아간다
       const pa = e.k === 'pashot';
       const bw = pa ? HFX.shotW : HFX.bshotW, bh = pa ? HFX.shotH : HFX.bshotH;
-      const fn = pa ? 2 : 1;                        // 비행 프레임 수 (뒤는 소멸)
       const el = e.t - e.life;
       const p = Math.min(1, el / HFX.shotT);
       const sx = e.x + (e.tx - e.x) * p - ox, sy = e.y + (e.ty - e.y) * p - oy;
-      const fi = el < HFX.shotT ? (Math.floor(el * 22) % fn)
-                                : fn + (pa && el - HFX.shotT >= HFX.fadeT * 0.5 ? 1 : 0);
+      // 파공권은 비행 2 + 소멸 2, 지풍은 통짜 1프레임(알파로만 사라진다)
+      const fi = !pa ? 0
+               : el < HFX.shotT ? (Math.floor(el * 22) % 2)
+               : (el - HFX.shotT >= HFX.fadeT * 0.5 ? 3 : 2);
       ctx.save();
       ctx.translate(Math.round(sx), Math.round(sy));
       // 날아가는 방향으로 기운다 — 왼쪽이면 거울 뒤 반전각 (뒤집힘 방지)
