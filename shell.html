@@ -58,6 +58,9 @@
     max-height:76%;overflow:auto;}
   #zpanel.show .zsheet,#tpanel.show .zsheet,#trpanel.show .zsheet,#rpanel.show .zsheet,#apanel.show .zsheet{transform:translateY(0);}
   /* 수련 패널 줄 */
+  /* 배수 토글은 스크롤해도 위에 붙어 있는다 (스탯창 보기 불편 피드백) */
+  .zst.tramt{position:sticky;top:44px;z-index:2;background:#12161c;
+    margin:0;padding:9px 12px 8px;border-bottom:1px solid #1e242c;}
   .trow{display:flex;align-items:center;gap:10px;}
   .trl{flex:1;min-width:0;}
   .trbuy{flex:0 0 auto;min-width:74px;background:#23303e;border:1.5px solid #3c6f9e;

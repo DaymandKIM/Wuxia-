@@ -115,7 +115,9 @@ function fmtDur(sec){
   return Math.floor(sec) + '초';
 }
 
+let offAutoT = 0;                // 복귀 카드 자동 닫힘 타이머
 function showOffline(g){
+  offAutoT = OFFLINE.autoSec;
   $('otime').textContent = fmtDur(g.sec) + ' 동안 수련했다';
   let h = '<div class="orow"><span>처치</span><b>' + g.kills.toLocaleString() + '</b></div>';
   if (g.silver) h += '<div class="orow"><span>은자</span><b>+' + g.silver.toLocaleString() + '</b></div>';
@@ -125,3 +127,11 @@ function showOffline(g){
   $('opanel').classList.add('show');
 }
 function closeOffline(){ $('opanel').classList.remove('show'); maybeFate(); }
+
+// 매 프레임 — 복귀 카드도 잠시 뒤 스스로 닫힌다 (팝업 피로 방지)
+function stepOffline(dt){
+  if (!$('opanel').classList.contains('show')) return;
+  offAutoT -= dt;
+  $('obtn').textContent = '수련 계속 (' + Math.max(1, Math.ceil(offAutoT)) + ')';
+  if (offAutoT <= 0) closeOffline();
+}

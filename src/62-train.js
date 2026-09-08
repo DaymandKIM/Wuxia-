@@ -12,22 +12,28 @@ function buyStat(k){
 }
 
 let trainAmt = 1;                // 구매 배수 (1·10·100·'MAX')
-// 지금 배수로 실제 살 수 있는 개수와 총비용
+// 배수만큼의 총비용 — x10·x100은 "정확히 N개 값"이다. 살 수 있는 만큼으로
+// 개수를 줄이면 금액이 계속 흔들려서 이상해 보인다는 피드백. MAX만 유동.
 function trainPlan(k){
   const cap = trainCap();
-  let n = statLv(k), silver = S.silver, cnt = 0, cost = 0;
-  const want = trainAmt === 'MAX' ? Infinity : trainAmt;
-  while (cnt < want && n < cap){
-    const c = trainCost(k, n);
-    if (silver < c) break;
-    silver -= c; cost += c; n++; cnt++;
+  let n = statLv(k), cnt = 0, cost = 0;
+  if (trainAmt === 'MAX'){
+    let silver = S.silver;
+    while (n < cap){
+      const c = trainCost(k, n);
+      if (silver < c) break;
+      silver -= c; cost += c; n++; cnt++;
+    }
+    return { cnt, cost, ok: cnt > 0 };
   }
-  return { cnt, cost };
+  while (cnt < trainAmt && n < cap){ cost += trainCost(k, n); n++; cnt++; }
+  return { cnt, cost, ok: cnt > 0 && S.silver >= cost };
 }
 function buyStatN(k){
-  const { cnt } = trainPlan(k);
-  for (let i = 0; i < cnt; i++) buyStat(k);
-  return cnt > 0;
+  const p = trainPlan(k);
+  if (!p.ok) return false;
+  for (let i = 0; i < p.cnt; i++) buyStat(k);
+  return true;
 }
 
 // 살 수 있는 스텟이 하나라도 있나 — 탭 알림점용
@@ -92,10 +98,11 @@ function refreshTrain(){
       btn.disabled = true;
     } else {
       const p = trainPlan(s.k);
-      $('trc-' + s.k).textContent = p.cnt > 0
-        ? p.cost.toLocaleString() + (p.cnt > 1 ? ' ×' + p.cnt : '')
-        : trainCost(s.k, n).toLocaleString();
-      btn.disabled = p.cnt === 0;
+      // 정액 배수(x10 등)는 금액만 — ×개수는 MAX거나 상한에 걸렸을 때만
+      const tag = p.cnt > 1 && (trainAmt === 'MAX' || p.cnt !== trainAmt) ? ' ×' + p.cnt : '';
+      $('trc-' + s.k).textContent =
+        (p.cnt > 0 ? p.cost : trainCost(s.k, n)).toLocaleString() + tag;
+      btn.disabled = !p.ok;
     }
   }
 }

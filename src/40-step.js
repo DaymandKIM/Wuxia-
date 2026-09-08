@@ -88,6 +88,10 @@ function step(dt){
   // 초식 — 제패 연출 중엔 아낀다
   if (S.sweepT <= 0) stepArts(dt);
 
+  // 팝업 자동 진행 — sim 등 부분 조립 도구엔 64·65가 없어 가드가 필요하다
+  if (typeof stepFate === 'function') stepFate(dt);
+  if (typeof stepOffline === 'function') stepOffline(dt);
+
   if (P.hitT > 0) P.hitT -= dt;
 
   // 동작 결정

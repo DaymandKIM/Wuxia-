@@ -35,13 +35,23 @@ function rollFate(){
 }
 
 // 인연이 차 있으면 기연 카드를 띄운다 (enterStage·오프라인 복귀에서 부른다)
+let fateAutoT = 0;               // 카드가 떠 있는 동안 줄어든다 — 0이 되면 스스로 받는다
 function maybeFate(){
   if (!S.fatePending || fateEv) return;
   fateEv = rollFate();
+  fateAutoT = FATE.autoSec;
   $('ftitle').textContent = fateEv.n;
   $('ftext').innerHTML = fateEv.d + '<br><b>' + fateEv.r + '</b>';
   $('fpanel').classList.add('show');
   sfx('down');
+}
+
+// 매 프레임 — 손대지 않아도 잠시 뒤 스스로 받아들인다 (팝업 누르기 귀찮다는 피드백)
+function stepFate(dt){
+  if (!fateEv) return;
+  fateAutoT -= dt;
+  $('fbtn').innerHTML = '<span>받아들인다</span><i>' + Math.max(1, Math.ceil(fateAutoT)) + '초 뒤 저절로</i>';
+  if (fateAutoT <= 0) applyFate();
 }
 
 function applyFate(){

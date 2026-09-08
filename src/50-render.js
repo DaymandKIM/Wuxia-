@@ -19,6 +19,28 @@ function shadow(x, y, w){
   ctx.restore();
 }
 
+// 무공 색 빛무리 — 동심원 3겹, 가산 합성. 그라디언트 없이 픽셀풍으로.
+function glowBall(x, y, g, r, alpha){
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  ctx.fillStyle = 'rgb(' + g.c + ')';
+  for (let i = 3; i >= 1; i--){
+    ctx.globalAlpha = alpha / (i * 1.4);
+    ctx.beginPath();
+    ctx.arc(x, y, r * (0.35 + 0.3 * i), 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+// 시전 중 손끝(또는 발밑) 발광 — 작은 스프라이트 점이 안 보인다는 피드백
+function drawCastGlow(ox, oy){
+  const g = HFX.glow[P.castK];
+  if (!g || P.anim !== 'cast') return;
+  const pul = 0.8 + 0.2 * Math.sin(S.t * 16);
+  glowBall(Math.round(P.x + P.dir * g.dx - ox), Math.round(P.y - g.dy - oy),
+           g, g.r * pul, 0.5);
+}
+
 function drawHero(ox, oy){
   const x = Math.round(P.x - ox), y = Math.round(P.y - oy);
   shadow(x, y, HERO.w);
@@ -205,6 +227,10 @@ function drawFx(ox, oy){
       else ctx.rotate(Math.atan2(dy, dx));
       ctx.globalAlpha = el < HFX.shotT ? 1 : Math.min(1, a * 2);
       draw(IMG[e.k], fi*bw, 0, bw, bh, -Math.round(bw/2), -Math.round(bh/2), bw, bh);
+      // 무공 색 빛무리 — 파공권은 몸통, 지풍은 촉끝. 어두운 탄이 배경에 묻히지 않게
+      const gk = HFX.glow[pa ? 'pagong' : 'baekbo'];
+      if (gk) glowBall(pa ? 0 : Math.round(bw * 0.4), 0, gk,
+                       bh * 0.5, (el < HFX.shotT ? 1 : a) * 0.55);
       ctx.restore();
     } else if (e.k === 'streak'){
       // 기파 — 손에서 적까지 빛줄기가 쏘아진다
@@ -271,7 +297,7 @@ function render(){
   ents.push({ y:P.y, hero:true });
   ents.sort((a,b)=>a.y-b.y);
   for (const e of ents){
-    if (e.hero) drawHero(ox, oy); else drawFoe(e.f, ox, oy);
+    if (e.hero){ drawHero(ox, oy); drawCastGlow(ox, oy); } else drawFoe(e.f, ox, oy);
   }
   drawShots(ox, oy);
   drawFx(ox, oy);
