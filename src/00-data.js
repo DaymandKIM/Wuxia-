@@ -327,39 +327,45 @@ const trainCap  = ()=> (realmLv() + 1) * TRAIN.capPer;          // 경지가 상
 // 초식(active)은 자동 시전 (발동 모드 3종은 나중에). 새 그림 없이 절차 이펙트.
 // fate:true 는 기연 전용 — 표에는 보이지만 아직 얻을 수 없다 (기연 판에서 연다).
 // ※ 비용·배수는 임시. 무공 레벨업(상한 30~40)은 다음 층에서 얹는다.
-// 강호의 문파 — 무공의 계보 (내 문파 경영과는 별개). z = 연고 구역.
-// 조사 결론: 접미사 문법은 장르 공용, 수식부에 구역 모티프를 넣어 오리지널로.
+// 강호의 문파 — 무공의 계보 (내 문파 경영과는 별개).
+// 유명 문파(소림·무당·화산·아미·개방·당문·마교)는 그대로 쓴다 — 실존
+// 지명·일반명사라 자유롭고(화산귀환도 그대로 씀) 인지도가 최고다.
+// 청죽문은 우리 창작 문파 — 주인공이 죽림에서 시작하는 뿌리 계보.
+// 앞으로도 우리 문파를 더 만든다 (기존 기반 + 우리만의 문파, 사용자 확정).
 const SCHOOLS = {
-  none:   { n:'독학',     z:null, c:'#8b97a5' },
-  bamboo: { n:'청죽문',   z:0,    c:'#7fc78f' },
-  ruins:  { n:'야우문',   z:1,    c:'#b0a4d8' },
-  cave:   { n:'암향각',   z:2,    c:'#c99ad0' },
-  snow:   { n:'설매궁',   z:3,    c:'#a8d8e8' },
-  heaven: { n:'천운관',   z:4,    c:'#e8d08a' },
-  lost:   { n:'실전 비급', z:null, c:'#e8c96a' },
+  none:    { n:'독학',     c:'#8b97a5' },
+  bamboo:  { n:'청죽문',   c:'#7fc78f' },   // 우리 문파
+  sorim:   { n:'소림',     c:'#d8a84a' },
+  mudang:  { n:'무당',     c:'#9fc4e8' },
+  hwasan:  { n:'화산',     c:'#e89aad' },   // 아직 무공 없음 — 매화 계열 예정
+  ami:     { n:'아미',     c:'#b9a6d8' },
+  gaebang: { n:'개방',     c:'#b08a5c' },
+  dangmun: { n:'당문',     c:'#c99ad0' },
+  magyo:   { n:'마교',     c:'#d86a5c' },
+  lost:    { n:'실전 비급', c:'#e8c96a' },
 };
 const ARTS = { list: [
   // ── 초식 (자동 시전) ──────────────────────────────
-  { k:'pagong',  n:'파공권',   h:'破空拳',   type:'active', school:'bamboo', need:4,  cost:200,
+  { k:'pagong',  n:'파공권',   h:'破空拳',   type:'active', school:'sorim', need:4,  cost:200,
     d:'주먹 기운이 허공을 갈라 날아간다', cd:6,  mul:3,   range:170 },
-  { k:'whirl',   n:'선풍퇴',   h:'旋風腿',   type:'active', school:'bamboo', need:9,  cost:1200,
+  { k:'whirl',   n:'선풍퇴',   h:'旋風腿',   type:'active', school:'gaebang', need:9,  cost:1200,
     d:'휘돌아 차서 주위를 쓸어낸다',     cd:9,  mul:1.5, range:74, kb:true },
-  { k:'baekbo',  n:'암향지',   h:'暗香指',   type:'active', school:'cave', need:13, cost:5000,
+  { k:'baekbo',  n:'암향지',   h:'暗香指',   type:'active', school:'dangmun', need:13, cost:5000,
     d:'어둠 속 향기가 닿으면 이미 늦었다', cd:14, mul:5,   range:280 },
-  { k:'hwalin',  n:'활인기공', h:'活人氣功', type:'active', school:'ruins', need:19, cost:25000,
+  { k:'hwalin',  n:'활인기공', h:'活人氣功', type:'active', school:'ami', need:19, cost:25000,
     d:'위태로우면 숨을 불어넣는다',       cd:18, heal:0.3, below:0.4 },
-  { k:'bungsan', n:'설붕장',   h:'雪崩掌',   type:'active', school:'snow', need:22, cost:60000,
-    d:'눈사태처럼 사방을 덮친다',         cd:30, mul:4,   range:300 },
+  { k:'bungsan', n:'붕산장',   h:'崩山掌',   type:'active', school:'magyo', need:22, cost:60000,
+    d:'산을 무너뜨리듯 사방을 친다',      cd:30, mul:4,   range:300 },
   // ── 심법 (패시브 증폭) ────────────────────────────
   { k:'samjae',  n:'삼재심법',   h:'三才心法',   type:'passive', school:'none', need:2,  cost:60,
     d:'숨을 고르는 첫걸음',       regen:0.25 },
   { k:'chulwoo', n:'청죽공',     h:'靑竹功',     type:'passive', school:'bamboo', need:6,  cost:500,
     d:'대나무처럼 휘되 부러지지 않는다', hp:0.20 },
-  { k:'yuwoon',  n:'야행심법',   h:'夜行心法',   type:'passive', school:'ruins', need:11, cost:2500,
+  { k:'yuwoon',  n:'야행심법',   h:'夜行心法',   type:'passive', school:'gaebang', need:11, cost:2500,
     d:'밤길을 걷듯 흐르고 스민다', spd:0.15, regen:0.15 },
-  { k:'honwon',  n:'혼원일기공', h:'混元一氣功', type:'passive', school:'heaven', need:16, cost:12000,
+  { k:'honwon',  n:'혼원일기공', h:'混元一氣功', type:'passive', school:'mudang', need:16, cost:12000,
     d:'흩어진 기운이 하나로 돈다', dmg:0.15 },
-  { k:'taeheo',  n:'태허진경',   h:'太虛眞經',   type:'passive', school:'heaven', need:27, cost:150000,
+  { k:'taeheo',  n:'태허진경',   h:'太虛眞經',   type:'passive', school:'mudang', need:27, cost:150000,
     d:'비어 있어 오히려 가득하다', dmg:0.10, hp:0.10, regen:0.10 },
   // ── 기연 전용 (예약) ──────────────────────────────
   { k:'guyang',  n:'구양신결',   h:'九陽神訣',   type:'passive', school:'lost', fate:true,
