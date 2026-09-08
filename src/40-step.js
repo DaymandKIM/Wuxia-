@@ -85,6 +85,9 @@ function step(dt){
   if (P.atkT > 0){ P.atkT -= dt; heroHitCheck(); }
   else if (P.atkCd <= 0 && tgt && td <= HERO.atkRange + HERO.atkReach) heroAttack();
 
+  // 초식 — 제패 연출 중엔 아낀다
+  if (S.sweepT <= 0) stepArts(dt);
+
   if (P.hitT > 0) P.hitT -= dt;
 
   // 동작 결정

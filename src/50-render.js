@@ -153,6 +153,54 @@ function drawFx(ox, oy){
       ctx.fillStyle = '#ffd95e';
       ctx.fillText(e.v, x, y - (1-a)*14);
       ctx.restore();
+    } else if (e.k === 'streak'){
+      // 기파 — 손에서 적까지 빛줄기가 쏘아진다
+      const tx = Math.round(e.tx - ox), ty = Math.round(e.ty - oy);
+      const p = 1 - a;                              // 0→1 진행
+      ctx.save();
+      ctx.globalAlpha = a;
+      ctx.strokeStyle = '#cfe8ff';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(x + (tx-x)*Math.max(0, p-0.35), y + (ty-y)*Math.max(0, p-0.35));
+      ctx.lineTo(x + (tx-x)*Math.min(1, p*1.6), y + (ty-y)*Math.min(1, p*1.6));
+      ctx.stroke();
+      ctx.fillStyle = '#f0f8ff';
+      ctx.beginPath(); ctx.arc(x + (tx-x)*Math.min(1, p*1.6), y + (ty-y)*Math.min(1, p*1.6), 3, 0, Math.PI*2); ctx.fill();
+      ctx.restore();
+    } else if (e.k === 'ring'){
+      // 기의 고리 — 발밑에서 퍼져 나간다 (탑다운 보정으로 납작하게)
+      const p = 1 - a;
+      ctx.save();
+      ctx.globalAlpha = a * 0.85;
+      ctx.strokeStyle = '#d8ecff';
+      ctx.lineWidth = 2 + a*2;
+      ctx.beginPath();
+      ctx.ellipse(x, y, e.r * p, e.r * p / HERO.atkFlat, 0, 0, Math.PI*2);
+      ctx.stroke();
+      ctx.restore();
+    } else if (e.k === 'heal'){
+      // 활인 — 초록 기운 고리가 몸을 타고 오른다
+      const p = 1 - a;
+      ctx.save();
+      ctx.globalAlpha = a * 0.9;
+      ctx.strokeStyle = '#8fe0a0';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.ellipse(x, y - p * HERO.h, 15 * (1-p*0.5), 5, 0, 0, Math.PI*2);
+      ctx.stroke();
+      ctx.restore();
+    } else if (e.k === 'artname'){
+      // 무공 이름 — 푸르게 떠오른다
+      ctx.save();
+      ctx.globalAlpha = Math.min(1, a * 1.4);
+      ctx.font = '900 8px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#0a1420';
+      ctx.fillText(e.v, x, y - (1-a)*10 + 1);
+      ctx.fillStyle = '#9fd0ff';
+      ctx.fillText(e.v, x, y - (1-a)*10);
+      ctx.restore();
     }
   }
 }

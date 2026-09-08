@@ -23,6 +23,7 @@ const S = {
   bossDone: [],                  // 구역별 보스 첫 격파 여부 (0/1)
   stats: {},                     // 수련 레벨 { atk, hp, regen, spd, crit }
   rexp: 0,                       // 수련치 — 경지의 재료
+  arts: {},                      // 익힌 무공 { key: 1 }
   intro: 0,                      // >0 이면 진입 연출 중
   introMsg: '',                   // 아래 (단계)
   introTop: '',                   // 위 (구역)
@@ -36,6 +37,7 @@ const P = {
   anim: 'idle', af: 0,
   atkT: 0,                       // >0 이면 공격 동작 중
   atkCd: 0,
+  artCd: {},                     // 초식별 남은 쿨다운 (저장 안 함)
   hitT: 0,
   dead: false,
   hitDone: false,                // 이번 공격에서 이미 때렸나

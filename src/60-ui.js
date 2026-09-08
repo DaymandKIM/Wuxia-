@@ -15,6 +15,7 @@ function hud(){
   const tb = $('tbtn'); if (tb) tb.style.opacity = showing ? '1' : '0';   // [테스트 전용]
   if (!showing) return;
   trainHud();                                    // 수련 탭 알림점·열린 패널 갱신
+  artsHud();                                     // 무공 탭 알림점·열린 패널 갱신
 
   const st = stage();
   if (isBoss()){

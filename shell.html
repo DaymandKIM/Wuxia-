@@ -49,14 +49,14 @@
   #tbtn:active{background:#7a5238;}
   #tspd{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px;}
   /* overflow:hidden — 닫힌 시트(아래로 밀린 상태)가 컨테이너 밖 탭바 위로 삐져나오지 않게 */
-  #zpanel,#tpanel,#trpanel,#rpanel{position:absolute;inset:0 0 var(--tabh) 0;pointer-events:none;
+  #zpanel,#tpanel,#trpanel,#rpanel,#apanel{position:absolute;inset:0 0 var(--tabh) 0;pointer-events:none;
     overflow:hidden;background:rgba(6,8,11,0);transition:background .2s;display:flex;align-items:flex-end;}
-  #zpanel.show,#tpanel.show,#trpanel.show,#rpanel.show{pointer-events:auto;background:rgba(6,8,11,.72);}
+  #zpanel.show,#tpanel.show,#trpanel.show,#rpanel.show,#apanel.show{pointer-events:auto;background:rgba(6,8,11,.72);}
   .zsheet{width:100%;background:#12161c;border-top:1.5px solid #2b333d;
     border-radius:16px 16px 0 0;padding:0 0 calc(env(safe-area-inset-bottom) + 14px);
     transform:translateY(100%);transition:transform .24s cubic-bezier(.2,.8,.3,1);
     max-height:76%;overflow:auto;}
-  #zpanel.show .zsheet,#tpanel.show .zsheet,#trpanel.show .zsheet,#rpanel.show .zsheet{transform:translateY(0);}
+  #zpanel.show .zsheet,#tpanel.show .zsheet,#trpanel.show .zsheet,#rpanel.show .zsheet,#apanel.show .zsheet{transform:translateY(0);}
   /* 수련 패널 줄 */
   .trow{display:flex;align-items:center;gap:10px;}
   .trl{flex:1;min-width:0;}
@@ -68,6 +68,11 @@
   .trbuy[disabled]{background:#171d25;border-color:#232b35;color:#57616d;}
   .trbuy[disabled] i{color:#48525d;}
   #trsilver{font-size:11px;color:#e8c96a;font-weight:900;font-variant-numeric:tabular-nums;}
+  /* 무공 패널 */
+  .zn small{font-size:10px;color:#5d6773;font-weight:700;margin-left:3px;}
+  .zn em.fate{color:#e8c96a;}
+  .zd.need{color:#7a97b5;margin-top:3px;}
+  .znote.asec{margin-top:12px;font-size:11px;color:#8b97a5;font-weight:900;letter-spacing:.06em;}
   .zhd{position:sticky;top:0;background:#12161c;display:flex;justify-content:space-between;
     align-items:center;padding:14px 16px 10px;font-size:14px;font-weight:900;color:#e8eef6;
     letter-spacing:.06em;border-bottom:1px solid #1e242c;}
@@ -118,8 +123,15 @@
   </div>
   <div id="toast"></div>
   <div id="tabs">
+    <button id="tab-arts">무공<i class="dot"></i></button>
     <button id="tab-train">수련<i class="dot"></i></button>
     <button id="tab-zone">사냥터</button>
+  </div>
+  <div id="apanel">
+    <div class="zsheet">
+      <div class="zhd">무공<button id="aclose">✕</button></div>
+      <div id="abody"></div>
+    </div>
   </div>
   <div id="rpanel">
     <div class="zsheet">

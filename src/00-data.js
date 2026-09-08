@@ -257,15 +257,18 @@ const REALM = {
   seed: [0, 10, 15, 18, 22, 30],
 };
 const realmNeed = k => Math.round(REALM.expBase * Math.pow(REALM.expGrow, k));
+// 경지 레벨 k의 표기 ("절정 2성")
+function realmName(k){
+  const top = REALM.names.length * REALM.per;
+  return k < top
+    ? REALM.names[Math.floor(k / REALM.per)] + ' ' + (k % REALM.per + 1) + '성'
+    : REALM.last + ' ' + (k - top + 1) + '성';
+}
 // 수련치 → { k: 경지 레벨, name: 이름, cur/need: 현 구간 진행 }
 function realmInfo(){
   let e = S.rexp, k = 0;
   while (e >= realmNeed(k)){ e -= realmNeed(k); k++; }
-  const top = REALM.names.length * REALM.per;
-  const name = k < top
-    ? REALM.names[Math.floor(k / REALM.per)] + ' ' + (k % REALM.per + 1) + '성'
-    : REALM.last + ' ' + (k - top + 1) + '성';
-  return { k, name, cur: e, need: realmNeed(k) };
+  return { k, name: realmName(k), cur: e, need: realmNeed(k) };
 }
 const realmLv = ()=> realmInfo().k;
 // 구역·단계에 걸맞은 누적 수련치 — 테스트 단계 이동과 검증 도구가 쓴다
@@ -319,10 +322,53 @@ const statBonus = (k, n) => {
 const trainCost = n => Math.round(TRAIN.costBase * Math.pow(TRAIN.costGrow, n));
 const trainCap  = ()=> (realmLv() + 1) * TRAIN.capPer;          // 경지가 상한을 연다
 
-const heroDmg   = ()=> HERO.atkDmg + realmLv() * GROW.dmg + statBonus('atk');
-const heroHpMax = ()=> HERO.hp     + realmLv() * GROW.hp  + statBonus('hp');
-const heroRegen = ()=> HERO.regen  + realmLv() * GROW.regen + statBonus('regen');
-const heroSpd   = ()=> HERO.spd * (1 + statBonus('spd')/100);
+// 무공 — 경지에 닿으면 은자로 익힌다. 익히면 되돌리지 않는다.
+// 심법(passive)은 % 증폭 — 수련(고정치)과 역할이 겹치지 않는다.
+// 초식(active)은 자동 시전 (발동 모드 3종은 나중에). 새 그림 없이 절차 이펙트.
+// fate:true 는 기연 전용 — 표에는 보이지만 아직 얻을 수 없다 (기연 판에서 연다).
+// ※ 비용·배수는 임시. 무공 레벨업(상한 30~40)은 다음 층에서 얹는다.
+const ARTS = { list: [
+  // ── 초식 (자동 시전) ──────────────────────────────
+  { k:'pagong',  n:'파공권',   h:'破空拳',   type:'active', need:4,  cost:200,
+    d:'주먹 기운이 허공을 갈라 날아간다', cd:6,  mul:3,   range:170 },
+  { k:'whirl',   n:'선풍퇴',   h:'旋風腿',   type:'active', need:9,  cost:1200,
+    d:'휘돌아 차서 주위를 쓸어낸다',     cd:9,  mul:1.5, range:74, kb:true },
+  { k:'baekbo',  n:'백보신권', h:'百步神拳', type:'active', need:13, cost:5000,
+    d:'백 보 밖의 적을 후려친다',         cd:14, mul:5,   range:280 },
+  { k:'hwalin',  n:'활인기공', h:'活人氣功', type:'active', need:19, cost:25000,
+    d:'위태로우면 숨을 불어넣는다',       cd:18, heal:0.3, below:0.4 },
+  { k:'bungsan', n:'붕산장',   h:'崩山掌',   type:'active', need:22, cost:60000,
+    d:'산을 무너뜨리듯 사방을 친다',      cd:30, mul:4,   range:300 },
+  // ── 심법 (패시브 증폭) ────────────────────────────
+  { k:'samjae',  n:'삼재심법',   h:'三才心法',   type:'passive', need:2,  cost:60,
+    d:'숨을 고르는 첫걸음',       regen:0.25 },
+  { k:'chulwoo', n:'철우공',     h:'鐵牛功',     type:'passive', need:6,  cost:500,
+    d:'쇠처럼 버티는 몸',         hp:0.20 },
+  { k:'yuwoon',  n:'유운심법',   h:'流雲心法',   type:'passive', need:11, cost:2500,
+    d:'구름처럼 흐르고 스민다',   spd:0.15, regen:0.15 },
+  { k:'honwon',  n:'혼원일기공', h:'混元一氣功', type:'passive', need:16, cost:12000,
+    d:'흩어진 기운이 하나로 돈다', dmg:0.15 },
+  { k:'taeheo',  n:'태허진경',   h:'太虛眞經',   type:'passive', need:27, cost:150000,
+    d:'비어 있어 오히려 가득하다', dmg:0.10, hp:0.10, regen:0.10 },
+  // ── 기연 전용 (예약) ──────────────────────────────
+  { k:'guyang',  n:'구양신결',   h:'九陽神訣',   type:'passive', fate:true,
+    d:'아홉 개의 태양이 몸에 뜬다 — 기연으로만 얻는다' },
+  { k:'geongon', n:'건곤이형',   h:'乾坤移形',   type:'active',  fate:true,
+    d:'상대의 힘을 그대로 되돌린다 — 기연으로만 얻는다' },
+]};
+const artDef = k => ARTS.list.find(a => a.k === k);
+// 익힌 심법들의 증폭 배수 (1 + 합)
+function artMul(kind){
+  let m = 1;
+  for (const a of ARTS.list)
+    if (S.arts[a.k] && a.type === 'passive' && a[kind]) m += a[kind];
+  return m;
+}
+
+const heroDmg   = ()=> (HERO.atkDmg + realmLv() * GROW.dmg + statBonus('atk')) * artMul('dmg');
+const heroHpMax = ()=> Math.round((HERO.hp + realmLv() * GROW.hp + statBonus('hp')) * artMul('hp'));
+const heroRegen = ()=> (HERO.regen + realmLv() * GROW.regen + statBonus('regen')) * artMul('regen');
+const heroSpd   = ()=> HERO.spd * (1 + statBonus('spd')/100) * artMul('spd');
 const critCh    = ()=> statBonus('crit') / 100;
 
 // 은자 — 첫 재화. 처치 드랍 + 보스 첫 격파 + 오프라인 정산.

@@ -185,3 +185,61 @@ function reviveHero(){
 
 let shakeV = 0;
 function shake(v){ shakeV = Math.max(shakeV, v); }
+
+/* ── 초식 (자동 시전) ──────────────────────────────
+   쿨다운이 차고 조건이 맞으면 알아서 펼친다. 그림 없이 절차 이펙트.
+   발동 모드(자동/반자동/수동)는 나중에 이 위에 얹는다. */
+function stepArts(dt){
+  for (const a of ARTS.list){
+    if (a.type !== 'active' || !S.arts[a.k]) continue;
+    if (P.artCd[a.k] === undefined) P.artCd[a.k] = a.cd * 0.5;   // 첫 시전은 반 쿨
+    if (P.artCd[a.k] > 0){ P.artCd[a.k] -= dt; continue; }
+    if (castArt(a)) P.artCd[a.k] = a.cd;
+  }
+}
+
+// 시전 성공 여부를 돌려준다 — 대상이 없으면 쿨을 아낀다
+function castArt(a){
+  // 활인기공 — 위태로울 때만
+  if (a.heal){
+    if (P.hp > P.hpMax * a.below) return false;
+    P.hp = Math.min(P.hpMax, P.hp + P.hpMax * a.heal);
+    S.fx.push({ k:'heal', x:P.x, y:P.y, life:0.7, t:0.7 });
+    S.fx.push({ k:'artname', x:P.x, y:P.y - HERO.h - 10, v:a.n, life:0.8, t:0.8 });
+    sfx('kill');
+    return true;
+  }
+  const alive = S.foes.filter(f => !f.dead);
+  if (!alive.length) return false;
+  const dmg = heroDmg() * a.mul;
+  const hits = [];
+  if (a.k === 'pagong' || a.k === 'baekbo'){
+    // 단일 강타 — 파공권은 가장 가까운, 백보신권은 가장 먼 적
+    let best = null, bd = a.k === 'pagong' ? 1e9 : -1;
+    for (const f of alive){
+      const d = dist(f.x, f.y, P.x, P.y);
+      if (d > a.range) continue;
+      if (a.k === 'pagong' ? d < bd : d > bd){ bd = d; best = f; }
+    }
+    if (!best) return false;
+    hits.push(best);
+    S.fx.push({ k:'streak', x:P.x, y:P.y - HERO.h*0.55,
+                tx:best.x, ty:best.y - (foeM(best).bh||foeM(best).h)*0.5, life:0.28, t:0.28 });
+  } else {
+    // 광역 — 선풍퇴·붕산장
+    for (const f of alive) if (dist(f.x, f.y, P.x, P.y) <= a.range) hits.push(f);
+    if (!hits.length) return false;
+    S.fx.push({ k:'ring', x:P.x, y:P.y, r:a.range, life:0.4, t:0.4 });
+    shake(a.k === 'bungsan' ? 10 : 4);
+  }
+  for (const f of hits){
+    hurtFoe(f, dmg);
+    if (a.kb && !f.boss){
+      const d = dist(f.x, f.y, P.x, P.y) || 1;
+      f.kx = (f.x-P.x)/d; f.ky = (f.y-P.y)/d; f.kb = 0.4;
+    }
+  }
+  S.fx.push({ k:'artname', x:P.x, y:P.y - HERO.h - 10, v:a.n, life:0.8, t:0.8 });
+  sfx('punch');
+  return true;
+}
