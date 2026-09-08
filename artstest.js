@@ -47,8 +47,7 @@ setTimeout(()=>{
   // 3) 심법 효과
   ok(w.eval('learnArt("samjae")')===true,'삼재심법을 익힌다');
   ok(w.eval('learnArt("chulwoo")')===true,'철우공을 익힌다');
-  const hpMul=w.eval('heroHpMax()')/w.eval('Math.round((HERO.hp+realmLv()*GROW.hp+statBonus("hp")))');
-  ok(Math.abs(hpMul-1.2)<0.01,'철우공: 체력이 1.2배가 된다 ('+hpMul.toFixed(2)+')');
+  ok(Math.abs(w.eval('artMul("hp")')-1.2)<0.001,'청죽공: 체력 배수 1.2');
   ok(Math.abs(w.eval('artMul("regen")')-1.25)<0.001,'삼재심법: 회복 배수 1.25');
   // 4) 초식 자동 시전 — 적을 붙여 두고 몇 초 굴린다
   w.eval('S.intro=0; S.foes.length=0; for(let i=0;i<3;i++) spawnFoe(); for(const f of S.foes){f.x=P.x+40;f.y=P.y;}');

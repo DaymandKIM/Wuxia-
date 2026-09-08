@@ -327,7 +327,7 @@ function step(dt){
   }
 
   // 단계 클리어 — 제패 연출을 먼저 띄운다
-  if (S.kills >= st.need){
+  if (S.kills >= stageNeed()){
     S.sweepT = SWEEP.charge + SWEEP.blast + SWEEP.hold;
     S.sweepDone = false;
     return;

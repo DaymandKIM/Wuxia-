@@ -139,9 +139,9 @@ function hurtFoe(f, dmg, crit){
     S.kills++; S.totalKills++;
     // 수련치 — 강한 구역일수록 크게. 경지가 오르면 알린다
     const k0 = realmLv();
-    S.rexp += zone().mul * (f.boss ? REALM.bossExp : REALM.killExp);
+    S.rexp += killExpAt() * (f.boss ? REALM.bossExp : 1);
     // 인연 — 기연의 재료
-    S.karma += f.boss ? FATE.bossKarma : zone().mul * FATE.killKarma;
+    S.karma += f.boss ? FATE.bossKarma : killKarmaAt();
     if (S.karma >= karmaNeed()) S.fatePending = 1;
     if (realmLv() > k0){
       toast(realmInfo().name + '에 올랐다');
@@ -155,7 +155,7 @@ function hurtFoe(f, dmg, crit){
     let sv = killSilver() * (f.boss ? SILVER.bossKill : 1);
     if (f.boss && !S.bossDone[S.zi]){
       S.bossDone[S.zi] = 1;
-      const bonus = Math.round(SILVER.first * zone().mul);
+      const bonus = killSilver() * SILVER.firstMul;
       sv += bonus;
       toast(zone().boss + ' 첫 격파 · 은자 +' + bonus.toLocaleString());
     }

@@ -1,30 +1,65 @@
+/* 진행 시뮬 — 소비 전략(spend) 포함 24시간 곡선.
+   밸런스 규칙: 잔고가 쌓이기만 하면 살 게 부족한 것, 계속 0이면 곡선이 가파른 것.
+   기본 24시간(느림, ~1분). 짧게 보려면 SIM_MIN=60 node sim.js */
 const fs=require('fs');
-const ORDER=['00-data.js','10-engine.js','15-audio.js','20-state.js','30-combat.js','40-step.js','50-render.js','60-ui.js'];
+const ORDER=['00-data.js','10-engine.js','15-audio.js','20-state.js','30-combat.js',
+             '40-step.js','50-render.js','60-ui.js','62-train.js','63-arts.js'];
 let code=ORDER.map(f=>fs.readFileSync(__dirname+'/src/'+f,'utf8')).join('\n').replace('"use strict";','');
 const noop=()=>{};
 const ctx=new Proxy({},{get:(t,k)=>k==='canvas'?{width:1170,height:2532}:()=>{},set:()=>true});
-const els={};const mk=id=>els[id]||(els[id]={id,style:{},classList:{add:noop,remove:noop},
-  textContent:'',firstElementChild:{style:{}},getContext:()=>ctx,width:0,height:0});
-global.document={getElementById:mk,createElement:()=>mk('x'),body:{appendChild:noop}};
+const els={};const mk=id=>els[id]||(els[id]={id,style:{},classList:{add:noop,remove:noop,toggle:noop,contains:()=>false},
+  textContent:'',firstElementChild:{style:{},classList:{add:noop,remove:noop,toggle:noop}},getContext:()=>ctx,width:0,height:0,
+  querySelectorAll:()=>[],querySelector:()=>null,set innerHTML(v){},get innerHTML(){return '';},onclick:null,appendChild:noop});
+global.document={getElementById:mk,createElement:()=>mk('x'),body:{appendChild:noop},querySelectorAll:()=>[]};
 global.window=global;global.innerWidth=390;global.innerHeight=844;global.devicePixelRatio=3;
 global.addEventListener=noop;
 global.Image=class{constructor(){}set src(v){}get complete(){return true;}get naturalWidth(){return 56;}};
-const R=new Function(code+`;return {S,P,step:dt=>step(dt),stage:()=>stage(),STAGES,ZONES,zone:()=>zone(),lv:()=>lv(),realmInfo:()=>realmInfo(),FOES};`)();
+const R=new Function(code+`;return {S,P,step:dt=>step(dt),zone:()=>zone(),lv:()=>lv(),gstage:()=>gstage(),
+  realmInfo:()=>realmInfo(),statLv:k=>statLv(k),trainCost:n=>trainCost(n),trainCap:()=>trainCap(),
+  buyStat:k=>buyStat(k),TRAIN,ARTS,canLearn:a=>canLearn(a),learnArt:k=>learnArt(k),
+  canBreak:a=>canBreak(a),breakArt:k=>breakArt(k)};`)();
 const {S,P}=R;
-const dt=1/60; const marks=[1,3,5,10,15,20,30,45,60];
-let mi=0;
-console.log('시간   구역        단계  해금  누적처치  쓰러짐  경지');
-for(let i=0;i<60*60*60;i++){
-  R.step(dt);
-  if(mi<marks.length && S.t>=marks[mi]*60){
-    console.log(String(marks[mi]).padStart(3)+'분   '+R.zone().n.padEnd(6)+
-      '  '+String(S.stage).padStart(2)+'   '+String(S.unlocked).padStart(2)+
-      '  '+String(S.totalKills).padStart(7)+'   '+String(S.downs).padStart(4)+'   '+R.realmInfo().name);
-    mi++;
+
+// 플레이어 흉내 — 30초마다: 가장 싼 수련 스텟 1개, 배울 수 있는 무공, 가능한 돌파
+function spend(){
+  let best=null,bc=1e18;
+  for(const s of R.TRAIN.list){
+    if(R.statLv(s.k)>=R.trainCap())continue;
+    const c=R.trainCost(R.statLv(s.k));
+    if(c<bc){bc=c;best=s.k;}
+  }
+  for(let n=0;n<10;n++){
+    let b2=null,c2=1e18;
+    for(const s of R.TRAIN.list){
+      if(R.statLv(s.k)>=R.trainCap())continue;
+      const c=R.trainCost(R.statLv(s.k));
+      if(c<c2){c2=c;b2=s.k;}
+    }
+    if(!b2||S.silver<c2)break;
+    R.buyStat(b2);
+  }
+  for(const a of R.ARTS.list){
+    if(R.canLearn(a))R.learnArt(a.k);
+    else if(R.canBreak(a))R.breakArt(a.k);
   }
 }
-const kinds={};
-for(const f of S.foes) kinds[f.k]=(kinds[f.k]||0)+1;
-console.log('\n등장 종류:', JSON.stringify(kinds));
-console.log('\n구역 설계:');
-for(const z of R.ZONES) console.log('  '+z.n.padEnd(6)+' 배율 x'+z.mul.toFixed(2));
+
+const MIN=parseInt(process.env.SIM_MIN||'1440',10);
+const dt=1/30;
+const marks=[5,15,30,60,120,240,480,960,1440].filter(m=>m<=MIN);
+let mi=0;
+console.log('시간    구역·단계   g   경지          은자잔고    수련합  무공  쓰러짐');
+const line=()=>{
+  let tl=0;for(const s of R.TRAIN.list)tl+=R.statLv(s.k);
+  console.log(String(marks[mi]).padStart(4)+'분  '+(R.zone().n+' '+S.stage).padEnd(9)+
+    String(R.gstage()).padStart(3)+'   '+R.realmInfo().name.padEnd(9)+
+    String(Math.round(S.silver)).padStart(10)+String(tl).padStart(7)+
+    String(Object.keys(S.arts).length).padStart(5)+String(S.downs).padStart(7));
+};
+let next=30;
+for(let i=0;i<30*60*MIN;i++){
+  R.step(dt);
+  if(S.t>=next){spend();next+=30;}
+  if(mi<marks.length&&S.t>=marks[mi]*60){line();mi++;}
+}
+while(mi<marks.length){line();mi++;}

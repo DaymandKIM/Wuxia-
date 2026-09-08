@@ -24,7 +24,7 @@ function hud(){
     $('kills').textContent = b ? zone().boss : '접근 중';
   } else {
     $('stage').textContent = zone().n + ' ' + S.stage + '단계';
-    $('kills').textContent = S.kills + ' / ' + st.need;
+    $('kills').textContent = S.kills + ' / ' + stageNeed();
   }
   $('hpt').textContent = Math.ceil(P.hp) + ' / ' + P.hpMax;
   $('silver').textContent = S.silver.toLocaleString();
@@ -33,7 +33,7 @@ function hud(){
   $('hp').firstElementChild.style.width = (P.hp/P.hpMax*100).toFixed(1) + '%';
   const b2 = S.foes.find(f=>f.boss && !f.dead);
   $('kn').firstElementChild.style.width =
-    (isBoss() ? (b2 ? b2.hp/b2.hpMax*100 : 0) : S.kills/st.need*100).toFixed(1) + '%';
+    (isBoss() ? (b2 ? b2.hp/b2.hpMax*100 : 0) : S.kills/stageNeed()*100).toFixed(1) + '%';
   $('kn').firstElementChild.style.background =
     isBoss() ? 'linear-gradient(90deg,#8c3f2f,#c86a52)' : 'linear-gradient(90deg,#3f7fb8,#69a8dd)';
 }
@@ -71,7 +71,7 @@ function buildZonePanel(){
     h += '<div class="zrow' + (here ? ' on' : '') + (open ? '' : ' lock') + '"' +
          (open ? ' data-z="' + i + '"' : '') + '>' +
          '<div class="zn">' + z.n + (here ? ' <em>수련 중</em>' : '') + '</div>' +
-         '<div class="zd">적이 ' + z.mul.toFixed(2) + '배 강하다</div>';
+         '<div class="zd">' + (i*10+1) + '~' + (i*10+10) + '단계</div>';
     if (open && TEST){
       // 테스트 모드 — 단계까지 바로 고른다
       h += '<div class="zst">';

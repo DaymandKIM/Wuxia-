@@ -20,7 +20,7 @@ for(const zi of [0,1,2,3,4]){
   S.intro=0;
   const hp0=R.bossHp();
   let t=0, spawned=false, cleared=false, downs0=S.downs;
-  for(let i=0;i<60*300;i++){
+  for(let i=0;i<60*720;i++){   // 지수 난이도 — 보스전이 길어졌다
     T+=1000/60; R.step(1/60); t+=1/60;
     if(!spawned && S.foes.some(f=>f.boss)) spawned=true;
     if(spawned && S.stage!==R.BOSS_STAGE){ cleared=true; break; }

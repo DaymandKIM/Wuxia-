@@ -97,7 +97,7 @@ function offlineGains(awaySec){
   for (const a of ARTS.list)
     if (a.type === 'passive' && S.arts[a.k]) S.artXp[a.k] = (S.artXp[a.k] | 0) + kills;
   // 인연도 상한 — 자리 비움 한 번에 기연 하나 반쯤
-  S.karma += Math.min(kills * zone().mul * FATE.killKarma, karmaNeed() * OFFLINE.karmaCap);
+  S.karma += Math.min(kills * killKarmaAt(), karmaNeed() * OFFLINE.karmaCap);
   S.totalKills += kills;
   S.silver += silver;
   if (S.karma >= karmaNeed()) S.fatePending = 1;

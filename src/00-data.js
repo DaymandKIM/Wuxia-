@@ -39,22 +39,31 @@ const FIST = [
 
 // 구역 — 각 10단계 + 보스 1단계. mul이 클수록 어렵고 보상도 크다.
 const ZONES = [
-  { k:'bamboo',  n:'죽림',   mul:1.0, ground:'#6a7a52', boss:'대나무 마왕' },
-  { k:'village', n:'폐촌',   mul:1.9, ground:'#6b6350', boss:'폐촌 망령' },
-  { k:'cave',    n:'동굴',   mul:3.4, ground:'#5c5f5c', boss:'동굴 주인' },
-  { k:'snow',    n:'설산',   mul:5.6, ground:'#b9c9d2', boss:'설산 노인' },
-  { k:'heaven',  n:'천산',   mul:9.0, ground:'#7f9a86', boss:'천산 검객' },
+  { k:'bamboo',  n:'죽림',   ground:'#6a7a52', boss:'대나무 마왕' },
+  { k:'village', n:'폐촌',   ground:'#6b6350', boss:'폐촌 망령' },
+  { k:'cave',    n:'동굴',   ground:'#5c5f5c', boss:'동굴 주인' },
+  { k:'snow',    n:'설산',   ground:'#b9c9d2', boss:'설산 노인' },
+  { k:'heaven',  n:'천산',   ground:'#7f9a86', boss:'천산 검객' },
 ];
 const zone = ()=> ZONES[S.zi];
 
-// 단계 설계 — 구역당 10단계
+// 난이도 — 전역 단계 g(1~50)가 축이다. 구역은 배경·계보·서사의 단위.
+// 원 확정 복원: 단계당 1.30배 + 처치 목표 24+단계×7. 선형 몹은 벽이 안
+// 생겨 60분에 콘텐츠가 끝났다(소모 속도 우려) — 지수여야 전선이 생기고,
+// 전선에서 벌어서(수련·무공·숙련·기연) 뚫는 게 게임이 된다.
+const DIFF = {
+  hpBase: 22,  hpGrow: 1.30,     // 적 체력 = hpBase × hpGrow^(g-1)
+  dmgBase: 3.0, dmgGrow: 1.19,   // 적 피해 — 밀어붙일 때만 위험하게 (sim 쓰러짐 기준)
+  needBase: 24, needPer: 7,      // 처치 목표 = base + g×per (31 → 374)
+};
+const gstage    = ()=> S.zi * 10 + Math.min(S.stage, 10);
+const stageNeed = ()=> DIFF.needBase + gstage() * DIFF.needPer;
+
+// 단계별 연출 수치 (구역 안 1~10)
 const STAGES = [];
 for (let i = 1; i <= 10; i++) {
   STAGES.push({
     n: i,
-    need: 10 + i * 4,            // 처치 목표 14 → 50
-    hp:   20 + i * 13,           // 적 체력 (구역 배율 곱함) — 성장 대비 약하다는 피드백으로 상향
-    dmg:  3.0 + i * 0.85,        // 적 피해 — 상향하되 후반 쓰러짐이 과하지 않게
     spd:  38 + i * 2,            // 적 속도
     max:  Math.min(3 + i, 7),    // 동시 등장 수
   });
@@ -64,8 +73,8 @@ const isBoss = ()=> S.stage === BOSS_STAGE;
 
 // 보스 — 잡몹보다 훨씬 단단하고 아프다
 const BOSS = {
-  hp:   62,      // 마지막 단계 적 체력의 배수
-  dmg:  2.4,     // 마지막 단계 적 피해의 배수
+  hp:   30,      // 마지막 단계 적 체력의 배수 (지수 난이도라 62는 너무 길다)
+  dmg:  2.0,     // 마지막 단계 적 피해의 배수
   spd:  0.82,    // 느리다
   scale:1.55,    // 전용 스프라이트가 없을 때만 확대
   guard:0,       // 보스 단계엔 잡몹이 없다
@@ -126,11 +135,11 @@ const BOSSKILL = {
   hitAt: 0.62,   // 폭발 프레임에서 터진다
 };
 
-// 구역 배율을 반영한 실제 수치
-const foeHp  = ()=> Math.round(stage().hp  * zone().mul);
-const foeDmg = ()=> stage().dmg * (1 + (zone().mul-1)*0.55);
-const bossHp = ()=> Math.round(STAGES[STAGES.length-1].hp * zone().mul * BOSS.hp);
-const bossDmg= ()=> STAGES[STAGES.length-1].dmg * (1 + (zone().mul-1)*0.55) * BOSS.dmg;
+// 실제 수치 — 전부 전역 단계 g에서 나온다
+const foeHp  = ()=> Math.round(DIFF.hpBase * Math.pow(DIFF.hpGrow, gstage()-1));
+const foeDmg = ()=> DIFF.dmgBase * Math.pow(DIFF.dmgGrow, gstage()-1);
+const bossHp = ()=> Math.round(DIFF.hpBase * Math.pow(DIFF.hpGrow, S.zi*10+9) * BOSS.hp);
+const bossDmg= ()=> DIFF.dmgBase * Math.pow(DIFF.dmgGrow, S.zi*10+9) * BOSS.dmg;
 
 // 단계 진입 연출 — 배경 3장이 차례로 흐른다
 // 단계 진입 연출 — 3장이 위에서 아래로 차례로 슬라이드해 들어온다
@@ -249,13 +258,14 @@ const REALM = {
   names: ['삼류','이류','일류','절정','초절정','화경','현경','생사경','자연경'],
   per:   4,                      // 경지당 성 수 (신화경만 무한)
   last:  '신화경',
-  expBase: 20,                   // k번째 승급 필요 수련치 = expBase × expGrow^k
-  expGrow: 1.18,
-  killExp: 1,                    // 잡몹 처치 수련치 = 구역배율 × killExp
-  bossExp: 25,                   // 보스 처치 수련치 = 구역배율 × bossExp
-  // 이 구역·단계쯤이면 대략 이 경지 레벨 (sim 실측 근사) — 테스트 이동·도구용
-  seed: [0, 10, 15, 18, 22, 30],
+  expBase: 25,                   // k번째 승급 필요 수련치 = expBase × expGrow^k
+  expGrow: 1.30,                 // 승급 하나가 대도약(GROW 참고)
+  killGrow: 1.07,                // 처치 수련치 = killGrow^(g-1) — 필요량보다 훨씬 완만해야 벽이 선다
+  bossExp: 25,                   // 보스 = 잡몹의 몇 배
+  // 이 구역쯤이면 대략 이 경지 레벨 (sim 실측 근사) — 테스트 이동·도구용
+  seed: [0, 11, 17, 24, 29],
 };
+const killExpAt = ()=> Math.pow(REALM.killGrow, gstage()-1);
 const realmNeed = k => Math.round(REALM.expBase * Math.pow(REALM.expGrow, k));
 // 경지 레벨 k의 표기 ("절정 2성")
 function realmName(k){
@@ -273,18 +283,19 @@ function realmInfo(){
 const realmLv = ()=> realmInfo().k;
 // 구역·단계에 걸맞은 누적 수련치 — 테스트 단계 이동과 검증 도구가 쓴다
 function seedExp(zi, st){
-  const a = REALM.seed[zi], b = REALM.seed[zi + 1] || (a + 8);
+  const a = REALM.seed[zi], b = (REALM.seed[zi + 1] !== undefined ? REALM.seed[zi + 1] : a + 8);
   const k = Math.round(a + (b - a) * Math.min(st || 1, 11) / 11);
   let t = 0;
   for (let i = 0; i < k; i++) t += realmNeed(i);
   return t;
 }
 
-// 성장 — 경지가 오를 때마다 주인공이 강해진다 (단계가 아니라 경지 기준)
+// 성장 — 승급마다 곱해진다. 적이 단계당 1.30배니 주인공은 승급당 1.40배 —
+// 승급 0.78회 ≈ 한 단계를 따라잡는 등가. 승급이 드문 만큼 하나가 대도약이다.
 const GROW = {
-  dmg:  5,                       // 경지 승급당 정권 피해
-  hp:   70,                      // 경지 승급당 최대 체력
-  regen:1.3,                     // 경지 승급당 회복
+  dmg:  1.31,                    // 승급당 정권 피해 배율 — 적(단계당 1.30)과 등가
+  hp:   1.31,                    // 승급당 최대 체력 배율
+  regen:1.31,                    // 승급당 회복 배율
 };
 const lv        = ()=> S.zi*10 + S.stage;      // 누적 단계 (구역 진행도)
 
@@ -298,13 +309,14 @@ const TRAIN = {
   capPer:   10,                  // 경지당 열리는 상한 (경지×10)
   critMul:  1.5,                 // 치명타 배수
   list: [
-    // inc: 레벨당 고정 증가 · asym:[최대치, 절반점]: 점근 % 증가
+    // inc: 레벨당 +% (지수 세계라 고정치는 금방 무의미 — 전부 비율)
+    // asym:[최대치, 절반점]: 점근 % (이동·치명타)
     { k:'atk',   n:'공격',      d:'주먹이 매워진다', inc:2,
-      f:v=>'+'+Math.round(v) },
-    { k:'hp',    n:'체력',      d:'몸이 단단해진다', inc:25,
-      f:v=>'+'+Math.round(v) },
-    { k:'regen', n:'회복',      d:'숨이 깊어진다',   inc:0.5,
-      f:v=>'+'+v.toFixed(1)+'/초' },
+      f:v=>'+'+Math.round(v)+'%' },
+    { k:'hp',    n:'체력',      d:'몸이 단단해진다', inc:2,
+      f:v=>'+'+Math.round(v)+'%' },
+    { k:'regen', n:'회복',      d:'숨이 깊어진다',   inc:2,
+      f:v=>'+'+Math.round(v)+'%' },
     { k:'spd',   n:'이동 속도', d:'발이 빨라진다',   asym:[60,40],
       f:v=>'+'+v.toFixed(1)+'%' },
     { k:'crit',  n:'치명타',    d:'급소가 보인다',   asym:[50,60],
@@ -397,26 +409,29 @@ function artMul(kind){
   return m;
 }
 
-const heroDmg   = ()=> (HERO.atkDmg + realmLv() * GROW.dmg + statBonus('atk')) * artMul('dmg');
-const heroHpMax = ()=> Math.round((HERO.hp + realmLv() * GROW.hp + statBonus('hp')) * artMul('hp'));
-const heroRegen = ()=> (HERO.regen + realmLv() * GROW.regen + statBonus('regen')) * artMul('regen');
+const heroDmg   = ()=> HERO.atkDmg * Math.pow(GROW.dmg, realmLv())
+                        * (1 + statBonus('atk')/100) * artMul('dmg');
+const heroHpMax = ()=> Math.round(HERO.hp * Math.pow(GROW.hp, realmLv())
+                        * (1 + statBonus('hp')/100) * artMul('hp'));
+const heroRegen = ()=> HERO.regen * Math.pow(GROW.regen, realmLv())
+                        * (1 + statBonus('regen')/100) * artMul('regen');
 const heroSpd   = ()=> HERO.spd * (1 + statBonus('spd')/100) * artMul('spd');
 const critCh    = ()=> statBonus('crit') / 100;
 
 // 은자 — 첫 재화. 처치 드랍 + 보스 첫 격파 + 오프라인 정산.
 // ※ 수치는 임시. 쓸 곳(심법)이 들어오면 sim으로 다시 잡는다.
 const SILVER = {
-  base:     2,                   // 한 마리당 기본
-  perStage: 1,                   // 단계당 가산
+  base:     3,                   // 1단계 한 마리
+  grow:     1.22,                // 단계당 배율 — 깊이 갈수록 벌이가 는다
   bossKill: 10,                  // 보스는 잡몹 드랍의 몇 배인가
-  first:    80,                  // 보스 첫 격파 보너스 (구역 배율 곱함)
+  firstMul: 50,                  // 보스 첫 격파 보너스 = 처치 드랍 × 이 값
 };
-const killSilver = ()=> Math.round((SILVER.base + SILVER.perStage*Math.min(S.stage,10)) * zone().mul);
+const killSilver = ()=> Math.round(SILVER.base * Math.pow(SILVER.grow, gstage()-1));
 
 // 기연 — 공짜 랜덤이 아니라 누적의 정산 (조사 결론·장무기 공식).
 // 인연(緣)이 쌓이면 단계 제패 순간 기연이 나타난다. 고난(쓰러짐)이 크게 쌓인다.
 const FATE = {
-  killKarma: 1,                  // 처치당 인연 = 구역배율 × 이 값
+  killGrow:  1.18,               // 처치당 인연 = killGrow^(g-1)
   bossKarma: 120,                // 보스 격파
   downKarma: 60,                 // 쓰러짐 — 고난이 기연의 씨앗
   needBase:  400,                // 첫 기연까지 필요한 인연
@@ -433,7 +448,8 @@ const FATE = {
     { k:'frag',   n:'실전 비급 조각', d:'찢어진 책장이 바람에 날아와 붙었다' },
   ],
 };
-const karmaNeed = ()=> Math.round(FATE.needBase * Math.pow(FATE.needGrow, S.fates));
+const karmaNeed  = ()=> Math.round(FATE.needBase * Math.pow(FATE.needGrow, S.fates));
+const killKarmaAt = ()=> Math.pow(FATE.killGrow, gstage()-1);
 
 // 저장 — 껐다 켜도 이어진다. 방치형의 최소 조건.
 const SAVE = {
