@@ -15,24 +15,18 @@ global.window=global;global.innerWidth=390;global.innerHeight=844;global.deviceP
 global.addEventListener=noop;
 global.Image=class{constructor(){}set src(v){}get complete(){return true;}get naturalWidth(){return 56;}};
 const R=new Function(code+`;return {S,P,step:dt=>step(dt),zone:()=>zone(),lv:()=>lv(),gstage:()=>gstage(),
-  realmInfo:()=>realmInfo(),statLv:k=>statLv(k),trainCost:n=>trainCost(n),trainCap:()=>trainCap(),
+  realmInfo:()=>realmInfo(),statLv:k=>statLv(k),trainCost:(k,n)=>trainCost(k,n),trainCap:()=>trainCap(),
   buyStat:k=>buyStat(k),TRAIN,ARTS,canLearn:a=>canLearn(a),learnArt:k=>learnArt(k),
   canBreak:a=>canBreak(a),breakArt:k=>breakArt(k)};`)();
 const {S,P}=R;
 
 // 플레이어 흉내 — 30초마다: 가장 싼 수련 스텟 1개, 배울 수 있는 무공, 가능한 돌파
 function spend(){
-  let best=null,bc=1e18;
-  for(const s of R.TRAIN.list){
-    if(R.statLv(s.k)>=R.trainCap())continue;
-    const c=R.trainCost(R.statLv(s.k));
-    if(c<bc){bc=c;best=s.k;}
-  }
   for(let n=0;n<10;n++){
     let b2=null,c2=1e18;
     for(const s of R.TRAIN.list){
       if(R.statLv(s.k)>=R.trainCap())continue;
-      const c=R.trainCost(R.statLv(s.k));
+      const c=R.trainCost(s.k,R.statLv(s.k));
       if(c<c2){c2=c;b2=s.k;}
     }
     if(!b2||S.silver<c2)break;

@@ -4,23 +4,47 @@
 */
 function buyStat(k){
   const n = statLv(k);
-  const cost = trainCost(n);
+  const cost = trainCost(k, n);
   if (n >= trainCap() || S.silver < cost) return false;
   S.silver -= cost;
   S.stats[k] = n + 1;
   return true;
 }
 
+let trainAmt = 1;                // 구매 배수 (1·10·100·'MAX')
+// 지금 배수로 실제 살 수 있는 개수와 총비용
+function trainPlan(k){
+  const cap = trainCap();
+  let n = statLv(k), silver = S.silver, cnt = 0, cost = 0;
+  const want = trainAmt === 'MAX' ? Infinity : trainAmt;
+  while (cnt < want && n < cap){
+    const c = trainCost(k, n);
+    if (silver < c) break;
+    silver -= c; cost += c; n++; cnt++;
+  }
+  return { cnt, cost };
+}
+function buyStatN(k){
+  const { cnt } = trainPlan(k);
+  for (let i = 0; i < cnt; i++) buyStat(k);
+  return cnt > 0;
+}
+
 // 살 수 있는 스텟이 하나라도 있나 — 탭 알림점용
 function canTrain(){
   for (const s of TRAIN.list)
-    if (statLv(s.k) < trainCap() && S.silver >= trainCost(statLv(s.k))) return true;
+    if (statLv(s.k) < trainCap() && S.silver >= trainCost(s.k, statLv(s.k))) return true;
   return false;
 }
 
 function buildTrainPanel(){
   const b = $('trbody');
-  let h = '';
+  // 구매 배수 — x10·x100·MAX 로 한 번에 (사용자 확정)
+  let h = '<div class="zst tramt">';
+  for (const m of TRAIN.amounts)
+    h += '<button class="sb' + (trainAmt === m ? ' on' : '') + '" data-amt="' + m + '">' +
+         (m === 'MAX' ? 'MAX' : 'x' + m) + '</button>';
+  h += '</div>';
   for (const s of TRAIN.list){
     h += '<div class="zrow trow" id="tr-' + s.k + '">' +
          '<div class="trl"><div class="zn">' + s.n + ' <em id="trlv-' + s.k + '"></em></div>' +
@@ -30,6 +54,13 @@ function buildTrainPanel(){
   }
   h += '<div class="znote">경지가 오르면 수련 상한이 열린다 (스텟당 경지×' + TRAIN.capPer + ').</div>';
   b.innerHTML = h;
+  b.querySelectorAll('.tramt .sb').forEach(el => {
+    el.onclick = () => {
+      trainAmt = el.dataset.amt === 'MAX' ? 'MAX' : parseInt(el.dataset.amt, 10);
+      b.querySelectorAll('.tramt .sb').forEach(e2 => e2.classList.toggle('on', e2 === el));
+      refreshTrain();
+    };
+  });
   // 꾹 누르면 연속 구매 — click 대신 pointer로만 다룬다 (이중 구매 방지)
   b.querySelectorAll('.trbuy').forEach(el => {
     const k = el.dataset.k;
@@ -37,9 +68,9 @@ function buildTrainPanel(){
     const stop = ()=>{ if (iv){ clearInterval(iv); iv = 0; } };
     el.onpointerdown = e => {
       e.preventDefault();
-      if (buyStat(k)) refreshTrain();
+      if (buyStatN(k)) refreshTrain();
       stop();
-      iv = setInterval(()=>{ if (buyStat(k)) refreshTrain(); else stop(); }, 130);
+      iv = setInterval(()=>{ if (buyStatN(k)) refreshTrain(); else stop(); }, 160);
     };
     el.onpointerup = el.onpointerleave = el.onpointercancel = stop;
   });
@@ -60,9 +91,11 @@ function refreshTrain(){
       $('trc-' + s.k).textContent = '상한';
       btn.disabled = true;
     } else {
-      const cost = trainCost(n);
-      $('trc-' + s.k).textContent = cost.toLocaleString();
-      btn.disabled = S.silver < cost;
+      const p = trainPlan(s.k);
+      $('trc-' + s.k).textContent = p.cnt > 0
+        ? p.cost.toLocaleString() + (p.cnt > 1 ? ' ×' + p.cnt : '')
+        : trainCost(s.k, n).toLocaleString();
+      btn.disabled = p.cnt === 0;
     }
   }
 }

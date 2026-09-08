@@ -304,23 +304,28 @@ const lv        = ()=> S.zi*10 + S.stage;      // 누적 단계 (구역 진행�
 // %짜리(이동·치명타)는 점근식이라 아무리 올려도 max를 못 넘는다.
 // ※ 비용·효과 수치는 임시. 심법 들어올 때 sim으로 다시 잡는다.
 const TRAIN = {
-  costBase: 12,                  // 0→1 비용
-  costGrow: 1.16,                // 레벨당 비용 배율
   capPer:   10,                  // 경지당 열리는 상한 (경지×10)
-  critMul:  1.5,                 // 치명타 배수
+  critMul:  1.5,                 // 치명타 기본 배수 (치명 피해 스텟이 더한다)
+  amounts:  [1, 10, 100, 'MAX'], // 한 번에 구매 단위
   list: [
-    // inc: 레벨당 +% (지수 세계라 고정치는 금방 무의미 — 전부 비율)
-    // asym:[최대치, 절반점]: 점근 % (이동·치명타)
-    { k:'atk',   n:'공격',      d:'주먹이 매워진다', inc:2,
+    // inc: 레벨당 +% · asym:[최대치, 절반점]: 점근 %
+    // cb/cg: 스텟별 가격·상승 곡선 — 가치가 클수록 비싸고 가파르다 (사용자 확정)
+    { k:'atk',   n:'공격',      d:'주먹이 매워진다',        inc:2,        cb:12, cg:1.16,
       f:v=>'+'+Math.round(v)+'%' },
-    { k:'hp',    n:'체력',      d:'몸이 단단해진다', inc:2,
+    { k:'hp',    n:'체력',      d:'몸이 단단해진다',        inc:2,        cb:10, cg:1.15,
       f:v=>'+'+Math.round(v)+'%' },
-    { k:'regen', n:'회복',      d:'숨이 깊어진다',   inc:2,
+    { k:'regen', n:'회복',      d:'숨이 깊어진다',          inc:2,        cb:8,  cg:1.14,
       f:v=>'+'+Math.round(v)+'%' },
-    { k:'spd',   n:'이동 속도', d:'발이 빨라진다',   asym:[60,40],
+    { k:'aspd',  n:'공격 속도', d:'손이 빨라진다',          asym:[50,60], cb:40, cg:1.22,
       f:v=>'+'+v.toFixed(1)+'%' },
-    { k:'crit',  n:'치명타',    d:'급소가 보인다',   asym:[50,60],
+    { k:'crit',  n:'치명타',    d:'급소가 보인다',          asym:[50,60], cb:25, cg:1.19,
       f:v=>v.toFixed(1)+'%' },
+    { k:'cdmg',  n:'치명 피해', d:'급소를 더 깊이 찌른다',  asym:[100,80], cb:30, cg:1.20,
+      f:v=>'+'+v.toFixed(0)+'%' },
+    { k:'spd',   n:'이동 속도', d:'발이 빨라진다',          asym:[60,40], cb:15, cg:1.15,
+      f:v=>'+'+v.toFixed(1)+'%' },
+    { k:'gold',  n:'은자 획득', d:'허리춤이 두둑해진다',    asym:[100,70], cb:20, cg:1.18,
+      f:v=>'+'+v.toFixed(0)+'%' },
   ],
 };
 const statLv    = k => S.stats[k] | 0;
@@ -331,7 +336,8 @@ const statBonus = (k, n) => {
   const s = statDef(k); if (n === undefined) n = statLv(k);
   return s.asym ? asym(n, s.asym[0], s.asym[1]) : n * s.inc;
 };
-const trainCost = n => Math.round(TRAIN.costBase * Math.pow(TRAIN.costGrow, n));
+// 스텟 k의 n레벨째 비용 — 곡선이 스텟마다 다르다
+const trainCost = (k, n) => Math.round(statDef(k).cb * Math.pow(statDef(k).cg, n));
 const trainCap  = ()=> (realmLv() + 1) * TRAIN.capPer;          // 경지가 상한을 연다
 
 // 무공 — 경지에 닿으면 은자로 익힌다. 익히면 되돌리지 않는다.
@@ -416,7 +422,9 @@ const heroHpMax = ()=> Math.round(HERO.hp * Math.pow(GROW.hp, realmLv())
 const heroRegen = ()=> HERO.regen * Math.pow(GROW.regen, realmLv())
                         * (1 + statBonus('regen')/100) * artMul('regen');
 const heroSpd   = ()=> HERO.spd * (1 + statBonus('spd')/100) * artMul('spd');
+const heroAtkSpd= ()=> 1 + statBonus('aspd') / 100;   // 공격 동작·간격을 함께 배속
 const critCh    = ()=> statBonus('crit') / 100;
+const critMul   = ()=> TRAIN.critMul + statBonus('cdmg') / 100;
 
 // 은자 — 첫 재화. 처치 드랍 + 보스 첫 격파 + 오프라인 정산.
 // ※ 수치는 임시. 쓸 곳(심법)이 들어오면 sim으로 다시 잡는다.
@@ -426,7 +434,8 @@ const SILVER = {
   bossKill: 10,                  // 보스는 잡몹 드랍의 몇 배인가
   firstMul: 50,                  // 보스 첫 격파 보너스 = 처치 드랍 × 이 값
 };
-const killSilver = ()=> Math.round(SILVER.base * Math.pow(SILVER.grow, gstage()-1));
+const killSilver = ()=> Math.round(SILVER.base * Math.pow(SILVER.grow, gstage()-1)
+                                   * (1 + statBonus('gold')/100));
 
 // 기연 — 공짜 랜덤이 아니라 누적의 정산 (조사 결론·장무기 공식).
 // 인연(緣)이 쌓이면 단계 제패 순간 기연이 나타난다. 고난(쓰러짐)이 크게 쌓인다.

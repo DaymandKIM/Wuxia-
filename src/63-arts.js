@@ -36,15 +36,17 @@ function learnArt(k){
   return true;
 }
 
-// 효과 요약 ("공격 +15%")
-function artFxText(a){
+// 효과 요약 — 숙련 성이 반영된 실효값으로 보여준다 ("성이 올라도 안 좋아져
+// 보인다"는 피드백: 실제론 +25%/성인데 표기가 기본값이라 안 보였다)
+function artFxText(a, star){
+  const e = 1 + MASTERY.effPer * ((star !== undefined ? star : artStar(a.k)) - 1);
   const parts = [];
-  if (a.dmg)   parts.push('공격 +' + Math.round(a.dmg*100) + '%');
-  if (a.hp)    parts.push('체력 +' + Math.round(a.hp*100) + '%');
-  if (a.regen) parts.push('회복 +' + Math.round(a.regen*100) + '%');
-  if (a.spd)   parts.push('이동 +' + Math.round(a.spd*100) + '%');
-  if (a.mul)   parts.push('정권 ' + a.mul + '배 · ' + a.cd + '초마다');
-  if (a.heal)  parts.push('체력 ' + Math.round(a.heal*100) + '% 회복 · ' + a.cd + '초마다');
+  if (a.dmg)   parts.push('공격 +' + Math.round(a.dmg*100*e) + '%');
+  if (a.hp)    parts.push('체력 +' + Math.round(a.hp*100*e) + '%');
+  if (a.regen) parts.push('회복 +' + Math.round(a.regen*100*e) + '%');
+  if (a.spd)   parts.push('이동 +' + Math.round(a.spd*100*e) + '%');
+  if (a.mul)   parts.push('정권 ' + (a.mul*e).toFixed(1).replace(/\.0$/,'') + '배 · ' + a.cd + '초마다');
+  if (a.heal)  parts.push('체력 ' + Math.round(a.heal*100*e) + '% 회복 · ' + a.cd + '초마다');
   return parts.join(' · ');
 }
 
@@ -64,7 +66,7 @@ function buildArtsPanel(){
       h += '<button class="atile' + (a.fate ? ' fate' : '') + '" data-k="' + a.k +
            '"><i class="sc" style="background:' + sc.c + '"></i>' +
            '<span class="g">' + a.h[0] + '</span>' +
-           '<span class="nm">' + a.n + '</span></button>';
+           '<span class="nm">' + a.n + '</span><em class="bd"></em></button>';
     }
     h += '</div>';
   }
@@ -91,10 +93,17 @@ function refreshArts(){
     el.classList.toggle('got', got);
     el.classList.toggle('lock', !got && !open && !a.fate);
     el.classList.toggle('sel', el.dataset.k === artSel);
+    // 익힌 무공은 문파색 테두리 + 옅은 문파색 바탕 — 안 익힌 것과 확실히 갈린다
     el.style.borderColor = got ? sc.c : '';
+    el.style.background = got ? sc.c + '22' : '';
     el.querySelector('.g').style.color = got ? sc.c : '';
     el.querySelector('.nm').textContent =
       a.n + (got && artStar(a.k) > 1 ? ' ' + artStar(a.k) + '성' : '');
+    // 배지 — ▲ 돌파 가능 · + 배울 수 있음 ("뭘 할 수 있는지 안 보인다"는 피드백)
+    const bd = el.querySelector('.bd');
+    if (canBreak(a))      { bd.className = 'bd up';  bd.textContent = '▲'; }
+    else if (canLearn(a)) { bd.className = 'bd can'; bd.textContent = '+'; }
+    else                  { bd.className = 'bd';     bd.textContent = ''; }
   });
   const a = artDef(artSel);
   if (!a) return;
@@ -110,7 +119,8 @@ function refreshArts(){
     if (st < MASTERY.maxStar){
       const need = artXpNeed(a.k), cost = artBreakCost(a.k);
       d += '<div class="zd">숙련 ' + st + '성 · ' + Math.min(xp, need) + ' / ' + need +
-           (a.type === 'active' ? ' (시전 횟수)' : ' (처치 수)') + '</div>';
+           (a.type === 'active' ? ' (시전 횟수)' : ' (처치 수)') + '</div>' +
+           '<div class="zd need">돌파하면 → ' + artFxText(a, st + 1) + '</div>';
       if (xp >= need)
         d += '<button class="trbuy" id="abrk"' + (S.silver >= cost ? '' : ' disabled') +
              '><span>' + cost.toLocaleString() + '</span><i>은자 · 돌파</i></button>';

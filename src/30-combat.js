@@ -93,8 +93,8 @@ function heroAttack(){
   }
   if (!best || bd > HERO.atkRange + HERO.atkReach) return false;
   P.dir = best.x >= P.x ? 1 : -1;
-  P.atkT = ANIM.atk[0] / ANIM.atk[1];   // 0.5초
-  P.atkCd = HERO.atkCd;
+  P.atkT = ANIM.atk[0] / ANIM.atk[1] / heroAtkSpd();   // 공격 속도만큼 빨리 지나간다
+  P.atkCd = HERO.atkCd / heroAtkSpd();
   P.hitDone = false;
   return true;
 }
@@ -115,7 +115,7 @@ function heroHitCheck(){
     if (Math.hypot(dx, dy) < HERO.atkRange){
       // 치명타 — 급소를 때리면 배수 피해, 노란 숫자로 알린다
       const crit = Math.random() < critCh();
-      hurtFoe(f, heroDmg() * (crit ? TRAIN.critMul : 1), crit);
+      hurtFoe(f, heroDmg() * (crit ? critMul() : 1), crit);
       n++;
     }
   }

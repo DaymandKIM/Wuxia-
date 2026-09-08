@@ -94,7 +94,7 @@ function step(dt){
   // 공격 동작은 끊지 않는다. 피격은 깜빡임으로만 알린다.
   const na = P.atkT > 0 ? 'atk' : (P.hitT > 0 ? 'hit' : (moving ? 'run' : 'idle'));
   if (na !== P.anim){ P.anim = na; P.af = 0; }
-  P.af += dt * ANIM[P.anim][1];
+  P.af += dt * ANIM[P.anim][1] * (P.anim === 'atk' ? heroAtkSpd() : 1);
 
   // 회복 — 최대 체력은 단계에 따라 오른다
   P.hpMax = heroHpMax();
