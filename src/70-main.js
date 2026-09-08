@@ -93,12 +93,21 @@ if (sv){
   if (away >= OFFLINE.min) og = offlineGains(away);
 }
 enterStage();
-if (og && og.kills > 0) showOffline(og);
+if (og) showOffline(og);           // 처치 0이어도 보여준다 — 수련치는 시간으로 쌓인다
 
 saveNow();
 setInterval(saveNow, SAVE.every * 1000);
-document.addEventListener('visibilitychange',
-  () => { if (document.visibilityState === 'hidden') saveNow(); });
+// 모바일은 탭을 안 닫고 앱만 바꾼다 — 페이지가 다시 로드되지 않으므로
+// 화면이 다시 보이는 순간에도 정산해야 한다 ("오프라인 왜 안 됨"의 원인)
+let hiddenAt = 0;
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden'){ hiddenAt = Date.now(); saveNow(); }
+  else if (hiddenAt){
+    const away = (Date.now() - hiddenAt) / 1000;
+    hiddenAt = 0;
+    if (away >= OFFLINE.min){ showOffline(offlineGains(away)); saveNow(); }
+  }
+});
 addEventListener('pagehide', saveNow);
 
 let last = performance.now();

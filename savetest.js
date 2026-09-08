@@ -81,6 +81,19 @@ const ok=(cond,msg)=>{ console.log((cond?'  ':'  ★실패 ')+msg); if(!cond)bad
         ok(a.totalKills>1000,'8시간 정산이 넉넉하다: '+a.totalKills+'처치');
         ok(a.stage===1 && a.zi===0,'상한 케이스도 단계는 그대로');
 
+        // ── 3.5) 앱 전환 복귀 정산 — 모바일은 페이지를 다시 로드하지 않는다
+        //         (hidden→visible 사이가 길면 그 자리에서 정산해야 한다)
+        const dv=w2.eval(`(function(){
+          const s0=S.silver;
+          Object.defineProperty(document,'visibilityState',{value:'hidden',configurable:true});
+          document.dispatchEvent(new Event('visibilitychange'));
+          hiddenAt = Date.now() - 2*3600*1000;
+          Object.defineProperty(document,'visibilityState',{value:'visible',configurable:true});
+          document.dispatchEvent(new Event('visibilitychange'));
+          return { d:S.silver-s0, shown:document.getElementById('opanel').classList.contains('show') };
+        })()`);
+        ok(dv.d>0 && dv.shown,'앱 전환 복귀(2시간)에도 정산·패널이 뜬다 (은자 +'+dv.d+')');
+
         // ── 4) 깨진 저장은 버린다 ───────────────────────
         const {w:w4,errs:e4}=boot('{깨진 json');
         setTimeout(()=>{

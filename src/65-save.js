@@ -79,6 +79,7 @@ function offKillTime(){
 // 은자·수련치·인연만 쌓는다. 진행은 돌아와서 직접 본다.
 function offlineGains(awaySec){
   const sec = Math.min(awaySec, OFFLINE.cap);
+  const rexp0 = S.rexp;
   let budget = sec * OFFLINE.rate;
   let kills = 0, silver = 0;
   while (budget > 0){
@@ -103,7 +104,7 @@ function offlineGains(awaySec){
   S.totalKills += kills;
   S.silver += silver;
   if (S.karma >= karmaNeed()) S.fatePending = 1;
-  return { sec, kills, silver, fate: S.fatePending };
+  return { sec, kills, silver, exp: Math.round(S.rexp - rexp0), fate: S.fatePending };
 }
 
 /* ── 돌아온 화면 ──────────────────────────────────── */
@@ -118,6 +119,7 @@ function showOffline(g){
   $('otime').textContent = fmtDur(g.sec) + ' 동안 수련했다';
   let h = '<div class="orow"><span>처치</span><b>' + g.kills.toLocaleString() + '</b></div>';
   if (g.silver) h += '<div class="orow"><span>은자</span><b>+' + g.silver.toLocaleString() + '</b></div>';
+  if (g.exp)    h += '<div class="orow"><span>수련치</span><b>+' + g.exp.toLocaleString() + '</b></div>';
   if (g.fate)   h += '<div class="orow"><span>✦ 기연</span><b>기다리고 있다</b></div>';
   $('obody').innerHTML = h;
   $('opanel').classList.add('show');
