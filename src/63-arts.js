@@ -42,8 +42,10 @@ function buildArtsPanel(){
       if (a.type !== sec[1]) continue;
       const got = !!S.arts[a.k];
       const open = !a.fate && k >= a.need;
+      const sc = SCHOOLS[a.school] || SCHOOLS.none;
       h += '<div class="zrow trow' + (got ? ' on' : (open ? '' : ' lock')) + '">' +
            '<div class="trl"><div class="zn">' + a.n + ' <small>' + a.h + '</small>' +
+           ' <i class="sch" style="color:' + sc.c + '">' + sc.n + '</i>' +
            (got ? ' <em>익힘</em>' : (a.fate ? ' <em class="fate">기연</em>' : '')) + '</div>' +
            '<div class="zd">' + a.d + (artFxText(a) ? ' · ' + artFxText(a) : '') + '</div>' +
            (!got && !a.fate && !open
