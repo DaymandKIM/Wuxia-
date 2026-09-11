@@ -355,10 +355,14 @@ const FOES = {
            walk:['walk0','walk1','walk2','walk3','walk4','walk5','walk6','walk7'],
            atk:['atk0','atk1','atk2','atk3'],     // 치켜들기 → 회전 베기 → 장거리 찌르기 → 갈무리
            cast:['cast0','cast1','cast2'],        // 납도 → 검기 모으기 → 발도 (초승달 발사)
+           dash:['dash'],                         // 돌격 — 검 뻗은 채 미끄러져 들어온다
            hit:['hit'], death:['death0','death1'] },
-    fps:{ idle:4, walk:8, atk:8, cast:4.8, hit:6, death:4 },
+    fps:{ idle:4, walk:8, atk:8, cast:4.8, dash:6, hit:6, death:4 },
     hp:1.7, dmg:1.3, spd:0.95, range:66,   // 정예 — 단단하고 아프고 검이 길다
-    throwCd:8, throwDur:0.62, throwAt:0.6, throwMin:90, throwMax:240,
+    // 돌격 — 중거리(70~170)에서 찌르기 자세로 미끄러져 들어와 꿰뚫는다 (사용자 제안)
+    dashCd:5.5, dashDur:0.55, dashSpd:330, dashMin:70, dashMax:170, dashMul:1.4,
+    // 투척(초승달 검기)은 돌격보다 먼 거리 담당
+    throwCd:8, throwDur:0.62, throwAt:0.6, throwMin:180, throwMax:270,
     shotImg:'guard_shot', shotFly:true, shotSpd:240,
   },
   spirit: {

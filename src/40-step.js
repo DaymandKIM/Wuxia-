@@ -129,7 +129,8 @@ function step(dt){
     }
     // 동작 결정 — 공격 중엔 피격으로 끊지 않는다
     const M = foeM(f);
-    const na = f.skT>0 ? 'skill' : (f.atkT>0 ? 'atk' : (f.hit>0 ? 'hit' : 'walk'));
+    const na = f.dhT>0 ? 'dash'
+             : (f.skT>0 ? 'skill' : (f.atkT>0 ? 'atk' : (f.hit>0 ? 'hit' : 'walk')));
     if (na !== f.anim){ f.anim = na; f.af = 0; }
     f.af += dt * M.fps[f.anim];
     const d = dist(f.x,f.y,P.x,P.y) || 1;
@@ -171,6 +172,30 @@ function step(dt){
       else if (f.atkT <= 0 && (M.shotImg || d < BOSSKILL.range)){   // 탄 보스는 거리 불문
         f.skT = BOSSKILL.dur; f.skDone = false;
         f.anim = 'skill'; f.af = 0;
+        continue;
+      }
+    }
+    // 돌격 — 수호무사가 중거리에서 찌르기 자세로 미끄러져 들어온다 (사용자 제안)
+    if (M.dashCd && !f.boss){
+      if (f.dhT > 0){
+        f.dhT -= dt;
+        const dd = dist(f.x,f.y,P.x,P.y) || 1;
+        f.x += (P.x-f.x)/dd * M.dashSpd * dt;
+        f.y += (P.y-f.y)/dd * M.dashSpd * dt;
+        if (!f.dhDone && dd < (M.range||FOE.range)*0.8){
+          f.dhDone = true;
+          hurtHero(foeDmg() * M.dmg * (M.dashMul||1.3));
+          shake(4); sfx('punch');
+          f.dhT = 0;
+        }
+        if (f.dhT <= 0){ f.dhCd = M.dashCd * rnd(0.8, 1.3); f.cd = FOE.cd; }
+        continue;
+      }
+      if (f.dhCd === undefined) f.dhCd = M.dashCd * rnd(0.4, 0.9);
+      if (f.dhCd > 0) f.dhCd -= dt;
+      else if (f.atkT <= 0 && !(f.thT > 0) && d > M.dashMin && d < M.dashMax){
+        f.dhT = M.dashDur; f.dhDone = false;
+        f.anim = 'dash'; f.af = 0;
         continue;
       }
     }

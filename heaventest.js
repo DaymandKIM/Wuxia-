@@ -55,7 +55,7 @@ setTimeout(()=>{
     ok(w.eval('ZONEFOE.heaven.includes("guard")'),'천산 등장 목록에 수호무사');
     w.eval(`S.foes.length=0; S.shots.length=0; spawnFoe();
       S.foes[0].k='guard'; S.foes[0].hp=1e9; S.foes[0].hpMax=1e9;
-      S.foes[0].thCd=0; S.foes[0].cd=99; S.foes[0].atkT=0;
+      S.foes[0].thCd=0; S.foes[0].dhCd=999; S.foes[0].cd=99; S.foes[0].atkT=0;
       window.__burst=0; window.__gsaw=0;
       const _pf=S.fx.push.bind(S.fx);
       S.fx.push=function(e){ if(e&&e.k==="burst") window.__burst++; return _pf(e); };
@@ -63,15 +63,28 @@ setTimeout(()=>{
         if(window.__burst>0){ clearInterval(window.__pin); return; }
         const b=S.shots.find(b=>b.img==="guard_shot");
         if(b){ window.__gsaw=1; P.x=b.x; P.y=b.y+HERO.h*0.4; return; }
-        S.foes[0].x=P.x+140; S.foes[0].y=P.y; S.foes[0].thCd=0;
+        S.foes[0].x=P.x+220; S.foes[0].y=P.y; S.foes[0].thCd=0; S.foes[0].dhCd=999;
       },50);`);
     setTimeout(()=>{
       ok(w.eval('window.__gsaw===1'),'수호무사가 초승달 검기를 날린다 (그림 탄)');
       ok(w.eval('window.__burst')>0,'검기가 명중해 터졌다 ('+w.eval('window.__burst')+'회 폭발)');
       w.eval('clearInterval(window.__pin)');
-      ok(errs.length===0,'런타임 오류 0'+(errs.length?': '+errs[0]:''));
-      console.log(bad?('\n★ 실패 '+bad+'건'):'\n문제 없음');
-      process.exit(bad?1:0);
+
+      // 5) 돌격 — 중거리에서 찌르기 자세로 미끄러져 들어와 꿰뚫는다
+      w.eval(`S.foes.length=0; S.shots.length=0; spawnFoe();
+        S.foes[0].k='guard'; S.foes[0].hp=1e9; S.foes[0].hpMax=1e9;
+        S.foes[0].x=P.x+120; S.foes[0].y=P.y;
+        S.foes[0].dhCd=0; S.foes[0].thCd=999; S.foes[0].cd=99;
+        window.__hurt=0;`);
+      const gx0=w.eval('S.foes[0].x - P.x');
+      setTimeout(()=>{
+        ok(w.eval('window.__hurt')>0,'돌격이 명중해 아프다 ('+Math.round(w.eval('window.__hurt'))+' 피해)');
+        ok(w.eval('S.foes[0] ? dist(S.foes[0].x,S.foes[0].y,P.x,P.y) : 0')<gx0,
+          '돌격으로 실제로 파고들었다');
+        ok(errs.length===0,'런타임 오류 0'+(errs.length?': '+errs[0]:''));
+        console.log(bad?('\n★ 실패 '+bad+'건'):'\n문제 없음');
+        process.exit(bad?1:0);
+      },1400);
     },2400);
   },1600);
 },2500);
