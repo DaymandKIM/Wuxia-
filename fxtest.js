@@ -73,19 +73,17 @@ setTimeout(()=>{
   ok(drew('pashot'),'권기 탄 그림이 그려진다');
   ok(drew('bshot'),'지풍 빔 그림이 그려진다');
 
-  // 3) 정권 양손 교대 — 절정+은 권기 판, 미만은 맨손 판. 둘 다 교대한다 (v2.31)
-  w.eval('S.fx.length=0; P.castT=0; P.atkT=0.3; P.anim="atk"; P.af=1; P.atkAlt=0;');
+  // 3) 정권 양손 교대 — 전 경지에서 권기 판(katka·katkb)을 공격마다 교대한다
+  // (v2.36 — 맨손 판은 권기 지운 자리 주먹이 옷을 뚫어 폐기). 경지 무관 확인.
+  w.eval('S.fx.length=0; P.castT=0; P.atkT=0.3; P.anim="atk"; P.af=1; P.atkAlt=0; S.rexp=0;');
   renderNow();
-  ok(drew('hero_katka',w.eval('HFX.aw.katk')),'절정 이상 정권 = 권기 오른손 스트립');
+  ok(drew('hero_katka',w.eval('HFX.aw.katk')),'삼류에서도 정권 = 권기 오른손 스트립');
   w.eval('P.atkAlt=1;');
   renderNow();
   ok(drew('hero_katkb',w.eval('HFX.aw.katk')),'왼손 스트립으로 교대된다');
-  w.eval('S.rexp=0; P.atkAlt=0;');                         // 삼류로
+  w.eval('S.rexp=1e12; P.atkAlt=0;');                      // 높은 경지도 같은 판
   renderNow();
-  ok(drew('hero_atka',w.eval('HFX.aw.katk')),'절정 미만 정권 = 맨손 오른손 스트립');
-  w.eval('P.atkAlt=1;');
-  renderNow();
-  ok(drew('hero_atkb',w.eval('HFX.aw.katk')),'맨손도 왼손으로 교대된다');
+  ok(drew('hero_katka',w.eval('HFX.aw.katk')),'높은 경지도 같은 권기 판');
 
   // 3.5) 제패 연출 중 방향 고정 — 사방으로 밀려나는 적을 쫓아 파닥이지 않는다
   w.eval(`S.rexp=1e12; P.dir=1; P.atkT=0; P.atkCd=0; S.foes.length=0;
