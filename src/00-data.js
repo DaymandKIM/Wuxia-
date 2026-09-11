@@ -295,6 +295,16 @@ const FOES = {
     throwCd:6.5, throwDur:0.62, throwAt:0.55, throwMin:80, throwMax:200,
     shotImg:'ronin_shot', shotDust:'ronin_dust', shotSpd:200,
   },
+  bug: {
+    // 동굴 독충 — 검자줏빛 갑각 지네·딱정벌레 잡종. 단단하고 느리게 문다.
+    n:'동굴 독충', w:90, h:47, sw:70, bh:36,
+    anim:{ idle:['idle0','idle1','idle2','idle3'],
+           walk:['walk0','walk1','walk2','walk3'],
+           atk:['atk0','atk1','atk2','atk3'],     // 몸 세움 → 내리찍기 → 독액 → 갈무리
+           hit:['hit'], death:['death0','death1','death2'] },   // 뒤틀림 → 무너짐 → 부서진 갑각
+    fps:{ idle:3.5, walk:7, atk:7, hit:6, death:5 },
+    hp:1.25, dmg:1.0, spd:0.75, range:46,   // 갑각이 단단해 질기고 느리다
+  },
   ghost: {
     // 폐촌의 원혼 — 백발을 늘어뜨리고 기어 다니는 귀신. 촌주의 한이 뭉쳤다.
     // 발톱 궤적이 앞으로 길게 뻗어 캔버스가 넓다 — 몸은 sw/bh.
@@ -330,7 +340,7 @@ const FOES = {
 const ZONEFOE = {
   bamboo:  ['bandit','bandit','wisp','wisp','panther','panther','shaman','frog','frog'],
   village: ['ronin','ronin','dog','dog','bandit','wisp'],
-  cave:    ['bandit','wisp'],
+  cave:    ['bug','bug','bandit','wisp'],
   snow:    ['bandit','wisp'],
   heaven:  ['bandit','wisp'],
 };
