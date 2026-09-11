@@ -20,11 +20,12 @@ function spawnFoe(){
   });
 }
 
-// 보스 — 주인공 옆에서 등장한다 (v2.29 — 옆모습 스프라이트끼리 마주 보는 대치)
+// 보스 — 주인공 오른쪽에서 등장한다 (v2.31.1, 사용자 확정: 주인공은 중앙보다
+// 조금 왼편, 보스는 오른편. 카메라가 2:1로 당겨 그 구도가 나온다)
 // 문이 열리고 기운이 모인다. 끝나면 보스가 선다.
 function beginSummon(){
   S.summonT = SUMMON.dur;
-  S.summonX = P.x + SUMMON.side * (Math.random() < 0.5 ? -1 : 1);
+  S.summonX = P.x + SUMMON.side;
   S.summonY = P.y;            // 같은 땅 높이 — 바닥 기준이라 발이 나란히 선다
   S.gateY   = S.summonY - SUMMON.gate;
   S.foes.length = 0;               // 잡몹은 물러난다
