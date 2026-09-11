@@ -33,7 +33,7 @@ const HFX = {
   castFps: 10,                   // 시전 재생 속도 — 16은 컷이 씹혀 보였다 (4성 0.6~0.9초)
   shotT: 0.28,                   // 권기 탄 비행 시간 (구 streak과 동일)
   fadeT: 0.22,                   // 탄 소멸 연출
-  aw: { aidle: 50, katk: 70, punch: 43, kick: 43, flykick: 44, firekick: 44, run: 46 },   // 특수 동작 프레임 폭
+  aw: { aidle: 50, katk: 70, punch: 43, kick: 43, flykick: 44, firekick: 44, cresckick: 46, burstkick: 46, run: 46 },   // 특수 동작 프레임 폭
   // 기본공격 = 양주먹(punch)·발차기(kick) 4프레임 교대 (v2.45, 사용자 시트)
   // run 44 — 질주가 넓어(보폭·옷자락) 35 칸에선 좌우가 잘려 폭을 준다 (v2.45)
   // 권기 정권 = 두 스트립 교대 (v2.23, 사용자 확정 — hero_fx의 두 정권 줄이
@@ -115,6 +115,8 @@ const ATKMOVES = [
   { key:'kick',     need:5  },   // 발차기 — 이류(성급 5)부터
   { key:'flykick',  need:9  },   // 도약 화염 발차기 — 일류(성급 9)부터
   { key:'firekick', need:13 },   // 화염 옆차기 — 절정(성급 13)부터
+  { key:'cresckick',need:17 },   // 초승달 참격 발차기 — 초절정(성급 17)부터
+  { key:'burstkick',need:21 },   // 도약 옆차기 — 화경(성급 21)부터
 ];
 function atkPool(){ const p=ATKMOVES.filter(m=>realmLv()>=m.need); return p.length?p:[ATKMOVES[0]]; }
 // 공격 프레임별 주먹 끝 위치 (프레임 중앙·바닥 기준 오프셋)

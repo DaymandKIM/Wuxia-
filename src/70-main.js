@@ -6,6 +6,8 @@ loadImg('hero_punch', ASSET.punch);   // 기본공격 양주먹 (v2.45)
 loadImg('hero_kick',  ASSET.kick);    // 기본공격 발차기 (v2.45)
 loadImg('hero_flykick',  ASSET.flykick);   // 도약 화염 발차기 (v2.46, 성급 9)
 loadImg('hero_firekick', ASSET.firekick);  // 화염 옆차기 (v2.46, 성급 13)
+loadImg('hero_cresckick', ASSET.cresckick);  // 초승달 참격 발차기 (v2.47.1, 성급 17)
+loadImg('hero_burstkick', ASSET.burstkick);  // 도약 옆차기 (v2.47.1, 성급 21)
 loadImg('hero_hit',   ASSET.hit);
 loadImg('hero_medit', ASSET.medit);
 for (const k in FOES){

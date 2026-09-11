@@ -94,6 +94,11 @@ setTimeout(()=>{
   ok(drew('hero_flykick',w.eval('HFX.aw.flykick')),'도약 화염 발차기가 그려진다');
   w.eval('P.atkKey="firekick";'); renderNow();
   ok(drew('hero_firekick',w.eval('HFX.aw.firekick')),'화염 옆차기가 그려진다');
+  w.eval('P.atkKey="cresckick";'); renderNow();
+  ok(drew('hero_cresckick',w.eval('HFX.aw.cresckick')),'초승달 참격 발차기가 그려진다');
+  w.eval('P.atkKey="burstkick";'); renderNow();
+  ok(drew('hero_burstkick',w.eval('HFX.aw.burstkick')),'도약 옆차기가 그려진다');
+  ok(w.eval('ATKMOVES.length')===6,'기본공격 무브셋 6종 (성급대로 해금)');
   // 공격을 여러 번 하면 열린 동작을 돌려 쓴다
   w.eval(`S.rexp=1e12; P.atkMove=0; P.atkCd=0; P.atkT=0; S.foes.length=0; spawnFoe();
     S.foes[0].x=P.x+20; S.foes[0].y=P.y; S.foes[0].hp=1e12; S.foes[0].hpMax=1e12;
