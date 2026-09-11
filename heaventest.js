@@ -26,14 +26,17 @@ let bad=0;
 const ok=(c,m)=>{ console.log((c?'  ':'  ★실패 ')+m); if(!c)bad++; };
 
 setTimeout(()=>{
-  const miss=w.eval(`(function(){
-    const miss=[];
-    for(const a in FOES.eagle.anim)
-      for(const f of FOES.eagle.anim[a]) if(!ASSET['eagle_'+f]) miss.push(f);
-    return miss.join(',');
-  })()`);
-  ok(miss==='','천산수리 에셋 전부 존재'+(miss?' (빠짐: '+miss+')':''));
-  ok(w.eval('ZONEFOE.heaven.includes("eagle")'),'천산 등장 목록에 천산수리');
+  for (const [k,nm] of [['eagle','천산수리'],['jbeetle','옥갑충']]){
+    const miss=w.eval(`(function(){
+      const miss=[];
+      for(const a in FOES.${k}.anim)
+        for(const f of FOES.${k}.anim[a]) if(!ASSET['${k}_'+f]) miss.push(f);
+      return miss.join(',');
+    })()`);
+    ok(miss==='',nm+' 에셋 전부 존재'+(miss?' (빠짐: '+miss+')':''));
+  }
+  ok(w.eval('ZONEFOE.heaven.includes("eagle") && ZONEFOE.heaven.includes("jbeetle")'),
+    '천산 등장 목록에 수리·옥갑충');
 
   w.eval(`gotoZone(4,1); S.intro=0; S.foes.length=0; spawnFoe();
     S.foes[0].k='eagle'; S.foes[0].hp=1e9; S.foes[0].hpMax=1e9;

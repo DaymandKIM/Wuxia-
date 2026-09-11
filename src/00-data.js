@@ -283,6 +283,38 @@ const FOES = {
     fps:{ idle:4, walk:8, atk:11, hit:6, death:4 },
     hp:1.6, dmg:1.2, spd:0.95, range:50,   // 엘리트 — 죽림의 벽
   },
+  beetle: {
+    // 등딱지벌레 — 갈색 뿔 딱정벌레. 단단하고 느리게 들이받는다.
+    n:'등딱지벌레', w:76, h:56, sw:58, bh:34,
+    anim:{ idle:['idle0','idle1','idle2','idle3'],
+           walk:['walk0','walk1','walk2','walk3'],
+           atk:['atk0','atk1','atk2','atk3'],     // 웅크림 → 돌진 → 뿔 박치기 → 갈무리
+           hit:['hit'], death:['death0','death1','death2'] },
+    fps:{ idle:3.5, walk:7, atk:8, hit:6, death:4 },
+    hp:1.25, dmg:0.95, spd:0.8, range:46,   // 갑각 탱커
+  },
+  wasp: {
+    // 대나무 말벌 — 늘 떠 있다(띄움 10px). 빠르게 붙어 침을 박는다.
+    n:'대나무 말벌', w:84, h:54, sw:44, bh:30,
+    anim:{ idle:['idle0','idle1','idle2','idle3','idle4','idle5'],
+           walk:['walk0','walk1','walk2','walk3','walk4','walk5'],
+           atk:['atk0','atk1','atk3','atk4'],     // 곧추서기 → 날개 털기 → 침 박기 → 반동
+           hit:['hit'], death:['death0','death1','death2'] },   // 추락 → 떨어짐 → 반짝
+    fps:{ idle:8, walk:9, atk:9, hit:6, death:4 },
+    hp:0.5, dmg:0.9, spd:1.6, range:42,   // 물몸 — 빠르게 쏘고 빠진다
+  },
+  jbeetle: {
+    // 옥갑충(玉甲蟲) — 천산의 옥·금 갑주 딱정벌레. 등에 武 자가 새겨져 있고
+    // 뿔에 기를 모아 소용돌이 박치기를 한다. 죽음 2컷(자주 불꽃 컷은
+    // 그림 자체가 마젠타라 못 살려 제외 — death1 에셋만 보관).
+    n:'옥갑충', w:64, h:48, sw:50, bh:36,
+    anim:{ idle:['idle0','idle1','idle2','idle3'],
+           walk:['walk0','walk1','walk2','walk3'],
+           atk:['atk0','atk1','atk2','atk3'],     // 기 모으기 → 소용돌이 → 폭발 박치기 → 갈무리
+           hit:['hit'], death:['death0','death2'] },   // 어지럼 → 연기 오르는 시체
+    fps:{ idle:6, walk:7, atk:8, hit:6, death:3.5 },
+    hp:1.5, dmg:1.15, spd:0.85, range:48,   // 천산 갑각 정예급 일반
+  },
   thug: {
     // 대나무 무뢰배 — 몽둥이 든 험상궂은 무뢰배. 내리찍는다.
     n:'대나무 무뢰배', w:80, h:56, sw:44, bh:48,
@@ -482,12 +514,12 @@ const FOES = {
 };
 // 구역별 등장 목록
 const ZONEFOE = {
-  bamboo:  ['bandit','thug','wisp','wisp','panther','panther','shaman','frog','frog',
-            'soldier','stalker','snake'],   // 죽림 확장 — 무뢰배·엘리트 2·레어 1 (v2.25~26)
+  bamboo:  ['bandit','thug','wisp','wasp','panther','panther','shaman','frog','frog',
+            'beetle','soldier','stalker','snake'],   // 죽림 확장 — v2.25~27 (13칸)
   village: ['ronin','ronin','dog','dog','bandit','wisp'],
   cave:    ['bug','bug','bat','bat','bandit','wisp'],
   snow:    ['wolf','wolf','spirit','spirit','bandit','wisp'],
-  heaven:  ['eagle','eagle','guard','guard','bandit','wisp'],
+  heaven:  ['eagle','eagle','guard','guard','jbeetle','wisp'],   // 옥갑충이 강도 재탕을 대체 (v2.27)
 };
 const foeM = f => FOES[f.k];
 // 구역별 보스 종류 (없으면 그 구역 대표 잡몹)
