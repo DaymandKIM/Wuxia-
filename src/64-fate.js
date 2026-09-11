@@ -18,10 +18,10 @@ function rollFate(){
   const ev = { k, n: def.n, d: def.d };
   if (k === 'scroll'){
     ev.sv = Math.round(killSilver() * FATE.scrollMul);
-    ev.r = coin() + ' 은자 +' + ev.sv.toLocaleString();
+    ev.r = coin() + ' 은자 +' + fmt(ev.sv);
   } else if (k === 'elixir'){
     ev.xp = Math.round(realmNeed(realmLv()) * FATE.elixirExp);
-    ev.r = '기력이 차오른다 · 수련치 +' + ev.xp.toLocaleString();
+    ev.r = '기력이 차오른다 · 수련치 +' + fmt(ev.xp);
   } else if (k === 'master'){
     ev.art = cand[Math.floor(Math.random() * cand.length)].k;
     ev.r = artDef(ev.art).n + '을(를) 무료로 전수받는다';

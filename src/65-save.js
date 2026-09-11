@@ -119,9 +119,9 @@ let offAutoT = 0;                // 복귀 카드 자동 닫힘 타이머
 function showOffline(g){
   offAutoT = OFFLINE.autoSec;
   $('otime').textContent = fmtDur(g.sec) + ' 동안 수련했다';
-  let h = '<div class="orow"><span>처치</span><b>' + g.kills.toLocaleString() + '</b></div>';
-  if (g.silver) h += '<div class="orow"><span>' + coin() + ' 은자</span><b>+' + g.silver.toLocaleString() + '</b></div>';
-  if (g.exp)    h += '<div class="orow"><span>수련치</span><b>+' + g.exp.toLocaleString() + '</b></div>';
+  let h = '<div class="orow"><span>처치</span><b>' + fmt(g.kills) + '</b></div>';
+  if (g.silver) h += '<div class="orow"><span>' + coin() + ' 은자</span><b>+' + fmt(g.silver) + '</b></div>';
+  if (g.exp)    h += '<div class="orow"><span>수련치</span><b>+' + fmt(g.exp) + '</b></div>';
   if (g.fate)   h += '<div class="orow"><span>✦ 기연</span><b>기다리고 있다</b></div>';
   $('obody').innerHTML = h;
   $('opanel').classList.add('show');

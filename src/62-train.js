@@ -85,7 +85,7 @@ function buildTrainPanel(){
 
 // 열려 있는 동안 값만 갱신한다 — 줄을 다시 만들면 누르던 버튼이 끊긴다
 function refreshTrain(){
-  $('trsilver').innerHTML = coin() + ' ' + S.silver.toLocaleString();
+  $('trsilver').innerHTML = coin() + ' ' + fmt(S.silver);
   const cap = trainCap();
   for (const s of TRAIN.list){
     const n = statLv(s.k);
@@ -101,7 +101,7 @@ function refreshTrain(){
       // 정액 배수(x10 등)는 금액만 — ×개수는 MAX거나 상한에 걸렸을 때만
       const tag = p.cnt > 1 && (trainAmt === 'MAX' || p.cnt !== trainAmt) ? ' ×' + p.cnt : '';
       $('trc-' + s.k).textContent =
-        (p.cnt > 0 ? p.cost : trainCost(s.k, n)).toLocaleString() + tag;
+        fmt(p.cnt > 0 ? p.cost : trainCost(s.k, n)) + tag;
       btn.disabled = !p.ok;
     }
   }

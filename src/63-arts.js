@@ -73,7 +73,7 @@ let artDetSig = '';                // 상세 칸 구조 서명 — 같으면 DOM
 
 function buildArtsPanel(){
   const b = $('abody');
-  let h = '<div class="adet" id="adet"></div>';
+  let h = '';
   // 섹션은 초식/심법 둘뿐 — 문파는 타일 위 색띠로 보인다.
   // 문파별로 쪼개면 한 줄에 한두 개뿐이라 세로로 길어진다는 피드백.
   for (const sec of [['초식 — 스스로 펼친다', 'active'], ['심법 — 몸에 스민다', 'passive']]){
@@ -89,10 +89,14 @@ function buildArtsPanel(){
     }
     h += '</div>';
   }
+  // 상세 칸을 그리드 아래로 (v2.33 — 위에 있으면 타일 누르고 위를 보는 시선
+  // 왕복이 생긴다는 피드백). 타일을 누르면 상세 칸으로 스크롤해 바로 보인다.
+  h += '<div class="adet" id="adet"></div>';
   b.innerHTML = h;
   artDetSig = '';                  // 패널을 새로 만들었으니 상세 칸도 다시 그린다
   b.querySelectorAll('.atile').forEach(el => {
-    el.onclick = () => { artSel = el.dataset.k; artDetSig = ''; refreshArts(); };
+    el.onclick = () => { artSel = el.dataset.k; artDetSig = ''; refreshArts();
+      const det = $('adet'); if (det && det.scrollIntoView) det.scrollIntoView({ block:'nearest', behavior:'smooth' }); };
   });
   // 처음엔 살 수 있는 것, 없으면 첫 무공
   if (!artSel || !artDef(artSel)){
@@ -158,7 +162,7 @@ function refreshArts(){
       if (lv < cap){
         d += '</div><button class="trbuy" id="alvl"' +
              (S.silver >= artLvCost(a.k) ? '' : ' disabled') +
-             '><span>' + artLvCost(a.k).toLocaleString() + '</span><i>' + coin() + ' 연마</i></button>';
+             '><span>' + fmt(artLvCost(a.k)) + '</span><i>' + coin() + ' 연마</i></button>';
       } else {
         d += (st < MASTERY.maxStar ? ' — 성을 돌파하면 상한이 열린다' : ' — 극에 달했다') + '</div>';
       }
@@ -172,7 +176,7 @@ function refreshArts(){
       const lvFull = a.cost === undefined || artLv(a.k) >= artLvCap(a.k);
       if (xp >= need && lvFull)
         d += '<button class="trbuy" id="abrk"' + (S.silver >= cost ? '' : ' disabled') +
-             '><span>' + cost.toLocaleString() + '</span><i>' + coin() + ' 돌파</i></button>';
+             '><span>' + fmt(cost) + '</span><i>' + coin() + ' 돌파</i></button>';
       else if (xp >= need)
         d += '<div class="zd need">연마를 상한(Lv ' + artLvCap(a.k) + ')까지 채우면 돌파가 열린다</div>';
     } else {
@@ -184,9 +188,9 @@ function refreshArts(){
   } else if (!got){
     d += open
       ? '<button class="trbuy" id="abuy"' + (S.silver >= a.cost ? '' : ' disabled') +
-        '><span>' + a.cost.toLocaleString() + '</span><i>' + coin() + '</i></button>'
+        '><span>' + fmt(a.cost) + '</span><i>' + coin() + '</i></button>'
       : '<div class="zd need">' + realmName(a.need) + '에 열린다 · ' + coin() + ' ' +
-        a.cost.toLocaleString() + '</div>';
+        fmt(a.cost) + '</div>';
   }
   $('adet').innerHTML = d;
   const btn = $('abuy');

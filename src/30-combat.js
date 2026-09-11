@@ -162,7 +162,7 @@ function hurtFoe(f, dmg, crit){
   f.hit = 0.26;
   // 타격 숫자 — 매 타격 조그맣게, 회심(치명타)은 크고 노랗게
   S.fx.push({ k:'dmg', x:f.x + rnd(-7, 7), y:f.y - (foeM(f).bh||foeM(f).h),
-              v:Math.round(dmg), c:crit ? 1 : 0,
+              v:fmt(dmg), c:crit ? 1 : 0,
               life:crit ? 0.6 : 0.42, t:crit ? 0.6 : 0.42 });
   // 맞은 방향으로 살짝 밀린다
   const d = dist(P.x,P.y,f.x,f.y) || 1;
@@ -190,7 +190,7 @@ function hurtFoe(f, dmg, crit){
       S.bossDone[S.zi] = 1;
       const bonus = killSilver() * SILVER.firstMul;
       sv += bonus;
-      toast(zone().boss + ' 첫 격파 · 은자 +' + bonus.toLocaleString());
+      toast(zone().boss + ' 첫 격파 · 은자 +' + fmt(bonus));
     }
     S.silver += sv;
     S.fx.push({ k:'burst', x:f.x, y:f.y - (foeM(f).bh||foeM(f).h)*0.4, life:0.3, t:0.3 });

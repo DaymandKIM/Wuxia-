@@ -14,8 +14,13 @@ function hud(){
   const showing = S.intro <= 0;
   $('card').style.opacity = showing ? '1' : '0';
   $('tabs').style.opacity = showing ? '1' : '0';
-  $('sbar').style.opacity = showing ? '1' : '0';
-  const tb = $('tbtn'); if (tb) tb.style.opacity = showing ? '1' : '0';   // [테스트 전용]
+  // 스킬창·시험 버튼은 패널이 열리면 감춘다 — 패널 위로 떠서 스탯 줄·무공
+  // 칸을 가린다는 피드백(v2.33). 어느 시트든 열려 있으면 숨긴다.
+  const panelOpen = ['zpanel','trpanel','apanel','rpanel','tpanel','opanel','fpanel']
+    .some(id => $(id) && $(id).classList.contains('show'));
+  const bars = showing && !panelOpen;
+  const sb = $('sbar'); sb.style.opacity = bars ? '1' : '0'; sb.style.pointerEvents = bars ? '' : 'none';
+  const tb = $('tbtn'); if (tb){ tb.style.opacity = bars ? '1' : '0'; tb.style.pointerEvents = bars ? '' : 'none'; }   // [테스트 전용]
   if (!showing) return;
   trainHud();                                    // 수련 탭 알림점·열린 패널 갱신
   artsHud();                                     // 무공 탭 알림점·열린 패널 갱신
@@ -30,8 +35,8 @@ function hud(){
     $('stage').textContent = zone().n + ' ' + S.stage + '단계';
     $('kills').textContent = S.kills + ' / ' + stageNeed();
   }
-  $('hpt').textContent = Math.ceil(P.hp) + ' / ' + P.hpMax;
-  $('silvern').textContent = S.silver.toLocaleString();
+  $('hpt').textContent = fmt(Math.ceil(P.hp)) + ' / ' + fmt(P.hpMax);
+  $('silvern').textContent = fmt(S.silver);
   const ri = realmInfo();
   $('realm').textContent = ri.name + ' · ' + Math.floor(ri.cur / ri.need * 100) + '%';
   $('hp').firstElementChild.style.width = (P.hp/P.hpMax*100).toFixed(1) + '%';
@@ -54,16 +59,19 @@ function skillHud(){
   if (sig !== sbarSig){                       // 익힌 목록이 바뀔 때만 다시 만든다
     sbarSig = sig;
     const bar = $('sbar');
-    bar.innerHTML = '';
+    bar.innerHTML = arts.length ? '<span class="lbl">자동 시전</span>' : '';
     for (const k in sbarEls) delete sbarEls[k];
     for (const a of arts){
       const d = document.createElement('div');
       d.className = 'sk';
-      d.style.borderColor = (SCHOOLS[a.school] || SCHOOLS.none).c;
-      const nm = document.createElement('span'); nm.textContent = a.n.slice(0, 2);
+      const col = (SCHOOLS[a.school] || SCHOOLS.none).c;
+      d.style.color = col;                      // rdy 테두리·글자색 = 문파색
+      const g = document.createElement('span'); g.className = 'g';
+      g.textContent = a.h[0];                   // 한자 한 글자 (표 타일과 같은 표기)
+      g.style.color = col;
       const m = document.createElement('i'); m.className = 'cdm';
       const s = document.createElement('b'); s.className = 'cds';
-      d.appendChild(nm); d.appendChild(m); d.appendChild(s);
+      d.appendChild(g); d.appendChild(m); d.appendChild(s);
       bar.appendChild(d);
       sbarEls[a.k] = { d, m, s };
     }
@@ -72,7 +80,7 @@ function skillHud(){
     const e = sbarEls[a.k]; if (!e) continue;
     const cd = Math.max(0, P.artCd[a.k] || 0);
     e.m.style.height = (cd / a.cd * 100).toFixed(1) + '%';
-    e.s.textContent = cd > 0 ? Math.ceil(cd) : '';
+    e.s.textContent = cd > 0 ? Math.ceil(cd) : '';   // 쿨 중엔 초만, 다 차면 글자만
     e.d.classList.toggle('rdy', cd <= 0);
   }
 }

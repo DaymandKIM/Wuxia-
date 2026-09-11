@@ -67,3 +67,18 @@ const clamp = (v,a,b)=> v<a?a:(v>b?b:v);
 const rnd = (a,b)=> a + Math.random()*(b-a);
 const dist = (ax,ay,bx,by)=> Math.hypot(ax-bx, ay-by);
 const $ = id => document.getElementById(id);
+
+// 큰 수를 한국식 만·억·조·경 단위로 줄여 읽기 쉽게 (v2.33 — "백만을 쉼표도
+// 없이 읽으라는 건 무리"라는 피드백). 1만 미만은 그대로 쉼표만.
+const FMTU = [[1e16,'경'],[1e12,'조'],[1e8,'억'],[1e4,'만']];
+function fmt(n){
+  n = Math.round(n);
+  if (n < 10000) return n.toLocaleString();
+  for (const [u, s] of FMTU){
+    if (n >= u){
+      const v = n / u;
+      // 10 이상이면 정수, 미만이면 소수 1자리 (240만 · 7.4만)
+      return (v >= 10 ? Math.round(v) : (Math.round(v * 10) / 10)) + s;
+    }
+  }
+}
