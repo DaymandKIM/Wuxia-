@@ -283,6 +283,16 @@ const FOES = {
     fps:{ idle:4, walk:8, atk:11, hit:6, death:4 },
     hp:1.6, dmg:1.2, spd:0.95, range:50,   // 엘리트 — 죽림의 벽
   },
+  thug: {
+    // 대나무 무뢰배 — 몽둥이 든 험상궂은 무뢰배. 내리찍는다.
+    n:'대나무 무뢰배', w:80, h:56, sw:44, bh:48,
+    anim:{ idle:['idle0','idle1','idle2','idle3'],
+           walk:['walk0','walk1','walk2','walk3'],
+           atk:['atk0','atk1','atk2','atk3'],     // 치켜들기 → 내리찍기 → 쓸기 → 갈무리
+           hit:['hit'], death:['death0','death1','death2'] },  // 무릎 → 엎어짐 → 반짝
+    fps:{ idle:4, walk:8, atk:8, hit:6, death:4 },
+    hp:1.1, dmg:1.1, spd:0.95, range:48,   // 강도보다 조금 단단하고 아프다
+  },
   stalker: {
     // 죽림 추적자 (엘리트) — 붉은 눈의 넝마 추적자, 장창. 창이 길어 캔버스가 넓다.
     // 거리가 뜨면 회전 잎날을 던진다 (낭인 투척 틀 — 빙글 도는 탄).
@@ -472,8 +482,8 @@ const FOES = {
 };
 // 구역별 등장 목록
 const ZONEFOE = {
-  bamboo:  ['bandit','bandit','wisp','wisp','panther','panther','shaman','frog','frog',
-            'soldier','stalker','snake'],   // 죽림 확장 — 엘리트 2 + 레어 1 (v2.25)
+  bamboo:  ['bandit','thug','wisp','wisp','panther','panther','shaman','frog','frog',
+            'soldier','stalker','snake'],   // 죽림 확장 — 무뢰배·엘리트 2·레어 1 (v2.25~26)
   village: ['ronin','ronin','dog','dog','bandit','wisp'],
   cave:    ['bug','bug','bat','bat','bandit','wisp'],
   snow:    ['wolf','wolf','spirit','spirit','bandit','wisp'],

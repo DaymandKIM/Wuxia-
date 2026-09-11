@@ -26,7 +26,7 @@ let bad=0;
 const ok=(c,m)=>{ console.log((c?'  ':'  ★실패 ')+m); if(!c)bad++; };
 
 setTimeout(()=>{
-  for (const [k,nm] of [['soldier','정령병'],['stalker','추적자'],['snake','방울뱀']]){
+  for (const [k,nm] of [['soldier','정령병'],['stalker','추적자'],['snake','방울뱀'],['thug','무뢰배']]){
     const miss=w.eval(`(function(){
       const miss=[];
       for(const a in FOES.${k}.anim)
@@ -36,8 +36,8 @@ setTimeout(()=>{
     ok(miss==='',nm+' 에셋 전부 존재'+(miss?' (빠짐: '+miss+')':''));
   }
   ok(w.eval('!!ASSET.stalker_shot'),'잎날 탄 에셋 존재');
-  ok(w.eval('["soldier","stalker","snake"].every(k=>ZONEFOE.bamboo.includes(k))'),
-    '죽림 등장 목록에 3종 전부');
+  ok(w.eval('["soldier","stalker","snake","thug"].every(k=>ZONEFOE.bamboo.includes(k))'),
+    '죽림 등장 목록에 4종 전부');
 
   // 3) 정령병·방울뱀 근접
   w.eval(`gotoZone(0,1); S.intro=0; S.foes.length=0; spawnFoe();
