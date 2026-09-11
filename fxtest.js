@@ -86,6 +86,14 @@ setTimeout(()=>{
   w.eval('P.atkKey="kick";');
   renderNow();
   ok(drew('hero_kick',w.eval('HFX.aw.kick')),'발차기 스트립이 그려진다');
+  // 상위 티어 — 도약 화염 발차기(일류)·화염 옆차기(절정)가 성급대로 는다
+  w.eval('S.rexp=1e12;');
+  ok(w.eval('atkPool().some(m=>m.key==="flykick")') && w.eval('atkPool().some(m=>m.key==="firekick")'),
+     '높은 성급엔 화염 발차기까지 (동작 '+w.eval('atkPool().length')+'종)');
+  w.eval('P.atkKey="flykick";'); renderNow();
+  ok(drew('hero_flykick',w.eval('HFX.aw.flykick')),'도약 화염 발차기가 그려진다');
+  w.eval('P.atkKey="firekick";'); renderNow();
+  ok(drew('hero_firekick',w.eval('HFX.aw.firekick')),'화염 옆차기가 그려진다');
   // 공격을 여러 번 하면 열린 동작을 돌려 쓴다
   w.eval(`S.rexp=1e12; P.atkMove=0; P.atkCd=0; P.atkT=0; S.foes.length=0; spawnFoe();
     S.foes[0].x=P.x+20; S.foes[0].y=P.y; S.foes[0].hp=1e12; S.foes[0].hpMax=1e12;
