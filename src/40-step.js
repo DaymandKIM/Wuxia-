@@ -45,7 +45,8 @@ function step(dt){
       P.af += dt * ANIM.idle[1];
       P.hp = Math.min(P.hpMax, P.hp + heroRegen() * dt);
       if (S.summonT <= 0) spawnBoss();
-      S.camX += (P.x - S.camX) * Math.min(1, dt*6);
+      // 문이 옆에 서므로 주인공과 문 사이를 비춘다 (v2.29)
+      S.camX += ((P.x + S.summonX)/2 - S.camX) * Math.min(1, dt*6);
       S.camY += (P.y - 24 - S.camY) * Math.min(1, dt*6);
       return;                       // 등장이 끝날 때까지 전투 없음
     }
@@ -74,7 +75,7 @@ function step(dt){
   const closeIn = (tgt && foeM(tgt).ranged) ? 0.42 : 0.72;
   // 제패 연출 중엔 쫓지도 치지도 않는다 — 사방으로 밀려나는 적을 번갈아
   // 조준하면 방향이 매 프레임 뒤집혀 파닥거린다 ("이쪽 저쪽 바라봄")
-  if (S.sweepT <= 0 && P.atkT <= 0 && tgt && td > HERO.atkRange*closeIn){
+  if (S.sweepT <= 0 && P.atkT <= 0 && tgt && td > HERO.atkRange*closeIn + foeRad(tgt)){
     const a = Math.atan2(tgt.y-P.y, tgt.x-P.x);
     P.x += Math.cos(a) * heroSpd() * dt;
     P.y += Math.sin(a) * heroSpd() * dt;
@@ -85,7 +86,7 @@ function step(dt){
   // 공격 — 제패 연출 중엔 새 공격을 안 시작한다 (방향 파닥임 방지)
   if (P.atkCd > 0) P.atkCd -= dt;
   if (P.atkT > 0){ P.atkT -= dt; heroHitCheck(); }
-  else if (S.sweepT <= 0 && P.atkCd <= 0 && tgt && td <= HERO.atkRange + HERO.atkReach) heroAttack();
+  else if (S.sweepT <= 0 && P.atkCd <= 0 && tgt && td <= HERO.atkRange + HERO.atkReach + foeRad(tgt)) heroAttack();
 
   // 초식 — 제패 연출 중엔 아낀다
   if (S.sweepT <= 0) stepArts(dt);
@@ -141,8 +142,9 @@ function step(dt){
       f.rise -= dt;
       f.anim = 'idle';
       f.af += dt * foeM(f).fps.idle;
-      S.camX += (P.x - S.camX) * Math.min(1, dt*6);
-      S.camY += (P.y - 24 - S.camY) * Math.min(1, dt*6);
+      // 보스전 카메라와 같은 비율 — 등장→전투 사이 시점이 튀지 않는다 (v2.29)
+      S.camX += ((P.x*2 + f.x)/3 - S.camX) * Math.min(1, dt*6);
+      S.camY += ((P.y*2 + f.y)/3 - 24 - S.camY) * Math.min(1, dt*6);
       continue;
     }
     // 보스 스킬 — 넓은 범위를 한 번에 친다
@@ -174,6 +176,10 @@ function step(dt){
         f.anim = 'skill'; f.af = 0;
         continue;
       }
+      // 옆모습 대치 — 사거리가 전 범위(999)라 보스는 걷지 않는다.
+      // 주인공이 위아래로 돌면 높이만 슬며시 맞춰 나란히 선다 (v2.29)
+      if (f.atkT <= 0 && Math.abs(f.y - P.y) > BOSS.alignY)
+        f.y += Math.sign(P.y - f.y) * st.spd * BOSS.spd * BOSS.alignSpd * dt;
     }
     // 돌격 — 수호무사가 중거리에서 찌르기 자세로 미끄러져 들어온다 (사용자 제안)
     if (M.dashCd && !f.boss){

@@ -1,13 +1,15 @@
 /* ── 적 ───────────────────────────────────────────── */
 function spawnFoe(){
-  const a = rnd(0, Math.PI*2), r = rnd(190, 300);
+  // 옆모습 스프라이트라 좌우에서 오는 게 자연스럽다 — 세로 성분을 눌러 납작한
+  // 타원으로 등장시킨다. 위아래도 오되(빈 화면 방지) 사선으로 온다 (v2.29)
+  const a = rnd(0, Math.PI*2), r = rnd(SPAWN.rMin, SPAWN.rMax);
   const list = ZONEFOE[zone().k] || ['bandit'];
   const k = list[Math.floor(Math.random()*list.length)];
   const M = FOES[k];
   S.foes.push({
     k, anim:'idle', af:0,
     x: P.x + Math.cos(a)*r,
-    y: P.y + Math.sin(a)*r,
+    y: P.y + Math.sin(a)*r*SPAWN.flat,
     hp: Math.round(foeHp()*M.hp), hpMax: Math.round(foeHp()*M.hp),
     boss: false,
     dir: -1,
@@ -18,13 +20,13 @@ function spawnFoe(){
   });
 }
 
-// 보스 — 화면 위쪽에서 등장한다
+// 보스 — 주인공 옆에서 등장한다 (v2.29 — 옆모습 스프라이트끼리 마주 보는 대치)
 // 문이 열리고 기운이 모인다. 끝나면 보스가 선다.
 function beginSummon(){
   S.summonT = SUMMON.dur;
-  S.summonX = P.x;
-  S.summonY = P.y - 118;      // 주인공 위쪽, 화면 가운데 근처
-  S.gateY   = S.summonY - 46;
+  S.summonX = P.x + SUMMON.side * (Math.random() < 0.5 ? -1 : 1);
+  S.summonY = P.y;            // 같은 땅 높이 — 바닥 기준이라 발이 나란히 선다
+  S.gateY   = S.summonY - SUMMON.gate;
   S.foes.length = 0;               // 잡몹은 물러난다
   sfx('down');
 }
@@ -35,7 +37,7 @@ function spawnBoss(){
     k: ZONEBOSS[zone().k] || (ZONEFOE[zone().k]||['bandit'])[0],
     boss: true,
     anim:'idle', af:0,
-    x: S.summonX || P.x, y: S.summonY || (P.y - 118),
+    x: S.summonX || (P.x + SUMMON.side), y: S.summonY || P.y,
     rise: SUMMON.rise,               // >0 이면 문에서 걸어 나오는 중
     hp, hpMax: hp,
     dir: -1,
@@ -85,6 +87,10 @@ const FOE = { range:44, dur:0.55, hitAt:0.55, cd:1.3 };
 // 보스는 동작이 길다
 const BOSSATK = { dur:0.72, hitAt:0.62 };
 
+// 몸이 넓은 보스는 거리를 몸 가장자리에서 잰다 — 같은 높이로 대치하면서
+// 주인공이 중심까지 파고들어 스프라이트에 파묻히는 것 방지 (v2.29)
+const foeRad = f => f.boss ? (foeM(f).sw || foeM(f).w) * BOSS.edge : 0;
+
 /* ── 주인공 공격 (맨손 정권) ───────────────────────── */
 function heroAttack(){
   // 가장 가까운 적
@@ -94,7 +100,7 @@ function heroAttack(){
     const d = dist(P.x,P.y,f.x,f.y);
     if (d < bd){ bd=d; best=f; }
   }
-  if (!best || bd > HERO.atkRange + HERO.atkReach) return false;
+  if (!best || bd > HERO.atkRange + HERO.atkReach + foeRad(best)) return false;
   P.dir = best.x >= P.x ? 1 : -1;
   P.atkAlt = P.atkAlt ? 0 : 1;    // 양손 교대 — 오른손·왼손 정권을 번갈아 지른다
   P.atkT = ANIM.atk[0] / ANIM.atk[1] / heroAtkSpd();   // 공격 속도만큼 빨리 지나간다
@@ -116,7 +122,7 @@ function heroHitCheck(){
     if (f.dead) continue;
     // 세로는 눌러서 잰다 — 바닥이 기울어 보이는 시점이라 위아래가 가깝게 느껴진다
     const dx = f.x - cx, dy = (f.y - cy) / HERO.atkFlat;   // 나누면 세로가 넓어진다
-    if (Math.hypot(dx, dy) < HERO.atkRange){
+    if (Math.hypot(dx, dy) < HERO.atkRange + foeRad(f)){
       // 치명타 — 급소를 때리면 배수 피해, 노란 숫자로 알린다
       const crit = Math.random() < critCh();
       hurtFoe(f, heroDmg() * (crit ? critMul() : 1), crit);
