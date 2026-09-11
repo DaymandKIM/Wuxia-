@@ -89,7 +89,7 @@ const FIST = [
 const ZONES = [
   { k:'bamboo',  n:'죽림',   ground:'#6a7a52', boss:'대나무 마왕' },
   { k:'village', n:'폐촌',   ground:'#6b6350', boss:'폐촌의 원혼' },   // 등장 문구·FOES.ghost와 통일
-  { k:'cave',    n:'동굴',   ground:'#5c5f5c', boss:'동굴 주인' },
+  { k:'cave',    n:'동굴',   ground:'#5c5f5c', boss:'석암거인' },
   { k:'snow',    n:'설산',   ground:'#b9c9d2', boss:'설산 노인' },
   { k:'heaven',  n:'천산',   ground:'#7f9a86', boss:'천산 검객' },
 ];
@@ -297,7 +297,7 @@ const FOES = {
   },
   bug: {
     // 동굴 독충 — 검자줏빛 갑각 지네·딱정벌레 잡종. 단단하고 느리게 문다.
-    n:'동굴 독충', w:90, h:47, sw:70, bh:36,
+    n:'동굴 독충', w:84, h:45, sw:66, bh:36,
     anim:{ idle:['idle0','idle1','idle2','idle3'],
            walk:['walk0','walk1','walk2','walk3'],
            atk:['atk0','atk1','atk2','atk3'],     // 몸 세움 → 내리찍기 → 독액 → 갈무리
@@ -320,6 +320,18 @@ const FOES = {
     fps:{ idle:4, walk:6, atk:4.2, skill:3.7, hit:5, death:4 },   // atk 3컷 = 보스 공격 0.72초
     hp:1.0, dmg:1.0, spd:1.0,
     shotImg:'ghost_shot', shotSpd:230,   // 보스 스킬이 탄이 된다 (40-step)
+  },
+  golem: {
+    // 동굴 보스 석암거인 — 동굴 벽에서 깨어난 바위 거인. 가슴에 호박색 핵.
+    // 내리찍기(atk1)의 흙먼지가 넓어 캔버스가 크다 — 몸은 sw/bh.
+    n:'석암거인', w:180, h:96, sw:99, bh:92,
+    anim:{ idle:['idle0','idle1','idle2','idle3'],
+           walk:['walk0','walk1','walk2','walk3'],
+           atk:['atk0','atk1','atk2','atk3'],             // 치켜들기 → 내리찍기 → 먼지 → 갈무리
+           skill:['atk0','atk0','atk1','atk1','atk2'],    // 범위 폭발(BOSSKILL) — 내리찍기 재활용
+           hit:['hit'], death:['death0','death1','death2'] },  // 금 감 → 엎어짐 → 스러짐
+    fps:{ idle:5, walk:5, atk:5.6, skill:3.7, hit:4, death:3.5 },
+    hp:1.0, dmg:1.0, spd:1.0,
   },
   demon: {
     n:'대나무 마왕', w:114, h:96,
@@ -349,6 +361,7 @@ const foeM = f => FOES[f.k];
 const ZONEBOSS = {
   bamboo:  'demon',
   village: 'ghost',
+  cave:    'golem',
 };
 
 const DOWN_TIME = 3.0;           // 쓰러진 뒤 운기조식 시간
