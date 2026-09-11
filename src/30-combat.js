@@ -135,6 +135,7 @@ function heroAttack(){
   const pool = atkPool();
   P.atkKey = pool[(P.atkMove | 0) % pool.length].key;
   P.atkMove = ((P.atkMove | 0) + 1) % pool.length;
+  if (P.atkKey === 'punch') P.atkAlt = P.atkAlt ? 0 : 1;   // 양주먹은 오른손·왼손 권기 교대
   P.atkT = ANIM.atk[0] / ANIM.atk[1] / heroAtkSpd();   // 공격 속도만큼 빨리 지나간다
   P.atkCd = HERO.atkCd / heroAtkSpd();
   P.hitDone = false;

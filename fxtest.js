@@ -73,32 +73,22 @@ setTimeout(()=>{
   ok(drew('pashot'),'권기 탄 그림이 그려진다');
   ok(drew('bshot'),'지풍 빔 그림이 그려진다');
 
-  // 3) 성장형 기본공격 (v2.46) — 처음엔 양주먹만, 성급 오르면 발차기가 는다
+  // 3) 기본공격 (v2.48) — 양주먹=권기 정권(katka/katkb 양손 파란빛), 성급 오르면 발차기가 섞인다
+  ok(w.eval('ATKMOVES.length')===2 && w.eval('ATKMOVES[0].key')==='punch' && w.eval('ATKMOVES[1].key')==='kick',
+     '기본공격 무브셋 = 양주먹·발차기 2종');
   w.eval('S.rexp=0;');                                     // 삼류 1성 — 발차기 미해금
   ok(w.eval('atkPool().length')===1 && w.eval('atkPool()[0].key')==='punch',
-     '낮은 성급엔 양주먹만 (동작 '+w.eval('atkPool().length')+'종)');
+     '낮은 성급엔 양주먹만');
   w.eval('S.rexp=1e12;');                                  // 높은 경지 — 발차기 해금
-  ok(w.eval('atkPool().some(m=>m.key==="kick")'),'성급이 오르면 발차기가 는다 (동작 '+w.eval('atkPool().length')+'종)');
-  // 각 동작이 제 스트립으로 그려진다
-  w.eval('S.fx.length=0; P.castT=0; P.atkT=0.3; P.anim="atk"; P.af=1; P.atkKey="punch";');
+  ok(w.eval('atkPool().some(m=>m.key==="kick")'),'성급이 오르면 발차기가 섞인다 ('+w.eval('atkPool().length')+'종)');
+  // 양주먹 = 권기 정권 katka/katkb 교대
+  w.eval('S.fx.length=0; P.castT=0; P.atkT=0.3; P.anim="atk"; P.af=1; P.atkKey="punch"; P.atkAlt=0;');
   renderNow();
-  ok(drew('hero_punch',w.eval('HFX.aw.punch')),'양주먹 스트립이 그려진다');
-  w.eval('P.atkKey="kick";');
-  renderNow();
+  ok(drew('hero_katka',w.eval('HFX.aw.katk')),'양주먹 = 권기 정권 오른손(katka)');
+  w.eval('P.atkAlt=1;'); renderNow();
+  ok(drew('hero_katkb',w.eval('HFX.aw.katk')),'왼손(katkb)으로 교대된다');
+  w.eval('P.atkKey="kick";'); renderNow();
   ok(drew('hero_kick',w.eval('HFX.aw.kick')),'발차기 스트립이 그려진다');
-  // 상위 티어 — 도약 화염 발차기(일류)·화염 옆차기(절정)가 성급대로 는다
-  w.eval('S.rexp=1e12;');
-  ok(w.eval('atkPool().some(m=>m.key==="flykick")') && w.eval('atkPool().some(m=>m.key==="firekick")'),
-     '높은 성급엔 화염 발차기까지 (동작 '+w.eval('atkPool().length')+'종)');
-  w.eval('P.atkKey="flykick";'); renderNow();
-  ok(drew('hero_flykick',w.eval('HFX.aw.flykick')),'도약 화염 발차기가 그려진다');
-  w.eval('P.atkKey="firekick";'); renderNow();
-  ok(drew('hero_firekick',w.eval('HFX.aw.firekick')),'화염 옆차기가 그려진다');
-  w.eval('P.atkKey="cresckick";'); renderNow();
-  ok(drew('hero_cresckick',w.eval('HFX.aw.cresckick')),'초승달 참격 발차기가 그려진다');
-  w.eval('P.atkKey="burstkick";'); renderNow();
-  ok(drew('hero_burstkick',w.eval('HFX.aw.burstkick')),'도약 옆차기가 그려진다');
-  ok(w.eval('ATKMOVES.length')===6,'기본공격 무브셋 6종 (성급대로 해금)');
   // 공격을 여러 번 하면 열린 동작을 돌려 쓴다
   w.eval(`S.rexp=1e12; P.atkMove=0; P.atkCd=0; P.atkT=0; S.foes.length=0; spawnFoe();
     S.foes[0].x=P.x+20; S.foes[0].y=P.y; S.foes[0].hp=1e12; S.foes[0].hpMax=1e12;

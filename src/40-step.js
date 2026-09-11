@@ -124,7 +124,9 @@ function step(dt){
   const stopD = tgt ? HERO.atkRange*closeIn + foeRad(tgt) : 0;
   // 제패 연출 중엔 쫓지도 치지도 않는다 — 사방으로 밀려나는 적을 번갈아
   // 조준하면 방향이 매 프레임 뒤집혀 파닥거린다 ("이쪽 저쪽 바라봄")
-  if (S.sweepT <= 0 && P.atkT <= 0 && tgt && td > stopD){
+  // 데드존(HERO.hold) — 붙은 뒤 이 거리 안에선 걷지 않는다. 쿨다운 중 경계에서
+  // td가 stopD를 오르내리며 idle↔run이 깜빡이던 것("중간중간 걷는 현상") 제거 (v2.48)
+  if (S.sweepT <= 0 && P.atkT <= 0 && tgt && td > stopD + HERO.hold){
     const a = Math.atan2(tgt.y-P.y, tgt.x-P.x);
     P.x += Math.cos(a) * heroSpd() * dt;
     P.y += Math.sin(a) * heroSpd() * dt;
@@ -135,7 +137,7 @@ function step(dt){
   // 공격 — 붙은 뒤(td <= stopD)에만 시작한다. 제패 연출 중엔 안 친다(방향 파닥임 방지)
   if (P.atkCd > 0) P.atkCd -= dt;
   if (P.atkT > 0){ P.atkT -= dt; heroHitCheck(); }
-  else if (S.sweepT <= 0 && P.atkCd <= 0 && tgt && td <= stopD + 2) heroAttack();
+  else if (S.sweepT <= 0 && P.atkCd <= 0 && tgt && td <= stopD + HERO.hold + 2) heroAttack();
 
   // 초식 — 제패 연출 중엔 아낀다
   if (S.sweepT <= 0) stepArts(dt);

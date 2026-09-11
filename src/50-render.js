@@ -67,8 +67,9 @@ function drawHero(ox, oy){
   // 자리에 주먹이 배 앞 살덩이로 떠 옷이 뚫린 듯 보였다("옷이 이상해" 피드백) —
   // 시트에 권기가 구워져 있어 맨손 합성이 무리였다. 성장 표현은 경지 기운이 담당.
   if (P.anim === 'atk'){
-    // 기본공격 = 성장형 무브셋 (v2.46) — 열린 동작을 돌려 쓴다. 이번 타 동작 키는 P.atkKey.
-    key = P.atkKey || 'punch'; fw = HFX.aw[key] || HERO.w;
+    // 기본공격 (v2.48) — 양주먹은 권기 정권(katka/katkb, 양손 파란빛) 교대, 그 외(발차기)는 제 스트립.
+    if (!P.atkKey || P.atkKey === 'punch'){ key = P.atkAlt ? 'katkb' : 'katka'; fw = HFX.aw.katk; }
+    else { key = P.atkKey; fw = HFX.aw[key] || HERO.w; }
   }
   else if (P.anim === 'cast'){
     const ck = HFX.cast[P.castK] || HFX.cast.pagong;

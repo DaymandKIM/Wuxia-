@@ -16,6 +16,7 @@ const HERO = {
   atkFlat:1.55,                  // 세로 판정을 넓히는 정도 (탑다운 보정)
   atkDmg:10,
   atkCd:0.46,                    // 공격 간격
+  hold:7,                        // 붙은 뒤 이 거리 안에선 제자리 (idle↔run 깜빡임 방지, v2.48)
   regen:0.8,                     // 초당 회복
 };
 
@@ -111,12 +112,10 @@ const HITFRAME = 2;              // 공격 몇 번째 프레임에서 판정하�
 //   처음엔 양주먹만, 발차기는 need 성급부터 해금. 앞으로 성급대로 더 얹는다.
 //   기본공격은 지금 열린 동작들을 순서대로 돌려 쓴다(cycle).
 const ATKMOVES = [
-  { key:'punch',    need:0  },   // 양주먹 — 처음부터
-  { key:'kick',     need:5  },   // 발차기 — 이류(성급 5)부터
-  { key:'flykick',  need:9  },   // 도약 화염 발차기 — 일류(성급 9)부터
-  { key:'firekick', need:13 },   // 화염 옆차기 — 절정(성급 13)부터
-  { key:'cresckick',need:17 },   // 초승달 참격 발차기 — 초절정(성급 17)부터
-  { key:'burstkick',need:21 },   // 도약 옆차기 — 화경(성급 21)부터
+  { key:'punch', need:0 },   // 양주먹 = 권기 정권(katka/katkb, 양손 파란빛) — 사용자 고정 (v2.48)
+  { key:'kick',  need:5 },   // 발차기 — 이류(성급 5)부터 섞인다
+  // 화염 발차기류(flykick·firekick)는 뺐다(v2.48). 초승달·도약(cresckick·burstkick)은
+  // 추후 초식(스킬)으로 쓸 후보 — 에셋·loadImg는 남겨 둔다.
 ];
 function atkPool(){ const p=ATKMOVES.filter(m=>realmLv()>=m.need); return p.length?p:[ATKMOVES[0]]; }
 // 공격 프레임별 주먹 끝 위치 (프레임 중앙·바닥 기준 오프셋)
