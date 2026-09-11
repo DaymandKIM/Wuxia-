@@ -84,6 +84,27 @@ setTimeout(()=>{
     w.eval('hurtHero(100)');
     ok(Math.abs(w.eval('P.hp')-850)<0.5,'쿨다운 중엔 그대로 맞는다');
     w.eval('delete S.arts.geongon; S.foes.length=0; P.anim="idle";');
+    // 5.8) 동시 시전 금지 — 쿨이 둘 다 차 있어도 한 프레임엔 하나만 나간다
+    w.eval(`S.arts.whirl=1; S.foes.length=0; spawnFoe();
+      S.foes[0].x=P.x+30; S.foes[0].y=P.y; S.foes[0].hp=1e9; S.foes[0].hpMax=1e9;
+      P.hp=P.hpMax; P.castT=0; P.castGapT=0;
+      P.artCd.pagong=0; P.artCd.whirl=0;
+      S.fx.length=0; stepArts(1/60);`);
+    ok(w.eval('S.fx.filter(e=>e.k==="artname").length')===1,
+      '한 프레임엔 초식 하나만 (동시 시전 금지)');
+    ok(w.eval('P.castT>0 && P.artCd.whirl<=0'),
+      '둘째 초식은 시전이 끝날 때까지 쿨을 쥔 채 기다린다');
+    w.eval('P.castT=0; P.castGapT=0; S.fx.length=0; stepArts(1/60);');
+    ok(w.eval('S.fx.filter(e=>e.k==="artname").length')===1 && w.eval('P.artCd.whirl>0'),
+      '앞 시전이 끝나면 기다리던 초식이 나간다');
+    // 5.9) 스킬창 — 익힌 초식 슬롯 + 쿨다운 덮개
+    w.eval('hud()');
+    const slots=d.querySelectorAll('#sbar .sk');
+    ok(slots.length===w.eval('ARTS.list.filter(a=>a.type==="active"&&S.arts[a.k]).length'),
+      '스킬창 슬롯 수 = 익힌 초식 수 ('+slots.length+'개)');
+    const cdShown=[...slots].some(s=>parseFloat(s.querySelector('.cdm').style.height)>0);
+    ok(cdShown,'도는 쿨다운이 덮개로 보인다');
+    w.eval('delete S.arts.whirl; S.foes.length=0; P.anim="idle";');
     // 6) 저장 왕복
     w.eval('saveNow()');
     const save=w.localStorage.getItem('wuxia1');

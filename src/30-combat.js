@@ -223,6 +223,7 @@ function shake(v){ shakeV = Math.max(shakeV, v); }
    쿨다운이 차고 조건이 맞으면 알아서 펼친다. 그림 없이 절차 이펙트.
    발동 모드(자동/반자동/수동)는 나중에 이 위에 얹는다. */
 function stepArts(dt){
+  if (P.castGapT > 0) P.castGapT -= dt;
   for (const a of ARTS.list){
     if (a.type !== 'active' || !S.arts[a.k]) continue;
     if (a.ref){                                    // 반격형(건곤이형) — 쿨만 돌고 피격 때 발동
@@ -232,8 +233,11 @@ function stepArts(dt){
     }
     if (P.artCd[a.k] === undefined) P.artCd[a.k] = a.cd * 0.5;   // 첫 시전은 반 쿨
     if (P.artCd[a.k] > 0){ P.artCd[a.k] -= dt; continue; }
+    // 동시 시전 금지 — 시전 중이거나 숨 고르는 중이면 쿨이 차 있어도 기다린다
+    if (P.castT > 0 || P.castGapT > 0) continue;
     if (castArt(a)){
       P.artCd[a.k] = a.cd;
+      P.castGapT = P.castT + CASTQ.gap;        // 동작이 끝난 뒤 gap 만큼 쉬고 다음 초식
       S.artXp[a.k] = (S.artXp[a.k] | 0) + 1;   // 초식 숙련 — 시전 횟수
     }
   }

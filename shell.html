@@ -42,6 +42,17 @@
     border-radius:50%;background:#e8c96a;display:none;}
   #tabs button .dot.on{display:block;}
   /* [테스트 전용] 시험 버튼·패널 — TEST 끄면 안 보인다. 출시 전에 걷어낸다 */
+  /* 스킬창 — 익힌 초식의 쿨다운. 어두운 덮개가 위에서부터 걷히면 준비 완료 */
+  #sbar{position:absolute;right:10px;bottom:calc(var(--tabh) + 10px);display:flex;gap:6px;
+    transition:opacity .22s;pointer-events:none;}
+  .sk{position:relative;width:38px;height:38px;border-radius:9px;border:1.5px solid #3a4553;
+    background:rgba(16,20,27,.88);color:#e6edf5;font:900 11px/1.2 inherit;overflow:hidden;
+    display:flex;align-items:flex-start;justify-content:center;text-align:center;
+    padding-top:5px;box-sizing:border-box;}
+  .sk span{position:relative;z-index:2;}
+  .sk .cdm{position:absolute;left:0;right:0;top:0;height:0;background:rgba(6,8,12,.74);z-index:1;}
+  .sk .cds{position:absolute;left:0;right:0;bottom:2px;font:900 10px/1 inherit;color:#cfdcea;z-index:3;}
+  .sk.rdy{box-shadow:0 0 7px rgba(255,255,255,.16);}
   #tbtn{position:absolute;left:10px;bottom:calc(var(--tabh) + 10px);transition:opacity .22s;
     pointer-events:auto;background:rgba(32,24,20,.92);border:1.5px solid #5a4438;
     border-radius:10px;color:#e0c8a8;font:900 13px/1 inherit;padding:11px 16px;letter-spacing:.05em;
@@ -156,6 +167,7 @@
     <div class="row2"><span id="realm"></span><span id="silver"><img class="coin" id="coinhud"><b id="silvern">0</b></span></div>
   </div>
   <div id="toast"></div>
+  <div id="sbar"></div>
   <div id="tabs">
     <button id="tab-arts">무공<i class="dot"></i></button>
     <button id="tab-train">수련<i class="dot"></i></button>

@@ -14,10 +14,12 @@ function hud(){
   const showing = S.intro <= 0;
   $('card').style.opacity = showing ? '1' : '0';
   $('tabs').style.opacity = showing ? '1' : '0';
+  $('sbar').style.opacity = showing ? '1' : '0';
   const tb = $('tbtn'); if (tb) tb.style.opacity = showing ? '1' : '0';   // [테스트 전용]
   if (!showing) return;
   trainHud();                                    // 수련 탭 알림점·열린 패널 갱신
   artsHud();                                     // 무공 탭 알림점·열린 패널 갱신
+  skillHud();                                    // 스킬창 — 초식 쿨다운
 
   const st = stage();
   if (isBoss()){
@@ -38,6 +40,41 @@ function hud(){
     (isBoss() ? (b2 ? b2.hp/b2.hpMax*100 : 0) : S.kills/stageNeed()*100).toFixed(1) + '%';
   $('kn').firstElementChild.style.background =
     isBoss() ? 'linear-gradient(90deg,#8c3f2f,#c86a52)' : 'linear-gradient(90deg,#3f7fb8,#69a8dd)';
+}
+
+/* ── 스킬창 — 익힌 초식의 쿨다운 표시 ──────────────
+   동시 시전 금지(CASTQ)와 세트다: 쿨이 도는지 눈에 보여야 기다림이 읽힌다.
+   덮개가 위에서부터 걷히고, 준비되면 테두리가 빛난다. 건곤이형도 보인다(피격 발동).
+*/
+let sbarSig = '';
+const sbarEls = {};
+function skillHud(){
+  const arts = ARTS.list.filter(a => a.type === 'active' && S.arts[a.k]);
+  const sig = arts.map(a => a.k).join(',');
+  if (sig !== sbarSig){                       // 익힌 목록이 바뀔 때만 다시 만든다
+    sbarSig = sig;
+    const bar = $('sbar');
+    bar.innerHTML = '';
+    for (const k in sbarEls) delete sbarEls[k];
+    for (const a of arts){
+      const d = document.createElement('div');
+      d.className = 'sk';
+      d.style.borderColor = (SCHOOLS[a.school] || SCHOOLS.none).c;
+      const nm = document.createElement('span'); nm.textContent = a.n.slice(0, 2);
+      const m = document.createElement('i'); m.className = 'cdm';
+      const s = document.createElement('b'); s.className = 'cds';
+      d.appendChild(nm); d.appendChild(m); d.appendChild(s);
+      bar.appendChild(d);
+      sbarEls[a.k] = { d, m, s };
+    }
+  }
+  for (const a of arts){
+    const e = sbarEls[a.k]; if (!e) continue;
+    const cd = Math.max(0, P.artCd[a.k] || 0);
+    e.m.style.height = (cd / a.cd * 100).toFixed(1) + '%';
+    e.s.textContent = cd > 0 ? Math.ceil(cd) : '';
+    e.d.classList.toggle('rdy', cd <= 0);
+  }
 }
 
 /* ── 구역 이동 ─────────────────────────────────────
