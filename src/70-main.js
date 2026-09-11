@@ -18,6 +18,8 @@ for (const z of ZONES)
 for (const k in HFX.cast) loadImg('hero_' + HFX.cast[k][0], ASSET[HFX.cast[k][0]]);  // 초식 시전 동작
 loadImg('hero_katka', ASSET.katka);          // 권기 정권 오른손 (절정부터)
 loadImg('hero_katkb', ASSET.katkb);          // 권기 정권 왼손
+loadImg('hero_atka', ASSET.atka);            // 맨손 정권 오른손 (절정 미만, v2.31)
+loadImg('hero_atkb', ASSET.atkb);            // 맨손 정권 왼손
 loadImg('pashot',    ASSET.pashot);          // 파공권 권기 탄
 loadImg('bshot',     ASSET.bshot);           // 암향지 지풍 빔
 loadImg('gshield',   ASSET.gshield);         // 건곤이형 태극 원반

@@ -51,6 +51,14 @@ setTimeout(()=>{
     const [strip, fw]=w.eval('JSON.stringify(HFX.cast["'+k+'"])') && JSON.parse(w.eval('JSON.stringify(HFX.cast["'+k+'"])'));
     ok(drew('hero_'+strip, fw), k+' 시전 스트립이 폭 '+fw+'로 그려진다');
   }
+  // 1.5) 파열 연출 (v2.31) — 광역 초식은 무공 색 충격파·섬광·속도선이 함께 터진다
+  ok(w.eval('S.fx.some(e=>e.k==="wave")'),'충격파 고리가 생긴다');
+  ok(w.eval('S.fx.some(e=>e.k==="flash")'),'섬광이 생긴다');
+  ok(w.eval('S.fx.some(e=>e.k==="rays")'),'방사 속도선이 생긴다');
+  ok(w.eval('S.fx.some(e=>e.k==="sparks")'),'파편이 생긴다');
+  renderNow();
+  ok(true,'파열 연출 렌더 통과 (오류는 마지막 검사에서 확인)');
+
   // 활인기공 — 위태로울 때만
   w.eval('P.castT=0; P.anim="idle"; P.hp=P.hpMax*0.2;');
   ok(w.eval('castArt(artDef("hwalin"))')===true,'활인기공 시전(체력 20%)');
@@ -65,16 +73,19 @@ setTimeout(()=>{
   ok(drew('pashot'),'권기 탄 그림이 그려진다');
   ok(drew('bshot'),'지풍 빔 그림이 그려진다');
 
-  // 3) 권기 정권 — 절정+은 오른손·왼손 스트립을 공격마다 교대, 미만은 맨손
+  // 3) 정권 양손 교대 — 절정+은 권기 판, 미만은 맨손 판. 둘 다 교대한다 (v2.31)
   w.eval('S.fx.length=0; P.castT=0; P.atkT=0.3; P.anim="atk"; P.af=1; P.atkAlt=0;');
   renderNow();
   ok(drew('hero_katka',w.eval('HFX.aw.katk')),'절정 이상 정권 = 권기 오른손 스트립');
   w.eval('P.atkAlt=1;');
   renderNow();
   ok(drew('hero_katkb',w.eval('HFX.aw.katk')),'왼손 스트립으로 교대된다');
-  w.eval('S.rexp=0;');                                     // 삼류로
+  w.eval('S.rexp=0; P.atkAlt=0;');                         // 삼류로
   renderNow();
-  ok(drew('hero_atk',w.eval('HERO.w')),'절정 미만 정권 = 맨손 스트립');
+  ok(drew('hero_atka',w.eval('HFX.aw.katk')),'절정 미만 정권 = 맨손 오른손 스트립');
+  w.eval('P.atkAlt=1;');
+  renderNow();
+  ok(drew('hero_atkb',w.eval('HFX.aw.katk')),'맨손도 왼손으로 교대된다');
 
   // 3.5) 제패 연출 중 방향 고정 — 사방으로 밀려나는 적을 쫓아 파닥이지 않는다
   w.eval(`S.rexp=1e12; P.dir=1; P.atkT=0; P.atkCd=0; S.foes.length=0;

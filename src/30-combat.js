@@ -47,6 +47,9 @@ function spawnBoss(){
     kb:0, kx:0, ky:0,
   });
   S.bossAlive = true;
+  // 등장 파열 (v2.31) — 문이 닫히며 기운이 터진다
+  fxBlast(S.summonX || P.x, (S.summonY || P.y) - 46, FXD.boss.r, FXD.boss.c, true);
+  shake(7);
 }
 
 // 큰 마법 구체 — 느리지만 아프고 넓다
@@ -91,6 +94,20 @@ const BOSSATK = { dur:0.72, hitAt:0.62 };
 // 주인공이 중심까지 파고들어 스프라이트에 파묻히는 것 방지 (v2.29)
 const foeRad = f => f.boss ? (foeM(f).sw || foeM(f).w) * BOSS.edge : 0;
 
+// 이펙트 헬퍼 (v2.31 — "이펙트가 조잡하다" 피드백) ────────
+// 상한을 지키며 넣는다. 화면이 바빠도 프레임을 지킨다
+function fxPush(e){ if (S.fx.length < FXD.max) S.fx.push(e); }
+// 파열 묶음 — 충격파 고리 + 튀는 파편. big이면 섬광·방사 속도선까지
+function fxBlast(x, y, r, c, big){
+  fxPush({ k:'wave',   x, y, r, c, life:FXD.wave.life, t:FXD.wave.life });
+  fxPush({ k:'sparks', x, y, c, sd:(Math.random()*89)|0, life:FXD.spark.life, t:FXD.spark.life });
+  if (big){
+    fxPush({ k:'flash', x, y, r:r*1.6, c, life:FXD.flash.life, t:FXD.flash.life });
+    fxPush({ k:'rays',  x, y, r:Math.max(14, r*0.35), c, sd:Math.random()*6.28,
+             life:FXD.rays.life, t:FXD.rays.life });
+  }
+}
+
 /* ── 주인공 공격 (맨손 정권) ───────────────────────── */
 function heroAttack(){
   // 가장 가까운 적 — 거리는 조준·판정과 같은 눌린 척도로 잰다 (v2.29.1)
@@ -127,6 +144,10 @@ function heroHitCheck(){
       // 치명타 — 급소를 때리면 배수 피해, 노란 숫자로 알린다
       const crit = Math.random() < critCh();
       hurtFoe(f, heroDmg() * (crit ? critMul() : 1), crit);
+      // 타격 파열 (v2.31) — 평타는 작은 임팩트, 치명타는 금빛 대파열
+      const iy = f.y - (foeM(f).bh||foeM(f).h)*0.45;
+      if (crit) fxBlast(f.x, iy, FXD.crit.r, FXD.crit.c, true);
+      else fxBlast(f.x, iy, FXD.hit.r, FXD.hit.c);
       n++;
     }
   }
@@ -294,7 +315,10 @@ function castArt(a){
     for (const f of alive) if (dist(f.x, f.y, P.x, P.y) <= a.range) hits.push(f);
     if (!hits.length) return false;
     beginCast(a.k);
-    S.fx.push({ k:'ring', x:P.x, y:P.y, r:a.range, life:0.4, t:0.4 });
+    const gc = (HFX.glow[a.k]||{}).c;
+    S.fx.push({ k:'ring', x:P.x, y:P.y, r:a.range, c:gc, life:0.4, t:0.4 });
+    // 광역 초식 파열 (v2.31) — 무공 색 섬광·속도선이 함께 터진다
+    fxBlast(P.x, P.y - HERO.h*0.4, a.range*0.55, gc, true);
     shake(a.k === 'bungsan' ? 10 : 4);
   }
   for (const f of hits){

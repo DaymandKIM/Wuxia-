@@ -106,6 +106,8 @@ console.log('주인공');
 check('건곤이형 원반', 'gshield.png', HFX.taijiW * HFX.taijiN, HFX.taijiH, true);
 check('권기 오른손', 'katka.png', HFX.aw.katk * 4, 51, true);   // 양손 교대 4컷×2판
 check('권기 왼손',   'katkb.png', HFX.aw.katk * 4, 51, true);
+check('맨손 오른손', 'atka.png',  HFX.aw.katk * 4, 51, true);   // 절정 미만 양손 (v2.31)
+check('맨손 왼손',   'atkb.png',  HFX.aw.katk * 4, 51, true);
 for (const ck in HFX.cast)   // 시전 스트립은 초식마다 별도
   // 시전 스트립은 원본 칸이 이펙트를 경계까지 그려 접촉이 정상 — 크기만 본다
   check('hero cast ' + ck, HFX.cast[ck][0] + '.png', HFX.cast[ck][1] * HFX.cast[ck][2], HERO.h, true);

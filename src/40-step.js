@@ -14,8 +14,14 @@ function step(dt){
 
   // 이펙트
   for (let i=S.fx.length-1; i>=0; i--){
-    S.fx[i].life -= dt;
-    if (S.fx[i].life <= 0) S.fx.splice(i,1);
+    const e = S.fx[i];
+    e.life -= dt;
+    // 초식 탄이 표적에 닿는 순간 — 명중 파열 (v2.31)
+    if ((e.k === 'pashot' || e.k === 'bshot') && !e.hitFx && (e.t - e.life) >= HFX.shotT){
+      e.hitFx = 1;
+      fxBlast(e.tx, e.ty, 20, (HFX.glow[e.k === 'pashot' ? 'pagong' : 'baekbo']||{}).c);
+    }
+    if (e.life <= 0) S.fx.splice(i,1);
   }
 
   // 운기조식 — 여기서도 애니메이션은 계속 돈다
@@ -161,7 +167,8 @@ function step(dt){
             if (dist(f.x,f.y,P.x,P.y) < BOSSKILL.range){
               hurtHero(bossDmg() * BOSSKILL.dmg);
             }
-            S.fx.push({ k:'shock', x:f.x, y:f.y - FOE.h*0.3, life:0.45, t:0.45 });
+            // v2.31 — 옛 'shock'은 렌더러가 없어 아예 안 보였다. 파열 묶음으로 교체
+            fxBlast(f.x, f.y - FOE.h*0.3, BOSSKILL.range, FXD.boss.c, true);
             shake(9); sfx('down');
           }
         }

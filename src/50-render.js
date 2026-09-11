@@ -48,9 +48,13 @@ function drawHero(ox, oy){
   // 절정부터 정권에 권기가 붙는다 — 같은 동작, 다른 그림.
   // 시전(cast)은 초식마다 스트립·프레임 수가 다르다.
   let key = P.anim, fw = HERO.w;
-  // 절정부터 권기 정권 — 오른손(katka)·왼손(katkb) 스트립을 공격마다 교대
-  if (P.anim === 'atk' && realmLv() >= HFX.katkRealm){
-    key = P.atkAlt ? 'katkb' : 'katka'; fw = HFX.aw.katk;
+  // 정권은 전 경지에서 오른손·왼손을 공격마다 교대한다 (v2.31 — 절정 미만도
+  // "주먹 한 개"로 보인다는 피드백. 맨손 판은 권기 스트립에서 권기만 걷어냈다).
+  // 절정부터는 권기가 실린 판(katka·katkb)으로 바뀐다 — 같은 동작, 다른 그림.
+  if (P.anim === 'atk'){
+    const qi = realmLv() >= HFX.katkRealm;
+    key = P.atkAlt ? (qi ? 'katkb' : 'atkb') : (qi ? 'katka' : 'atka');
+    fw = HFX.aw.katk;
   }
   else if (P.anim === 'cast'){
     const ck = HFX.cast[P.castK] || HFX.cast.pagong;
@@ -79,17 +83,8 @@ function drawHero(ox, oy){
   const hurt = P.hitT > 0;
   if (hurt) ctx.globalAlpha = 0.62 + Math.sin(S.t*46)*0.22;
   draw(im, fi*fw, 0, fw, HERO.h, -Math.round(fw/2), -HERO.h, fw, HERO.h);
-  // 주먹 끝 — 원본에 손 끝이 없어 여기서 마무리한다 (권기 스트립은 자체 이펙트)
-  if (P.anim === 'atk' && key !== 'katka' && key !== 'katkb'){
-    const F = FIST[Math.min(fi, FIST.length-1)];
-    ctx.globalAlpha = 0.95;
-    ctx.fillStyle = '#f0f6ff';
-    ctx.beginPath(); ctx.arc(F.x, F.y, 2.6, 0, Math.PI*2); ctx.fill();
-    ctx.globalAlpha = 0.5;
-    ctx.fillStyle = '#a8d4f0';
-    ctx.beginPath(); ctx.arc(F.x, F.y, 3.9, 0, Math.PI*2); ctx.fill();
-    ctx.globalAlpha = 1;
-  }
+  // 주먹 끝 흰 점(FIST)은 v2.31에서 은퇴 — 옛 35px 스트립 전용 좌표였고,
+  // 지금 쓰는 양손 판(atka·atkb·katka·katkb)은 주먹이 그림에 다 있다.
   if (hurt){                       // 붉게 번쩍여 맞은 것을 알린다
     ctx.globalCompositeOperation = 'lighter';
     ctx.globalAlpha = Math.min(0.5, P.hitT*2.4);
@@ -180,13 +175,80 @@ function drawFx(ox, oy){
     const a = e.life / e.t;
     const x = Math.round(e.x - ox), y = Math.round(e.y - oy);
     if (e.k === 'burst'){
+      // 파열 — 가산 합성 심광 + 튀는 파편 (v2.31 강화: 단색 점 → 빛이 쌓인다)
       ctx.save();
-      ctx.globalAlpha = a * 0.8;
-      ctx.fillStyle = '#e8d9a8';
-      const r = 4 + (1-a)*16;
+      ctx.globalCompositeOperation = 'lighter';
+      const cc = e.c || '255,224,160';
+      ctx.fillStyle = 'rgb(' + cc + ')';
+      for (let i = 3; i >= 1; i--){                  // 중심 섬광 — 커지며 스러진다
+        ctx.globalAlpha = a * 0.6 / (i * 1.3);
+        ctx.beginPath();
+        ctx.arc(x, y, (5 + (1-a)*10) * (0.4 + 0.28*i), 0, Math.PI*2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = a * 0.9;
+      const r = 4 + (1-a)*20;
       for (let i=0;i<6;i++){
-        const ang = i/6*Math.PI*2;
-        ctx.fillRect(x+Math.cos(ang)*r-1, y+Math.sin(ang)*r-1, 3, 3);
+        const ang = i/6*Math.PI*2 + (e.sd||0);
+        ctx.fillRect(x+Math.cos(ang)*r-1, y+Math.sin(ang)*r*0.7-1, 3, 3);
+      }
+      ctx.restore();
+    } else if (e.k === 'wave'){
+      // 충격파 고리 — 밝은 심 + 넓은 여운이 빠르게 퍼지다 잦아든다
+      const r = e.r * (1 - a*a);
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.strokeStyle = 'rgb(' + (e.c || '220,236,255') + ')';
+      ctx.globalAlpha = a * 0.8;
+      ctx.lineWidth = FXD.wave.w + a * 3;
+      ctx.beginPath(); ctx.ellipse(x, y, r, r/HERO.atkFlat, 0, 0, Math.PI*2); ctx.stroke();
+      ctx.globalAlpha = a * 0.28;
+      ctx.lineWidth = (FXD.wave.w + a*3) * 2.6;
+      ctx.beginPath(); ctx.ellipse(x, y, r*0.86, r*0.86/HERO.atkFlat, 0, 0, Math.PI*2); ctx.stroke();
+      ctx.restore();
+    } else if (e.k === 'rays'){
+      // 방사 속도선 — 큰 순간의 "번쩍". 바깥으로 쏘아지며 사라진다
+      const p = 1 - a;
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.strokeStyle = 'rgb(' + (e.c || '236,244,255') + ')';
+      ctx.lineWidth = 1.6;
+      ctx.globalAlpha = a * 0.85;
+      for (let i = 0; i < FXD.rays.n; i++){
+        const ang = i/FXD.rays.n*Math.PI*2 + (e.sd||0);
+        const r0 = (e.r||20) + p*95, ln = FXD.rays.len * (0.5 + ambHash(i,7)*0.8) * a;
+        ctx.beginPath();
+        ctx.moveTo(x + Math.cos(ang)*r0,      y + Math.sin(ang)*r0*0.62);
+        ctx.lineTo(x + Math.cos(ang)*(r0+ln), y + Math.sin(ang)*(r0+ln)*0.62);
+        ctx.stroke();
+      }
+      ctx.restore();
+    } else if (e.k === 'sparks'){
+      // 타격 파편 — 포물선으로 튀는 불티. 상태 없이 시간으로 위치를 만든다
+      const el = e.t - e.life;
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.fillStyle = 'rgb(' + (e.c || '255,220,150') + ')';
+      for (let i = 0; i < FXD.spark.n; i++){
+        const h1 = ambHash(i, 11 + (e.sd||0)), h2 = ambHash(i, 23 + (e.sd||0));
+        const ang = h1 * Math.PI * 2, spd = FXD.spark.spd * (0.4 + h2);
+        const px = e.x + Math.cos(ang)*spd*el - ox;
+        const py = e.y + Math.sin(ang)*spd*el*0.6 + FXD.spark.g*el*el*0.5 - oy;
+        ctx.globalAlpha = a;
+        ctx.fillRect(Math.round(px)-1, Math.round(py)-1, 2, 2);
+        ctx.globalAlpha = a * 0.3;
+        ctx.beginPath(); ctx.arc(px, py, 3.2, 0, Math.PI*2); ctx.fill();
+      }
+      ctx.restore();
+    } else if (e.k === 'flash'){
+      // 섬광 — 넓은 가산 원광이 확 밝았다 스러진다 (화면 전체가 살짝 물든다)
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.fillStyle = 'rgb(' + (e.c || '255,240,220') + ')';
+      for (let i = 3; i >= 1; i--){
+        ctx.globalAlpha = a * 0.42 / (i * 1.6);
+        const rr = e.r * (0.35 + 0.3*i);
+        ctx.beginPath(); ctx.ellipse(x, y, rr, rr*0.7, 0, 0, Math.PI*2); ctx.fill();
       }
       ctx.restore();
     } else if (e.k === 'dmg'){
@@ -271,13 +333,20 @@ function drawFx(ox, oy){
       ctx.restore();
     } else if (e.k === 'ring'){
       // 기의 고리 — 발밑에서 퍼져 나간다 (탑다운 보정으로 납작하게)
+      // v2.31: 가산 합성 + 무공 색 — 빛이 쌓여 훨씬 두텁게 보인다
       const p = 1 - a;
       ctx.save();
-      ctx.globalAlpha = a * 0.85;
-      ctx.strokeStyle = '#d8ecff';
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.strokeStyle = 'rgb(' + (e.c || '216,236,255') + ')';
+      ctx.globalAlpha = a * 0.9;
       ctx.lineWidth = 2 + a*2;
       ctx.beginPath();
       ctx.ellipse(x, y, e.r * p, e.r * p / HERO.atkFlat, 0, 0, Math.PI*2);
+      ctx.stroke();
+      ctx.globalAlpha = a * 0.3;
+      ctx.lineWidth = (2 + a*2) * 2.4;
+      ctx.beginPath();
+      ctx.ellipse(x, y, e.r * p * 0.92, e.r * p * 0.92 / HERO.atkFlat, 0, 0, Math.PI*2);
       ctx.stroke();
       ctx.restore();
     } else if (e.k === 'heal'){
