@@ -271,7 +271,7 @@ const FOES = {
   },
   ronin: {
     // 폐촌 낭인 — 삿갓에 녹슨 칼. 근접 베기가 기본, 이따금 술병을 던진다.
-    n:'폐촌 낭인', w:52, h:51,
+    n:'폐촌 낭인', w:52, h:55, bh:48,   // 치켜든 칼끝까지 캔버스에 담는다 — 몸높이는 48
     anim:{ idle:['idle0','idle1','idle2','idle3'],
            walk:['walk0','walk1','walk2','walk3','walk4','walk5','walk6','walk7'],
            atk:['atk0','atk1','atk2'],           // 치켜들기 → 휘두르기 → 내려베기
