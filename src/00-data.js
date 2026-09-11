@@ -33,7 +33,7 @@ const HFX = {
   castFps: 10,                   // 시전 재생 속도 — 16은 컷이 씹혀 보였다 (4성 0.6~0.9초)
   shotT: 0.28,                   // 권기 탄 비행 시간 (구 streak과 동일)
   fadeT: 0.22,                   // 탄 소멸 연출
-  aw: { aidle: 50, katk: 70, punch: 43, kick: 43, flykick: 44, firekick: 44, run: 44 },   // 특수 동작 프레임 폭
+  aw: { aidle: 50, katk: 70, punch: 43, kick: 43, flykick: 44, firekick: 44, run: 46 },   // 특수 동작 프레임 폭
   // 기본공격 = 양주먹(punch)·발차기(kick) 4프레임 교대 (v2.45, 사용자 시트)
   // run 44 — 질주가 넓어(보폭·옷자락) 35 칸에선 좌우가 잘려 폭을 준다 (v2.45)
   // 권기 정권 = 두 스트립 교대 (v2.23, 사용자 확정 — hero_fx의 두 정권 줄이
@@ -751,6 +751,19 @@ const ARTS = { list: [
     d:'흩어진 기운이 하나로 돈다', dmg:0.15 },
   { k:'taeheo',  n:'태허진경',   h:'太虛眞經',   type:'passive', school:'mudang', need:27, cost:150000,
     d:'비어 있어 오히려 가득하다', dmg:0.10, hp:0.10, regen:0.10 },
+  // ── 문파 무공도 심법 (v2.47, 트리 마디로 습득) ──────
+  { k:'hangma',    n:'항마진경',   h:'降魔眞經',   type:'passive', school:'sorim',   need:21, cost:42000,
+    d:'마를 항복시키는 경으로 몸이 금강처럼 굳는다', hp:0.18, dmg:0.12 },
+  { k:'maehyang',  n:'매향심결',   h:'梅香心訣',   type:'passive', school:'hwasan',  need:8,  cost:1000,
+    d:'매화 향기가 스미듯 몸에 밴다', aspd:0.15, crit:0.08 },
+  { k:'baekryeon', n:'백련심공',   h:'白蓮心功',   type:'passive', school:'ami',     need:20, cost:30000,
+    d:'진흙 속에서도 물들지 않는 흰 연꽃 — 자비로운 기운이 몸을 감싼다', regen:0.25, hp:0.10 },
+  { k:'chwigwon',  n:'취권결',     h:'醉拳訣',     type:'passive', school:'gaebang', need:14, cost:4000,
+    d:'취한 듯 흐트러진 몸놀림이 오히려 빈틈을 없앤다', dmg:0.12, spd:0.08 },
+  { k:'mandok',    n:'만독불침공', h:'萬毒不侵功', type:'passive', school:'dangmun', need:15, cost:8000,
+    d:'온갖 독에 물들어 오히려 독이 힘이 된다', dmg:0.12, hp:0.12 },
+  { k:'talhon',    n:'탈혼공',     h:'奪魂功',     type:'passive', school:'magyo',   need:24, cost:90000,
+    d:'상대의 기운을 빼앗아 자신의 것으로 돌린다 — 흡성 심법', dmg:0.15, regen:0.15 },
   // ── 기연 전용 (예약) ──────────────────────────────
   // 기연 무공 — 표에는 보이지만 기연으로만 얻는다. cost는 연마·돌파용
   { k:'guyang',  n:'구양신결',   h:'九陽神訣',   type:'passive', school:'lost', fate:true,
@@ -810,8 +823,8 @@ const heroHpMax = ()=> Math.round(HERO.hp * Math.pow(GROW.hp, realmLv())
 const heroRegen = ()=> HERO.regen * Math.pow(GROW.regen, realmLv())
                         * (1 + (statBonus('regen')+tBonus('regen'))/100) * artMul('regen');
 const heroSpd   = ()=> HERO.spd * (1 + (statBonus('spd')+tBonus('spd'))/100) * artMul('spd');
-const heroAtkSpd= ()=> 1 + (statBonus('aspd')+tBonus('aspd')) / 100;   // 공격 동작·간격을 함께 배속
-const critCh    = ()=> (statBonus('crit')+tBonus('crit')) / 100;
+const heroAtkSpd= ()=> 1 + (statBonus('aspd')+tBonus('aspd')) / 100 + (artMul('aspd')-1);   // 공격 동작·간격 (심법 매향심결 등)
+const critCh    = ()=> (statBonus('crit')+tBonus('crit')) / 100 + (artMul('crit')-1);
 const critMul   = ()=> TRAIN.critMul + (statBonus('cdmg')+tBonus('cdmg')) / 100;
 
 // 은자 — 첫 재화. 처치 드랍 + 보스 첫 격파 + 오프라인 정산.

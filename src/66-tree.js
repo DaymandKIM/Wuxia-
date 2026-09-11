@@ -8,50 +8,7 @@ const SKILLTREE = { ptsPerStar: 1 };   // 경지 성 1당 무공점
 
 // TREE[문파키] = [노드…]. bamboo=청죽문은 여기 두고, 유명 문파는
 // docs/트리안/*.js 초안을 검수해 아래에 채워 넣는다(v2.45 진행).
-const TREE = {
-  bamboo: [
-    { id:'b0', x:180,y:44, k:'root', g:'竹', n:'청죽 입문', h:'靑竹入門', c:0, eff:{},
-      d:'<span class="eff">청죽문의 길이 열린다.</span> 여기서 가지가 뻗어 나간다.' },
-    { id:'b1', x:96, y:120, k:'minor', n:'죽엽 보법', h:'竹葉步', c:1, need:['b0'], eff:{castSpd:6},
-      d:'<span class="eff">시전 속도 +6%</span> · 잎을 밟듯 가벼이 선다.' },
-    { id:'b2', x:264,y:120, k:'minor', n:'청죽 호흡', h:'靑竹吐納', c:1, need:['b0'], eff:{passiveAmp:8},
-      d:'<span class="eff">심법 효과 +8%</span> · 곧게 숨을 고른다.' },
-    { id:'b3', x:52, y:196, k:'minor', n:'경신 소보', h:'輕身小步', c:1, need:['b1'], eff:{spd:6},
-      d:'<span class="eff">이동 속도 +6%</span>' },
-    { id:'b4', x:180,y:196, k:'major', g:'竹', n:'청죽공', h:'靑竹功', c:2, need:['b1','b2'], eff:{art:'chulwoo'},
-      d:'<span class="eff">심법</span> · 지닌 채 싸우면 내공이 는다. 청죽문의 본(本).' },
-    { id:'b5', x:308,y:196, k:'minor', n:'죽로 조식', h:'竹露調息', c:1, need:['b2'], eff:{regen:7},
-      d:'<span class="eff">회복 +7%</span>' },
-    { id:'b6', x:96, y:272, k:'minor', n:'청강결', h:'靑剛訣', c:1, need:['b3','b4'], eff:{artPower:7},
-      d:'<span class="eff">초식 위력 +7%</span>' },
-    { id:'b7', x:264,y:272, k:'minor', n:'죽운결', h:'竹韻訣', c:1, need:['b4','b5'], eff:{cdr:6},
-      d:'<span class="eff">초식 재사용 -6%</span>' },
-    { id:'b8', x:44, y:348, k:'minor', n:'예풍결', h:'銳風訣', c:1, need:['b6'], eff:{crit:5},
-      d:'<span class="eff">치명 확률 +5%</span>' },
-    { id:'b9', x:180,y:348, k:'minor', n:'죽심 단련', h:'竹心鍛', c:1, need:['b6','b7'], eff:{hp:8},
-      d:'<span class="eff">체력 +8%</span>' },
-    { id:'b10',x:316,y:348, k:'minor', n:'질풍결', h:'疾風訣', c:1, need:['b7'], eff:{aspd:5},
-      d:'<span class="eff">공격 속도 +5%</span>' },
-    { id:'b11',x:96, y:424, k:'minor', n:'경죽 권세', h:'勁竹拳勢', c:1, need:['b8','b9'], eff:{atk:7},
-      d:'<span class="eff">공격력 +7%</span>' },
-    { id:'b12',x:264,y:424, k:'minor', n:'유엽 조식', h:'柔葉調息', c:1, need:['b9','b10'], eff:{castSpd:6},
-      d:'<span class="eff">시전 속도 +6%</span>' },
-    { id:'b13',x:56, y:500, k:'minor', n:'죽뢰결', h:'竹雷訣', c:1, need:['b11'], eff:{artPower:8},
-      d:'<span class="eff">초식 위력 +8%</span>' },
-    { id:'b14',x:180,y:500, k:'minor', n:'만죽 심법', h:'萬竹心法', c:2, need:['b11','b12'], eff:{passiveAmp:10},
-      d:'<span class="eff">심법 효과 +10%</span> · 대숲이 바람을 머금듯.' },
-    { id:'b15',x:304,y:500, k:'minor', n:'청죽 조식', h:'靑竹調息', c:1, need:['b12'], eff:{regen:8},
-      d:'<span class="eff">회복 +8%</span>' },
-    { id:'b16',x:112,y:576, k:'minor', n:'죽영결', h:'竹影訣', c:1, need:['b13','b14'], eff:{cdr:7},
-      d:'<span class="eff">초식 재사용 -7%</span>' },
-    { id:'b17',x:248,y:576, k:'minor', n:'죽화결', h:'竹華訣', c:1, need:['b14','b15'], eff:{crit:6},
-      d:'<span class="eff">치명 확률 +6%</span>' },
-    { id:'b18',x:180,y:656, k:'keystone', g:'萬', n:'청죽만리', h:'靑竹萬里', c:3, need:['b16','b17'],
-      eff:{artPower:40, spd:-10},
-      d:'<span class="eff">비전</span> · 초식 위력 +40%. 그 대신 몸놀림이 무거워진다(이동 −10%).' },
-  ],
-  sorim:[], mudang:[], hwasan:[], ami:[], gaebang:[], dangmun:[], magyo:[],
-};
+const TREE = TREEDATA;   // 8문파 182노드 데이터는 65b-treedata.js (생성물·에이전트 통합)
 
 const treeNodes = s => TREE[s] || [];
 const treeNode  = (s,id) => (TREE[s]||[]).find(n=>n.id===id);

@@ -30,16 +30,14 @@ const ok=(c,m)=>{ console.log((c?'  ':'  ★실패 ')+m); if(!c)bad++; };
 const {w,errs}=boot();
 setTimeout(()=>{
   const d=w.document;
-  // 1) 표 전체 노출
+  // 1) 무공 탭 = 문파 무공도(트리) 패널 (v2.47 — 옛 평면 타일표 대체)
   d.getElementById('tab-arts').click();
-  const rows=d.querySelectorAll('#abody .atile').length;
-  ok(rows===w.eval('ARTS.list.length'),'타일 그리드에 무공 '+rows+'종 전부 보인다');
-  ok(d.querySelectorAll('#abody .atile.fate').length===2,'기연 전용 2종이 표시된다');
-  // 2) 경지 미달 → 구매 불가 (타일 선택 → 상세에 구매 버튼이 없어야 한다)
+  ok(w.eval("!!document.getElementById('ttree')"),'무공 탭이 문파 무공도(트리)를 연다');
+  ok(d.querySelectorAll('#tschtabs .tsch').length===w.eval('treeOrder().length'),
+     '문파 탭이 보인다 ('+d.querySelectorAll('#tschtabs .tsch').length+'문파)');
+  // 2) 경지 미달이면 코드로도 무공을 못 산다 (기연·트리 외 경로 차단)
   w.eval('S.silver=99999');
-  d.querySelector('.atile[data-k="pagong"]').click();
-  ok(!d.getElementById('abuy'),'경지 미달이면 파공권 구매 버튼이 없다 (조건 문구만)');
-  ok(w.eval('learnArt("pagong")')===false,'코드로도 못 산다');
+  ok(w.eval('learnArt("pagong")')===false,'경지 미달이면 파공권을 못 산다');
   // 조건 충족 → 구매
   w.eval('S.rexp=seedExp(1,5)');                 // 이류 중반쯤
   const dmg0=w.eval('heroDmg()'), hp0=w.eval('heroHpMax()');

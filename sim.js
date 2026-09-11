@@ -3,7 +3,7 @@
    기본 24시간(느림, ~1분). 짧게 보려면 SIM_MIN=60 node sim.js */
 const fs=require('fs');
 const ORDER=['00-data.js','10-engine.js','15-audio.js','20-state.js','30-combat.js',
-             '40-step.js','50-render.js','60-ui.js','62-train.js','63-arts.js'];
+             '40-step.js','50-render.js','60-ui.js','62-train.js','63-arts.js','65b-treedata.js','66-tree.js'];
 let code=ORDER.map(f=>fs.readFileSync(__dirname+'/src/'+f,'utf8')).join('\n').replace('"use strict";','');
 const noop=()=>{};
 const ctx=new Proxy({},{get:(t,k)=>k==='canvas'?{width:1170,height:2532}:()=>{},set:()=>true});
@@ -18,7 +18,9 @@ const R=new Function(code+`;return {S,P,step:dt=>step(dt),zone:()=>zone(),lv:()=
   realmInfo:()=>realmInfo(),statLv:k=>statLv(k),trainCost:(k,n)=>trainCost(k,n),trainCap:()=>trainCap(),
   buyStat:k=>buyStat(k),TRAIN,ARTS,canLearn:a=>canLearn(a),learnArt:k=>learnArt(k),
   canBreak:a=>canBreak(a),breakArt:k=>breakArt(k),
-  canLevel:a=>canLevel(a),levelArt:k=>levelArt(k)};`)();
+  canLevel:a=>canLevel(a),levelArt:k=>levelArt(k),
+  TREE,treeNodes:s=>treeNodes(s),treeAvail:(s,n)=>treeAvail(s,n),
+  treeAlloc:(s,id)=>treeAlloc(s,id),skillPtsLeft:()=>skillPtsLeft()};`)();
 const {S,P}=R;
 
 // 플레이어 흉내 — 30초마다: 가장 싼 수련 스텟 1개, 배울 수 있는 무공, 가능한 돌파
@@ -42,6 +44,18 @@ function spend(){
     let hit=false;
     for(const a of R.ARTS.list)if(R.canLevel(a)){R.levelArt(a.k);hit=true;}
     if(!hit)break;
+  }
+  // 문파 무공도 — 경지 포인트로 열린 노드를 익힌다 (무공 마디 우선, 그다음 싼 것)
+  for(let n=0;n<25;n++){
+    if(R.skillPtsLeft()<=0)break;
+    let best=null;
+    for(const s in R.TREE)for(const nd of R.treeNodes(s)){
+      if(!R.treeAvail(s,nd)||(nd.c||0)>R.skillPtsLeft())continue;
+      const score=(nd.eff&&nd.eff.art?0:10)+(nd.c||0);   // 무공 마디 먼저
+      if(!best||score<best.score)best={s,id:nd.id,score};
+    }
+    if(!best)break;
+    R.treeAlloc(best.s,best.id);
   }
 }
 
