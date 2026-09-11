@@ -24,6 +24,7 @@ $('coinhud').src = ASSET.silver;             // HUD 은자 아이콘
 loadImg('ronin_shot', ASSET.ronin_shot);     // 낭인 술병 탄
 loadImg('ronin_dust', ASSET.ronin_dust);     // 술병 명중 먼지
 loadImg('ghost_shot', ASSET.ghost_shot);     // 원혼 해골 귀화 탄
+loadImg('spirit_shot', ASSET.spirit_shot);   // 빙백령 얼음 조각 탄
 for (const t of ['w','g','b','p']) loadImg('aidle_' + t, ASSET['aidle_' + t]);
 loadImg('fx_gate', ASSET.fx_gate);
 loadImg('fx_aura', ASSET.fx_aura);
