@@ -145,7 +145,9 @@ function heroHitCheck(){
     if (f.dead) continue;
     // 세로는 눌러서 잰다 — 바닥이 기울어 보이는 시점이라 위아래가 가깝게 느껴진다
     const dx = f.x - cx, dy = (f.y - cy) / HERO.atkFlat;   // 나누면 세로가 넓어진다
-    if (Math.hypot(dx, dy) < HERO.atkRange + foeRad(f)){
+    // 판정은 공격 시작 여유(atkReach)만큼 넉넉히 — 붙어서 친 뒤 적이 살짝
+    // 밀리거나 움직여도 놓치지 않는다 (v2.38, "손만 허우적" 잔여 제거)
+    if (Math.hypot(dx, dy) < HERO.atkRange + HERO.atkReach + foeRad(f)){
       // 치명타 — 급소를 때리면 배수 피해, 노란 숫자로 알린다
       const crit = Math.random() < critCh();
       hurtFoe(f, heroDmg() * (crit ? critMul() : 1), crit);

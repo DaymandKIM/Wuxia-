@@ -82,9 +82,14 @@ function step(dt){
   let moving = false;
   // 원거리 적은 물러나므로 더 깊이 파고든다
   const closeIn = (tgt && foeM(tgt).ranged) ? 0.42 : 0.72;
+  // 붙는 거리 = 공격 시작 거리 (v2.38). 예전엔 이동 멈춤 거리(atkRange*closeIn)와
+  // 공격 발동 거리(atkRange+atkReach)가 달라, 바짝 붙기 전에 멀리서 정권을 질러
+  // 판정 거리 밖을 헛쳤다 ("멀리서 손만 허우적" — 설산 빙백령처럼 원거리 적).
+  // 이제 붙은 뒤에만 친다: stopD < 판정 거리(atkRange)라 반드시 닿는다.
+  const stopD = tgt ? HERO.atkRange*closeIn + foeRad(tgt) : 0;
   // 제패 연출 중엔 쫓지도 치지도 않는다 — 사방으로 밀려나는 적을 번갈아
   // 조준하면 방향이 매 프레임 뒤집혀 파닥거린다 ("이쪽 저쪽 바라봄")
-  if (S.sweepT <= 0 && P.atkT <= 0 && tgt && td > HERO.atkRange*closeIn + foeRad(tgt)){
+  if (S.sweepT <= 0 && P.atkT <= 0 && tgt && td > stopD){
     const a = Math.atan2(tgt.y-P.y, tgt.x-P.x);
     P.x += Math.cos(a) * heroSpd() * dt;
     P.y += Math.sin(a) * heroSpd() * dt;
@@ -92,10 +97,10 @@ function step(dt){
     moving = true;
   }
 
-  // 공격 — 제패 연출 중엔 새 공격을 안 시작한다 (방향 파닥임 방지)
+  // 공격 — 붙은 뒤(td <= stopD)에만 시작한다. 제패 연출 중엔 안 친다(방향 파닥임 방지)
   if (P.atkCd > 0) P.atkCd -= dt;
   if (P.atkT > 0){ P.atkT -= dt; heroHitCheck(); }
-  else if (S.sweepT <= 0 && P.atkCd <= 0 && tgt && td <= HERO.atkRange + HERO.atkReach + foeRad(tgt)) heroAttack();
+  else if (S.sweepT <= 0 && P.atkCd <= 0 && tgt && td <= stopD + 2) heroAttack();
 
   // 초식 — 제패 연출 중엔 아낀다
   if (S.sweepT <= 0) stepArts(dt);
