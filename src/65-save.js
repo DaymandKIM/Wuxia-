@@ -12,7 +12,7 @@ function saveNow(){
       silver: S.silver, bossDone: S.bossDone, stats: S.stats, rexp: S.rexp,
       arts: S.arts, karma: S.karma, fates: S.fates, fatebits: S.fatebits,
       artXp: S.artXp, artStar: S.artStar, artLv: S.artLv,
-      skillManual: S.skillManual,
+      skillManual: S.skillManual, tree: S.tree,
     }));
   }catch(e){}                    // 시크릿 모드 등 — 저장만 못 할 뿐 게임은 돈다
 }
@@ -53,6 +53,14 @@ function applySave(d){
       S.artLv[a.k] = clamp(d.artLv[a.k] | 0, 1, artLvCap(a.k));   // 성 로드 뒤라 상한이 맞다
   }
   S.skillManual = !!d.skillManual;              // 발동 모드 (예전 저장엔 없다 → 자동)
+  // 문파 무공도 — 유효한 문파·노드만 되살리고, 무공 마디 습득을 복원한다
+  S.tree = {};
+  if (d.tree && typeof d.tree === 'object')
+    for (const s in TREE){
+      if (!d.tree[s]) continue;
+      for (const n of TREE[s]) if (d.tree[s][n.id]) (S.tree[s]||(S.tree[s]={}))[n.id]=1;
+    }
+  treeReapply();
   S.karma = Math.max(0, +d.karma || 0);
   S.fates = Math.max(0, d.fates | 0);
   S.fatebits = {};

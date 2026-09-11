@@ -779,23 +779,28 @@ const artEff    = k => (1 + MASTERY.lvPer * (artLv(k) - 1))
 const artXpNeed = k => Math.round(MASTERY.useBase * Math.pow(MASTERY.useGrow, artStar(k) - 1));
 const artBreakCost = k => Math.round(artDef(k).cost * Math.pow(MASTERY.costMul, artStar(k)));
 // 익힌 심법들의 증폭 배수 (1 + 합) — 숙련 성이 오르면 효과도 커진다
+// 트리 패시브 합 — 66-tree.js. 스킬트리 없이 실행되는 검증 도구(sim 등) 대비 가드.
+const tBonus = k => (typeof treeBonus === 'function') ? treeBonus(k) : 0;
 function artMul(kind){
   let m = 1;
   for (const a of ARTS.list)
     if (S.arts[a.k] && a.type === 'passive' && a[kind]) m += a[kind] * artEff(a.k);
+  // 심법 효과 증폭(passiveAmp) — 트리가 심법 합의 초과분을 키운다
+  if (kind === 'dmg' || kind === 'hp' || kind === 'regen' || kind === 'spd')
+    m = 1 + (m - 1) * (1 + tBonus('passiveAmp')/100);
   return m;
 }
 
 const heroDmg   = ()=> HERO.atkDmg * Math.pow(GROW.dmg, realmLv())
-                        * (1 + statBonus('atk')/100) * artMul('dmg');
+                        * (1 + (statBonus('atk')+tBonus('atk'))/100) * artMul('dmg');
 const heroHpMax = ()=> Math.round(HERO.hp * Math.pow(GROW.hp, realmLv())
-                        * (1 + statBonus('hp')/100) * artMul('hp'));
+                        * (1 + (statBonus('hp')+tBonus('hp'))/100) * artMul('hp'));
 const heroRegen = ()=> HERO.regen * Math.pow(GROW.regen, realmLv())
-                        * (1 + statBonus('regen')/100) * artMul('regen');
-const heroSpd   = ()=> HERO.spd * (1 + statBonus('spd')/100) * artMul('spd');
-const heroAtkSpd= ()=> 1 + statBonus('aspd') / 100;   // 공격 동작·간격을 함께 배속
-const critCh    = ()=> statBonus('crit') / 100;
-const critMul   = ()=> TRAIN.critMul + statBonus('cdmg') / 100;
+                        * (1 + (statBonus('regen')+tBonus('regen'))/100) * artMul('regen');
+const heroSpd   = ()=> HERO.spd * (1 + (statBonus('spd')+tBonus('spd'))/100) * artMul('spd');
+const heroAtkSpd= ()=> 1 + (statBonus('aspd')+tBonus('aspd')) / 100;   // 공격 동작·간격을 함께 배속
+const critCh    = ()=> (statBonus('crit')+tBonus('crit')) / 100;
+const critMul   = ()=> TRAIN.critMul + (statBonus('cdmg')+tBonus('cdmg')) / 100;
 
 // 은자 — 첫 재화. 처치 드랍 + 보스 첫 격파 + 오프라인 정산.
 // ※ 수치는 임시. 쓸 곳(심법)이 들어오면 sim으로 다시 잡는다.
@@ -806,7 +811,7 @@ const SILVER = {
   firstMul: 50,                  // 보스 첫 격파 보너스 = 처치 드랍 × 이 값
 };
 const killSilver = ()=> Math.round(SILVER.base * Math.pow(SILVER.grow, gstage()-1)
-                                   * (1 + statBonus('gold')/100));
+                                   * (1 + (statBonus('gold')+tBonus('gold'))/100));
 
 // 기연 — 공짜 랜덤이 아니라 누적의 정산 (조사 결론·장무기 공식).
 // 인연(緣)이 쌓이면 단계 제패 순간 기연이 나타난다. 고난(쓰러짐)이 크게 쌓인다.

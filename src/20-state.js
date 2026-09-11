@@ -28,6 +28,8 @@ const S = {
   artStar: {},                   // 무공 성 { key: 1~4 }
   artLv: {},                     // 무공 연마 레벨 { key: 1~성×10 }
   skillManual: false,            // 초식 시전 모드 — false 자동 / true 수동(직접 시전)
+  tree: {},                      // 문파 무공도 — 익힌 노드 { 문파키: { 노드id:1 } }
+  treeArt: {},                   // 트리로 습득한 무공 { k:1 } (되돌릴 때 회수 판단)
   karma: 0,                      // 인연 — 기연의 재료
   fates: 0,                      // 만난 기연 횟수
   fatePending: 0,                // >0 이면 기연이 기다린다

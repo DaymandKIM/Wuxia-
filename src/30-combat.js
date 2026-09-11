@@ -279,7 +279,7 @@ function stepArts(dt){
     // 동시 시전 금지 — 시전 중이거나 숨 고르는 중이면 쿨이 차 있어도 기다린다
     if (P.castT > 0 || P.castGapT > 0) continue;
     if (castArt(a)){
-      P.artCd[a.k] = a.cd;
+      P.artCd[a.k] = a.cd * (1 - tBonus('cdr')/100);   // 트리 재사용 감소
       P.castGapT = P.castT + CASTQ.gap;        // 동작이 끝난 뒤 gap 만큼 쉬고 다음 초식
       S.artXp[a.k] = (S.artXp[a.k] | 0) + 1;   // 초식 숙련 — 시전 횟수
     }
@@ -294,7 +294,7 @@ function castByHand(k){
   if ((P.artCd[k] || 0) > 0) return false;                             // 쿨 중
   if (P.castT > 0 || P.castGapT > 0) return false;                     // 동시 시전 금지
   if (!castArt(a)) return false;                                        // 대상이 없으면 아낀다
-  P.artCd[k] = a.cd;
+  P.artCd[k] = a.cd * (1 - tBonus('cdr')/100);
   P.castGapT = P.castT + CASTQ.gap;
   S.artXp[k] = (S.artXp[k] | 0) + 1;
   return true;
@@ -304,7 +304,7 @@ function castByHand(k){
 function beginCast(k){
   const c = HFX.cast[k];
   if (!c) return;
-  P.castK = k; P.castT = castN(k) / HFX.castFps; P.anim = 'cast'; P.af = 0;
+  P.castK = k; P.castT = castN(k) / HFX.castFps / (1 + tBonus('castSpd')/100); P.anim = 'cast'; P.af = 0;
 }
 // 시전 성공 여부를 돌려준다 — 대상이 없으면 쿨을 아낀다
 function castArt(a){
@@ -320,7 +320,7 @@ function castArt(a){
   }
   const alive = S.foes.filter(f => !f.dead);
   if (!alive.length) return false;
-  const dmg = heroDmg() * a.mul * artEff(a.k);   // 숙련 성이 오르면 더 아프다
+  const dmg = heroDmg() * a.mul * artEff(a.k) * (1 + tBonus('artPower')/100);   // 숙련 성·트리 초식위력
   const hits = [];
   if (a.k === 'pagong' || a.k === 'baekbo'){
     // 단일 강타 — 파공권은 가장 가까운, 백보신권은 가장 먼 적

@@ -6,7 +6,7 @@
   "scripts": {
     "build": "python3 build.py",
     "lint": "node lint.js",
-    "check": "node lint.js && node spritetest.js && node test.js && node savetest.js && node artstest.js && node fatetest.js && node ronintest.js && node bambootest.js && node cavetest.js && node snowtest.js && node heaventest.js && node fxtest.js",
+    "check": "node lint.js && node spritetest.js && node test.js && node savetest.js && node artstest.js && node fatetest.js && node ronintest.js && node bambootest.js && node cavetest.js && node snowtest.js && node heaventest.js && node fxtest.js && node treetest.js",
     "test": "node test.js",
     "sim": "node sim.js",
     "review": "python3 review.py"
