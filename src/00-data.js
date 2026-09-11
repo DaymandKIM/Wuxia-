@@ -323,6 +323,21 @@ const FOES = {
     hp:1.0, dmg:1.0, spd:1.0,
     shotImg:'ghost_shot', shotSpd:230,   // 보스 스킬이 탄이 된다 (40-step)
   },
+  bat: {
+    // 석굴 박쥐 — 노란 눈의 큰 동굴 박쥐, 늘 떠 있다. 급습 물기가 기본이고
+    // 거리가 뜨면 입을 벌려 음파 고리를 쏜다 (낭인 투척 틀 + fly 탄).
+    // 캔버스에 비행 띄움 10px — 그림자에서 몸이 뜬다.
+    n:'석굴 박쥐', w:132, h:66, sw:90, bh:36,
+    anim:{ idle:['idle0','idle1','idle2','idle3'],
+           walk:['walk0','walk1','walk2','walk3'],
+           atk:['atk0','atk1','atk2','atk3'],     // 접근 → 입 벌려 물기 → 활공 → 복귀
+           cast:['cast0','cast1','cast2'],        // 날개 펴기 → 절규 (고리 발사) → 갈무리
+           hit:['hit'], death:['death0','death1'] },
+    fps:{ idle:7, walk:8, atk:8, cast:4.8, hit:6, death:4 },
+    hp:0.55, dmg:0.85, spd:1.5, range:44,   // 물몸 — 빠르게 붙어 문다
+    throwCd:7, throwDur:0.62, throwAt:0.55, throwMin:80, throwMax:210,
+    shotImg:'bat_shot', shotFly:true, shotSpd:200,
+  },
   wolf: {
     // 설산 설랑 — 서리 맺힌 흰 늑대. 빠르게 달려들어 문다. 입김이 얼어 있다.
     // 공격 컷의 빙기 이펙트가 앞뒤로 뻗어 캔버스가 넓다 — 몸은 sw/bh.
@@ -423,7 +438,7 @@ const FOES = {
 const ZONEFOE = {
   bamboo:  ['bandit','bandit','wisp','wisp','panther','panther','shaman','frog','frog'],
   village: ['ronin','ronin','dog','dog','bandit','wisp'],
-  cave:    ['bug','bug','bandit','wisp'],
+  cave:    ['bug','bug','bat','bat','bandit','wisp'],
   snow:    ['wolf','wolf','spirit','spirit','bandit','wisp'],
   heaven:  ['eagle','eagle','guard','guard','bandit','wisp'],
 };
