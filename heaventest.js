@@ -84,9 +84,38 @@ setTimeout(()=>{
         ok(w.eval('window.__hurt')>0,'돌격이 명중해 아프다 ('+Math.round(w.eval('window.__hurt'))+' 피해)');
         ok(w.eval('S.foes[0] ? dist(S.foes[0].x,S.foes[0].y,P.x,P.y) : 0')<gx0,
           '돌격으로 실제로 파고들었다');
-        ok(errs.length===0,'런타임 오류 0'+(errs.length?': '+errs[0]:''));
-        console.log(bad?('\n★ 실패 '+bad+'건'):'\n문제 없음');
-        process.exit(bad?1:0);
+
+        // 6) 천산 보스 = 뇌운신장 — 에셋·갈래 번개 탄 검증 (v2.32)
+        const bmiss=w.eval(`(function(){
+          const miss=[];
+          for(const a in FOES.thunder.anim)
+            for(const f of FOES.thunder.anim[a]) if(!ASSET['thunder_'+f]) miss.push(f);
+          if(!ASSET.thunder_shot) miss.push('shot');
+          return miss.join(',');
+        })()`);
+        ok(bmiss==='','뇌운신장 에셋 전부 존재'+(bmiss?' (빠짐: '+bmiss+')':''));
+        ok(w.eval('ZONEBOSS.heaven==="thunder"'),'천산 보스는 뇌운신장');
+        w.eval(`S.shots.length=0; gotoZone(4,11); S.intro=0; S.foes.length=0; spawnBoss();
+          const b=S.foes[0]; b.rise=0; b.skCd=0; b.hp=1e15; b.hpMax=1e15;
+          // 명중 증거는 fly 탄 폭발(burst) — 보스 근접타(전천후)와 구분된다
+          window.__burst=0;
+          const _pf2=S.fx.push.bind(S.fx);
+          S.fx.push=function(e){ if(e&&e.k==="burst") window.__burst++; return _pf2(e); };
+          window.__bsaw=0;
+          window.__bpin=setInterval(function(){
+            const b=S.foes.find(f=>f.boss); if(!b) return;
+            b.x=P.x+240; b.y=P.y;
+            const s=S.shots.find(s=>s.img==='thunder_shot');
+            if(s){ window.__bsaw=1; P.x=s.x; P.y=s.y+HERO.h*0.4; }
+          },50);`);
+        setTimeout(()=>{
+          ok(w.eval('window.__bsaw===1'),'뇌운신장이 갈래 번개를 던진다 (그림 탄)');
+          ok(w.eval('window.__burst')>0,'번개가 명중해 터졌다 ('+w.eval('window.__burst')+'회 폭발)');
+          w.eval('clearInterval(window.__bpin)');
+          ok(errs.length===0,'런타임 오류 0'+(errs.length?': '+errs[0]:''));
+          console.log(bad?('\n★ 실패 '+bad+'건'):'\n문제 없음');
+          process.exit(bad?1:0);
+        },2600);
       },1400);
     },2400);
   },1600);

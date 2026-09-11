@@ -31,6 +31,7 @@ loadImg('spirit_shot', ASSET.spirit_shot);   // 빙백령 얼음 조각 탄
 loadImg('tiger_shot', ASSET.tiger_shot);     // 설산백호 눈보라 숨결 탄
 loadImg('guard_shot', ASSET.guard_shot);     // 수호무사 초승달 검기 탄
 loadImg('bat_shot', ASSET.bat_shot);         // 석굴 박쥐 음파 고리 탄
+loadImg('thunder_shot', ASSET.thunder_shot); // 뇌운신장 갈래 번개 탄
 loadImg('stalker_shot', ASSET.stalker_shot); // 죽림 추적자 회전 잎날 탄
 for (const t of ['w','g','b','p']) loadImg('aidle_' + t, ASSET['aidle_' + t]);
 loadImg('fx_gate', ASSET.fx_gate);

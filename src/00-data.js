@@ -106,7 +106,7 @@ const ZONES = [
   { k:'village', n:'폐촌',   ground:'#6b6350', boss:'폐촌의 원혼' },   // 등장 문구·FOES.ghost와 통일
   { k:'cave',    n:'동굴',   ground:'#5c5f5c', boss:'석암거인' },
   { k:'snow',    n:'설산',   ground:'#b9c9d2', boss:'설산백호' },
-  { k:'heaven',  n:'천산',   ground:'#7f9a86', boss:'천산 검객' },
+  { k:'heaven',  n:'천산',   ground:'#7f9a86', boss:'뇌운신장' },
 ];
 const zone = ()=> ZONES[S.zi];
 
@@ -209,7 +209,7 @@ const BOSSCRY = {
   village: '폐촌의 원혼이 일어선다',
   cave:    '동굴의 주인이 모습을 드러낸다',
   snow:    '설산백호가 포효한다',
-  heaven:  '천산의 검객이 하강한다',
+  heaven:  '뇌운이 하늘을 덮는다',
 };
 
 // 보스 스킬 — 체력이 줄면 강한 기술을 쓴다
@@ -509,6 +509,21 @@ const FOES = {
     hp:1.0, dmg:1.0, spd:1.0,
     shotImg:'tiger_shot', shotSpd:250,   // 보스 스킬이 탄이 된다 (원혼과 같은 틀)
   },
+  thunder: {
+    // 천산 최종 보스 뇌운신장 — 먹구름 몸에 금 갑주를 두른 뇌신 장수 (v2.32).
+    // 기본 공격은 번개 주먹 스매시 3연쇄(시트가 왼쪽을 봐서 4컷 반전),
+    // 스킬은 두 팔을 들어 갈래 번개 탄을 던진다(원혼·백호와 같은 탄 보스 틀).
+    // 시전·죽음 컷(시트 하단 행)은 그림 배율이 달라 별도 배율(92/139)로 맞췄다.
+    n:'뇌운신장', w:156, h:126, sw:94, bh:92,
+    anim:{ idle:['idle0','idle1','idle2','idle3'],
+           walk:['walk0','walk1','walk2','walk3'],
+           atk:['atk0','atk1','atk2','atk3'],              // 주먹 모으기 → 치켜들기 → 스매시 → 갈무리
+           skill:['sk0','sk0','sk1','sk1','sk2'],          // 두 팔 들기 → 번개 투척(탄) → 갈무리
+           hit:['hit'], death:['hit','death0','death1'] }, // 부서짐 → 무너짐 → 잔해
+    fps:{ idle:4, walk:6, atk:4.5, skill:3.7, hit:5, death:3.2 },
+    hp:1.0, dmg:1.0, spd:1.0,
+    shotImg:'thunder_shot', shotSpd:280,
+  },
   golem: {
     // 동굴 보스 석암거인 — 동굴 벽에서 깨어난 바위 거인. 가슴에 호박색 핵.
     // 내리찍기(atk1)의 흙먼지가 넓어 캔버스가 크다 — 몸은 sw/bh.
@@ -552,6 +567,7 @@ const ZONEBOSS = {
   village: 'ghost',
   cave:    'golem',
   snow:    'tiger',
+  heaven:  'thunder',
 };
 
 const DOWN_TIME = 3.0;           // 쓰러진 뒤 운기조식 시간
