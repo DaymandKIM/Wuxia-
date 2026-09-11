@@ -23,6 +23,7 @@ function step(dt){
     }
     if (e.life <= 0) S.fx.splice(i,1);
   }
+  if (S.gateT > 0) S.gateT -= dt;         // 보스 등장 후 문 페이드 타이머 (v2.40)
 
   // 운기조식 — 여기서도 애니메이션은 계속 돈다
   if (S.downT > 0){

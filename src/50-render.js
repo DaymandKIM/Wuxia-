@@ -365,7 +365,7 @@ function drawFx(ox, oy){
       const t = e.v + '!';
       ctx.save();
       ctx.globalAlpha = Math.min(1, a * 1.5);
-      ctx.font = '900 ' + (p < 0.14 ? 10.5 : 8.5) + 'px sans-serif';
+      ctx.font = (p < 0.14 ? 13 : 10.5) + "px Gugi,sans-serif";
       ctx.textAlign = 'center';
       ctx.fillStyle = '#0a1420';
       ctx.fillText(t, x + 1, y - p*9 + 1);
@@ -442,6 +442,7 @@ function render(){
   const ox = S.camX - VW/2, oy = S.camY - VH/2;
   drawGround(ox, oy);
   drawAmbient(false);                        // 땅 위 층 — 구름 그림자·동굴 어둑함
+  drawGateFade(ox, oy);                       // 보스 등장 후 문이 어둠 속으로 스러진다 (뒤에)
   // y 순서로 겹침 정리
   const ents = S.foes.map(f=>({y:f.y, f}));
   ents.push({ y:P.y, hero:true });
@@ -530,7 +531,7 @@ function drawIntroText(W, H, el){
   // 위 — 구역 이름 (크게)
   if (S.introTop){
     ctx.fillStyle = '#f0e2b8';
-    ctx.font = '900 ' + Math.round(H*0.036) + 'px -apple-system,sans-serif';
+    ctx.font = Math.round(H*0.044) + 'px Gugi,-apple-system,sans-serif';
     ctx.fillText(S.introTop, W/2, topY);
     ctx.strokeStyle = 'rgba(240,226,184,.45)'; ctx.lineWidth = 2;
     const tw = W*0.14;
@@ -542,7 +543,7 @@ function drawIntroText(W, H, el){
 
   // 아래 — 단계 (작게)
   ctx.fillStyle = '#d8cba4';
-  ctx.font = '800 ' + Math.round(H*0.026) + 'px -apple-system,sans-serif';
+  ctx.font = Math.round(H*0.030) + 'px Gugi,-apple-system,sans-serif';
   ctx.fillText(S.introMsg, W/2, botY);
   ctx.globalAlpha = 1;
 }
@@ -565,7 +566,7 @@ function drawBossBar(ox, oy){
   ctx.fillStyle = '#d2564a';
   ctx.fillRect(x - w/2, y, w * Math.max(0, b.hp/b.hpMax), h);
   // 이름 — 크고 또렷하게 (v2.35 "보스 이름이 너무 작다"). 붉은 표제 + 검은 외곽
-  ctx.font = '900 12px -apple-system,sans-serif';
+  ctx.font = '14px Gugi,-apple-system,sans-serif';
   ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
   const nm = zone().boss, ny = y - 4;
   ctx.fillStyle = 'rgba(6,8,12,.92)';
@@ -610,6 +611,31 @@ function drawQi(x, y){
 /* ── 보스 등장 ─────────────────────────────────────
    문이 서고, 청록 기운이 회오리치며 문 가운데로 빨려든다.
 */
+// 보스 등장 뒤 문이 어둠 속으로 스러진다 (v2.40) — 아래로 살짝 가라앉으며
+// 어두워지고 옅어진다. 소환 연출이 끝난 직후 boss가 걸어 나오는 동안 보인다.
+function drawGateFade(ox, oy){
+  if (!(S.gateT > 0)) return;
+  const g = IMG.fx_gate;
+  if (!g || !g.complete || !g.naturalWidth) return;
+  const t = S.gateT / SUMMON.fade;                 // 1→0
+  const x = Math.round((S.gateX||0) - ox);
+  const y = Math.round((S.gateYb||0) - oy);
+  const gw = 92, gh = 88;
+  const sink = (1 - t) * 16;                        // 아래로 가라앉는다
+  const ghh = gh * (0.72 + t * 0.28);               // 살짝 눌리며 잠긴다
+  ctx.save();
+  // 어둠 속으로 — 옅어지며(t*t) 가라앉는다. 배경에 사각 자국을 안 남긴다.
+  ctx.globalAlpha = t * t * 0.9;
+  draw(g, x - gw/2, y - gh + sink, gw, ghh);
+  // 그림자가 삼키듯 — 아래에서 올라오는 어둠(문 폭 타원)으로 밑동을 가린다
+  ctx.globalAlpha = (1 - t) * 0.6;
+  ctx.fillStyle = '#05070a';
+  ctx.beginPath();
+  ctx.ellipse(x, y - 6, gw*0.42, 10 + (1-t)*14, 0, 0, Math.PI*2);
+  ctx.fill();
+  ctx.restore();
+}
+
 function drawSummon(ox, oy){
   if (S.summonT <= 0) return;
   const el = SUMMON.dur - S.summonT;
@@ -736,7 +762,7 @@ function drawSummon(ox, oy){
       ctx.globalAlpha = ta;
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.fillStyle = '#f0d9a8';
-      ctx.font = '900 ' + Math.round(H*0.030) + 'px -apple-system,sans-serif';
+      ctx.font = Math.round(H*0.038) + 'px Gugi,-apple-system,sans-serif';
       const yy = H*0.30 - (1-clamp(bt/0.3,0,1)) * H*0.02;
       ctx.fillText(cry, W/2, yy);
       ctx.strokeStyle = 'rgba(240,217,168,.45)'; ctx.lineWidth = 2;

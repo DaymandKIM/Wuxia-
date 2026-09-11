@@ -51,6 +51,8 @@ function spawnBoss(){
   // 등장 파열 (v2.31) — 문이 닫히며 기운이 터진다
   fxBlast(S.summonX || P.x, (S.summonY || P.y) - 46, FXD.boss.r, FXD.boss.c, true);
   shake(7);
+  // 문이 어둠 속으로 스러진다 (v2.40) — 보스가 걸어 나온 뒤 페이드아웃
+  S.gateT = SUMMON.fade; S.gateX = S.summonX; S.gateYb = S.summonY;
 }
 
 // 큰 마법 구체 — 느리지만 아프고 넓다
