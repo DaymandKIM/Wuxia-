@@ -138,10 +138,17 @@
   .sb.bs.on{background:#8c3f2f;border-color:#bd6a4a;color:#ffeee8;}
   .znote{margin:6px 14px 4px;font-size:10px;color:#5d6773;line-height:1.5;}
 
-  #opanel,#fpanel{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  #opanel{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
     pointer-events:none;opacity:0;background:rgba(6,8,11,.66);transition:opacity .2s;}
-  #opanel.show,#fpanel.show{pointer-events:auto;opacity:1;}
-  .fcard{border-color:#8a6d2f;}
+  #opanel.show{pointer-events:auto;opacity:1;}
+  /* 기연은 자동 수락이라 화면 가운데를 막지 않는다 (v2.33) — 위에서 내려오는
+     띠로 흘려보낸다. 배경 어둠 없음, 전투가 계속 보인다. */
+  #fpanel{position:absolute;left:0;right:0;top:calc(env(safe-area-inset-top) + 78px);
+    display:flex;justify-content:center;pointer-events:none;opacity:0;
+    transform:translateY(-12px);transition:opacity .25s,transform .25s;}
+  #fpanel.show{opacity:1;transform:translateY(0);}
+  #fpanel .ocard{pointer-events:auto;}
+  .fcard{border-color:#8a6d2f;background:rgba(20,18,12,.95);box-shadow:0 6px 22px rgba(0,0,0,.5);}
   .fcard .oh{color:#e8c96a;}
   #ftitle{font-size:14px;font-weight:900;color:#e8eef6;margin-top:9px;letter-spacing:.05em;}
   #ftext{font-size:11.5px;color:#9fb0c2;margin-top:7px;line-height:1.7;}

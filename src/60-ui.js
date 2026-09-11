@@ -88,12 +88,16 @@ function skillHud(){
 /* ── 구역 이동 ─────────────────────────────────────
    진입은 죽림과 같은 슬라이드 연출을 쓴다.
 */
-function enterStage(){
+// intro: 구역 진입 연출을 보여줄지. 같은 구역 안 일반 단계 이동은 연출을
+// 건너뛴다 (v2.33 — "단계마다 3초 연출이 50번, 건너뛰기 없음"이라는 피드백.
+// 단계는 상단 표시로 충분). 구역이 바뀌거나 보스 단계일 때만 연출한다.
+function enterStage(intro){
   P.hpMax = heroHpMax(); P.hp = P.hpMax;
   P.x = 0; P.y = 0; P.anim = 'idle'; P.af = 0;
   S.camX = 0; S.camY = -24;
   S.foes.length = 0; S.fx.length = 0; S.shots.length = 0; S.bossAlive = false;
-  beginIntro(isBoss() ? zone().boss : (S.stage + '단계'), zone().n);
+  if (intro) beginIntro(isBoss() ? zone().boss : (S.stage + '단계'), zone().n);
+  else { S.intro = 0; if (!isBoss()) spawnFoe(); }   // 연출 생략 시 바로 적을 채워 빈 화면을 줄인다
   // 인연이 차 있으면 기연이 나타난다.
   // sim.js 등 검증 도구는 64-fate 없이 60-ui까지만 이어붙이므로 가드가 필요하다.
   if (typeof maybeFate === 'function') maybeFate();
@@ -105,7 +109,7 @@ function gotoZone(i, st){
   // [테스트 전용] 앞 구역으로 점프하면 걸맞은 수련치를 채워준다 — 안 그러면 못 버틴다
   if (TEST) S.rexp = Math.max(S.rexp, seedExp(i, st));
   closeZonePanel();
-  enterStage();
+  enterStage(true);            // 구역 이동은 연출한다
 }
 
 function buildZonePanel(){

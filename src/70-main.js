@@ -106,7 +106,7 @@ if (sv){
   const away = (Date.now() - sv.at) / 1000;
   if (away >= OFFLINE.min) og = offlineGains(away);
 }
-enterStage();
+enterStage(true);            // 시작은 연출한다
 if (og) showOffline(og);           // 처치 0이어도 보여준다 — 수련치는 시간으로 쌓인다
 
 saveNow();

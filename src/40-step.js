@@ -64,8 +64,11 @@ function step(dt){
     // 보스 곁의 호위는 조금씩 채워진다
     const minions = S.foes.filter(f=>!f.dead && !f.boss).length;
     if (minions < BOSS.guard && Math.random() < dt*0.9) spawnFoe();
-  } else if (S.foes.filter(f=>!f.dead).length < st.max && Math.random() < dt*2.4){
-    spawnFoe();
+  } else {
+    // 빈 화면을 줄인다 (v2.33 — "적을 다 잡고 다음까지 주인공만 서 있다") —
+    // 개체가 적을수록 빨리 채운다. 상한(st.max)은 그대로 지킨다
+    const live = S.foes.filter(f=>!f.dead).length;
+    if (live < st.max && Math.random() < (live < 2 ? dt*7 : dt*2.4)) spawnFoe();
   }
 
   // 주인공 이동 — 가장 가까운 적 쪽으로
@@ -348,7 +351,7 @@ function step(dt){
         S.stage = 1;                   // 마지막 구역은 처음부터
       }
       S.best = Math.max(S.best, lv());
-      enterStage();
+      enterStage(true);        // 보스 격파 후 새 구역·재시작 — 연출한다
     }
     // 카메라만 갱신하고 아래 일반 클리어 판정은 건너뛴다
     S.camX += (P.x - S.camX) * Math.min(1, dt*6);
@@ -428,5 +431,5 @@ function advanceStage(){
   S.shots.length = 0;
   S.stage++;
   S.best = Math.max(S.best, lv());
-  enterStage();
+  enterStage(isBoss());        // 보스 단계만 연출, 일반 단계는 바로 진행 (v2.33)
 }
