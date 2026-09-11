@@ -909,8 +909,13 @@ function drawShots(ox, oy){
       const im = IMG[b.img];
       ctx.save();
       ctx.translate(x, y);
-      // 나는 탄(원혼 해골 귀화) — 돌지 않고 진행 방향을 본다. 술병류는 빙글빙글
-      if (b.fly){ if (b.vx < 0) ctx.scale(-1, 1); }
+      // 나는 탄(얼음 조각·해골 귀화 등) — 진행 방향으로 기울여 난다 (v2.39).
+      // 왼쪽이면 거울 뒤 반전각으로 돌려 뒤집힘을 막는다(파공권과 같은 방식).
+      // 술병류(fly 아님)는 빙글빙글 돈다.
+      if (b.fly){
+        if (b.vx < 0){ ctx.scale(-1, 1); ctx.rotate(Math.atan2(b.vy, -b.vx)); }
+        else ctx.rotate(Math.atan2(b.vy, b.vx));
+      }
       else ctx.rotate(b.t * 9 * (b.vx < 0 ? -1 : 1));
       draw(im, -Math.round(im.naturalWidth/2), -Math.round(im.naturalHeight/2),
            im.naturalWidth, im.naturalHeight);
