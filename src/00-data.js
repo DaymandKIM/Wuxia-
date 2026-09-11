@@ -104,8 +104,8 @@ const FIST = [
 const ZONES = [
   { k:'bamboo',  n:'죽림',   ground:'#6a7a52', boss:'대나무 마왕' },
   { k:'village', n:'폐촌',   ground:'#6b6350', boss:'폐촌의 원혼' },   // 등장 문구·FOES.ghost와 통일
-  { k:'cave',    n:'동굴',   ground:'#5c5f5c', boss:'석암거인' },
-  { k:'snow',    n:'설산',   ground:'#b9c9d2', boss:'설산백호' },
+  { k:'cave',    n:'동굴',   ground:'#474d54', boss:'석암거인' },   // v2.35 어둑·푸른끼 (몹 대비)
+  { k:'snow',    n:'설산',   ground:'#a4b3c0', boss:'설산백호' },   // v2.35 톤다운 (흰 백호 대비)
   { k:'heaven',  n:'천산',   ground:'#7f9a86', boss:'뇌운신장' },
 ];
 const zone = ()=> ZONES[S.zi];
@@ -115,9 +115,10 @@ const zone = ()=> ZONES[S.zi];
 const AMB = {
   bamboo:  { kind:'leaf',  n:10, c:'150,180,96',  spd:26 },   // 흩날리는 댓잎
   village: { kind:'leaf',  n:18, c:'186,158,108', spd:34 },   // 잿빛 낙엽·재
-  cave:    { kind:'fire',  n:11, c:'220,190,110', spd:7,      // 반딧불 + 어둑함
-             dark:0.16 },
-  snow:    { kind:'snow',  n:34, c:'244,248,252', spd:56 },   // 내리는 눈
+  cave:    { kind:'fire',  n:14, c:'230,196,112', spd:7,      // 반딧불 + 어둑함
+             dark:0.32 },                                     // v2.35 비네트 강화 — 가운데로 시선
+  snow:    { kind:'snow',  n:38, c:'248,251,255', spd:56,     // 내리는 눈
+             haze:'150,172,196', hazeA:0.10 },                // v2.35 옅은 한기 비네트
   heaven:  { kind:'cloud', n:4,  c:'22,30,26',    spd:11 },   // 흐르는 구름 그림자
 };
 

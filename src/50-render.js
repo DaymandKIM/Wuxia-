@@ -396,9 +396,10 @@ function drawAmbient(front){
       ctx.beginPath(); ctx.ellipse(x, y, w, w * 0.36, 0, 0, Math.PI * 2); ctx.fill();
       ctx.beginPath(); ctx.ellipse(x, y, w * 0.72, w * 0.26, 0, 0, Math.PI * 2); ctx.fill();
     }
-  } else if (!front && A.dark){
-    // 동굴 어둑함 — 가장자리를 겹겹이 어둡게 (그라디언트 없이)
-    ctx.fillStyle = 'rgba(6,8,10,' + A.dark + ')';
+  } else if (!front && (A.dark || A.haze)){
+    // 가장자리 비네트 — 겹겹이 (동굴은 어둠, 설산은 옅은 한기). 가운데로 시선.
+    ctx.fillStyle = A.dark ? 'rgba(6,8,10,' + A.dark + ')'
+                           : 'rgba(' + A.haze + ',' + A.hazeA + ')';
     for (let i = 0; i < 3; i++){
       const inset = i * 34;
       ctx.beginPath();
@@ -556,18 +557,22 @@ function drawBossBar(ox, oy){
   if (!b || b.rise > 0) return;              // 나오는 중엔 감춘다
   const M = foeM(b);
   const x = Math.round(b.x - ox);
-  const y = Math.round(b.y - oy) - M.h - 12; // 머리 위
-  const w = Math.max(56, M.w * 1.05), h = 5;
+  const y = Math.round(b.y - oy) - M.h - 16; // 머리 위
+  const w = Math.max(64, M.w * 1.05), h = 6;
   ctx.fillStyle = 'rgba(8,10,14,.85)';
   ctx.fillRect(x - w/2 - 1, y - 1, w + 2, h + 2);
   ctx.fillStyle = '#3a1c18';
   ctx.fillRect(x - w/2, y, w, h);
   ctx.fillStyle = '#d2564a';
   ctx.fillRect(x - w/2, y, w * Math.max(0, b.hp/b.hpMax), h);
-  ctx.fillStyle = '#f0d9a8';
-  ctx.font = '900 7px -apple-system,sans-serif';
+  // 이름 — 크고 또렷하게 (v2.35 "보스 이름이 너무 작다"). 붉은 표제 + 검은 외곽
+  ctx.font = '900 12px -apple-system,sans-serif';
   ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
-  ctx.fillText(zone().boss, x, y - 3);
+  const nm = zone().boss, ny = y - 4;
+  ctx.fillStyle = 'rgba(6,8,12,.92)';
+  for (const [dx, dy] of [[-1,0],[1,0],[0,-1],[0,1]]) ctx.fillText(nm, x + dx, ny + dy);
+  ctx.fillStyle = '#ffd9a0';
+  ctx.fillText(nm, x, ny);
 }
 
 
