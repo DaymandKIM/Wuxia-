@@ -107,6 +107,14 @@ function castFrame(k, i){
   return n >= c[2] ? i : Math.round(i * (c[2] - 1) / (n - 1));
 }
 const HITFRAME = 2;              // 공격 몇 번째 프레임에서 판정하나
+// 기본공격 무브셋 — 경지 성급이 오를수록 동작이 는다 (v2.46, 사용자 설계).
+//   처음엔 양주먹만, 발차기는 need 성급부터 해금. 앞으로 성급대로 더 얹는다.
+//   기본공격은 지금 열린 동작들을 순서대로 돌려 쓴다(cycle).
+const ATKMOVES = [
+  { key:'punch', need:0  },      // 양주먹 — 처음부터
+  { key:'kick',  need:5  },      // 발차기 — 이류(성급 5)부터
+];
+function atkPool(){ const p=ATKMOVES.filter(m=>realmLv()>=m.need); return p.length?p:[ATKMOVES[0]]; }
 // 공격 프레임별 주먹 끝 위치 (프레임 중앙·바닥 기준 오프셋)
 // 원본 그림에 손 끝이 잘려 있어, 이 자리에 작은 원을 얹어 마무리한다.
 const FIST = [

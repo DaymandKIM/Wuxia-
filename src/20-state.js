@@ -28,6 +28,8 @@ const S = {
   artStar: {},                   // 무공 성 { key: 1~4 }
   artLv: {},                     // 무공 연마 레벨 { key: 1~성×10 }
   skillManual: false,            // 초식 시전 모드 — false 자동 / true 수동(직접 시전)
+  atkMove: 0,                    // 기본공격 무브셋 회전 인덱스 (성장형, v2.46)
+  atkKey: 'punch',               // 이번 타의 공격 동작 키
   tree: {},                      // 문파 무공도 — 익힌 노드 { 문파키: { 노드id:1 } }
   treeArt: {},                   // 트리로 습득한 무공 { k:1 } (되돌릴 때 회수 판단)
   karma: 0,                      // 인연 — 기연의 재료

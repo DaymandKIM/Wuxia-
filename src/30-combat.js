@@ -131,7 +131,10 @@ function heroAttack(){
   }
   if (!best || bd > HERO.atkRange + HERO.atkReach + foeRad(best)) return false;
   P.dir = best.x >= P.x ? 1 : -1;
-  P.atkAlt = P.atkAlt ? 0 : 1;    // 양손 교대 — 오른손·왼손 정권을 번갈아 지른다
+  // 성장형 무브셋 — 지금 열린 공격 동작을 순서대로 돌려 쓴다 (v2.46)
+  const pool = atkPool();
+  P.atkKey = pool[(P.atkMove | 0) % pool.length].key;
+  P.atkMove = ((P.atkMove | 0) + 1) % pool.length;
   P.atkT = ANIM.atk[0] / ANIM.atk[1] / heroAtkSpd();   // 공격 속도만큼 빨리 지나간다
   P.atkCd = HERO.atkCd / heroAtkSpd();
   P.hitDone = false;

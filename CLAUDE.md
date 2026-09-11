@@ -326,9 +326,12 @@ cost 20만은 연마·돌파용(습득은 여전히 기연만). 태극 원반 �
   → 생사경 청 → 신화경 자주 (assets/aidle_w·g·b·p, 심법 시트의 안개만
   분리해 4색으로 구움). 심법별 기운은 안 쓴다 — 여러 개 겹치면 난장판
   (사용자 동의). 색은 경지 하나가 말한다.
-- **기본공격 = 양주먹·발차기 교대**(v2.45, 사용자 시트 hero_strike.png) —
-  P.atkAlt가 매 타 토글해 양주먹(punch)↔발차기(kick) 4프레임 교대. 임팩트는
-  index2(HITFRAME)에 맞춤. 폭 43(HFX.aw.punch·kick), drawHero atk 분기.
+- **성장형 기본공격**(v2.46, 사용자 설계) — 경지 성급이 오르면 공격 동작이
+  는다. ATKMOVES `[{key,need}]`(양주먹 need0·발차기 need5), atkPool()=열린 동작,
+  heroAttack이 P.atkMove로 돌려 쓰고 P.atkKey로 이번 타 결정. 삼류=양주먹만,
+  이류부터 발차기 교대. 앞으로 스프라이트 생기면 목록에 need와 함께 얹으면 는다.
+  스프라이트는 v2.45 punch/kick(사용자 시트 hero_strike.png). 임팩트 index2(HITFRAME),
+  폭 43(HFX.aw.punch·kick). drawHero atk는 P.atkKey로 선택. (구: v2.45는 atkAlt 토글)
   기존 권기 정권(katka/katkb)은 기본공격에서 물러남(에셋 보존, 성장은 경지 기운·
   타격 이펙트). 질주 폭은 44로(HFX.aw.run — 보폭·옷자락 좌우 잘림 방지).
 - **(구) 권기 정권**: **오른손(katka)·왼손(katkb) 스트립 교대**였다

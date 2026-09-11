@@ -73,16 +73,24 @@ setTimeout(()=>{
   ok(drew('pashot'),'권기 탄 그림이 그려진다');
   ok(drew('bshot'),'지풍 빔 그림이 그려진다');
 
-  // 3) 기본공격 = 양주먹·발차기 교대 (v2.45, 사용자 시트)
-  w.eval('S.fx.length=0; P.castT=0; P.atkT=0.3; P.anim="atk"; P.af=1; P.atkAlt=0; S.rexp=0;');
+  // 3) 성장형 기본공격 (v2.46) — 처음엔 양주먹만, 성급 오르면 발차기가 는다
+  w.eval('S.rexp=0;');                                     // 삼류 1성 — 발차기 미해금
+  ok(w.eval('atkPool().length')===1 && w.eval('atkPool()[0].key')==='punch',
+     '낮은 성급엔 양주먹만 (동작 '+w.eval('atkPool().length')+'종)');
+  w.eval('S.rexp=1e12;');                                  // 높은 경지 — 발차기 해금
+  ok(w.eval('atkPool().some(m=>m.key==="kick")'),'성급이 오르면 발차기가 는다 (동작 '+w.eval('atkPool().length')+'종)');
+  // 각 동작이 제 스트립으로 그려진다
+  w.eval('S.fx.length=0; P.castT=0; P.atkT=0.3; P.anim="atk"; P.af=1; P.atkKey="punch";');
   renderNow();
-  ok(drew('hero_punch',w.eval('HFX.aw.punch')),'기본공격 = 양주먹 스트립');
-  w.eval('P.atkAlt=1;');
+  ok(drew('hero_punch',w.eval('HFX.aw.punch')),'양주먹 스트립이 그려진다');
+  w.eval('P.atkKey="kick";');
   renderNow();
-  ok(drew('hero_kick',w.eval('HFX.aw.kick')),'다음 타는 발차기로 교대된다');
-  w.eval('S.rexp=1e12; P.atkAlt=0;');                      // 경지 무관 같은 판
-  renderNow();
-  ok(drew('hero_punch',w.eval('HFX.aw.punch')),'높은 경지도 같은 양주먹·발차기 판');
+  ok(drew('hero_kick',w.eval('HFX.aw.kick')),'발차기 스트립이 그려진다');
+  // 공격을 여러 번 하면 열린 동작을 돌려 쓴다
+  w.eval(`S.rexp=1e12; P.atkMove=0; P.atkCd=0; P.atkT=0; S.foes.length=0; spawnFoe();
+    S.foes[0].x=P.x+20; S.foes[0].y=P.y; S.foes[0].hp=1e12; S.foes[0].hpMax=1e12;
+    window.__keys={}; for(let i=0;i<6;i++){ P.atkCd=0; P.atkT=0; heroAttack(); window.__keys[P.atkKey]=1; }`);
+  ok(w.eval('window.__keys.punch && window.__keys.kick'),'연속 공격이 양주먹·발차기를 번갈아 쓴다');
 
   // 3.5) 제패 연출 중 방향 고정 — 사방으로 밀려나는 적을 쫓아 파닥이지 않는다
   w.eval(`S.rexp=1e12; P.dir=1; P.atkT=0; P.atkCd=0; S.foes.length=0;
