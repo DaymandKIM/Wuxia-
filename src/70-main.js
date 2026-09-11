@@ -25,6 +25,7 @@ loadImg('ronin_dust', ASSET.ronin_dust);     // 술병 명중 먼지
 loadImg('ghost_shot', ASSET.ghost_shot);     // 원혼 해골 귀화 탄
 loadImg('spirit_shot', ASSET.spirit_shot);   // 빙백령 얼음 조각 탄
 loadImg('tiger_shot', ASSET.tiger_shot);     // 설산백호 눈보라 숨결 탄
+loadImg('guard_shot', ASSET.guard_shot);     // 수호무사 초승달 검기 탄
 for (const t of ['w','g','b','p']) loadImg('aidle_' + t, ASSET['aidle_' + t]);
 loadImg('fx_gate', ASSET.fx_gate);
 loadImg('fx_aura', ASSET.fx_aura);

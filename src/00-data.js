@@ -346,6 +346,21 @@ const FOES = {
     fps:{ idle:6, walk:7, atk:8, hit:6, death:4 },
     hp:0.8, dmg:1.2, spd:1.6, range:58,   // 급강하 — 빠르고 아프다
   },
+  guard: {
+    // 천산 수호무사 — 백금 도포의 정예 검객. 찌르기 검격이 길고,
+    // 거리가 뜨면 납도 → 검기를 모아 초승달 검기를 날린다 (낭인 투척 틀 + fly 탄).
+    // 찌르기 검이 길어 캔버스가 넓다 — 몸은 sw/bh.
+    n:'천산 수호무사', w:194, h:55, sw:30, bh:48,
+    anim:{ idle:['idle0','idle1','idle2','idle3','idle4','idle5','idle6','idle7'],
+           walk:['walk0','walk1','walk2','walk3','walk4','walk5','walk6','walk7'],
+           atk:['atk0','atk1','atk2','atk3'],     // 치켜들기 → 회전 베기 → 장거리 찌르기 → 갈무리
+           cast:['cast0','cast1','cast2'],        // 납도 → 검기 모으기 → 발도 (초승달 발사)
+           hit:['hit'], death:['death0','death1'] },
+    fps:{ idle:4, walk:8, atk:8, cast:4.8, hit:6, death:4 },
+    hp:1.7, dmg:1.3, spd:0.95, range:66,   // 정예 — 단단하고 아프고 검이 길다
+    throwCd:8, throwDur:0.62, throwAt:0.6, throwMin:90, throwMax:240,
+    shotImg:'guard_shot', shotFly:true, shotSpd:240,
+  },
   spirit: {
     // 설산 빙백령 — 반투명 얼음으로 빚은 여인. 떠다니며 얼음 조각을 쏜다.
     // 시트의 소매 설참 컷(2행 뒷칸·3행 앞칸)은 미사용 — 원거리형이라 안 쓴다.
@@ -407,7 +422,7 @@ const ZONEFOE = {
   village: ['ronin','ronin','dog','dog','bandit','wisp'],
   cave:    ['bug','bug','bandit','wisp'],
   snow:    ['wolf','wolf','spirit','spirit','bandit','wisp'],
-  heaven:  ['eagle','eagle','bandit','wisp'],
+  heaven:  ['eagle','eagle','guard','guard','bandit','wisp'],
 };
 const foeM = f => FOES[f.k];
 // 구역별 보스 종류 (없으면 그 구역 대표 잡몹)
