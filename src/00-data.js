@@ -272,6 +272,42 @@ const FOES = {
     hp:0.70, dmg:1.10, spd:0.80,
     ranged:true, lash:true, range:72, atkAt:0.50,   // 혀는 80px까지 닿는다
   },
+  soldier: {
+    // 대나무 정령병 (엘리트) — 살아 있는 대나무 마디로 빚은 병사. 쌍죽검.
+    // 죽으면 마디가 흩어져 대나무 무더기가 된다.
+    n:'대나무 정령병', w:122, h:54, sw:38, bh:48,
+    anim:{ idle:['idle0','idle1','idle2','idle3','idle4','idle5'],
+           walk:['walk0','walk1','walk2','walk3','walk4','walk5','walk6','walk7'],
+           atk:['atk0','atk1','atk2','atk3','atk4','atk5'],   // 치켜들기 → 베기 → 십자 섬광 → 쌍검 → 낮은 베기 → 갈무리
+           hit:['hit','hit2'], death:['death0','death1','death2'] },  // 파편 → 무더기 → 반짝
+    fps:{ idle:4, walk:8, atk:11, hit:6, death:4 },
+    hp:1.6, dmg:1.2, spd:0.95, range:50,   // 엘리트 — 죽림의 벽
+  },
+  stalker: {
+    // 죽림 추적자 (엘리트) — 붉은 눈의 넝마 추적자, 장창. 창이 길어 캔버스가 넓다.
+    // 거리가 뜨면 회전 잎날을 던진다 (낭인 투척 틀 — 빙글 도는 탄).
+    // 시트의 장막 컷 2장(cloak)·내려찍기(slam)는 미사용 (은신 연출 후보).
+    n:'죽림 추적자', w:72, h:58, sw:34, bh:48,
+    anim:{ idle:['idle0','idle1','idle2','idle3'],
+           walk:['walk0','walk1','walk2','walk3','walk4','walk5'],
+           atk:['atk0','atk1','atk2','atk3'],     // 낮은 찌르기 → 대각 → 찌르기 → 갈무리
+           cast:['cast0','cast1'],                // 빈손 모으기 → 잎날 던지기
+           hit:['hit'], death:['death0','death1'] },
+    fps:{ idle:4, walk:8, atk:8, cast:3.2, hit:6, death:4 },
+    hp:1.4, dmg:1.15, spd:1.15, range:60,   // 엘리트 — 빠르고 창이 길다
+    throwCd:7.5, throwDur:0.62, throwAt:0.55, throwMin:90, throwMax:230,
+    shotImg:'stalker_shot', shotSpd:220,    // 잎날은 빙글 돌며 난다 (fly 아님)
+  },
+  snake: {
+    // 대나무 방울뱀 (레어) — 옥빛 방울뱀. 또아리에서 튀어나와 문다.
+    n:'대나무 방울뱀', w:86, h:45, sw:56, bh:40,
+    anim:{ idle:['idle0','idle1','idle2','idle3'],
+           walk:['walk0','walk1','walk2','walk3'],
+           atk:['atk0','atk1','atk2','atk3'],     // 또아리 → 튀어나와 물기 → 뻗침 → 되감기
+           hit:['hit'], death:['death0','death1','death2'] },
+    fps:{ idle:4, walk:7, atk:8, hit:6, death:4 },
+    hp:1.3, dmg:1.35, spd:1.1, range:54,   // 레어 — 독니가 아프다
+  },
   dog: {
     // 폐촌 들개 — 갈비뼈 드러난 사나운 개. 빠르게 덮쳐 문다.
     // atk2에 먼지·섬광이 구워져 있어 캔버스가 넓다 — 몸은 sw/bh.
@@ -436,7 +472,8 @@ const FOES = {
 };
 // 구역별 등장 목록
 const ZONEFOE = {
-  bamboo:  ['bandit','bandit','wisp','wisp','panther','panther','shaman','frog','frog'],
+  bamboo:  ['bandit','bandit','wisp','wisp','panther','panther','shaman','frog','frog',
+            'soldier','stalker','snake'],   // 죽림 확장 — 엘리트 2 + 레어 1 (v2.25)
   village: ['ronin','ronin','dog','dog','bandit','wisp'],
   cave:    ['bug','bug','bat','bat','bandit','wisp'],
   snow:    ['wolf','wolf','spirit','spirit','bandit','wisp'],
