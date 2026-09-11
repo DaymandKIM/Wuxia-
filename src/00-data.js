@@ -300,7 +300,7 @@ const FOES = {
   },
   bug: {
     // 동굴 독충 — 검자줏빛 갑각 지네·딱정벌레 잡종. 단단하고 느리게 문다.
-    n:'동굴 독충', w:84, h:45, sw:66, bh:36,
+    n:'동굴 독충', w:88, h:45, sw:69, bh:36,
     anim:{ idle:['idle0','idle1','idle2','idle3'],
            walk:['walk0','walk1','walk2','walk3'],
            atk:['atk0','atk1','atk2','atk3'],     // 몸 세움 → 내리찍기 → 독액 → 갈무리
