@@ -40,7 +40,15 @@ setTimeout(()=>{
   ok(missing==='','낭인 에셋 전부 존재'+(missing?' (빠짐: '+missing+')':''));
 
   // 1) 폐촌 등장 목록
-  ok(w.eval('ZONEFOE.village.includes("ronin")'),'폐촌 등장 목록에 낭인');
+  ok(w.eval('ZONEFOE.village.includes("ronin") && ZONEFOE.village.includes("dog")'),
+    '폐촌 등장 목록에 낭인·들개');
+  const dmiss=w.eval(`(function(){
+    const miss=[];
+    for(const a in FOES.dog.anim)
+      for(const f of FOES.dog.anim[a]) if(!ASSET['dog_'+f]) miss.push(f);
+    return miss.join(',');
+  })()`);
+  ok(dmiss==='','들개 에셋 전부 존재'+(dmiss?' (빠짐: '+dmiss+')':''));
 
   // 무대 준비 — 폐촌 1단계, 낭인 하나만
   w.eval(`gotoZone(1,1); S.intro=0; S.foes.length=0; spawnFoe();
@@ -57,10 +65,16 @@ setTimeout(()=>{
     w.eval(`window.__dust=0;
       const _pf=S.fx.push.bind(S.fx);
       S.fx.push=function(e){ if(e&&e.k==="imgburst") window.__dust++; return _pf(e); };
-      S.foes[0].x=P.x+120; S.foes[0].y=P.y;
-      S.foes[0].thCd=0; S.foes[0].cd=99; S.foes[0].atkT=0;`);
+      S.foes[0].thCd=0; S.foes[0].cd=99; S.foes[0].atkT=0;
+      // 주인공이 딴 데로 가도 거리가 조건(80~200) 안에 있도록 붙잡아 둔다
+      window.__pin=setInterval(function(){
+        if(window.__dust>0){ clearInterval(window.__pin); return; }
+        const b=S.shots.find(b=>b.img);
+        if(b){ P.x=b.x; P.y=b.y+HERO.h*0.4; return; }   // 병 경로에 서서 명중 보장
+        S.foes[0].x=P.x+120; S.foes[0].y=P.y; S.foes[0].thCd=0;
+      }, 50);`);
     setTimeout(()=>{
-      const threw=w.eval('S.shots.some(b=>b.img==="ronin_shot") || S.fx.some(e=>e.k==="imgburst")');
+      const threw=w.eval('window.__dust>0 || S.shots.some(b=>b.img==="ronin_shot")');
       ok(threw,'병을 던졌다 (그림 탄 발사)');
       // 4) 명중 먼지 — 탄이 도달할 때까지 기다린다
       setTimeout(()=>{

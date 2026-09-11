@@ -269,6 +269,17 @@ const FOES = {
     hp:0.70, dmg:1.10, spd:0.80,
     ranged:true, lash:true, range:72, atkAt:0.50,   // 혀는 80px까지 닿는다
   },
+  dog: {
+    // 폐촌 들개 — 갈비뼈 드러난 사나운 개. 빠르게 덮쳐 문다.
+    // atk2에 먼지·섬광이 구워져 있어 캔버스가 넓다 — 몸은 sw/bh.
+    n:'폐촌 들개', w:78, h:42, sw:58, bh:34,
+    anim:{ idle:['idle0','idle1','idle2','idle3'],
+           walk:['walk0','walk1','walk2','walk3'],
+           atk:['atk0','atk1','atk2','atk3'],     // 웅크림 → 도약 → 물기 → 반동
+           hit:['hit'], death:['death','death2'] },
+    fps:{ idle:3.5, walk:8, atk:9, hit:6, death:5 },
+    hp:0.68, dmg:0.9, spd:1.5,     // 약하지만 빠르게 붙는다
+  },
   ronin: {
     // 폐촌 낭인 — 삿갓에 녹슨 칼. 근접 베기가 기본, 이따금 술병을 던진다.
     n:'폐촌 낭인', w:52, h:55, bh:48,   // 치켜든 칼끝까지 캔버스에 담는다 — 몸높이는 48
@@ -301,7 +312,7 @@ const FOES = {
 // 구역별 등장 목록
 const ZONEFOE = {
   bamboo:  ['bandit','bandit','wisp','wisp','panther','panther','shaman','frog','frog'],
-  village: ['ronin','ronin','ronin','bandit','wisp'],
+  village: ['ronin','ronin','dog','dog','bandit','wisp'],
   cave:    ['bandit','wisp'],
   snow:    ['bandit','wisp'],
   heaven:  ['bandit','wisp'],
