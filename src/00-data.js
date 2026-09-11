@@ -34,8 +34,9 @@ const HFX = {
   castFps: 10,                   // 시전 재생 속도 — 16은 컷이 씹혀 보였다 (4성 0.6~0.9초)
   shotT: 0.28,                   // 권기 탄 비행 시간 (구 streak과 동일)
   fadeT: 0.22,                   // 탄 소멸 연출
-  aw: { aidle: 50, katk: 70, punch: 43, kick: 43, flykick: 44, firekick: 44, cresckick: 46, burstkick: 46, run: 46 },   // 특수 동작 프레임 폭
-  // 기본공격 = 양주먹(punch)·발차기(kick) 4프레임 교대 (v2.45, 사용자 시트)
+  aw: { aidle: 50, katk: 70, punch: 43, kickside: 54, kickhigh: 62, flykick: 44, firekick: 44, cresckick: 46, burstkick: 46, run: 46 },   // 특수 동작 프레임 폭
+  // 기본공격 = 양주먹(punch, 권기 정권) + 각도별 발차기(kickside·kickhigh) 4프레임 (v2.49, 사용자 시트)
+  // kickside 54·kickhigh 62 — 발이 옆·위로 뻗어 폭이 넓다(좌우 대칭 캔버스)
   // run 44 — 질주가 넓어(보폭·옷자락) 35 칸에선 좌우가 잘려 폭을 준다 (v2.45)
   // 권기 정권 = 두 스트립 교대 (v2.23, 사용자 확정 — hero_fx의 두 정권 줄이
   // 오른손·왼손이다): 공격마다 오른손 katka / 왼손 katkb 스트립을 번갈아 튼다.
@@ -112,8 +113,10 @@ const HITFRAME = 2;              // 공격 몇 번째 프레임에서 판정하�
 //   처음엔 양주먹만, 발차기는 need 성급부터 해금. 앞으로 성급대로 더 얹는다.
 //   기본공격은 지금 열린 동작들을 순서대로 돌려 쓴다(cycle).
 const ATKMOVES = [
-  { key:'punch', need:0 },   // 양주먹 = 권기 정권(katka/katkb, 양손 파란빛) — 사용자 고정 (v2.48)
-  { key:'kick',  need:5 },   // 발차기 — 이류(성급 5)부터 섞인다
+  { key:'punch',    need:0 },   // 양주먹 = 권기 정권(katka/katkb, 양손 파란빛) — 사용자 고정 (v2.48)
+  { key:'kickside', need:5 },   // 옆차기 — 이류(성급 5)부터. 수평으로 내지르는 찌르기 발차기 (v2.49)
+  { key:'kickhigh', need:15 },  // 높은차기 — 초절정(성급 15)부터. 머리 높이로 차올린다 (v2.49)
+  // 성급별 발차기 각도가 는다(사용자 시트 c0f865d3 — "발차기도 각도별로 있어").
   // 화염 발차기류(flykick·firekick)는 뺐다(v2.48). 초승달·도약(cresckick·burstkick)은
   // 추후 초식(스킬)으로 쓸 후보 — 에셋·loadImg는 남겨 둔다.
 ];
