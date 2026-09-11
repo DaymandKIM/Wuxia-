@@ -94,6 +94,11 @@ setTimeout(()=>{
   ok(draws.some(d=>d.im===w.eval('IMG.gshield')&&d.sw===w.eval('HFX.taijiW')),'태극 원반 스트립이 그려진다');
   w.eval('S.fx.length=0;');
 
+  // 3.8) 구역 분위기 — 다섯 구역 모두 렌더가 오류 없이 돈다 (입자·어둑함·구름)
+  for (let z = 0; z < 5; z++){ w.eval('gotoZone(' + z + ', 1); S.intro = 0;'); renderNow(); }
+  ok(true, '구역 5곳 분위기 연출 렌더 통과 (오류는 마지막 검사에서 확인)');
+  w.eval('gotoZone(0, 1); S.intro = 0; S.rexp = 0;');
+
   // 4) 경지 기운 — 문턱·색
   w.eval('P.atkT=0; P.anim="idle";');
   renderNow();

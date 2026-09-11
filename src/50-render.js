@@ -296,11 +296,70 @@ function drawFx(ox, oy){
   }
 }
 
+// 구역 분위기 — 무상태 입자. i번 입자의 좌표를 해시(i)와 시간으로 만든다.
+// 저장할 것이 없어 저장·시뮬에 영향이 없고, 화면 좌표라 카메라와 무관히 채워진다.
+function ambHash(i, s){ return ((i * 2654435761 + s * 97) % 1000) / 1000; }
+function drawAmbient(front){
+  const A = AMB[zone().k];
+  if (!A) return;
+  ctx.save();
+  if (!front && A.kind === 'cloud'){
+    // 구름 그림자 — 땅 위에 큰 타원이 천천히 흐른다
+    for (let i = 0; i < A.n; i++){
+      const w = 150 + ambHash(i, 1) * 170;
+      const x = ((ambHash(i, 2) * (VW + 400) + S.t * A.spd) % (VW + 400)) - 200;
+      const y = ambHash(i, 3) * VH;
+      // 두 겹의 옅은 타원 — 가장자리가 부드럽게 읽힌다
+      ctx.fillStyle = 'rgba(' + A.c + ',0.07)';
+      ctx.beginPath(); ctx.ellipse(x, y, w, w * 0.36, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(x, y, w * 0.72, w * 0.26, 0, 0, Math.PI * 2); ctx.fill();
+    }
+  } else if (!front && A.dark){
+    // 동굴 어둑함 — 가장자리를 겹겹이 어둡게 (그라디언트 없이)
+    ctx.fillStyle = 'rgba(6,8,10,' + A.dark + ')';
+    for (let i = 0; i < 3; i++){
+      const inset = i * 34;
+      ctx.beginPath();
+      ctx.rect(-4, -4, VW + 8, VH + 8);
+      ctx.ellipse(VW/2, VH/2, VW*0.86 - inset, VH*0.78 - inset, 0, 0, Math.PI*2);
+      ctx.fill('evenodd');
+    }
+  } else if (front && (A.kind === 'leaf' || A.kind === 'snow' || A.kind === 'fire')){
+    for (let i = 0; i < A.n; i++){
+      const h1 = ambHash(i, 4), h2 = ambHash(i, 5), h3 = ambHash(i, 6);
+      if (A.kind === 'snow'){
+        const y = (h1 * VH + S.t * A.spd * (0.7 + h2 * 0.6)) % (VH + 8) - 4;
+        const x = (h2 * VW + Math.sin(S.t * 1.3 + i) * 14 + S.t * 9) % (VW + 8) - 4;
+        ctx.globalAlpha = 0.5 + h3 * 0.4;
+        ctx.fillStyle = 'rgb(' + A.c + ')';
+        ctx.fillRect(Math.round(x), Math.round(y), h3 > 0.6 ? 2 : 1, h3 > 0.6 ? 2 : 1);
+      } else if (A.kind === 'leaf'){
+        const x = (h1 * VW + S.t * A.spd * (0.6 + h2)) % (VW + 12) - 6;
+        const y = (h2 * VH + Math.sin(S.t * 1.7 + i * 2.1) * 22 + S.t * A.spd * 0.35) % (VH + 12) - 6;
+        ctx.globalAlpha = 0.55 + h3 * 0.3;
+        ctx.fillStyle = 'rgb(' + A.c + ')';
+        ctx.fillRect(Math.round(x), Math.round(y), 2, 2);
+      } else {                                   // 반딧불 — 제자리에서 떠다니며 깜빡인다
+        const x = h1 * VW + Math.sin(S.t * 0.6 + i * 1.9) * 26;
+        const y = h2 * VH + Math.cos(S.t * 0.5 + i * 1.3) * 18;
+        const tw = 0.35 + 0.65 * Math.abs(Math.sin(S.t * 1.1 + i * 2.7));
+        ctx.globalAlpha = 0.5 * tw;
+        ctx.fillStyle = 'rgb(' + A.c + ')';
+        ctx.fillRect(Math.round(x) - 1, Math.round(y) - 1, 2, 2);
+        ctx.globalAlpha = 0.16 * tw;
+        ctx.beginPath(); ctx.arc(x, y, 3.4, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+  }
+  ctx.restore();
+}
+
 function render(){
   const sh = shakeV>0 ? (Math.random()-0.5)*shakeV : 0;
   ctx.setTransform(SC,0,0,SC, Math.round(sh*SC), Math.round(sh*SC));
   const ox = S.camX - VW/2, oy = S.camY - VH/2;
   drawGround(ox, oy);
+  drawAmbient(false);                        // 땅 위 층 — 구름 그림자·동굴 어둑함
   // y 순서로 겹침 정리
   const ents = S.foes.map(f=>({y:f.y, f}));
   ents.push({ y:P.y, hero:true });
@@ -310,6 +369,7 @@ function render(){
   }
   drawShots(ox, oy);
   drawFx(ox, oy);
+  drawAmbient(true);                         // 앞층 — 눈·낙엽·반딧불이 인물 위로 흩날린다
   drawSweep(ox, oy);
   drawSummon(ox, oy);
   drawBossBar(ox, oy);
