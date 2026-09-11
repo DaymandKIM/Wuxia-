@@ -72,8 +72,10 @@ function shootFoe(f){
     y: f.y - (M.bh||M.h)*0.45,
     vx: (P.x-f.x)/d, vy: (P.y - HERO.h*0.4 - (f.y - (M.bh||M.h)*0.45))/d,
     spd: M.shotSpd || 180,
-    dmg: foeDmg() * M.dmg,
+    // 보스의 탄(원혼 해골 귀화)은 보스 스킬 위력으로 나간다
+    dmg: f.boss ? bossDmg() * BOSSKILL.dmg : foeDmg() * M.dmg,
     img: M.shotImg, dust: M.shotDust,   // 그림 탄(낭인 술병 등) — 없으면 절차 구체
+    fly: f.boss || undefined,           // 돌지 않고 나는 방향을 본다 (꼬리가 뒤로)
     life: 2.6,
     t: 0,
   });

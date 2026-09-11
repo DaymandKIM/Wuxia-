@@ -149,11 +149,16 @@ function step(dt){
         const prog = 1 - f.skT/BOSSKILL.dur;
         if (!f.skDone && prog >= BOSSKILL.hitAt){
           f.skDone = true;
-          if (dist(f.x,f.y,P.x,P.y) < BOSSKILL.range){
-            hurtHero(bossDmg() * BOSSKILL.dmg);
+          if (M.shotImg){
+            // 탄 보스(원혼) — 범위 폭발 대신 해골 귀화를 날린다
+            shootFoe(f); sfx('kill');
+          } else {
+            if (dist(f.x,f.y,P.x,P.y) < BOSSKILL.range){
+              hurtHero(bossDmg() * BOSSKILL.dmg);
+            }
+            S.fx.push({ k:'shock', x:f.x, y:f.y - FOE.h*0.3, life:0.45, t:0.45 });
+            shake(9); sfx('down');
           }
-          S.fx.push({ k:'shock', x:f.x, y:f.y - FOE.h*0.3, life:0.45, t:0.45 });
-          shake(9); sfx('down');
         }
         if (f.skT <= 0) f.skCd = BOSSKILL.cd;
         S.camX += (P.x - S.camX) * Math.min(1, dt*6);
@@ -161,7 +166,7 @@ function step(dt){
         continue;
       }
       if (f.skCd > 0) f.skCd -= dt;
-      else if (f.atkT <= 0 && d < BOSSKILL.range){
+      else if (f.atkT <= 0 && (M.shotImg || d < BOSSKILL.range)){   // 탄 보스는 거리 불문
         f.skT = BOSSKILL.dur; f.skDone = false;
         f.anim = 'skill'; f.af = 0;
         continue;
@@ -350,6 +355,7 @@ function step(dt){
       hurtHero(b.dmg);
       if (b.big){ shake(7); S.fx.push({ k:'burst', x:b.x, y:b.y, life:0.35, t:0.35 }); }
       if (b.dust) S.fx.push({ k:'imgburst', im:b.dust, x:b.x, y:b.y, life:0.4, t:0.4 });
+      if (b.fly){ shake(5); S.fx.push({ k:'burst', x:b.x, y:b.y, life:0.35, t:0.35 }); }   // 귀화 폭발
       S.shots.splice(i,1);
       continue;
     }

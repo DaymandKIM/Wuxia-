@@ -834,7 +834,9 @@ function drawShots(ox, oy){
       const im = IMG[b.img];
       ctx.save();
       ctx.translate(x, y);
-      ctx.rotate(b.t * 9 * (b.vx < 0 ? -1 : 1));
+      // 나는 탄(원혼 해골 귀화) — 돌지 않고 진행 방향을 본다. 술병류는 빙글빙글
+      if (b.fly){ if (b.vx < 0) ctx.scale(-1, 1); }
+      else ctx.rotate(b.t * 9 * (b.vx < 0 ? -1 : 1));
       draw(im, -Math.round(im.naturalWidth/2), -Math.round(im.naturalHeight/2),
            im.naturalWidth, im.naturalHeight);
       ctx.restore();

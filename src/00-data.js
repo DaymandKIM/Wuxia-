@@ -88,7 +88,7 @@ const FIST = [
 // 구역 — 각 10단계 + 보스 1단계. mul이 클수록 어렵고 보상도 크다.
 const ZONES = [
   { k:'bamboo',  n:'죽림',   ground:'#6a7a52', boss:'대나무 마왕' },
-  { k:'village', n:'폐촌',   ground:'#6b6350', boss:'폐촌 망령' },
+  { k:'village', n:'폐촌',   ground:'#6b6350', boss:'폐촌의 원혼' },   // 등장 문구·FOES.ghost와 통일
   { k:'cave',    n:'동굴',   ground:'#5c5f5c', boss:'동굴 주인' },
   { k:'snow',    n:'설산',   ground:'#b9c9d2', boss:'설산 노인' },
   { k:'heaven',  n:'천산',   ground:'#7f9a86', boss:'천산 검객' },
@@ -295,6 +295,22 @@ const FOES = {
     throwCd:6.5, throwDur:0.62, throwAt:0.55, throwMin:80, throwMax:200,
     shotImg:'ronin_shot', shotDust:'ronin_dust', shotSpd:200,
   },
+  ghost: {
+    // 폐촌의 원혼 — 백발을 늘어뜨리고 기어 다니는 귀신. 촌주의 한이 뭉쳤다.
+    // 발톱 궤적이 앞으로 길게 뻗어 캔버스가 넓다 — 몸은 sw/bh.
+    n:'폐촌의 원혼', w:190, h:96, sw:130, bh:88,
+    anim:{ idle:['idle0','idle1','idle2','idle3'],
+           walk:['walk0','walk1','walk2','walk3'],
+           // 일반 공격 — 기를 모으고(cast) 발톱을 크게, 낮게 휘두른다
+           atk:['cast','atk0','atk1'],
+           // 스킬 — 도깨비불을 모아 해골 귀화(鬼火)를 날린다 (ghost_shot)
+           skill:['cast','cast','cast','atk0','atk1'],
+           hit:['hit'],
+           death:['hit2','death','death2'] },   // 웅크림 → 무너짐 → 스러짐
+    fps:{ idle:4, walk:6, atk:4.2, skill:3.7, hit:5, death:4 },   // atk 3컷 = 보스 공격 0.72초
+    hp:1.0, dmg:1.0, spd:1.0,
+    shotImg:'ghost_shot', shotSpd:230,   // 보스 스킬이 탄이 된다 (40-step)
+  },
   demon: {
     n:'대나무 마왕', w:114, h:96,
     anim:{ idle:['idle0','idle1','idle2','idle3','idle4'],
@@ -321,7 +337,8 @@ const ZONEFOE = {
 const foeM = f => FOES[f.k];
 // 구역별 보스 종류 (없으면 그 구역 대표 잡몹)
 const ZONEBOSS = {
-  bamboo: 'demon',
+  bamboo:  'demon',
+  village: 'ghost',
 };
 
 const DOWN_TIME = 3.0;           // 쓰러진 뒤 운기조식 시간
