@@ -2,6 +2,8 @@
 loadImg('hero_idle',  ASSET.idle);
 loadImg('hero_run',   ASSET.run);
 loadImg('hero_atk',   ASSET.atk);
+loadImg('hero_punch', ASSET.punch);   // 기본공격 양주먹 (v2.45)
+loadImg('hero_kick',  ASSET.kick);    // 기본공격 발차기 (v2.45)
 loadImg('hero_hit',   ASSET.hit);
 loadImg('hero_medit', ASSET.medit);
 for (const k in FOES){
