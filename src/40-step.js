@@ -235,23 +235,25 @@ function step(dt){
       }
       continue;
     }
+    // 근접 사거리 — 위험도별로 다르다 (사용자 확정). 보스는 모든 범위
+    const rng = f.boss ? BOSS.range : (M.range || FOE.range);
     if (f.atkT > 0){
       f.atkT -= dt;
       const AD = f.boss ? BOSSATK : FOE;
       const prog = 1 - f.atkT / AD.dur;
       if (!f.hitDone && prog >= AD.hitAt){
         f.hitDone = true;
-        if (d < FOE.range + (f.boss?26:16)) hurtHero(f.boss ? bossDmg() : foeDmg()*foeM(f).dmg);
+        if (d < rng + (f.boss?26:16)) hurtHero(f.boss ? bossDmg() : foeDmg()*foeM(f).dmg);
       }
       if (f.atkT <= 0) f.cd = FOE.cd * rnd(0.8, 1.3);
     } else if (f.cd > 0){
       f.cd -= dt;
-      if (d > FOE.range){                    // 접근
+      if (d > rng){                          // 접근
         const sp = st.spd * (f.boss ? BOSS.spd : foeM(f).spd);
         f.x += (P.x-f.x)/d * sp * dt;
         f.y += (P.y-f.y)/d * sp * dt;
       }
-    } else if (d <= FOE.range){
+    } else if (d <= rng){
       f.atkT = (f.boss ? BOSSATK.dur : FOE.dur); f.hitDone = false;
     } else {
       const sp = st.spd * (f.boss ? BOSS.spd : foeM(f).spd);

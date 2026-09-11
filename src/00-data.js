@@ -135,6 +135,7 @@ const BOSS = {
   hp:   30,      // 마지막 단계 적 체력의 배수 (지수 난이도라 62는 너무 길다)
   dmg:  2.0,     // 마지막 단계 적 피해의 배수
   spd:  0.82,    // 느리다
+  range:999,     // 보스는 모든 범위 (사용자 확정) — 어디서든 공격이 닿는다
   scale:1.55,    // 전용 스프라이트가 없을 때만 확대
   guard:0,       // 보스 단계엔 잡몹이 없다
 };
@@ -220,14 +221,14 @@ const FOES = {
     anim:{ idle:['idle'], walk:['walk','run'],
            atk:['atk0','atk1','atk2'], hit:['hit'], death:['death','death2'] },
     fps:{ idle:3, walk:6, atk:7, hit:6, death:5 },
-    hp:1.0, dmg:1.0, spd:1.0,       // 기준
+    hp:1.0, dmg:1.0, spd:1.0, range:44,   // 기준
   },
   wisp: {
     n:'대나무 유령불', w:32, h:37,
     anim:{ idle:['idle','float'], walk:['float','idle'],
            atk:['atk'], hit:['hit'], death:['death'] },
     fps:{ idle:2.5, walk:4, atk:5, hit:6, death:4 },
-    hp:0.62, dmg:0.78, spd:1.22,    // 약하지만 빠르다
+    hp:0.62, dmg:0.78, spd:1.22, range:38,   // 약해서 바짝 붙어야 한다
   },
   panther: {
     n:'그림자 표범', w:82, h:46,
@@ -236,7 +237,7 @@ const FOES = {
            atk:['atk0','atk1','atk2','atk3'],   // 웅크림 → 도약 → 할큄 → 착지
            hit:['walk2'], death:['walk0'] },
     fps:{ idle:5, walk:8, atk:8, hit:5, death:4 },
-    hp:0.78, dmg:1.15, spd:1.45,
+    hp:0.78, dmg:1.15, spd:1.45, range:60,   // 도약이 길다
   },
   shaman: {
     // 시전 프레임(m1)에 기운까지 한 장으로 들어 있어 캔버스가 넓다.
@@ -278,7 +279,7 @@ const FOES = {
            atk:['atk0','atk1','atk2','atk3'],     // 웅크림 → 도약 → 물기 → 반동
            hit:['hit'], death:['death','death2'] },
     fps:{ idle:3.5, walk:8, atk:9, hit:6, death:5 },
-    hp:0.68, dmg:0.9, spd:1.5,     // 약하지만 빠르게 붙는다
+    hp:0.68, dmg:0.9, spd:1.5, range:52,   // 달려들어 문다
   },
   ronin: {
     // 폐촌 낭인 — 삿갓에 녹슨 칼. 근접 베기가 기본, 이따금 술병을 던진다.
@@ -289,7 +290,7 @@ const FOES = {
            cast:['cast0','cast1'],               // 병 던지기 (근접형의 원거리 견제)
            hit:['hit'], death:['death','death2'] },
     fps:{ idle:3, walk:8, atk:7, cast:3.2, hit:6, death:5 },
-    hp:1.05, dmg:1.05, spd:0.95,
+    hp:1.05, dmg:1.05, spd:0.95, range:64,   // 장검 — 멀찍이서 벤다
     // 던지기 — 근접형이지만 거리가 뜨면 병을 집어 던진다
     throwCd:6.5, throwDur:0.62, throwAt:0.55, throwMin:80, throwMax:200,
     shotImg:'ronin_shot', shotDust:'ronin_dust', shotSpd:200,
