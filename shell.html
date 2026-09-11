@@ -147,7 +147,10 @@
     display:flex;justify-content:center;pointer-events:none;opacity:0;
     transform:translateY(-12px);transition:opacity .25s,transform .25s;}
   #fpanel.show{opacity:1;transform:translateY(0);}
-  #fpanel .ocard{pointer-events:auto;}
+  /* 카드는 열려 있을 때만 탭을 받는다 (v2.37.1) — 예전엔 항상 auto라 팝업이
+     사라진 뒤에도 투명한 카드가 그 자리에서 아래 버튼(무공 타일·수련)의
+     탭을 삼켰다 ("팝업 이후 버튼이 안 눌림"). */
+  #fpanel.show .ocard{pointer-events:auto;}
   .fcard{border-color:#8a6d2f;background:rgba(20,18,12,.95);box-shadow:0 6px 22px rgba(0,0,0,.5);}
   .fcard .oh{color:#e8c96a;}
   #ftitle{font-size:14px;font-weight:900;color:#e8eef6;margin-top:9px;letter-spacing:.05em;}
