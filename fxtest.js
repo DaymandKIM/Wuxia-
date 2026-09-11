@@ -130,6 +130,20 @@ setTimeout(()=>{
   ok(drew('hero_dashland', w.eval('DASH.lw')),'착지 컷이 그려진다');
   w.eval('P.dashHold=0; P.anim="idle"; S.rexp=0; gotoZone(0,1); S.intro=0;');
 
+  // 3.76) 이동 사이클 (v2.43) — 8프레임 달리기가 프레임마다 hero_run을 그린다
+  ok(w.eval('ANIM.run[0]')===8,'달리기는 8프레임 사이클이다');
+  let runFrames=new Set();
+  for (let fr=0; fr<8; fr++){
+    w.eval('P.anim="run"; P.af='+(fr+0.1)+';'); renderNow();
+    if (drew('hero_run', w.eval('HERO.w'))) runFrames.add(fr);
+  }
+  ok(runFrames.size===8,'8프레임 모두 그려진다 ('+runFrames.size+'/8)');
+  // idle — 정면 전투 자세 단일 컷 (사용자 시트 14번)
+  ok(w.eval('ANIM.idle[0]')===1,'대기는 단일 컷이다');
+  w.eval('P.anim="idle"; P.af=0;'); renderNow();
+  ok(drew('hero_idle', w.eval('HERO.w')),'대기 자세가 그려진다');
+  w.eval('P.anim="idle";');
+
   // 3.8) 구역 분위기 — 다섯 구역 모두 렌더가 오류 없이 돈다 (입자·어둑함·구름)
   for (let z = 0; z < 5; z++){ w.eval('gotoZone(' + z + ', 1); S.intro = 0;'); renderNow(); }
   ok(true, '구역 5곳 분위기 연출 렌더 통과 (오류는 마지막 검사에서 확인)');
