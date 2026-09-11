@@ -75,6 +75,28 @@ function check(label, file, w, h, noEdge) {
   for (let y = 0; y < im.h; y++) { if (im.al[y * im.w + im.w - 1] > 0) { e.push('우'); break; } }
   const side = noEdge ? [] : e.filter(s => s !== '하');   // 바닥은 발이 닿는 게 맞다
   if (side.length) { note.push('가장자리 접촉 ' + side.join('')); bad++; }
+  // 테두리 줄 잔재 — 가장자리 8px 안에서 한 줄의 85% 이상이 채워졌는데
+  // 안쪽으로 3줄 들어간 자리는 그 절반 밑으로 뚝 끊기면, 그림이 아니라
+  // 시트 칸 테두리가 남은 것이다 (v2.29.1 — 검은 테두리 사고).
+  // 누운 시체·큰 기운처럼 몸이 넓은 그림은 안쪽으로 완만히 이어져 안 걸린다.
+  const rowCov = y => { let n = 0; for (let x = 0; x < im.w; x++) if (im.al[y * im.w + x] > 0) n++; return n; };
+  const colCov = x => { let n = 0; for (let y = 0; y < im.h; y++) if (im.al[y * im.w + x] > 0) n++; return n; };
+  const lines = [];
+  for (const y of [...Array(Math.min(8, im.h)).keys(),
+                   ...Array.from({length: Math.min(8, im.h)}, (_, i) => im.h - 1 - i)]) {
+    const n = rowCov(y);
+    if (n < im.w * 0.85) continue;
+    const yi = y < im.h / 2 ? y + 3 : y - 3;            // 안쪽으로 3줄
+    if (yi >= 0 && yi < im.h && rowCov(yi) < n * 0.55) lines.push('행' + y);
+  }
+  for (const x of [...Array(Math.min(8, im.w)).keys(),
+                   ...Array.from({length: Math.min(8, im.w)}, (_, i) => im.w - 1 - i)]) {
+    const n = colCov(x);
+    if (n < im.h * 0.85) continue;
+    const xi = x < im.w / 2 ? x + 3 : x - 3;
+    if (xi >= 0 && xi < im.w && colCov(xi) < n * 0.55) lines.push('열' + x);
+  }
+  if (lines.length) { note.push('테두리 줄 잔재 ' + [...new Set(lines)].join(' ')); bad++; }
   if (note.length) console.log('  ★' + label.padEnd(20) + note.join(' · '));
   return im;
 }

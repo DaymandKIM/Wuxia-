@@ -93,11 +93,12 @@ const foeRad = f => f.boss ? (foeM(f).sw || foeM(f).w) * BOSS.edge : 0;
 
 /* ── 주인공 공격 (맨손 정권) ───────────────────────── */
 function heroAttack(){
-  // 가장 가까운 적
+  // 가장 가까운 적 — 거리는 조준·판정과 같은 눌린 척도로 잰다 (v2.29.1)
+  // 평면 거리로 재면 위아래로 어긋났을 때 "조준은 됐는데 공격은 안 나가는" 틈이 생긴다
   let best=null, bd=1e9;
   for (const f of S.foes){
     if (f.dead) continue;
-    const d = dist(P.x,P.y,f.x,f.y);
+    const d = Math.hypot(f.x-P.x, (f.y-P.y)/HERO.atkFlat);
     if (d < bd){ bd=d; best=f; }
   }
   if (!best || bd > HERO.atkRange + HERO.atkReach + foeRad(best)) return false;
