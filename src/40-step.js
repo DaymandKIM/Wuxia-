@@ -330,9 +330,9 @@ function step(dt){
     b.y += b.vy * b.spd * dt;
     if (dist(b.x, b.y, P.x, P.y - HERO.h*0.4) < (b.big ? b.r : 16)){
       hurtHero(b.dmg);
-      if (b.big){ shake(7); S.fx.push({ k:'burst', x:b.x, y:b.y, life:0.35, t:0.35 }); }
-      if (b.dust) S.fx.push({ k:'imgburst', im:b.dust, x:b.x, y:b.y, life:0.4, t:0.4 });
-      if (b.fly){ shake(5); S.fx.push({ k:'burst', x:b.x, y:b.y, life:0.35, t:0.35 }); }   // 귀화 폭발
+      if (b.big){ shake(7); fxPush({ k:'burst', x:b.x, y:b.y, life:0.35, t:0.35 }); }
+      if (b.dust) fxPush({ k:'imgburst', im:b.dust, x:b.x, y:b.y, life:0.4, t:0.4 });
+      if (b.fly){ shake(5); fxPush({ k:'burst', x:b.x, y:b.y, life:0.35, t:0.35 }); }   // 귀화 폭발
       S.shots.splice(i,1);
       continue;
     }
@@ -379,7 +379,7 @@ function step(dt){
         const d = dist(f.x, f.y, P.x, P.y) || 1;
         f.kx = (f.x-P.x)/d; f.ky = (f.y-P.y)/d; f.kb = 0.55;
         f.sweep = 1;
-        S.fx.push({ k:'burst', x:f.x, y:f.y - (foeM(f).bh||foeM(f).h)*0.4, life:0.3, t:0.3 });
+        fxPush({ k:'burst', x:f.x, y:f.y - (foeM(f).bh||foeM(f).h)*0.4, life:0.3, t:0.3 });
         sfx('kill');
       }
     }

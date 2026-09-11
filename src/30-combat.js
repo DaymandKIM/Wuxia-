@@ -96,8 +96,12 @@ const BOSSATK = { dur:0.72, hitAt:0.62 };
 const foeRad = f => f.boss ? (foeM(f).sw || foeM(f).w) * BOSS.edge : 0;
 
 // 이펙트 헬퍼 (v2.31 — "이펙트가 조잡하다" 피드백) ────────
-// 상한을 지키며 넣는다. 화면이 바빠도 프레임을 지킨다
-function fxPush(e){ if (S.fx.length < FXD.max) S.fx.push(e); }
+// 상한을 넘으면 가장 오래된 것부터 밀어낸다 (v2.36 — 예전엔 상한에서 그냥
+// 안 넣어, 타격 숫자가 쌓이면 새 타격 파열이 영영 안 떴다 "이펙트가 사라짐").
+function fxPush(e){
+  if (S.fx.length >= FXD.max) S.fx.shift();
+  S.fx.push(e);
+}
 // 파열 묶음 — 충격파 고리 + 튀는 파편. big이면 섬광·방사 속도선까지
 function fxBlast(x, y, r, c, big){
   fxPush({ k:'wave',   x, y, r, c, life:FXD.wave.life, t:FXD.wave.life });
@@ -161,7 +165,7 @@ function hurtFoe(f, dmg, crit){
   f.hp -= dmg;
   f.hit = 0.26;
   // 타격 숫자 — 매 타격 조그맣게, 회심(치명타)은 크고 노랗게
-  S.fx.push({ k:'dmg', x:f.x + rnd(-7, 7), y:f.y - (foeM(f).bh||foeM(f).h),
+  fxPush({ k:'dmg', x:f.x + rnd(-7, 7), y:f.y - (foeM(f).bh||foeM(f).h),
               v:fmt(dmg), c:crit ? 1 : 0,
               life:crit ? 0.6 : 0.42, t:crit ? 0.6 : 0.42 });
   // 맞은 방향으로 살짝 밀린다
@@ -178,7 +182,7 @@ function hurtFoe(f, dmg, crit){
     if (S.karma >= karmaNeed()) S.fatePending = 1;
     if (realmLv() > k0){
       toast(realmInfo().name + '에 올랐다');
-      S.fx.push({ k:'burst', x:P.x, y:P.y - HERO.h*0.5, life:0.5, t:0.5 });
+      fxPush({ k:'burst', x:P.x, y:P.y - HERO.h*0.5, life:0.5, t:0.5 });
       shake(6); sfx('down');
     }
     // 심법 숙련 — 지닌 채 싸우면 몸에 스민다 (처치 수)
@@ -193,7 +197,7 @@ function hurtFoe(f, dmg, crit){
       toast(zone().boss + ' 첫 격파 · 은자 +' + fmt(bonus));
     }
     S.silver += sv;
-    S.fx.push({ k:'burst', x:f.x, y:f.y - (foeM(f).bh||foeM(f).h)*0.4, life:0.3, t:0.3 });
+    fxPush({ k:'burst', x:f.x, y:f.y - (foeM(f).bh||foeM(f).h)*0.4, life:0.3, t:0.3 });
     sfx('kill');
   }
 }
@@ -215,8 +219,8 @@ function hurtHero(dmg){
     }
     if (best) hurtFoe(best, ret);
     beginCast('geongon');
-    S.fx.push({ k:'taiji', x:P.x, y:P.y - HERO.h*0.55, life:HFX.taijiT, t:HFX.taijiT });
-    S.fx.push({ k:'artname', x:P.x, y:P.y - HERO.h - 10, v:gg.n, life:0.8, t:0.8 });
+    fxPush({ k:'taiji', x:P.x, y:P.y - HERO.h*0.55, life:HFX.taijiT, t:HFX.taijiT });
+    fxPush({ k:'artname', x:P.x, y:P.y - HERO.h - 10, v:gg.n, life:0.8, t:0.8 });
     sfx('kill');
   }
   P.hp -= dmg;
@@ -285,8 +289,8 @@ function castArt(a){
     if (P.hp > P.hpMax * a.below) return false;
     beginCast(a.k);
     P.hp = Math.min(P.hpMax, P.hp + P.hpMax * a.heal * artEff(a.k));
-    S.fx.push({ k:'heal', x:P.x, y:P.y, life:0.7, t:0.7 });
-    S.fx.push({ k:'artname', x:P.x, y:P.y - HERO.h - 10, v:a.n, life:0.8, t:0.8 });
+    fxPush({ k:'heal', x:P.x, y:P.y, life:0.7, t:0.7 });
+    fxPush({ k:'artname', x:P.x, y:P.y - HERO.h - 10, v:a.n, life:0.8, t:0.8 });
     sfx('kill');
     return true;
   }
@@ -307,7 +311,7 @@ function castArt(a){
     // 시전 동작 + 탄 — 파공권은 권기 주먹, 암향지는 지풍 빔이 날아간다
     beginCast(a.k);
     P.dir = best.x >= P.x ? 1 : -1;
-    S.fx.push({ k: a.k === 'pagong' ? 'pashot' : 'bshot',
+    fxPush({ k: a.k === 'pagong' ? 'pashot' : 'bshot',
                 x:P.x, y:P.y - HERO.h*0.55,
                 tx:best.x, ty:best.y - (foeM(best).bh||foeM(best).h)*0.5,
                 life:HFX.shotT + HFX.fadeT, t:HFX.shotT + HFX.fadeT });
@@ -317,7 +321,7 @@ function castArt(a){
     if (!hits.length) return false;
     beginCast(a.k);
     const gc = (HFX.glow[a.k]||{}).c;
-    S.fx.push({ k:'ring', x:P.x, y:P.y, r:a.range, c:gc, life:0.4, t:0.4 });
+    fxPush({ k:'ring', x:P.x, y:P.y, r:a.range, c:gc, life:0.4, t:0.4 });
     // 광역 초식 파열 (v2.31) — 무공 색 섬광·속도선이 함께 터진다
     fxBlast(P.x, P.y - HERO.h*0.4, a.range*0.55, gc, true);
     shake(a.k === 'bungsan' ? 10 : 4);
@@ -329,7 +333,7 @@ function castArt(a){
       f.kx = (f.x-P.x)/d; f.ky = (f.y-P.y)/d; f.kb = 0.4;
     }
   }
-  S.fx.push({ k:'artname', x:P.x, y:P.y - HERO.h - 10, v:a.n, life:0.8, t:0.8 });
+  fxPush({ k:'artname', x:P.x, y:P.y - HERO.h - 10, v:a.n, life:0.8, t:0.8 });
   sfx('punch');
   return true;
 }

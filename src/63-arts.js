@@ -70,6 +70,7 @@ function artFxText(a, star, lv){
 
 let artSel = null;                 // 상세 칸에 떠 있는 무공
 let artDetSig = '';                // 상세 칸 구조 서명 — 같으면 DOM을 안 갈아엎는다
+let artHold = false;               // 연마 꾹 누르는 중 — refreshArts가 DOM을 안 갈아엎게 (v2.36)
 
 function buildArtsPanel(){
   const b = $('abody');
@@ -140,6 +141,15 @@ function refreshArts(){
   // 구조 서명 — 이게 그대로면 innerHTML을 다시 만들지 않는다.
   // 전투 중 처치마다 은자·숙련이 변해 매번 다시 만들면, 손가락이 버튼을
   // 누르는 도중 DOM이 교체돼 클릭이 증발한다 ("무공창 클릭 안 됨"의 원인).
+  // 연마 꾹 누르는 중엔 DOM을 다시 만들지 않는다 — 갈아엎으면 pointer가 끊겨
+  // 연속 구매가 멈춘다. 비용·레벨 숫자만 제자리로 갱신한다 (v2.36)
+  if (artHold && got && a.cost !== undefined){
+    const lvEl = $('alvlnum'), cEl = $('alvlcost');
+    if (lvEl) lvEl.textContent = artLv(a.k) + ' / ' + artLvCap(a.k);
+    if (cEl) cEl.textContent = fmt(artLvCost(a.k));
+    const lb = $('alvl'); if (lb) lb.disabled = !canLevel(a);
+    return;
+  }
   const sig = [artSel, got, st, got ? artLv(a.k) : 0, xp >= need && need > 0, open,
                got && a.cost !== undefined && S.silver >= artLvCost(a.k),
                need > 0 && S.silver >= artBreakCost(a.k),
@@ -158,11 +168,11 @@ function refreshArts(){
     // 연마 — 은자로 바로 올린다. 상한에 닿으면 돌파가 다음 문이다
     if (a.cost !== undefined){
       const lv = artLv(a.k), cap = artLvCap(a.k);
-      d += '<div class="zd">연마 Lv ' + lv + ' / ' + cap;
+      d += '<div class="zd">연마 Lv <span id="alvlnum">' + lv + ' / ' + cap + '</span>';
       if (lv < cap){
         d += '</div><button class="trbuy" id="alvl"' +
              (S.silver >= artLvCost(a.k) ? '' : ' disabled') +
-             '><span>' + fmt(artLvCost(a.k)) + '</span><i>' + coin() + ' 연마</i></button>';
+             '><span id="alvlcost">' + fmt(artLvCost(a.k)) + '</span><i>' + coin() + ' 연마</i></button>';
       } else {
         d += (st < MASTERY.maxStar ? ' — 성을 돌파하면 상한이 열린다' : ' — 극에 달했다') + '</div>';
       }
@@ -197,8 +207,19 @@ function refreshArts(){
   if (btn) btn.onclick = () => { if (learnArt(artSel)) refreshArts(); };
   const bbtn = $('abrk');
   if (bbtn) bbtn.onclick = () => { if (breakArt(artSel)) refreshArts(); };
+  // 연마는 꾹 누르면 연속 레벨업 — 수련과 같은 손맛 (v2.36 "하나씩 누르기 불편")
   const lbtn = $('alvl');
-  if (lbtn) lbtn.onclick = () => { if (levelArt(artSel)) refreshArts(); };
+  if (lbtn){
+    let iv = 0;
+    const stop = () => { if (iv){ clearInterval(iv); iv = 0; } artHold = false; refreshArts(); };
+    lbtn.onpointerdown = e => {
+      e.preventDefault();
+      artHold = true;
+      if (levelArt(artSel)) refreshArts();
+      iv = setInterval(() => { if (levelArt(artSel)) refreshArts(); else stop(); }, 140);
+    };
+    lbtn.onpointerup = lbtn.onpointerleave = lbtn.onpointercancel = stop;
+  }
 }
 
 function openArts(){ buildArtsPanel(); $('apanel').classList.add('show'); }

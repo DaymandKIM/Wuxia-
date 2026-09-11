@@ -12,22 +12,20 @@ function buyStat(k){
 }
 
 let trainAmt = 1;                // 구매 배수 (1·10·100·'MAX')
-// 배수만큼의 총비용 — x10·x100은 "정확히 N개 값"이다. 살 수 있는 만큼으로
-// 개수를 줄이면 금액이 계속 흔들려서 이상해 보인다는 피드백. MAX만 유동.
+// 배수만큼의 총비용 — 살 수 있는 만큼(최대 배수)까지 산다 (v2.36).
+// 예전엔 x10·x100이 "정확히 N개"라 다 못 사면 비활성이었는데, 초·중반엔
+// 100개를 못 채워 버튼이 늘 죽어 "안 눌림"으로 느껴졌다. 이제 살 수 있는
+// 만큼 사고(≥1이면 활성) 실제 개수를 ×N으로 보여준다 (MAX와 같은 규칙).
 function trainPlan(k){
   const cap = trainCap();
+  const lim = trainAmt === 'MAX' ? cap : trainAmt;
   let n = statLv(k), cnt = 0, cost = 0;
-  if (trainAmt === 'MAX'){
-    let silver = S.silver;
-    while (n < cap){
-      const c = trainCost(k, n);
-      if (silver < c) break;
-      silver -= c; cost += c; n++; cnt++;
-    }
-    return { cnt, cost, ok: cnt > 0 };
+  while (cnt < lim && n < cap){
+    const c = trainCost(k, n);
+    if (S.silver < cost + c) break;
+    cost += c; n++; cnt++;
   }
-  while (cnt < trainAmt && n < cap){ cost += trainCost(k, n); n++; cnt++; }
-  return { cnt, cost, ok: cnt > 0 && S.silver >= cost };
+  return { cnt, cost, ok: cnt > 0 };
 }
 function buyStatN(k){
   const p = trainPlan(k);
@@ -98,7 +96,7 @@ function refreshTrain(){
       btn.disabled = true;
     } else {
       const p = trainPlan(s.k);
-      // 정액 배수(x10 등)는 금액만 — ×개수는 MAX거나 상한에 걸렸을 때만
+      // 배수를 다 채우면 금액만, 살 수 있는 만큼만 사면 ×개수를 함께 (v2.36)
       const tag = p.cnt > 1 && (trainAmt === 'MAX' || p.cnt !== trainAmt) ? ' ×' + p.cnt : '';
       $('trc-' + s.k).textContent =
         fmt(p.cnt > 0 ? p.cost : trainCost(s.k, n)) + tag;

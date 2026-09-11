@@ -70,7 +70,7 @@ function applyFate(){
     if (S.fatebits[ev.art] >= FATE.fragNeed){
       S.arts[ev.art] = 1;
       toast(artDef(ev.art).n + '이 완성되었다!');
-      S.fx.push({ k:'burst', x:P.x, y:P.y - HERO.h*0.5, life:0.6, t:0.6 });
+      fxPush({ k:'burst', x:P.x, y:P.y - HERO.h*0.5, life:0.6, t:0.6 });
       shake(8);
     } else {
       toast(artDef(ev.art).n + ' 조각을 얻었다');
