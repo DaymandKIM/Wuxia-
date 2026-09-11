@@ -335,6 +335,17 @@ const FOES = {
     fps:{ idle:3.5, walk:8, atk:8, hit:6, death:4 },
     hp:0.9, dmg:1.15, spd:1.45, range:56,   // 도약이 길다 — 들개와 표범 사이
   },
+  eagle: {
+    // 천산수리 — 금갈색 산독수리. 늘 떠 있고, 날개를 접어 발톱으로 덮친다.
+    // 캔버스에 비행 띄움(12px)이 구워져 있다 — 그림자에서 몸이 뜬다.
+    n:'천산수리', w:106, h:67, sw:94, bh:46,
+    anim:{ idle:['idle0','idle1','idle2','idle3'],
+           walk:['walk0','walk1','walk2','walk3'],
+           atk:['atk0','atk1','atk2','atk3'],     // 제동 → 날개 접고 급강하 → 발톱 → 복귀
+           hit:['hit'], death:['death0','death1'] },   // 추락 → 떨어짐
+    fps:{ idle:6, walk:7, atk:8, hit:6, death:4 },
+    hp:0.8, dmg:1.2, spd:1.6, range:58,   // 급강하 — 빠르고 아프다
+  },
   spirit: {
     // 설산 빙백령 — 반투명 얼음으로 빚은 여인. 떠다니며 얼음 조각을 쏜다.
     // 시트의 소매 설참 컷(2행 뒷칸·3행 앞칸)은 미사용 — 원거리형이라 안 쓴다.
@@ -396,7 +407,7 @@ const ZONEFOE = {
   village: ['ronin','ronin','dog','dog','bandit','wisp'],
   cave:    ['bug','bug','bandit','wisp'],
   snow:    ['wolf','wolf','spirit','spirit','bandit','wisp'],
-  heaven:  ['bandit','wisp'],
+  heaven:  ['eagle','eagle','bandit','wisp'],
 };
 const foeM = f => FOES[f.k];
 // 구역별 보스 종류 (없으면 그 구역 대표 잡몹)
