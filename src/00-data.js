@@ -321,6 +321,17 @@ const FOES = {
     hp:1.0, dmg:1.0, spd:1.0,
     shotImg:'ghost_shot', shotSpd:230,   // 보스 스킬이 탄이 된다 (40-step)
   },
+  wolf: {
+    // 설산 설랑 — 서리 맺힌 흰 늑대. 빠르게 달려들어 문다. 입김이 얼어 있다.
+    // 공격 컷의 빙기 이펙트가 앞뒤로 뻗어 캔버스가 넓다 — 몸은 sw/bh.
+    n:'설산 설랑', w:92, h:47, sw:63, bh:38,
+    anim:{ idle:['idle0','idle1','idle2','idle3'],
+           walk:['walk0','walk1','walk2','walk3'],
+           atk:['atk0','atk1','atk2','atk3'],     // 웅크림(빙주) → 도약 설참 → 낮은 돌진 → 갈무리
+           hit:['hit'], death:['death0','death1'] },
+    fps:{ idle:3.5, walk:8, atk:8, hit:6, death:4 },
+    hp:0.9, dmg:1.15, spd:1.45, range:56,   // 도약이 길다 — 들개와 표범 사이
+  },
   golem: {
     // 동굴 보스 석암거인 — 동굴 벽에서 깨어난 바위 거인. 가슴에 호박색 핵.
     // 내리찍기(atk1)의 흙먼지가 넓어 캔버스가 크다 — 몸은 sw/bh.
@@ -353,7 +364,7 @@ const ZONEFOE = {
   bamboo:  ['bandit','bandit','wisp','wisp','panther','panther','shaman','frog','frog'],
   village: ['ronin','ronin','dog','dog','bandit','wisp'],
   cave:    ['bug','bug','bandit','wisp'],
-  snow:    ['bandit','wisp'],
+  snow:    ['wolf','wolf','bandit','wisp'],
   heaven:  ['bandit','wisp'],
 };
 const foeM = f => FOES[f.k];
