@@ -43,6 +43,20 @@ function drawCastGlow(ox, oy){
 
 function drawHero(ox, oy){
   const x = Math.round(P.x - ox), y = Math.round(P.y - oy);
+  // 경공 (v2.41) — 날기는 공중에 떠서, 착지는 바닥에. 단일 컷.
+  if (P.anim === 'dashfly' || P.anim === 'dashland'){
+    const fly = P.anim === 'dashfly';
+    const im = IMG[fly ? 'hero_dashfly' : 'hero_dashland'];
+    const w = fly ? DASH.fw : DASH.lw, h = fly ? DASH.fh : DASH.lh;
+    const lift = fly ? DASH.lift : 0;
+    shadow(x, y, HERO.w * (fly ? 0.7 : 1));       // 뜬 만큼 그림자 작게
+    ctx.save();
+    ctx.translate(x, y - lift);
+    if (P.dir < 0) ctx.scale(-1, 1);
+    draw(im, -Math.round(w/2), -h, w, h);
+    ctx.restore();
+    return;
+  }
   shadow(x, y, HERO.w);
   let [n] = ANIM[P.anim];
   // 절정부터 정권에 권기가 붙는다 — 같은 동작, 다른 그림.

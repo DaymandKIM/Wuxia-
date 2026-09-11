@@ -38,6 +38,8 @@ setTimeout(()=>{
   ok(w.eval('ZONEFOE.heaven.includes("eagle") && ZONEFOE.heaven.includes("jbeetle")'),
     '천산 등장 목록에 수리·옥갑충');
 
+  // 경공(v2.41)은 먼 적에게 날아가므로, 거리를 고정해 재는 이 검사에선 끈다
+  w.eval('DASH.min = 1e9;');
   w.eval(`gotoZone(4,1); S.intro=0; S.foes.length=0; spawnFoe();
     S.foes[0].k='eagle'; S.foes[0].hp=1e9; S.foes[0].hpMax=1e9;
     S.foes[0].x=P.x+30; S.foes[0].y=P.y; S.foes[0].cd=0;

@@ -49,6 +49,8 @@ const P = {
   castGapT: 0,                   // 시전 사이 숨 고르기 — 동시 시전 금지 (CASTQ.gap)
   atkCd: 0,
   artCd: {},                     // 초식별 남은 쿨다운 (저장 안 함)
+  // 경공 (v2.41) — dashT>0 비행 중, dashHold>0 착지 경직, dashCd 쿨다운
+  dashT: 0, dashHold: 0, dashCd: 0, dashTX: 0, dashTY: 0,
   hitT: 0,
   dead: false,
   hitDone: false,                // 이번 공격에서 이미 때렸나

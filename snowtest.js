@@ -43,6 +43,7 @@ setTimeout(()=>{
     '설산 등장 목록에 설랑·빙백령');
 
   // 무대 — 설산 1단계, 설랑 하나
+  w.eval('DASH.min = 1e9;');    // 경공 끔 — 거리 고정 검사 (v2.41)
   w.eval(`gotoZone(3,1); S.intro=0; S.foes.length=0; spawnFoe();
     S.foes[0].k='wolf'; S.foes[0].hp=1e9; S.foes[0].hpMax=1e9;
     S.foes[0].x=P.x+30; S.foes[0].y=P.y; S.foes[0].cd=0;

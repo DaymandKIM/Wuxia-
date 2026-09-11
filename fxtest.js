@@ -111,6 +111,25 @@ setTimeout(()=>{
   ok(draws.some(d=>d.im===w.eval('IMG.gshield')&&d.sw===w.eval('HFX.taijiW')),'태극 원반 스트립이 그려진다');
   w.eval('S.fx.length=0;');
 
+  // 3.75) 경공 (v2.41) — 절정+ 먼 적에게 날아가 코앞에 착지, 컷이 그려진다
+  w.eval(`S.rexp=1e8; gotoZone(3,3); S.intro=0; S.foes.length=0; spawnFoe();
+    S.foes[0].k='spirit'; S.foes[0].hp=1e12; S.foes[0].hpMax=1e12;
+    const FX=P.x+280, FY=P.y;
+    S.foes[0].x=FX; S.foes[0].y=FY; S.foes[0].atkT=99; S.foes[0].cd=99;
+    P.dashCd=0; P.dashT=0; P.dashHold=0; window.__flew=0;
+    for(let i=0;i<50;i++){ step(1/60);
+      S.foes[0].x=FX; S.foes[0].y=FY;    // 적은 제자리 (비행 판정만 본다)
+      S.foes[0].atkT=99; S.foes[0].cd=99;
+      if(P.dashT>0) window.__flew=1; }`);
+  ok(w.eval('window.__flew===1'),'경공 발동 — 먼 적에게 날아간다');
+  ok(w.eval('P.dashT>0 ? 1 : dist(P.x,P.y,S.foes[0].x,S.foes[0].y) < 130')
+     , '경공으로 적 코앞에 좁혔다');
+  w.eval('P.anim="dashfly"; P.dashT=0.2;'); renderNow();
+  ok(drew('hero_dashfly', w.eval('DASH.fw')),'날기 컷이 그려진다');
+  w.eval('P.dashT=0; P.dashHold=0.1; P.anim="dashland";'); renderNow();
+  ok(drew('hero_dashland', w.eval('DASH.lw')),'착지 컷이 그려진다');
+  w.eval('P.dashHold=0; P.anim="idle"; S.rexp=0; gotoZone(0,1); S.intro=0;');
+
   // 3.8) 구역 분위기 — 다섯 구역 모두 렌더가 오류 없이 돈다 (입자·어둑함·구름)
   for (let z = 0; z < 5; z++){ w.eval('gotoZone(' + z + ', 1); S.intro = 0;'); renderNow(); }
   ok(true, '구역 5곳 분위기 연출 렌더 통과 (오류는 마지막 검사에서 확인)');

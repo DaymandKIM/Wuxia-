@@ -81,6 +81,40 @@ function step(dt){
     if (d < td){ td=d; tgt=f; }
   }
   let moving = false;
+  // 경공 (v2.41) — 일정 경지부터, 가장 가까운 적이 멀면 훌쩍 날아가 좁힌다.
+  // 비행 중엔 아래 일반 이동·공격을 건너뛴다.
+  if (P.dashCd > 0) P.dashCd -= dt;
+  if (P.dashHold > 0) P.dashHold -= dt;
+  if (P.dashT > 0){
+    P.dashT -= dt;
+    const dx = P.dashTX - P.x, dy = P.dashTY - P.y, d = Math.hypot(dx, dy) || 1;
+    const step2 = DASH.spd * dt;
+    if (d <= step2 || P.dashT <= 0){          // 도착 — 착지
+      P.x = P.dashTX; P.y = P.dashTY; P.dashT = 0; P.dashHold = DASH.hold;
+    } else {
+      P.x += dx/d*step2; P.y += dy/d*step2; P.dir = dx >= 0 ? 1 : -1;
+      fxPush({ k:'burst', x:P.x, y:P.y, c:'214,202,168', life:0.22, t:0.22 });  // 흙먼지 잔상
+    }
+    // 카메라만 따라가고 이번 프레임 전투는 건너뛴다
+    P.hpMax = heroHpMax(); P.hp = Math.min(P.hpMax, P.hp + heroRegen()*dt);
+    if (P.anim !== 'dashfly'){ P.anim = 'dashfly'; P.af = 0; }
+    S.camX += (P.x - S.camX) * Math.min(1, dt*6);
+    S.camY += (P.y - 24 - S.camY) * Math.min(1, dt*6);
+    return;                              // 비행은 짧아(0.1~0.5초) 적은 잠깐 멈춰도 티 안 난다
+  }
+  // 경공 발동 — 절정+ · 쿨 참 · 가장 가까운 적이 멀 때 (원거리·후방 견제)
+  if (S.sweepT <= 0 && P.dashHold <= 0 && P.atkT <= 0 && P.castT <= 0 &&
+      realmLv() >= DASH.realm && P.dashCd <= 0 && tgt && td > DASH.min){
+    const a0 = Math.atan2(tgt.y - P.y, tgt.x - P.x);
+    const land = (foeM(tgt).range || FOE.range) * 0.7 + foeRad(tgt);   // 적 코앞에 내려선다
+    P.dashTX = tgt.x - Math.cos(a0) * land;
+    P.dashTY = tgt.y - Math.sin(a0) * land;
+    P.dashT = Math.max(0.12, Math.hypot(P.dashTX-P.x, P.dashTY-P.y) / DASH.spd);
+    P.dashCd = DASH.cd;
+    P.dir = tgt.x >= P.x ? 1 : -1;
+    sfx('swoosh');
+    return;
+  }
   // 원거리 적은 물러나므로 더 깊이 파고든다
   const closeIn = (tgt && foeM(tgt).ranged) ? 0.42 : 0.72;
   // 붙는 거리 = 공격 시작 거리 (v2.38). 예전엔 이동 멈춤 거리(atkRange*closeIn)와
@@ -116,10 +150,12 @@ function step(dt){
   // 공격 동작은 끊지 않는다. 피격은 깜빡임으로만 알린다.
   // 시전(cast)은 초식을 펼치는 짧은 동작 — 공격보다도 우선이다.
   if (P.castT > 0) P.castT -= dt;
-  const na = P.castT > 0 ? 'cast'
+  const na = P.dashHold > 0 ? 'dashland'          // 경공 착지 경직 (v2.41)
+           : P.castT > 0 ? 'cast'
            : P.atkT > 0 ? 'atk' : (P.hitT > 0 ? 'hit' : (moving ? 'run' : 'idle'));
   if (na !== P.anim){ P.anim = na; P.af = 0; }
   P.af += dt * (P.anim === 'cast' ? HFX.castFps
+              : P.anim === 'dashland' ? 8         // 단일 컷 — 값만 흐른다
               : ANIM[P.anim][1] * (P.anim === 'atk' ? heroAtkSpd() : 1));
 
   // 회복 — 최대 체력은 단계에 따라 오른다
