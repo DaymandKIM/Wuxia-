@@ -72,7 +72,9 @@ function step(dt){
   let moving = false;
   // 원거리 적은 물러나므로 더 깊이 파고든다
   const closeIn = (tgt && foeM(tgt).ranged) ? 0.42 : 0.72;
-  if (P.atkT <= 0 && tgt && td > HERO.atkRange*closeIn){
+  // 제패 연출 중엔 쫓지도 치지도 않는다 — 사방으로 밀려나는 적을 번갈아
+  // 조준하면 방향이 매 프레임 뒤집혀 파닥거린다 ("이쪽 저쪽 바라봄")
+  if (S.sweepT <= 0 && P.atkT <= 0 && tgt && td > HERO.atkRange*closeIn){
     const a = Math.atan2(tgt.y-P.y, tgt.x-P.x);
     P.x += Math.cos(a) * heroSpd() * dt;
     P.y += Math.sin(a) * heroSpd() * dt;
@@ -80,10 +82,10 @@ function step(dt){
     moving = true;
   }
 
-  // 공격
+  // 공격 — 제패 연출 중엔 새 공격을 안 시작한다 (방향 파닥임 방지)
   if (P.atkCd > 0) P.atkCd -= dt;
   if (P.atkT > 0){ P.atkT -= dt; heroHitCheck(); }
-  else if (P.atkCd <= 0 && tgt && td <= HERO.atkRange + HERO.atkReach) heroAttack();
+  else if (S.sweepT <= 0 && P.atkCd <= 0 && tgt && td <= HERO.atkRange + HERO.atkReach) heroAttack();
 
   // 초식 — 제패 연출 중엔 아낀다
   if (S.sweepT <= 0) stepArts(dt);

@@ -96,7 +96,6 @@ function heroAttack(){
   }
   if (!best || bd > HERO.atkRange + HERO.atkReach) return false;
   P.dir = best.x >= P.x ? 1 : -1;
-  P.atkAlt = P.atkAlt ? 0 : 1;    // 양손 교대 — 권기 정권은 오른손·왼손을 번갈아 지른다
   P.atkT = ANIM.atk[0] / ANIM.atk[1] / heroAtkSpd();   // 공격 속도만큼 빨리 지나간다
   P.atkCd = HERO.atkCd / heroAtkSpd();
   P.hitDone = false;

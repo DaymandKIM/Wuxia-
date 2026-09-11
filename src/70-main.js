@@ -16,7 +16,6 @@ for (const z of ZONES)
   for (let i = 1; i <= 3; i++) loadImg(z.k + i, ASSET[z.k + i]);
 
 for (const k in HFX.cast) loadImg('hero_' + HFX.cast[k][0], ASSET[HFX.cast[k][0]]);  // 초식 시전 동작
-loadImg('hero_katk', ASSET.katk);            // 권기 정권 (절정부터)
 loadImg('pashot',    ASSET.pashot);          // 파공권 권기 탄
 loadImg('bshot',     ASSET.bshot);           // 암향지 지풍 빔
 loadImg('gshield',   ASSET.gshield);         // 건곤이형 태극 원반

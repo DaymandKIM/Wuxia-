@@ -2,16 +2,18 @@
    spritetest는 파일 규격만 보므로, 여기서는 구동을 본다:
    1) 초식마다 시전 동작(cast)이 올바른 스트립·폭으로 그려지나
    2) 파공권 권기 탄·암향지 지풍 빔이 날아가나
-   3) 절정부터 정권이 권기 스트립으로 바뀌나 (미만이면 맨손)
+   3) 절정부터 주먹에 권기 빛무리가 맺히나 (양손 콤보 스트립은 그대로)
    4) 경지 기운이 문턱대로 켜지고 색이 바뀌나
    스프라이트를 새로 반영하면 반드시 여기에 검사를 추가한다 (사용자 확정).
 */
 const fs=require('fs');const {JSDOM}=require('jsdom');
 const html=fs.readFileSync(process.env.WUXIA_OUT || __dirname+'/dist/wuxia.html','utf8');
 const draws=[];                                  // render가 그린 것들 {im, sw}
+const arcs=[];                                   // 원 그리기 — 권기 빛무리 검증용
 const ctxStub=new Proxy({},{get:(t,k)=>{
   if(k==='canvas') return {width:1170,height:2532};
   if(k==='drawImage') return (im,sx,sy,sw)=>{ draws.push({im, sx, sw}); };
+  if(k==='arc') return (x,y,r)=>{ arcs.push({x, y, r}); };
   if(['imageSmoothingEnabled','globalAlpha','fillStyle','strokeStyle','lineWidth',
       'globalCompositeOperation','font','textAlign','textBaseline'].includes(k)) return 0;
   if(k==='createLinearGradient') return ()=>({addColorStop(){}});
@@ -31,7 +33,7 @@ let bad=0;
 const ok=(c,m)=>{ console.log((c?'  ':'  ★실패 ')+m); if(!c)bad++; };
 // 특정 그림이 특정 폭으로 그려졌나
 const drew=(imKey,sw)=>draws.some(d=>d.im===w.eval('IMG["'+imKey+'"]')&&(sw===undefined||d.sw===sw));
-const renderNow=()=>{ draws.length=0; w.eval('render()'); };
+const renderNow=()=>{ draws.length=0; arcs.length=0; w.eval('render()'); };
 
 setTimeout(()=>{
   w.eval('S.intro=0; S.rexp=1e12; S.silver=0;');           // 최고 경지 — 기운·권기 전부 열림
@@ -63,21 +65,26 @@ setTimeout(()=>{
   ok(drew('pashot'),'권기 탄 그림이 그려진다');
   ok(drew('bshot'),'지풍 빔 그림이 그려진다');
 
-  // 3) 권기 정권 — 절정 이상이면 katk, 미만이면 맨손 atk
+  // 3) 권기 정권 — 절정+에서도 맨손 양손 콤보 스트립을 쓰고, 주먹에 빛무리가 맺힌다
   w.eval('S.fx.length=0; P.castT=0; P.atkT=0.3; P.anim="atk"; P.af=1;');
   renderNow();
-  ok(drew('hero_katk',w.eval('HFX.aw.katk')),'절정 이상 정권 = 권기 스트립');
+  ok(drew('hero_atk',w.eval('HERO.w')),'절정 이상 정권 = 맨손 스트립 (양손 콤보 유지)');
+  ok(arcs.some(a=>a.r>=w.eval('HFX.kfist.r[0]')*0.8),'주먹에 권기 빛무리가 맺힌다');
   w.eval('S.rexp=0;');                                     // 삼류로
   renderNow();
   ok(drew('hero_atk',w.eval('HERO.w')),'절정 미만 정권 = 맨손 스트립');
+  ok(!arcs.some(a=>a.r>=w.eval('HFX.kfist.r[0]')*0.8),'절정 미만엔 권기 빛무리가 없다');
 
-  // 3.5) 양손 교대 — 뒷절반(왼손) 칸이 실제로 그려지나
-  w.eval('S.rexp=1e12; P.atkT=0.3; P.anim="atk"; P.af=1; P.atkAlt=0;');
-  renderNow();
-  ok(draws.some(d=>d.im===w.eval('IMG.hero_katk')&&d.sx===1*w.eval('HFX.aw.katk')),'오른손 정권 (앞절반 칸)');
-  w.eval('P.atkAlt=1;');
-  renderNow();
-  ok(draws.some(d=>d.im===w.eval('IMG.hero_katk')&&d.sx===(1+(w.eval('HFX.katkN')>>1))*w.eval('HFX.aw.katk')),'왼손 정권 (뒷절반 칸)');
+  // 3.5) 제패 연출 중 방향 고정 — 사방으로 밀려나는 적을 쫓아 파닥이지 않는다
+  w.eval(`S.rexp=1e12; P.dir=1; P.atkT=0; P.atkCd=0; S.foes.length=0;
+    for(let i=0;i<4;i++) spawnFoe();
+    S.foes[0].x=P.x-60; S.foes[1].x=P.x+60; S.foes[2].x=P.x-90; S.foes[3].x=P.x+90;
+    for(const f of S.foes){ f.y=P.y; f.hp=1e9; f.hpMax=1e9; }
+    S.sweepT=SWEEP.charge+SWEEP.blast+SWEEP.hold; S.sweepDone=false;
+    window.__flip=0; let d0=P.dir;
+    for(let i=0;i<60;i++){ step(1/60); if(P.dir!==d0){ window.__flip++; d0=P.dir; } }
+    S.sweepT=0; S.foes.length=0;`);
+  ok(w.eval('window.__flip')===0,'제패 연출 중 방향이 안 뒤집힌다 ('+w.eval('window.__flip')+'회 뒤집힘)');
   // 3.6) 시전 컷 수 = 숙련 성 비례
   w.eval('S.artStar.pagong=1;');
   const n1=w.eval('castN("pagong")');

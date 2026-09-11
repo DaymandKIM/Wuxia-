@@ -48,8 +48,7 @@ function drawHero(ox, oy){
   // 절정부터 정권에 권기가 붙는다 — 같은 동작, 다른 그림.
   // 시전(cast)은 초식마다 스트립·프레임 수가 다르다.
   let key = P.anim, fw = HERO.w;
-  if (P.anim === 'atk' && realmLv() >= HFX.katkRealm){ key = 'katk'; fw = HFX.aw.katk; }
-  else if (P.anim === 'cast'){
+  if (P.anim === 'cast'){
     const ck = HFX.cast[P.castK] || HFX.cast.pagong;
     key = ck[0]; fw = ck[1]; n = castN(P.castK);   // 성이 낮으면 컷을 덜어낸 판
   }
@@ -59,7 +58,6 @@ function drawHero(ox, oy){
   fi = (P.anim === 'atk' || P.anim === 'hit' || P.anim === 'cast')
        ? Math.min(fi, n-1) : (fi % n);
   if (P.anim === 'cast') fi = castFrame(P.castK, fi);       // 성긴 판 → 원본 칸 번호
-  if (key === 'katk') fi += P.atkAlt * (HFX.katkN >> 1);    // 양손 교대 — 뒷절반이 왼손
   ctx.save();
   ctx.translate(x, y);
   if (P.dir < 0) ctx.scale(-1, 1);
@@ -77,16 +75,30 @@ function drawHero(ox, oy){
   const hurt = P.hitT > 0;
   if (hurt) ctx.globalAlpha = 0.62 + Math.sin(S.t*46)*0.22;
   draw(im, fi*fw, 0, fw, HERO.h, -Math.round(fw/2), -HERO.h, fw, HERO.h);
-  // 주먹 끝 — 원본에 손 끝이 없어 여기서 마무리한다 (권기 정권은 자체 이펙트)
-  if (P.anim === 'atk' && key !== 'katk'){
+  // 주먹 끝 — 원본에 손 끝이 없어 여기서 마무리한다.
+  // 절정부터는 같은 자리에 권기 빛무리가 맺힌다 — 양손 콤보(맨손 스트립)는
+  // 그대로 두고 빛만 얹는다 ("공격이 양손이었는데" 피드백, v2.18)
+  if (P.anim === 'atk'){
     const F = FIST[Math.min(fi, FIST.length-1)];
-    ctx.globalAlpha = 0.95;
-    ctx.fillStyle = '#f0f6ff';
-    ctx.beginPath(); ctx.arc(F.x, F.y, 2.6, 0, Math.PI*2); ctx.fill();
-    ctx.globalAlpha = 0.5;
-    ctx.fillStyle = '#a8d4f0';
-    ctx.beginPath(); ctx.arc(F.x, F.y, 3.9, 0, Math.PI*2); ctx.fill();
-    ctx.globalAlpha = 1;
+    if (realmLv() >= HFX.katkRealm){
+      const kf = HFX.kfist, pul = 1 + Math.sin(S.t*18)*kf.pulse;
+      ctx.globalCompositeOperation = 'lighter';
+      for (let i = 0; i < kf.r.length; i++){
+        ctx.globalAlpha = kf.a[i];
+        ctx.fillStyle = kf.c[i];
+        ctx.beginPath(); ctx.arc(F.x, F.y, kf.r[i]*pul, 0, Math.PI*2); ctx.fill();
+      }
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.globalAlpha = 1;
+    } else {
+      ctx.globalAlpha = 0.95;
+      ctx.fillStyle = '#f0f6ff';
+      ctx.beginPath(); ctx.arc(F.x, F.y, 2.6, 0, Math.PI*2); ctx.fill();
+      ctx.globalAlpha = 0.5;
+      ctx.fillStyle = '#a8d4f0';
+      ctx.beginPath(); ctx.arc(F.x, F.y, 3.9, 0, Math.PI*2); ctx.fill();
+      ctx.globalAlpha = 1;
+    }
   }
   if (hurt){                       // 붉게 번쩍여 맞은 것을 알린다
     ctx.globalCompositeOperation = 'lighter';
