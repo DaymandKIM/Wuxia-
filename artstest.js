@@ -104,6 +104,23 @@ setTimeout(()=>{
       '스킬창 슬롯 수 = 익힌 초식 수 ('+slots.length+'개)');
     const cdShown=[...slots].some(s=>parseFloat(s.querySelector('.cdm').style.height)>0);
     ok(cdShown,'도는 쿨다운이 덮개로 보인다');
+    // 5.10) 발동 모드 — 수동에선 알아서 안 나가고, 눌러야(castByHand) 나간다
+    w.eval(`S.skillManual=true; S.arts.pagong=1; S.foes.length=0; spawnFoe();
+      S.foes[0].x=P.x+30; S.foes[0].y=P.y; S.foes[0].hp=1e9; S.foes[0].hpMax=1e9;
+      P.hp=P.hpMax; P.castT=0; P.castGapT=0; P.artCd.pagong=0;
+      S.fx.length=0; for(let i=0;i<30;i++) stepArts(1/60);`);
+    ok(w.eval('S.fx.filter(e=>e.k==="artname").length')===0 && w.eval('P.artCd.pagong<=0'),
+      '수동 모드 — 쿨이 차도 알아서 시전하지 않는다');
+    w.eval('const r=castByHand("pagong"); window.__hand=r;');
+    ok(w.eval('window.__hand===true && P.castT>0'),'눌러서(castByHand) 시전된다');
+    ok(w.eval('castByHand("pagong")===false'),'쿨 중엔 눌러도 안 나간다');
+    // 토글 UI — 라벨이 모드를 따라가고, 눌러 바꾼다
+    w.eval('P.castT=0; P.castGapT=0; hud()');
+    const modeBtn=d.querySelector('#sbar .smode');
+    ok(!!modeBtn && modeBtn.textContent==='수동','토글이 현재 모드(수동)를 보여준다');
+    w.eval("document.querySelector('#sbar .smode').onclick()");
+    ok(w.eval('S.skillManual===false'),'토글을 누르면 자동으로 돌아간다');
+    w.eval('S.skillManual=true; saveNow();');   // 저장 왕복 검사용으로 수동 남겨둠
     w.eval('delete S.arts.whirl; S.foes.length=0; P.anim="idle";');
     // 6) 저장 왕복
     w.eval('saveNow()');
@@ -114,6 +131,7 @@ setTimeout(()=>{
         '다시 열어도 익힌 무공이 남아 있다');
       ok(w2.eval('artStar("chulwoo")')===2,'숙련 성도 저장된다 (청죽공 2성)');
       ok(w2.eval('artLv("chulwoo")')===2,'연마 레벨도 저장된다 (청죽공 Lv2)');
+      ok(w2.eval('S.skillManual===true'),'발동 모드(수동)도 저장된다');
       ok(errs.length===0,'런타임 오류 0'+(errs.length?': '+errs[0]:''));
       console.log(bad?('\n★ 실패 '+bad+'건'):'\n문제 없음');
       process.exit(bad?1:0);

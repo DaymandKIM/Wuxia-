@@ -59,8 +59,16 @@ function skillHud(){
   if (sig !== sbarSig){                       // 익힌 목록이 바뀔 때만 다시 만든다
     sbarSig = sig;
     const bar = $('sbar');
-    bar.innerHTML = arts.length ? '<span class="lbl">자동 시전</span>' : '';
+    bar.innerHTML = '';
     for (const k in sbarEls) delete sbarEls[k];
+    if (arts.length){
+      // 오토/수동 토글 — 눌러 발동 모드를 바꾼다 (사용자 요청)
+      const t = document.createElement('button');
+      t.className = 'smode';
+      t.onclick = () => { S.skillManual = !S.skillManual; saveNow(); };
+      bar.appendChild(t);
+      sbarEls.__mode = t;
+    }
     for (const a of arts){
       const d = document.createElement('div');
       d.className = 'sk';
@@ -72,16 +80,21 @@ function skillHud(){
       const m = document.createElement('i'); m.className = 'cdm';
       const s = document.createElement('b'); s.className = 'cds';
       d.appendChild(g); d.appendChild(m); d.appendChild(s);
+      // 수동 모드에선 눌러서 시전한다 (반격형 건곤이형은 피격 발동이라 제외)
+      if (!a.ref) d.onclick = () => { if (S.skillManual) castByHand(a.k); };
       bar.appendChild(d);
       sbarEls[a.k] = { d, m, s };
     }
   }
+  if (sbarEls.__mode) sbarEls.__mode.textContent = S.skillManual ? '수동' : '자동';
   for (const a of arts){
     const e = sbarEls[a.k]; if (!e) continue;
     const cd = Math.max(0, P.artCd[a.k] || 0);
     e.m.style.height = (cd / a.cd * 100).toFixed(1) + '%';
     e.s.textContent = cd > 0 ? Math.ceil(cd) : '';   // 쿨 중엔 초만, 다 차면 글자만
     e.d.classList.toggle('rdy', cd <= 0);
+    // 수동 + 준비됨 + 반격형 아님 → 누를 수 있음을 표시
+    e.d.classList.toggle('tap', S.skillManual && cd <= 0 && !a.ref);
   }
 }
 

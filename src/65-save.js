@@ -12,6 +12,7 @@ function saveNow(){
       silver: S.silver, bossDone: S.bossDone, stats: S.stats, rexp: S.rexp,
       arts: S.arts, karma: S.karma, fates: S.fates, fatebits: S.fatebits,
       artXp: S.artXp, artStar: S.artStar, artLv: S.artLv,
+      skillManual: S.skillManual,
     }));
   }catch(e){}                    // 시크릿 모드 등 — 저장만 못 할 뿐 게임은 돈다
 }
@@ -51,6 +52,7 @@ function applySave(d){
     if (d.artLv && typeof d.artLv === 'object')
       S.artLv[a.k] = clamp(d.artLv[a.k] | 0, 1, artLvCap(a.k));   // 성 로드 뒤라 상한이 맞다
   }
+  S.skillManual = !!d.skillManual;              // 발동 모드 (예전 저장엔 없다 → 자동)
   S.karma = Math.max(0, +d.karma || 0);
   S.fates = Math.max(0, d.fates | 0);
   S.fatebits = {};

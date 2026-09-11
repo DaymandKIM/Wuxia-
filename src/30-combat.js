@@ -29,6 +29,10 @@ function beginSummon(){
   S.summonY = P.y;            // 같은 땅 높이 — 바닥 기준이라 발이 나란히 선다
   S.gateY   = S.summonY - SUMMON.gate;
   S.foes.length = 0;               // 잡몹은 물러난다
+  P.hp = P.hpMax;                  // 등장은 숨 고르기 — 만회복하고 보스를 맞는다
+                                   // (v2.42: "보스 나오기 전에 죽더라" — 낮은 HP로
+                                   //  진입하면 등장 직후 순삭됐다. 등장은 전투가 없으니
+                                   //  여기서 채운다)
   sfx('down');
 }
 
@@ -270,6 +274,8 @@ function stepArts(dt){
     }
     if (P.artCd[a.k] === undefined) P.artCd[a.k] = a.cd * 0.5;   // 첫 시전은 반 쿨
     if (P.artCd[a.k] > 0){ P.artCd[a.k] -= dt; continue; }
+    // 수동 모드 — 쿨은 돌지만 알아서 펼치지 않는다. 스킬창을 눌러 시전한다.
+    if (S.skillManual) continue;
     // 동시 시전 금지 — 시전 중이거나 숨 고르는 중이면 쿨이 차 있어도 기다린다
     if (P.castT > 0 || P.castGapT > 0) continue;
     if (castArt(a)){
@@ -278,6 +284,20 @@ function stepArts(dt){
       S.artXp[a.k] = (S.artXp[a.k] | 0) + 1;   // 초식 숙련 — 시전 횟수
     }
   }
+}
+
+// 수동 시전 — 스킬창을 눌렀을 때. 조건(쿨·동시시전·대상)이 맞으면 펼친다.
+// 발동 모드는 여기 하나로 모은다: 자동은 stepArts, 수동은 이 함수.
+function castByHand(k){
+  const a = ARTS.list.find(x => x.k === k);
+  if (!a || a.type !== 'active' || a.ref || !S.arts[k]) return false;   // 반격형은 피격 발동
+  if ((P.artCd[k] || 0) > 0) return false;                             // 쿨 중
+  if (P.castT > 0 || P.castGapT > 0) return false;                     // 동시 시전 금지
+  if (!castArt(a)) return false;                                        // 대상이 없으면 아낀다
+  P.artCd[k] = a.cd;
+  P.castGapT = P.castT + CASTQ.gap;
+  S.artXp[k] = (S.artXp[k] | 0) + 1;
+  return true;
 }
 
 // 시전 동작 진입 — 초식별 스트립 길이만큼 (프레임 수 / castFps)

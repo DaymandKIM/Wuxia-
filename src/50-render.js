@@ -84,7 +84,9 @@ function drawHero(ox, oy){
   if (P.dir < 0) ctx.scale(-1, 1);
   // 경지 기운 — 서 있거나 걸을 때 몸 뒤에 은은히 돈다. 색이 경지를 말해준다
   // (사냥 중엔 거의 늘 걷고 있어서 idle 한정이면 보이지 않는다)
-  if (P.anim === 'idle' || P.anim === 'run'){
+  // 보스 등장 연출 동안엔 기운을 끈다 — 3.6초간 가만히 서면 안개가 짙게 깔려
+  // 캐릭터가 흐릿해 보인다는 제보(v2.42 "등장 때 캐릭터가 흐려짐").
+  if ((P.anim === 'idle' || P.anim === 'run') && !(S.summonT > 0) && !(S.gateT > 0)){
     const ak = auraKey();
     if (ak && IMG[ak]){
       const aw = HFX.aw.aidle, af = Math.floor(S.t * 4) % 4;
@@ -379,7 +381,7 @@ function drawFx(ox, oy){
       const t = e.v + '!';
       ctx.save();
       ctx.globalAlpha = Math.min(1, a * 1.5);
-      ctx.font = (p < 0.14 ? 13 : 10.5) + "px Gugi,sans-serif";
+      ctx.font = (p < 0.14 ? 13 : 10.5) + "px Jua,sans-serif";
       ctx.textAlign = 'center';
       ctx.fillStyle = '#0a1420';
       ctx.fillText(t, x + 1, y - p*9 + 1);
@@ -545,7 +547,7 @@ function drawIntroText(W, H, el){
   // 위 — 구역 이름 (크게)
   if (S.introTop){
     ctx.fillStyle = '#f0e2b8';
-    ctx.font = Math.round(H*0.044) + 'px Gugi,-apple-system,sans-serif';
+    ctx.font = Math.round(H*0.044) + 'px Jua,-apple-system,sans-serif';
     ctx.fillText(S.introTop, W/2, topY);
     ctx.strokeStyle = 'rgba(240,226,184,.45)'; ctx.lineWidth = 2;
     const tw = W*0.14;
@@ -557,7 +559,7 @@ function drawIntroText(W, H, el){
 
   // 아래 — 단계 (작게)
   ctx.fillStyle = '#d8cba4';
-  ctx.font = Math.round(H*0.030) + 'px Gugi,-apple-system,sans-serif';
+  ctx.font = Math.round(H*0.030) + 'px Jua,-apple-system,sans-serif';
   ctx.fillText(S.introMsg, W/2, botY);
   ctx.globalAlpha = 1;
 }
@@ -580,7 +582,7 @@ function drawBossBar(ox, oy){
   ctx.fillStyle = '#d2564a';
   ctx.fillRect(x - w/2, y, w * Math.max(0, b.hp/b.hpMax), h);
   // 이름 — 크고 또렷하게 (v2.35 "보스 이름이 너무 작다"). 붉은 표제 + 검은 외곽
-  ctx.font = '14px Gugi,-apple-system,sans-serif';
+  ctx.font = '14px Jua,-apple-system,sans-serif';
   ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
   const nm = zone().boss, ny = y - 4;
   ctx.fillStyle = 'rgba(6,8,12,.92)';
@@ -776,7 +778,7 @@ function drawSummon(ox, oy){
       ctx.globalAlpha = ta;
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.fillStyle = '#f0d9a8';
-      ctx.font = Math.round(H*0.038) + 'px Gugi,-apple-system,sans-serif';
+      ctx.font = Math.round(H*0.038) + 'px Jua,-apple-system,sans-serif';
       const yy = H*0.30 - (1-clamp(bt/0.3,0,1)) * H*0.02;
       ctx.fillText(cry, W/2, yy);
       ctx.strokeStyle = 'rgba(240,217,168,.45)'; ctx.lineWidth = 2;

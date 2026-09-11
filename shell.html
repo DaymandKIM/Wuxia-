@@ -2,15 +2,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <title>무협</title>
-<!-- 무협 느낌 한글 폰트 (v2.40): Gugi=붓글씨 제목체, Do Hyeon=굵고 또렷한 본문.
-     온라인이면 로드되고 오프라인이면 시스템 폰트로 자연히 대체된다. -->
+<!-- 한글 게임 폰트 (v2.42): Jua=둥글고 친근한 제목·본문(메이플 느낌 대체),
+     Do Hyeon=수치 폴백. 온라인이면 로드되고 오프라인이면 시스템 폰트로 대체된다.
+     (v2.40의 붓글씨 Gugi는 "폰트 구림" 피드백으로 교체) -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Gugi&family=Do+Hyeon&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Do+Hyeon&display=swap" rel="stylesheet">
 <style>
   :root{
-    --fb:'Do Hyeon','Apple SD Gothic Neo',-apple-system,BlinkMacSystemFont,sans-serif; /* 본문·수치 */
-    --fw:'Gugi','Do Hyeon','Apple SD Gothic Neo',sans-serif;                           /* 무협 제목 */
+    --fb:'Jua','Apple SD Gothic Neo',-apple-system,BlinkMacSystemFont,sans-serif; /* 본문·수치 */
+    --fw:'Jua','Do Hyeon','Apple SD Gothic Neo',sans-serif;                       /* 제목 */
   }
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   html,body{height:100%;background:#05070a;overflow:hidden;
@@ -56,8 +57,10 @@
      쿨 도는 동안엔 초 숫자만 크게, 다 차면 한자 글자가 밝아진다 (겹침 방지). */
   #sbar{position:absolute;right:10px;bottom:calc(var(--tabh) + 10px);display:flex;gap:7px;
     align-items:flex-end;transition:opacity .22s;pointer-events:none;}
-  #sbar .lbl{position:absolute;right:2px;bottom:calc(100% + 3px);font:800 9px/1 inherit;
-    color:#7f8b99;letter-spacing:.1em;white-space:nowrap;}
+  /* 오토/수동 토글 — 스킬창 왼쪽 끝. 패널이 감춰도 늘 누를 수 있다 */
+  #sbar .smode{pointer-events:auto;align-self:flex-end;height:34px;padding:0 10px;
+    border-radius:17px;border:1.5px solid rgba(120,140,165,.4);background:rgba(14,18,25,.82);
+    color:#cfe4f8;font:800 12px/1 inherit;letter-spacing:.06em;cursor:pointer;}
   .sk{position:relative;width:34px;height:34px;border-radius:50%;overflow:hidden;
     background:rgba(14,18,25,.7);color:#e6edf5;font:900 15px/1 inherit;
     display:flex;align-items:center;justify-content:center;box-sizing:border-box;
@@ -68,6 +71,10 @@
     font:900 13px/1 inherit;color:#eaf3ff;z-index:3;text-shadow:0 1px 2px rgba(0,0,0,.8);}
   .sk.rdy .g{opacity:1;}
   .sk.rdy{box-shadow:inset 0 0 0 2px currentColor, 0 0 8px 1px rgba(255,255,255,.22);}
+  /* 수동 모드에서 준비된 초식 — 누를 수 있고, 눈에 띄게 맥동한다 */
+  .sk.tap{pointer-events:auto;cursor:pointer;animation:sktap 1.1s ease-in-out infinite;}
+  @keyframes sktap{0%,100%{box-shadow:inset 0 0 0 2px currentColor,0 0 6px 1px rgba(255,255,255,.2);}
+    50%{box-shadow:inset 0 0 0 2px currentColor,0 0 12px 3px rgba(255,255,255,.5);}}
   #tbtn{position:absolute;left:10px;bottom:calc(var(--tabh) + 10px);transition:opacity .22s;
     pointer-events:auto;background:rgba(32,24,20,.92);border:1.5px solid #5a4438;
     border-radius:10px;color:#e0c8a8;font:900 13px/1 inherit;padding:11px 16px;letter-spacing:.05em;
