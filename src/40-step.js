@@ -167,6 +167,25 @@ function step(dt){
         continue;
       }
     }
+    // 던지기 — 근접형(낭인)이 거리가 뜨면 병을 집어 던진다
+    if (M.throwCd && !f.boss){
+      if (f.thT > 0){
+        f.thT -= dt;
+        const prog = 1 - f.thT / M.throwDur;
+        if (!f.thDone && prog >= M.throwAt){ f.thDone = true; shootFoe(f); sfx('punch'); }
+        f.anim = 'cast';
+        f.af += dt * M.fps.cast;
+        if (f.thT <= 0) f.thCd = M.throwCd * rnd(0.8, 1.3);
+        continue;
+      }
+      if (f.thCd === undefined) f.thCd = M.throwCd * rnd(0.3, 0.9);
+      if (f.thCd > 0) f.thCd -= dt;
+      else if (f.atkT <= 0 && d > M.throwMin && d < M.throwMax){
+        f.thT = M.throwDur; f.thDone = false;
+        f.anim = 'cast'; f.af = 0;
+        continue;
+      }
+    }
     // 원거리 적 — 사거리 안이면 멈춰 서서 쏜다
     if (M.ranged && !f.boss){
       const far = M.range;
@@ -328,6 +347,7 @@ function step(dt){
     if (dist(b.x, b.y, P.x, P.y - HERO.h*0.4) < (b.big ? b.r : 16)){
       hurtHero(b.dmg);
       if (b.big){ shake(7); S.fx.push({ k:'burst', x:b.x, y:b.y, life:0.35, t:0.35 }); }
+      if (b.dust) S.fx.push({ k:'imgburst', im:b.dust, x:b.x, y:b.y, life:0.4, t:0.4 });
       S.shots.splice(i,1);
       continue;
     }

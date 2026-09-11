@@ -73,6 +73,7 @@ function shootFoe(f){
     vx: (P.x-f.x)/d, vy: (P.y - HERO.h*0.4 - (f.y - (M.bh||M.h)*0.45))/d,
     spd: M.shotSpd || 180,
     dmg: foeDmg() * M.dmg,
+    img: M.shotImg, dust: M.shotDust,   // 그림 탄(낭인 술병 등) — 없으면 절차 구체
     life: 2.6,
     t: 0,
   });

@@ -269,6 +269,20 @@ const FOES = {
     hp:0.70, dmg:1.10, spd:0.80,
     ranged:true, lash:true, range:72, atkAt:0.50,   // 혀는 80px까지 닿는다
   },
+  ronin: {
+    // 폐촌 낭인 — 삿갓에 녹슨 칼. 근접 베기가 기본, 이따금 술병을 던진다.
+    n:'폐촌 낭인', w:52, h:51,
+    anim:{ idle:['idle0','idle1','idle2','idle3'],
+           walk:['walk0','walk1','walk2','walk3','walk4','walk5','walk6','walk7'],
+           atk:['atk0','atk1','atk2'],           // 치켜들기 → 휘두르기 → 내려베기
+           cast:['cast0','cast1'],               // 병 던지기 (근접형의 원거리 견제)
+           hit:['hit'], death:['death','death2'] },
+    fps:{ idle:3, walk:8, atk:7, cast:3.2, hit:6, death:5 },
+    hp:1.05, dmg:1.05, spd:0.95,
+    // 던지기 — 근접형이지만 거리가 뜨면 병을 집어 던진다
+    throwCd:6.5, throwDur:0.62, throwAt:0.55, throwMin:80, throwMax:200,
+    shotImg:'ronin_shot', shotDust:'ronin_dust', shotSpd:200,
+  },
   demon: {
     n:'대나무 마왕', w:114, h:96,
     anim:{ idle:['idle0','idle1','idle2','idle3','idle4'],
@@ -287,7 +301,7 @@ const FOES = {
 // 구역별 등장 목록
 const ZONEFOE = {
   bamboo:  ['bandit','bandit','wisp','wisp','panther','panther','shaman','frog','frog'],
-  village: ['bandit','wisp'],
+  village: ['ronin','ronin','ronin','bandit','wisp'],
   cave:    ['bandit','wisp'],
   snow:    ['bandit','wisp'],
   heaven:  ['bandit','wisp'],

@@ -232,6 +232,17 @@ function drawFx(ox, oy){
       if (gk) glowBall(pa ? 0 : Math.round(bw * 0.4), 0, gk,
                        bh * 0.5, (el < HFX.shotT ? 1 : a) * 0.55);
       ctx.restore();
+    } else if (e.k === 'imgburst'){
+      // 그림 파열 — 명중 지점에서 먼지 등이 퍼지며 사라진다
+      const im = IMG[e.im];
+      if (im && im.complete && im.naturalWidth){
+        const sc2 = 0.6 + (1 - a) * 0.7;
+        const w = im.naturalWidth * sc2, h2 = im.naturalHeight * sc2;
+        ctx.save();
+        ctx.globalAlpha = a * 0.9;
+        draw(im, Math.round(x - w/2), Math.round(y - h2/2), w, h2);
+        ctx.restore();
+      }
     } else if (e.k === 'taiji'){
       // 건곤이형 — 태극 원반이 돌다가 힘을 되쏜다
       const fi = Math.min(HFX.taijiN - 1, Math.floor((1 - a) * HFX.taijiN));
@@ -818,6 +829,17 @@ function drawShots(ox, oy){
   for (const b of S.shots){
     const x = Math.round(b.x - ox), y = Math.round(b.y - oy);
     const pulse = 1 + Math.sin(b.t*14)*0.12;
+    // 그림 탄 — 낭인 술병처럼 스프라이트가 있는 탄은 빙글빙글 돌며 난다
+    if (b.img && IMG[b.img]){
+      const im = IMG[b.img];
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(b.t * 9 * (b.vx < 0 ? -1 : 1));
+      draw(im, -Math.round(im.naturalWidth/2), -Math.round(im.naturalHeight/2),
+           im.naturalWidth, im.naturalHeight);
+      ctx.restore();
+      continue;
+    }
     if (b.big){
       const R = b.r;
       // 주술사 시트의 구체 그림을 쓴다
