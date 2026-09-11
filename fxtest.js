@@ -65,15 +65,16 @@ setTimeout(()=>{
   ok(drew('pashot'),'권기 탄 그림이 그려진다');
   ok(drew('bshot'),'지풍 빔 그림이 그려진다');
 
-  // 3) 권기 정권 — 절정+에서도 맨손 양손 콤보 스트립을 쓰고, 주먹에 빛무리가 맺힌다
-  w.eval('S.fx.length=0; P.castT=0; P.atkT=0.3; P.anim="atk"; P.af=1;');
+  // 3) 권기 정권 — 절정+은 오른손·왼손 스트립을 공격마다 교대, 미만은 맨손
+  w.eval('S.fx.length=0; P.castT=0; P.atkT=0.3; P.anim="atk"; P.af=1; P.atkAlt=0;');
   renderNow();
-  ok(drew('hero_atk',w.eval('HERO.w')),'절정 이상 정권 = 맨손 스트립 (양손 콤보 유지)');
-  ok(arcs.some(a=>a.r>=w.eval('HFX.kfist.r[0]')*0.8),'주먹에 권기 빛무리가 맺힌다');
+  ok(drew('hero_katka',w.eval('HFX.aw.katk')),'절정 이상 정권 = 권기 오른손 스트립');
+  w.eval('P.atkAlt=1;');
+  renderNow();
+  ok(drew('hero_katkb',w.eval('HFX.aw.katk')),'왼손 스트립으로 교대된다');
   w.eval('S.rexp=0;');                                     // 삼류로
   renderNow();
   ok(drew('hero_atk',w.eval('HERO.w')),'절정 미만 정권 = 맨손 스트립');
-  ok(!arcs.some(a=>a.r>=w.eval('HFX.kfist.r[0]')*0.8),'절정 미만엔 권기 빛무리가 없다');
 
   // 3.5) 제패 연출 중 방향 고정 — 사방으로 밀려나는 적을 쫓아 파닥이지 않는다
   w.eval(`S.rexp=1e12; P.dir=1; P.atkT=0; P.atkCd=0; S.foes.length=0;

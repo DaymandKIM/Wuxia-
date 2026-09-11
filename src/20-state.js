@@ -43,6 +43,7 @@ const P = {
   hp: HERO.hp, hpMax: HERO.hp,
   anim: 'idle', af: 0,
   atkT: 0,                       // >0 이면 공격 동작 중
+  atkAlt: 0,                     // 양손 교대 — 0 오른손(katka) / 1 왼손(katkb)
   castT: 0,                      // >0 이면 초식 시전 동작 중
   castK: 'pagong',               // 시전 중인 초식 키 (스트립 선택)
   castGapT: 0,                   // 시전 사이 숨 고르기 — 동시 시전 금지 (CASTQ.gap)
