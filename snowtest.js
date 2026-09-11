@@ -3,6 +3,7 @@
    2) 설랑·빙백령 프레임 에셋이 전부 있는가 (얼음 조각 탄 포함)
    3) 설랑 물기가 실제로 아픈가
    4) 빙백령이 얼음 조각(그림 탄·fly)을 쏘고 명중하는가
+   5) 설산 보스가 설산백호이고, 스킬로 눈보라 숨결을 뿜어 맞히는가
 */
 const fs=require('fs');const {JSDOM}=require('jsdom');
 const html=fs.readFileSync(process.env.WUXIA_OUT || __dirname+'/dist/wuxia.html','utf8');
@@ -72,9 +73,38 @@ setTimeout(()=>{
       ok(w.eval('window.__fly===1'),'조각은 fly 탄이다 (돌지 않고 방향을 본다)');
       ok(w.eval('window.__hurt')>0,'조각이 명중해 아프다 ('+Math.round(w.eval('window.__hurt'))+' 피해)');
       w.eval('clearInterval(window.__pin)');
-      ok(errs.length===0,'런타임 오류 0'+(errs.length?': '+errs[0]:''));
-      console.log(bad?('\n★ 실패 '+bad+'건'):'\n문제 없음');
-      process.exit(bad?1:0);
+
+      // 5) 설산 보스 = 설산백호 — 에셋·눈보라 숨결 탄 검증
+      const tmiss=w.eval(`(function(){
+        const miss=[];
+        for(const a in FOES.tiger.anim)
+          for(const f of FOES.tiger.anim[a]) if(!ASSET['tiger_'+f]) miss.push(f);
+        if(!ASSET.tiger_shot) miss.push('shot');
+        return miss.join(',');
+      })()`);
+      ok(tmiss==='','설산백호 에셋 전부 존재'+(tmiss?' (빠짐: '+tmiss+')':''));
+      ok(w.eval('ZONEBOSS.snow==="tiger"'),'설산 보스는 설산백호');
+      w.eval(`S.shots.length=0; gotoZone(3,11); S.intro=0; S.foes.length=0; spawnBoss();
+        const b=S.foes[0]; b.rise=0; b.skCd=0; b.hp=1e12; b.hpMax=1e12;
+        // 명중 증거는 fly 탄 폭발(burst) — 보스 근접타(전천후)와 구분된다
+        window.__burst=0;
+        const _pf=S.fx.push.bind(S.fx);
+        S.fx.push=function(e){ if(e&&e.k==="burst") window.__burst++; return _pf(e); };
+        window.__tsaw=0;
+        window.__tpin=setInterval(function(){
+          const b=S.foes.find(f=>f.boss); if(!b) return;
+          b.x=P.x+240; b.y=P.y;
+          const s=S.shots.find(s=>s.img==='tiger_shot');
+          if(s){ window.__tsaw=1; P.x=s.x; P.y=s.y+HERO.h*0.4; }
+        },50);`);
+      setTimeout(()=>{
+        ok(w.eval('window.__tsaw===1'),'설산백호가 눈보라 숨결을 뿜는다 (그림 탄)');
+        ok(w.eval('window.__burst')>0,'숨결이 명중해 터졌다 ('+w.eval('window.__burst')+'회 폭발)');
+        w.eval('clearInterval(window.__tpin)');
+        ok(errs.length===0,'런타임 오류 0'+(errs.length?': '+errs[0]:''));
+        console.log(bad?('\n★ 실패 '+bad+'건'):'\n문제 없음');
+        process.exit(bad?1:0);
+      },2600);
     },2600);
   },1400);
 },2500);

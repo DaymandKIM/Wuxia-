@@ -95,6 +95,10 @@ setTimeout(()=>{
           gotoZone(1,11); S.intro=0; S.foes.length=0; spawnBoss();
           const b=S.foes[0]; b.rise=0; b.skCd=0; b.hp=1e12; b.hpMax=1e12;
           P.hpMax=1e7; P.hp=1e7;
+          // 명중 증거는 fly 탄 폭발(burst) — 보스 근접타(전천후)와 구분된다
+          window.__gburst=0;
+          const _pf2=S.fx.push.bind(S.fx);
+          S.fx.push=function(e){ if(e&&e.k==="burst") window.__gburst++; return _pf2(e); };
           // 보스를 멀리 붙잡아 둔다 — 스킬은 거리 불문이어야 한다
           window.__gpin=setInterval(function(){
             const b=S.foes.find(f=>f.boss); if(!b) return;
@@ -105,8 +109,10 @@ setTimeout(()=>{
         const ghp0=w.eval('P.hp');
         setTimeout(()=>{
           ok(w.eval('window.__gsaw===1'),'원혼이 해골 귀화를 날렸다 (그림 탄)');
+          ok(w.eval('window.__gburst')>0,
+             '귀화가 날아가 명중했다 ('+w.eval('window.__gburst')+'회 폭발 — 탄이 언 채면 0)');
           ok(w.eval('P.hp')<ghp0,
-             '귀화가 명중해 아프다 ('+Math.round(ghp0-w.eval('P.hp'))+' 피해)');
+             '귀화가 아프다 ('+Math.round(ghp0-w.eval('P.hp'))+' 피해)');
           w.eval('clearInterval(window.__gpin)');
           ok(errs.length===0,'런타임 오류 0'+(errs.length?': '+errs[0]:''));
           console.log(bad?('\n★ 실패 '+bad+'건'):'\n문제 없음');

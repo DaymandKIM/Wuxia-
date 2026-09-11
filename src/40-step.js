@@ -277,6 +277,25 @@ function step(dt){
     }
   }
 
+  // 원거리 탄 — 보스 단계 분기(아래 return)보다 먼저 밟아야 한다.
+  // 안 그러면 보스의 탄(원혼 귀화·백호 숨결)이 허공에 얼어붙는다 (v2.17에서 발견)
+  for (let i = S.shots.length-1; i >= 0; i--){
+    const b = S.shots[i];
+    b.t += dt;
+    b.life -= dt;
+    b.x += b.vx * b.spd * dt;
+    b.y += b.vy * b.spd * dt;
+    if (dist(b.x, b.y, P.x, P.y - HERO.h*0.4) < (b.big ? b.r : 16)){
+      hurtHero(b.dmg);
+      if (b.big){ shake(7); S.fx.push({ k:'burst', x:b.x, y:b.y, life:0.35, t:0.35 }); }
+      if (b.dust) S.fx.push({ k:'imgburst', im:b.dust, x:b.x, y:b.y, life:0.4, t:0.4 });
+      if (b.fly){ shake(5); S.fx.push({ k:'burst', x:b.x, y:b.y, life:0.35, t:0.35 }); }   // 귀화 폭발
+      S.shots.splice(i,1);
+      continue;
+    }
+    if (b.life <= 0) S.shots.splice(i,1);
+  }
+
   // 보스 단계 클리어 — 보스를 잡으면 다음 구역
   if (isBoss()){
     if (S.bossAlive && !S.foes.some(f=>f.boss)){
@@ -342,24 +361,6 @@ function step(dt){
     S.camY += (P.y - 24 - S.camY) * Math.min(1, dt*6);
     if (S.sweepT <= 0) advanceStage();
     return;
-  }
-
-  // 원거리 탄
-  for (let i = S.shots.length-1; i >= 0; i--){
-    const b = S.shots[i];
-    b.t += dt;
-    b.life -= dt;
-    b.x += b.vx * b.spd * dt;
-    b.y += b.vy * b.spd * dt;
-    if (dist(b.x, b.y, P.x, P.y - HERO.h*0.4) < (b.big ? b.r : 16)){
-      hurtHero(b.dmg);
-      if (b.big){ shake(7); S.fx.push({ k:'burst', x:b.x, y:b.y, life:0.35, t:0.35 }); }
-      if (b.dust) S.fx.push({ k:'imgburst', im:b.dust, x:b.x, y:b.y, life:0.4, t:0.4 });
-      if (b.fly){ shake(5); S.fx.push({ k:'burst', x:b.x, y:b.y, life:0.35, t:0.35 }); }   // 귀화 폭발
-      S.shots.splice(i,1);
-      continue;
-    }
-    if (b.life <= 0) S.shots.splice(i,1);
   }
 
   // 단계 클리어 — 제패 연출을 먼저 띄운다

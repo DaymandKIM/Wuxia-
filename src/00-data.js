@@ -90,7 +90,7 @@ const ZONES = [
   { k:'bamboo',  n:'죽림',   ground:'#6a7a52', boss:'대나무 마왕' },
   { k:'village', n:'폐촌',   ground:'#6b6350', boss:'폐촌의 원혼' },   // 등장 문구·FOES.ghost와 통일
   { k:'cave',    n:'동굴',   ground:'#5c5f5c', boss:'석암거인' },
-  { k:'snow',    n:'설산',   ground:'#b9c9d2', boss:'설산 노인' },
+  { k:'snow',    n:'설산',   ground:'#b9c9d2', boss:'설산백호' },
   { k:'heaven',  n:'천산',   ground:'#7f9a86', boss:'천산 검객' },
 ];
 const zone = ()=> ZONES[S.zi];
@@ -182,7 +182,7 @@ const BOSSCRY = {
   bamboo:  '죽림의 주인이 깨어난다',
   village: '폐촌의 원혼이 일어선다',
   cave:    '동굴의 주인이 모습을 드러낸다',
-  snow:    '설산의 노인이 강림한다',
+  snow:    '설산백호가 포효한다',
   heaven:  '천산의 검객이 하강한다',
 };
 
@@ -345,6 +345,21 @@ const FOES = {
     ranged:true, range:104, shotSpd:210, atkAt:0.6,
     shotImg:'spirit_shot', shotFly:true,   // 얼음 조각 — 돌지 않고 나는 방향을 본다
   },
+  tiger: {
+    // 설산 보스 설산백호 — 서리 갑주가 돋은 백호. 발톱 설참이 기본이고,
+    // 뒷발로 일어서 포효한 뒤 눈보라 숨결(냉기 원뿔 탄)을 뿜는다.
+    // 설참·숨결이 넓어 캔버스가 크다 — 몸은 sw/bh.
+    // 시트의 웅크림 컷(atk2)·일어서기 3컷째(sk2)는 규격이 안 맞아 미사용.
+    n:'설산백호', w:226, h:94, sw:159, bh:80,
+    anim:{ idle:['idle0','idle1','idle2','idle3'],
+           walk:['walk0','walk1','walk2','walk3'],
+           atk:['atk0','atk1','atk3'],                    // 치켜들기 → 설참 → 갈무리
+           skill:['sk0','sk0','sk1','breath','breath'],   // 일어서 포효 → 눈보라 숨결(탄)
+           hit:['hit'], death:['death0','death1'] },
+    fps:{ idle:4, walk:6, atk:4.2, skill:3.7, hit:5, death:3.5 },
+    hp:1.0, dmg:1.0, spd:1.0,
+    shotImg:'tiger_shot', shotSpd:250,   // 보스 스킬이 탄이 된다 (원혼과 같은 틀)
+  },
   golem: {
     // 동굴 보스 석암거인 — 동굴 벽에서 깨어난 바위 거인. 가슴에 호박색 핵.
     // 내리찍기(atk1)의 흙먼지가 넓어 캔버스가 크다 — 몸은 sw/bh.
@@ -386,6 +401,7 @@ const ZONEBOSS = {
   bamboo:  'demon',
   village: 'ghost',
   cave:    'golem',
+  snow:    'tiger',
 };
 
 const DOWN_TIME = 3.0;           // 쓰러진 뒤 운기조식 시간
