@@ -143,6 +143,10 @@
   .tsch .han{font-family:'Nanum Myeongjo',serif;font-size:10px;opacity:.6;margin-left:3px;}
   #ttreewrap{padding:6px 0 4px;}
   #ttree{display:block;width:100%;}
+  /* 지금 익힐 수 있는 마디 맥동 고리 (v2.50) — "배우기 힘들다"에 프런티어 강조 */
+  .tpulse{pointer-events:none;opacity:.5;animation:tpul 1.5s ease-in-out infinite;}
+  @keyframes tpul{0%,100%{opacity:.22;}50%{opacity:.8;}}
+  @media (prefers-reduced-motion: reduce){.tpulse{animation:none;opacity:.5;}}
   #tinfo{position:sticky;bottom:0;z-index:3;background:#171d25;border-top:1px solid #2b333d;
     margin-top:6px;padding:11px 14px;}
   .tirow{display:flex;align-items:center;gap:10px;}

@@ -10,6 +10,38 @@ const treeOrder = () => TREE_ORDER.filter(s => treeNodes(s).length);
 const NS_SVG = 'http://www.w3.org/2000/svg';
 function svgEl(t,a){ const e=document.createElementNS(NS_SVG,t); for(const k in a) e.setAttribute(k,a[k]); return e; }
 
+// 어떤 노드까지 익히려면 꼭 필요한 (아직 안 익힌) 앞 마디 전부 — need가 all-of라
+// 선택지가 없어 자동으로 다 켜도 안전하다("여기까지 한 번에 익히기").
+// blocked = 그 안에 다른 문파 교차 조건이 안 채워진 마디가 있어 자동으로 못 여는 것.
+function treeClosure(s, id){
+  const need = new Set(); let blocked = false;
+  const visit = nid => {
+    if (treeHas(s, nid) || need.has(nid)) return;
+    const n = treeNode(s, nid); if (!n) return;
+    need.add(nid);
+    if (n.cross && !(S.tree[n.cross] && S.tree[n.cross][n.crossNode])) blocked = true;
+    if (n.need) n.need.forEach(visit);
+  };
+  visit(id);
+  let cost = 0; for (const nid of need) cost += (treeNode(s, nid).c || 0);
+  return { ids: [...need], cost, blocked };
+}
+// 경로 일괄 습득 — 앞 마디부터(available 순) 반복 할당해 위상순을 스스로 맞춘다.
+function treeAllocPath(s, id){
+  const { ids, blocked, cost } = treeClosure(s, id);
+  if (blocked || cost > skillPtsLeft()) return false;
+  let guard = ids.length + 2;
+  while (guard-- > 0){
+    let prog = false;
+    for (const nid of ids) if (!treeHas(s, nid)){
+      const n = treeNode(s, nid);
+      if (treeAvail(s, n) && skillPtsLeft() >= (n.c||0)){ treeAlloc(s, nid); prog = true; }
+    }
+    if (treeHas(s, id) || !prog) break;
+  }
+  return treeHas(s, id);
+}
+
 function openArts(){ buildTreeUI(); $('apanel').classList.add('show'); renderTreePanel(); }
 function closeArts(){ $('apanel').classList.remove('show'); }
 // 매 프레임 호출된다(60-ui) — 열린 패널을 매 프레임 통째로 다시 그리면
@@ -73,12 +105,22 @@ function drawTree(col){
   svg.innerHTML = '';
   const byId = {}; for (const n of nodes) byId[n.id] = n;
   const dim = S1.dim || '#33404d';
+  // 선택한 (안 익힌) 노드까지의 경로 — 트리에 밝게 표시해 "여기까지" 익힐 마디를 보여준다
+  const selN = nodes.find(x=>x.id===treeSelId);
+  const pending = new Set();
+  if (selN && !treeHas(treeSchool, selN.id)){
+    const cl = treeClosure(treeSchool, selN.id);
+    if (!cl.blocked) cl.ids.forEach(id=>pending.add(id));
+  }
   // 간선
   for (const n of nodes){ if (!n.need) continue;
     for (const pid of n.need){ const p = byId[pid]; if (!p) continue;
       const has = treeHas(treeSchool, n.id);
-      const line = svgEl('line', { x1:p.x, y1:p.y, x2:n.x, y2:n.y, 'stroke-width': has?3:2,
-        stroke: has ? col : (treeHas(treeSchool,pid) && treeAvail(treeSchool,n) ? dim : '#2b3542') });
+      const onPath = pending.has(n.id) && (treeHas(treeSchool,pid) || pending.has(pid));
+      const line = svgEl('line', { x1:p.x, y1:p.y, x2:n.x, y2:n.y,
+        'stroke-width': has?3:(onPath?3:2),
+        stroke: has ? col : onPath ? col : (treeHas(treeSchool,pid) && treeAvail(treeSchool,n) ? dim : '#2b3542') });
+      if (onPath && !has) line.setAttribute('opacity','.6');
       svg.appendChild(line);
     }
   }
@@ -87,22 +129,28 @@ function drawTree(col){
     const has = treeHas(treeSchool, n.id), avail = treeAvail(treeSchool, n);
     const isK = n.k === 'keystone' || n.k === 'cross';
     const r = isK ? 22 : (n.k==='major' ? 19 : n.k==='root' ? 17 : 13);
+    // 지금 익힐 수 있는 마디 — 맥동 고리로 눈에 띄게 (배우기 힘들다 → 프런티어 강조)
+    if (avail){
+      const ring = svgEl('circle', { cx:n.x, cy:n.y, r:r+4, fill:'none', stroke:col, 'stroke-width':2 });
+      ring.setAttribute('class','tpulse'); ring.style.color = col; svg.appendChild(ring);
+    }
     if (isK){
       svg.appendChild(svgEl('circle', { cx:n.x, cy:n.y, r:r+5, fill:'none',
         stroke: has?col:(avail?S1.dim||dim:'#2b3542'), 'stroke-width':1, 'stroke-dasharray':'3 4' }));
     }
+    const onPath = pending.has(n.id);
     const c = svgEl('circle', { cx:n.x, cy:n.y, r, 'stroke-width': (treeSelId===n.id?4:2.5),
-      stroke: has?col:avail?col:'#3f4a58', fill: has?col:'#10151c' });
-    if (!has && !avail) c.setAttribute('opacity','.55');
+      stroke: has?col:(avail||onPath)?col:'#3f4a58', fill: has?col:onPath?'#1a2230':'#10151c' });
+    if (!has && !avail && !onPath) c.setAttribute('opacity','.55');
     c.style.cursor = 'pointer';
     c.onclick = () => { treeSelId = n.id; renderTreePanel(); };
     svg.appendChild(c);
     if (n.g){ const t = svgEl('text', { x:n.x, y:n.y+1, 'text-anchor':'middle', 'dominant-baseline':'central',
         'font-family':"'Nanum Myeongjo',serif", 'font-weight':'700',
-        'font-size': isK?18:15, fill: has?'#0c130e':avail?col:'#5d6673' });
+        'font-size': isK?18:15, fill: has?'#0c130e':(avail||onPath)?col:'#5d6673' });
       t.textContent = n.g; t.style.pointerEvents='none'; svg.appendChild(t); }
     if (n.k !== 'minor'){ const lb = svgEl('text', { x:n.x, y:n.y+r+12, 'text-anchor':'middle',
-        'font-family':"'Jua',sans-serif", 'font-size':10.5, fill: has?col:avail?'#9fb0c2':'#4a5462' });
+        'font-family':"'Jua',sans-serif", 'font-size':10.5, fill: has?col:(avail||onPath)?'#9fb0c2':'#4a5462' });
       lb.textContent = n.n; lb.style.pointerEvents='none'; svg.appendChild(lb); }
   }
 }
@@ -115,24 +163,31 @@ function drawTreeInfo(col){
   if (!n){ info.innerHTML = ''; return; }
   const has = treeHas(treeSchool, n.id), avail = treeAvail(treeSchool, n);
   const kindMap = { root:'입문', minor:'소절', major:'무공', keystone:'비전', cross:'문파 교차 비전' };
-  const enough = skillPtsLeft() >= (n.c||0);
-  let btn;
-  if (has && n.k!=='root') btn = '<button class="tundo">되돌리기</button>';
-  else if (has) btn = '';
-  else btn = '<button class="tlearn"' + (avail && enough ? '' : ' disabled') + '>' +
-             (avail ? (enough ? '익히기' : '무공점 부족') : '잠김') + '</button>';
-  let hint = '';
-  if (!has && !avail){
+  // 여기까지 익히는 데 필요한 (안 익힌) 마디 전부 — 앞 마디를 한 번에 켠다
+  const cl = has ? {ids:[],cost:0,blocked:false} : treeClosure(treeSchool, n.id);
+  const many = cl.ids.length > 1;               // 앞 마디까지 딸려 켜야 하나
+  const canPay = skillPtsLeft() >= cl.cost;
+  const left = skillPtsLeft();
+  let btn, hint = '';
+  if (has && n.k!=='root'){ btn = '<button class="tundo">되돌리기</button>'; hint = '익힘.'; }
+  else if (has){ btn = ''; hint = '익힘 (입문).'; }
+  else if (cl.blocked){
+    btn = '<button class="tlearn" disabled>잠김</button>';
     if (n.cross && !(S.tree[n.cross] && S.tree[n.cross][n.crossNode])){
-      const cs = SCHOOLS[n.cross] || SCHOOLS.none;
-      const cn = treeNode(n.cross, n.crossNode);
-      hint = '다른 문파 조건: <b style="color:' + cs.c + '">' + cs.n + '</b>의 「' + (cn?cn.n:'?') + '」 필요';
-    } else hint = '이어진 앞 마디를 먼저 익혀야 한다.';
-  } else if (has) hint = '익힘.';
-  else if (!enough) hint = '경지를 올려 무공점을 더 모아야 한다.';
+      const cs = SCHOOLS[n.cross] || SCHOOLS.none, cn = treeNode(n.cross, n.crossNode);
+      hint = '다른 문파 조건: <b style="color:' + cs.c + '">' + cs.n + '</b>의 「' + (cn?cn.n:'?') + '」 먼저';
+    } else hint = '앞 마디에 다른 문파 교차 조건이 걸려 있다.';
+  } else {
+    const label = many ? ('여기까지 익히기 · ' + cl.ids.length + '마디 ' + cl.cost + '점')
+                       : '익히기';
+    btn = '<button class="tlearn"' + (canPay ? '' : ' disabled') + '>' + (canPay ? label : '무공점 부족') + '</button>';
+    if (!canPay) hint = (many ? cl.cost + '점 필요' : (n.c||0) + '점 필요') + ' · 지금 ' + left + '점 (경지를 올려 모은다)';
+    else if (many) hint = '앞 마디 ' + (cl.ids.length-1) + '개까지 함께 익힌다.';
+    else hint = avail ? '바로 익힐 수 있다.' : '';
+  }
   info.innerHTML =
     '<div class="tirow"><span class="tichip" style="border-color:' + (has?col:'#3a4756') +
-      ';background:' + (has?col:'#10151c') + ';color:' + (has?'#0c130e':avail?col:'#8b95a3') + '">' +
+      ';background:' + (has?col:'#10151c') + ';color:' + (has?'#0c130e':(avail||!cl.blocked)?col:'#8b95a3') + '">' +
       (n.g || n.n[0]) + '</span>' +
     '<div class="titx"><div class="tin">' + n.n + '<small>' + (n.h||'') + '</small></div>' +
       '<div class="tik">' + (kindMap[n.k]||'') + '</div></div>' +
@@ -140,7 +195,13 @@ function drawTreeInfo(col){
     '<div class="tid">' + (n.d || '') + '</div>' +
     '<div class="tiact">' + btn + '<span class="tihint">' + hint + '</span></div>';
   const lb = info.querySelector('.tlearn');
-  if (lb) lb.onclick = () => { if (treeAlloc(treeSchool, n.id)){ saveNow(); renderTreePanel(); } };
+  if (lb) lb.onclick = () => {
+    const okName = n.n;
+    if (treeAllocPath(treeSchool, n.id)){
+      saveNow(); renderTreePanel();
+      if (many) toast('「' + okName + '」까지 익혔다');
+    }
+  };
   const ub = info.querySelector('.tundo');
   if (ub) ub.onclick = () => { if (treeDealloc(treeSchool, n.id)){ saveNow(); renderTreePanel(); }
     else toast('뒤 마디를 먼저 되돌려야 한다'); };
