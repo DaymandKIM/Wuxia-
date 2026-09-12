@@ -12,10 +12,19 @@ function svgEl(t,a){ const e=document.createElementNS(NS_SVG,t); for(const k in 
 
 function openArts(){ buildTreeUI(); $('apanel').classList.add('show'); renderTreePanel(); }
 function closeArts(){ $('apanel').classList.remove('show'); }
+// 매 프레임 호출된다(60-ui) — 열린 패널을 매 프레임 통째로 다시 그리면
+// 안 된다. SVG·정보칸(익히기 버튼 포함)이 프레임마다 새로 생겨, 탭 도중에
+// 버튼이 사라져 클릭이 안 먹고 화면이 깜빡인다("무공 화면 이상함·클릭 안 됨").
+// 무공점이 실제로 바뀔 때(경지 상승)만 다시 그린다 — 사용자 조작(노드·탭·
+// 습득)은 그 자리에서 renderTreePanel을 직접 부른다.
+let _artsPts = null;
 function artsHud(){
   const dot = $('tab-arts').firstElementChild;
   if (dot && dot.classList) dot.classList.toggle('on', skillPtsLeft() > 0);   // 쓸 무공점 있으면 알림점
-  if ($('apanel').classList.contains('show')) renderTreePanel();
+  if ($('apanel').classList.contains('show')){
+    const p = skillPtsLeft();
+    if (p !== _artsPts){ _artsPts = p; renderTreePanel(); }
+  }
 }
 
 function buildTreeUI(){
@@ -51,6 +60,7 @@ function renderTreePanel(){
   }
   drawTree(col);
   drawTreeInfo(col);
+  _artsPts = skillPtsLeft();   // 방금 그렸으니 추적값 동기화 (artsHud의 불필요한 재렌더 방지)
 }
 
 function drawTree(col){
