@@ -333,13 +333,21 @@ cost 20만은 연마·돌파용(습득은 여전히 기연만). 태극 원반 �
   → 생사경 청 → 신화경 자주 (assets/aidle_w·g·b·p, 심법 시트의 안개만
   분리해 4색으로 구움). 심법별 기운은 안 쓴다 — 여러 개 겹치면 난장판
   (사용자 동의). 색은 경지 하나가 말한다.
-- **기본공격**(v2.48 정리) — ATKMOVES `[{key,need}]` = **양주먹(punch, need0)·
-  발차기(kick, need5)** 2종. atkPool()=열린 동작, heroAttack이 P.atkMove로 돌려
-  쓰고 P.atkKey로 이번 타 결정(삼류=양주먹만, 이류부터 발차기 섞임). **양주먹은
-  권기 정권**(katka/katkb, 양손 파란빛) — drawHero atk가 punch 무브를 katka/katkb
-  교대로 그린다(사용자 고정). 발차기는 hero_kick(임팩트 index2, 폭 43).
-  화염 발차기류는 뺐고(v2.48), cresckick·burstkick·flykick·firekick 에셋은 초식
-  스킬 후보로 보관(ATKMOVES에는 없음). 새 동작은 목록에 need와 함께 얹으면 는다.
+- **기본공격**(v2.49 각도별 발차기) — ATKMOVES `[{key,need}]` = **양주먹(punch,
+  need0)·옆차기(kickside, need5)·높은차기(kickhigh, need15)** 3종. atkPool()=열린
+  동작, heroAttack이 P.atkMove로 돌려 쓰고 P.atkKey로 이번 타 결정(삼류=양주먹만,
+  이류부터 옆차기, 초절정부터 높은차기 — 성급 오를수록 발차기 각도가 는다).
+  **양주먹은 권기 정권**(katka/katkb, 양손 파란빛) — drawHero atk가 punch 무브를
+  katka/katkb 교대로 그린다(사용자 고정). 발차기는 각기 hero_kickside(폭 54)·
+  hero_kickhigh(폭 62), 전 공격 4컷·임팩트 index2(HITFRAME 2 유지 위해 4컷 리샘플,
+  마지막 컷=완전히 뻗음). 사용자 시트 c0f865d3("발차기도 각도별로 있어")에서 추출 —
+  옆모습 좌→우 시퀀스라 뻗는 다리가 옆칸으로 붙어, 행별 덩어리 라벨링으로 분리하고
+  높은차기 붙은 컷은 열밀도 골(x466)에서 갈랐다. 배경판정 통일(초록이 적·청 둘보다
+  낮음)로 어두운 마젠타까지 걷고 몸의 따뜻한 검은 외곽선은 보존, 축소는 엣지 확장 후
+  리샘플(링잉·마젠타 번짐 차단). 옛 kick.png 제거. 화염 발차기류는 뺐고(v2.48),
+  cresckick·burstkick·flykick·firekick 에셋은 초식 스킬 후보로 보관(ATKMOVES에는
+  없음). 새 동작은 목록에 need와 함께 얹으면 는다. 검증은 fxtest(무브셋 3종·각
+  스트립 제 폭 렌더·3종 cycle).
 - **붙는 데드존 HERO.hold(7)**(v2.48) — 붙은 뒤 stopD+hold 안에선 안 걷는다.
   쿨다운 중 경계에서 idle↔run 깜빡이던 "걷는 현상" 제거. 40-step 이동/공격 분기.
   기존 권기 정권(katka/katkb)은 기본공격에서 물러남(에셋 보존, 성장은 경지 기운·
