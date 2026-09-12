@@ -92,7 +92,7 @@ setTimeout(()=>{
   w.eval('P.atkKey="kickside";'); renderNow();
   ok(drew('hero_kickside',w.eval('HFX.aw.kickside')),'옆차기 스트립이 제 폭(54)으로 그려진다');
   w.eval('P.atkKey="kickhigh";'); renderNow();
-  ok(drew('hero_kickhigh',w.eval('HFX.aw.kickhigh')),'높은차기 스트립이 제 폭(62)으로 그려진다');
+  ok(drew('hero_kickhigh',w.eval('HFX.aw.kickhigh')),'높은차기 스트립이 제 폭(60)으로 그려진다');
   // 공격을 여러 번 하면 열린 동작을 돌려 쓴다
   w.eval(`S.rexp=1e12; P.atkMove=0; P.atkCd=0; P.atkT=0; S.foes.length=0; spawnFoe();
     S.foes[0].x=P.x+20; S.foes[0].y=P.y; S.foes[0].hp=1e12; S.foes[0].hpMax=1e12;

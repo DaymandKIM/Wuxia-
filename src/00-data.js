@@ -34,7 +34,7 @@ const HFX = {
   castFps: 10,                   // 시전 재생 속도 — 16은 컷이 씹혀 보였다 (4성 0.6~0.9초)
   shotT: 0.28,                   // 권기 탄 비행 시간 (구 streak과 동일)
   fadeT: 0.22,                   // 탄 소멸 연출
-  aw: { aidle: 50, katk: 70, punch: 43, kickside: 54, kickhigh: 62, flykick: 44, firekick: 44, cresckick: 46, burstkick: 46, run: 46 },   // 특수 동작 프레임 폭
+  aw: { aidle: 50, katk: 70, punch: 43, kickside: 54, kickhigh: 60, flykick: 44, firekick: 44, cresckick: 46, burstkick: 46, run: 46 },   // 특수 동작 프레임 폭
   // 기본공격 = 양주먹(punch, 권기 정권) + 각도별 발차기(kickside·kickhigh) 4프레임 (v2.49, 사용자 시트)
   // kickside 54·kickhigh 62 — 발이 옆·위로 뻗어 폭이 넓다(좌우 대칭 캔버스)
   // run 44 — 질주가 넓어(보폭·옷자락) 35 칸에선 좌우가 잘려 폭을 준다 (v2.45)

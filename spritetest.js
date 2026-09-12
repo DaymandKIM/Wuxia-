@@ -106,6 +106,10 @@ console.log('주인공');
 check('건곤이형 원반', 'gshield.png', HFX.taijiW * HFX.taijiN, HFX.taijiH, true);
 check('권기 오른손', 'katka.png', HFX.aw.katk * 4, 51, true);   // 전 경지 양손 교대 4컷×2판
 check('권기 왼손',   'katkb.png', HFX.aw.katk * 4, 51, true);
+// katka/katkb는 파란 권기(분리된 기운)가 정상이라 부유 조각 검사 제외
+// 각도별 발차기 (v2.49) — 실제 기본공격 스프라이트. ANIM에 없어 여기서 명시 검사.
+check('발차기 옆',   'kickside.png', HFX.aw.kickside * 4, HERO.h);
+check('발차기 높은', 'kickhigh.png', HFX.aw.kickhigh * 4, HERO.h);
 for (const ck in HFX.cast)   // 시전 스트립은 초식마다 별도
   // 시전 스트립은 원본 칸이 이펙트를 경계까지 그려 접촉이 정상 — 크기만 본다
   check('hero cast ' + ck, HFX.cast[ck][0] + '.png', HFX.cast[ck][1] * HFX.cast[ck][2], HERO.h, true);
