@@ -35,7 +35,7 @@ setTimeout(()=>{
   // 경지를 넉넉히 올려 무공점을 준다
   w.eval('S.rexp=0; while(realmLv()<14) S.rexp=(S.rexp||25)*1.31; S.tree={}; S.arts={}; treeReapply();');
   const pts0=w.eval('skillPtsLeft()');
-  ok(pts0>0,'경지 포인트가 주어진다 (무공점 '+pts0+' · 성당 +1)');
+  ok(pts0>0,'경지 포인트가 주어진다 (무공점 '+pts0+' · 성당 +'+w.eval('SKILLTREE.ptsPerStar')+')');
 
   // 3) 경로 의존 — b0(입문) 없이 b11(공격 노드)은 못 익힌다
   ok(w.eval('treeAlloc("bamboo","b11")')===false,'앞 마디 없이는 못 익힌다 (경로 의존)');

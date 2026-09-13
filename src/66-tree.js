@@ -4,7 +4,7 @@
    무공 마디는 S.arts[k]=1로 기존 무공 시스템을 그대로 탄다.
    숫자·노드는 docs/설계-스킬트리.md 계약을 따른다. */
 
-const SKILLTREE = { ptsPerStar: 1 };   // 경지 성 1당 무공점
+const SKILLTREE = { ptsPerStar: 2 };   // 경지 성 1당 무공점
 
 // TREE[문파키] = [노드…]. bamboo=청죽문은 여기 두고, 유명 문파는
 // docs/트리안/*.js 초안을 검수해 아래에 채워 넣는다(v2.45 진행).
@@ -12,7 +12,12 @@ const TREE = TREEDATA;   // 8문파 182노드 데이터는 65b-treedata.js (생�
 
 const treeNodes = s => TREE[s] || [];
 const treeNode  = (s,id) => (TREE[s]||[]).find(n=>n.id===id);
-const treeHas   = (s,id) => !!(S.tree[s] && S.tree[s][id]);
+// 기연(은거기인)이 무공을 직접 전수하면 S.arts엔 들어오지만 트리(S.tree)엔 없어
+// "안 배웠는데 쓰는" 불일치가 났다. 그 무공의 트리 마디를 '전수받음'으로 쳐서
+// 트리에도 익힘으로 보이게 한다(무공점은 안 든다 — skillPtsSpent는 S.tree만 셈).
+const treeGift  = (s,id) => { const n=treeNode(s,id);
+  return !!(n && n.eff && n.eff.art && S.arts[n.eff.art] && !(S.treeArt && S.treeArt[n.eff.art])); };
+const treeHas   = (s,id) => !!(S.tree[s] && S.tree[s][id]) || treeGift(s,id);
 
 // 교차 노드: 다른 문파 조건까지 충족돼야 열린다
 function treeNeedOk(s,n){
@@ -58,6 +63,7 @@ function treeAlloc(s,id){
 function treeDealloc(s,id){
   const n=treeNode(s,id);
   if (!n || !treeHas(s,id) || n.k==='root') return false;
+  if (!(S.tree[s] && S.tree[s][id])) return false;   // 기연 전수 마디는 되돌릴 수 없다(무공점 안 썼음)
   // 뒤 마디가 이 노드에 기대면 못 되돌린다
   for (const m of treeNodes(s))
     if (treeHas(s,m.id) && m.need && m.need.includes(id)) return false;

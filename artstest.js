@@ -100,8 +100,10 @@ setTimeout(()=>{
     const slots=d.querySelectorAll('#sbar .sk');
     ok(slots.length===w.eval('ARTS.list.filter(a=>a.type==="active"&&S.arts[a.k]).length'),
       '스킬창 슬롯 수 = 익힌 초식 수 ('+slots.length+'개)');
-    const cdShown=[...slots].some(s=>parseFloat(s.querySelector('.cdm').style.height)>0);
-    ok(cdShown,'도는 쿨다운이 덮개로 보인다');
+    // 쿨다운은 v2.51부터 원형 conic-gradient 스윕 — 도는 슬롯은 배경에 각도가 박힌다
+    const cdShown=[...slots].some(s=>{ const bg=s.querySelector('.cdm').style.background;
+      const g=/([\d.]+)deg/.exec(bg); return g && parseFloat(g[1])>0; });
+    ok(cdShown,'도는 쿨다운이 원형 스윕으로 보인다');
     // 5.10) 발동 모드 — 수동에선 알아서 안 나가고, 눌러야(castByHand) 나간다
     w.eval(`S.skillManual=true; S.arts.pagong=1; S.foes.length=0; spawnFoe();
       S.foes[0].x=P.x+30; S.foes[0].y=P.y; S.foes[0].hp=1e9; S.foes[0].hpMax=1e9;

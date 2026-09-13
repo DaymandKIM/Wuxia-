@@ -82,7 +82,7 @@ function renderTreePanel(){
   const S0 = SCHOOLS[treeSchool] || SCHOOLS.none, col = S0.c;
   const info = realmInfo();
   $('tpts').innerHTML = '<span>남은 무공점 <b>' + fmt(skillPtsLeft()) + '</b></span>' +
-    '<span class="rlm">' + realmName(info.k) + ' · 성급당 +1</span>';
+    '<span class="rlm">' + realmName(info.k) + ' · 성급당 +' + SKILLTREE.ptsPerStar + '</span>';
   // 탭 상태
   for (const b of $('tschtabs').children){
     const s = b.dataset.s, on = s === treeSchool, c = (SCHOOLS[s]||SCHOOLS.none).c;
@@ -95,6 +95,14 @@ function renderTreePanel(){
   _artsPts = skillPtsLeft();   // 방금 그렸으니 추적값 동기화 (artsHud의 불필요한 재렌더 방지)
 }
 
+// 색을 흰/검 쪽으로 섞는다 (발광 고리·유리 하이라이트용)
+function mixCol(hex, amt, toWhite){
+  const h = (hex||'#888888').replace('#','');
+  const r=parseInt(h.slice(0,2),16), g=parseInt(h.slice(2,4),16), b=parseInt(h.slice(4,6),16);
+  const t = toWhite ? 255 : 0, m = v => Math.round(v+(t-v)*amt);
+  return '#'+[m(r),m(g),m(b)].map(v=>v.toString(16).padStart(2,'0')).join('');
+}
+
 function drawTree(col){
   const S1 = SCHOOLS[treeSchool] || SCHOOLS.none;
   const nodes = treeNodes(treeSchool);
@@ -105,6 +113,7 @@ function drawTree(col){
   svg.innerHTML = '';
   const byId = {}; for (const n of nodes) byId[n.id] = n;
   const dim = S1.dim || '#33404d';
+  const colHi = mixCol(col, .45, true);   // 밝은 문파색 (익힌 길·구슬 발광)
   // 선택한 (안 익힌) 노드까지의 경로 — 트리에 밝게 표시해 "여기까지" 익힐 마디를 보여준다
   const selN = nodes.find(x=>x.id===treeSelId);
   const pending = new Set();
@@ -112,45 +121,72 @@ function drawTree(col){
     const cl = treeClosure(treeSchool, selN.id);
     if (!cl.blocked) cl.ids.forEach(id=>pending.add(id));
   }
-  // 간선
+  // 간선 — 익힌 길은 두 겹(넓은 은은한 빛 + 가는 밝은 선)으로 흐른다
   for (const n of nodes){ if (!n.need) continue;
     for (const pid of n.need){ const p = byId[pid]; if (!p) continue;
-      const has = treeHas(treeSchool, n.id);
+      const has = treeHas(treeSchool, n.id) && treeHas(treeSchool, pid);
       const onPath = pending.has(n.id) && (treeHas(treeSchool,pid) || pending.has(pid));
-      const line = svgEl('line', { x1:p.x, y1:p.y, x2:n.x, y2:n.y,
-        'stroke-width': has?3:(onPath?3:2),
-        stroke: has ? col : onPath ? col : (treeHas(treeSchool,pid) && treeAvail(treeSchool,n) ? dim : '#2b3542') });
-      if (onPath && !has) line.setAttribute('opacity','.6');
-      svg.appendChild(line);
+      if (has){
+        svg.appendChild(svgEl('line', { x1:p.x, y1:p.y, x2:n.x, y2:n.y,
+          stroke:col, 'stroke-width':7, 'stroke-linecap':'round', opacity:.22 }));
+        svg.appendChild(svgEl('line', { x1:p.x, y1:p.y, x2:n.x, y2:n.y,
+          stroke:colHi, 'stroke-width':2.5, 'stroke-linecap':'round' }));
+      } else {
+        const line = svgEl('line', { x1:p.x, y1:p.y, x2:n.x, y2:n.y, 'stroke-linecap':'round',
+          'stroke-width': onPath?3:2,
+          stroke: onPath ? col : (treeHas(treeSchool,pid) && treeAvail(treeSchool,n) ? dim : '#2b3542') });
+        if (onPath) line.setAttribute('opacity','.6');
+        svg.appendChild(line);
+      }
     }
   }
   // 노드
   for (const n of nodes){
     const has = treeHas(treeSchool, n.id), avail = treeAvail(treeSchool, n);
+    const gift = treeGift(treeSchool, n.id);
     const isK = n.k === 'keystone' || n.k === 'cross';
-    const r = isK ? 22 : (n.k==='major' ? 19 : n.k==='root' ? 17 : 13);
+    const isLand = isK || n.k === 'major';   // 랜드마크(무공·비전 마디) — 크게·빛나게
+    const r = isK ? 23 : (n.k==='major' ? 20 : n.k==='root' ? 18 : 12);
+    const onPath = pending.has(n.id);
+    // 랜드마크 후광 — 익힌 무공·비전은 은은히 빛나 지도의 이정표가 된다
+    if (isLand && has){
+      svg.appendChild(svgEl('circle', { cx:n.x, cy:n.y, r:r+9, fill:col, opacity:.13 }));
+      svg.appendChild(svgEl('circle', { cx:n.x, cy:n.y, r:r+5, fill:col, opacity:.18 }));
+    }
     // 지금 익힐 수 있는 마디 — 맥동 고리로 눈에 띄게 (배우기 힘들다 → 프런티어 강조)
     if (avail){
       const ring = svgEl('circle', { cx:n.x, cy:n.y, r:r+4, fill:'none', stroke:col, 'stroke-width':2 });
       ring.setAttribute('class','tpulse'); ring.style.color = col; svg.appendChild(ring);
     }
+    // 비전·교차는 점선 고리로 격을 준다
     if (isK){
-      svg.appendChild(svgEl('circle', { cx:n.x, cy:n.y, r:r+5, fill:'none',
-        stroke: has?col:(avail?S1.dim||dim:'#2b3542'), 'stroke-width':1, 'stroke-dasharray':'3 4' }));
+      svg.appendChild(svgEl('circle', { cx:n.x, cy:n.y, r:r+6, fill:'none',
+        stroke: has?colHi:(avail?dim:'#2b3542'), 'stroke-width':1.2, 'stroke-dasharray':'3 4' }));
     }
-    const onPath = pending.has(n.id);
+    // 기연으로 전수받은 마디 — 금 점선 고리 (무공점 없이 익혀 있다)
+    if (gift){
+      svg.appendChild(svgEl('circle', { cx:n.x, cy:n.y, r:r+7, fill:'none',
+        stroke:'#e9c451', 'stroke-width':1.6, 'stroke-dasharray':'2 4', opacity:.9 }));
+    }
     const c = svgEl('circle', { cx:n.x, cy:n.y, r, 'stroke-width': (treeSelId===n.id?4:2.5),
-      stroke: has?col:(avail||onPath)?col:'#3f4a58', fill: has?col:onPath?'#1a2230':'#10151c' });
-    if (!has && !avail && !onPath) c.setAttribute('opacity','.55');
+      stroke: has?colHi:(avail||onPath)?col:'#3f4a58', fill: has?col:onPath?'#1a2230':'#10151c' });
+    if (!has && !avail && !onPath) c.setAttribute('opacity','.5');
     c.style.cursor = 'pointer';
     c.onclick = () => { treeSelId = n.id; renderTreePanel(); };
     svg.appendChild(c);
+    // 유리 하이라이트 — 익힌 구슬 위쪽 광택
+    if (has){
+      const gl = svgEl('ellipse', { cx:n.x, cy:n.y-r*0.38, rx:r*0.52, ry:r*0.3, fill:'#ffffff', opacity:.28 });
+      gl.style.pointerEvents='none'; svg.appendChild(gl);
+    }
     if (n.g){ const t = svgEl('text', { x:n.x, y:n.y+1, 'text-anchor':'middle', 'dominant-baseline':'central',
         'font-family':"'Nanum Myeongjo',serif", 'font-weight':'700',
-        'font-size': isK?18:15, fill: has?'#0c130e':(avail||onPath)?col:'#5d6673' });
+        'font-size': isK?18:(n.k==='major'?16:15), fill: has?'#0c130e':(avail||onPath)?col:'#5d6673' });
       t.textContent = n.g; t.style.pointerEvents='none'; svg.appendChild(t); }
+    // 랜드마크·주요 마디는 이름표를 달고 소절만 숨긴다
     if (n.k !== 'minor'){ const lb = svgEl('text', { x:n.x, y:n.y+r+12, 'text-anchor':'middle',
-        'font-family':"'Jua',sans-serif", 'font-size':10.5, fill: has?col:(avail||onPath)?'#9fb0c2':'#4a5462' });
+        'font-family':"'Jua',sans-serif", 'font-size': isLand?11.5:10.5,
+        fill: has?colHi:(avail||onPath)?'#9fb0c2':'#4a5462' });
       lb.textContent = n.n; lb.style.pointerEvents='none'; svg.appendChild(lb); }
   }
 }
@@ -162,6 +198,7 @@ function drawTreeInfo(col){
   if (!n) n = nodes[0];
   if (!n){ info.innerHTML = ''; return; }
   const has = treeHas(treeSchool, n.id), avail = treeAvail(treeSchool, n);
+  const gift = treeGift(treeSchool, n.id);
   const kindMap = { root:'입문', minor:'소절', major:'무공', keystone:'비전', cross:'문파 교차 비전' };
   // 여기까지 익히는 데 필요한 (안 익힌) 마디 전부 — 앞 마디를 한 번에 켠다
   const cl = has ? {ids:[],cost:0,blocked:false} : treeClosure(treeSchool, n.id);
@@ -169,7 +206,8 @@ function drawTreeInfo(col){
   const canPay = skillPtsLeft() >= cl.cost;
   const left = skillPtsLeft();
   let btn, hint = '';
-  if (has && n.k!=='root'){ btn = '<button class="tundo">되돌리기</button>'; hint = '익힘.'; }
+  if (gift){ btn = ''; hint = '<b style="color:#e9c451">기연 전수</b> — 무공점 없이 익혀 있다.'; }
+  else if (has && n.k!=='root'){ btn = '<button class="tundo">되돌리기</button>'; hint = '익힘.'; }
   else if (has){ btn = ''; hint = '익힘 (입문).'; }
   else if (cl.blocked){
     btn = '<button class="tlearn" disabled>잠김</button>';
