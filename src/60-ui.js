@@ -86,12 +86,18 @@ function skillHud(){
       sbarEls[a.k] = { d, m, s };
     }
   }
-  if (sbarEls.__mode) sbarEls.__mode.textContent = S.skillManual ? '수동' : '자동';
+  if (sbarEls.__mode){
+    sbarEls.__mode.textContent = S.skillManual ? '수동' : '자동';
+    sbarEls.__mode.classList.toggle('man', S.skillManual);
+  }
   for (const a of arts){
     const e = sbarEls[a.k]; if (!e) continue;
     const cd = Math.max(0, P.artCd[a.k] || 0);
-    e.m.style.height = (cd / a.cd * 100).toFixed(1) + '%';
+    // 쿨다운을 시계 방향 원형 스윕으로 — 남은 비율만큼 어두운 부채꼴이 준다
+    const deg = (cd / a.cd) * 360;
+    e.m.style.background = 'conic-gradient(rgba(7,10,15,.72) ' + deg.toFixed(1) + 'deg, rgba(7,10,15,0) ' + deg.toFixed(1) + 'deg)';
     e.s.textContent = cd > 0 ? Math.ceil(cd) : '';   // 쿨 중엔 초만, 다 차면 글자만
+    e.d.classList.toggle('cooling', cd > 0);         // 쿨 중엔 한자 숨김(겹침 방지)
     e.d.classList.toggle('rdy', cd <= 0);
     // 수동 + 준비됨 + 반격형 아님 → 누를 수 있음을 표시
     e.d.classList.toggle('tap', S.skillManual && cd <= 0 && !a.ref);
