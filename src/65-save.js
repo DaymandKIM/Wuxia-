@@ -53,13 +53,9 @@ function applySave(d){
       S.artLv[a.k] = clamp(d.artLv[a.k] | 0, 1, artLvCap(a.k));   // 성 로드 뒤라 상한이 맞다
   }
   S.skillManual = !!d.skillManual;              // 발동 모드 (예전 저장엔 없다 → 자동)
-  // 문파 무공도 — 유효한 문파·노드만 되살리고, 무공 마디 습득을 복원한다
+  // 문파 무공도 접기(v2.55.2) — 트리 노드는 되살리지 않는다(무공점 환급).
+  // 무공점은 이제 스킬 특성에만 쓴다. 트리가 줬던 무공은 treeReapply가 걷어낸다.
   S.tree = {};
-  if (d.tree && typeof d.tree === 'object')
-    for (const s in TREE){
-      if (!d.tree[s]) continue;
-      for (const n of TREE[s]) if (d.tree[s][n.id]) (S.tree[s]||(S.tree[s]={}))[n.id]=1;
-    }
   treeReapply();
   // 스킬 심화 특성 — 배운 무공의 유효한 특성만 되살린다 (v2.55)
   S.traits = {};

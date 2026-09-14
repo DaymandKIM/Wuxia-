@@ -44,33 +44,24 @@ function treeAllocPath(s, id){
   return treeHas(s, id);
 }
 
-// v2.54 — 트리는 '스킬 심화'창(#dpanel)이다. v2.55: 심화창이 두 갈래다 —
-// [스킬 특성](배운 무공에 특성 부여)과 [문파 무공도](패시브 노드망). 둘 다
-// 경지 무공점을 쓴다. 상단 토글로 오간다.
-let deepMode = 'trait';
+// v2.54 트리 → v2.55 [특성]/[문파 무공도] 두 갈래 → v2.55.2 **문파 무공도 접기**
+// (사용자: "노드는 방치형엔 번거롭다"). 심화창은 이제 스킬 특성 하나만 — 무공점은
+// 특성에만 쓴다. 트리 엔진(buildTreeUI/renderTreePanel/drawTree)은 잠자게 두되
+// (되돌릴 수 있게) 화면·저장·sim에서 뺐다. treeBonus는 빈 S.tree라 0을 돌려준다.
 function openDeepen(){
   const b = $('dbody');
   b.innerHTML =
-    '<div id="dmode">' +
-      '<div class="dmtabs">' +
-        '<button class="dmb" data-m="trait">스킬 특성</button>' +
-        '<button class="dmb" data-m="tree">문파 무공도</button>' +
-      '</div><span id="dpts"></span></div>' +
+    '<div id="dmode"><b class="dmttl">스킬 특성</b><span id="dpts"></span></div>' +
     '<div id="dcontent"></div>';
-  for (const el of b.querySelectorAll('.dmb'))
-    el.onclick = () => { deepMode = el.dataset.m; renderDeepen(); };
   $('dpanel').classList.add('show');
   renderDeepen();
 }
 function closeDeepen(){ $('dpanel').classList.remove('show'); }
-// 두 갈래를 그린다. 무공점 표시는 상단 고정 바(#dpts)에 공통.
+// 무공점 표시(#dpts) + 특성 뷰.
 function renderDeepen(){
   const dpts = $('dpts');
   if (dpts) dpts.innerHTML = '남은 무공점 <b>' + fmt(skillPtsLeft()) + '</b>';
-  for (const el of $('dbody').querySelectorAll('.dmb'))
-    el.classList.toggle('on', el.dataset.m === deepMode);
-  if (deepMode === 'tree'){ buildTreeUI(); renderTreePanel(); }
-  else renderTraits();
+  renderTraits();
   _artsPts = skillPtsLeft();
 }
 // 매 프레임 호출된다(60-ui) — 무공점이 실제로 바뀔 때(경지 상승)만 다시 그린다.

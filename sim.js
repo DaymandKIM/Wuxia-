@@ -46,25 +46,19 @@ function spend(){
     for(const a of R.ARTS.list)if(R.canLevel(a)){R.levelArt(a.k);hit=true;}
     if(!hit)break;
   }
-  // 경지 무공점 — 심화 특성(배운 무공)과 문파 무공도 노드를 싼 것부터 산다
+  // 경지 무공점 — 스킬 심화 특성을 싼 것부터 산다 (문파 무공도 접힘 v2.55.2)
   for(let n=0;n<30;n++){
     if(R.skillPtsLeft()<=0)break;
-    let best=null;   // {kind, ..., cost}
-    // 스킬 심화 특성 — 배운 무공의 안 켠 특성
+    let best=null;
     for(const a of R.ARTS.list){
       if(!S.arts[a.k])continue;
       for(const t of R.traitDefs(a.k)){
         if(R.hasTrait(a.k,t.id)||(t.c||0)>R.skillPtsLeft())continue;
-        if(!best||(t.c||0)<best.cost)best={trait:1,k:a.k,id:t.id,cost:t.c||0};
+        if(!best||(t.c||0)<best.cost)best={k:a.k,id:t.id,cost:t.c||0};
       }
     }
-    // 문파 무공도 노드
-    for(const s in R.TREE)for(const nd of R.treeNodes(s)){
-      if(!R.treeAvail(s,nd)||(nd.c||0)>R.skillPtsLeft())continue;
-      if(!best||(nd.c||0)<best.cost)best={s,id:nd.id,cost:nd.c||0};
-    }
     if(!best)break;
-    if(best.trait)R.traitBuy(best.k,best.id); else R.treeAlloc(best.s,best.id);
+    R.traitBuy(best.k,best.id);
   }
 }
 

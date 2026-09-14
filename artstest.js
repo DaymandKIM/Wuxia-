@@ -34,15 +34,11 @@ setTimeout(()=>{
   d.getElementById('tab-arts').click();
   ok(d.querySelectorAll('#atabs .askind').length===2,'무공 탭에 [초식][심법] 탭이 있다');
   ok(d.querySelectorAll('.atile').length>0,'무공 타일 그리드가 그려진다');
-  // 1b) '스킬 심화' 버튼이 심화창을 연다 — [스킬 특성]/[문파 무공도] 두 갈래 (v2.55)
+  // 1b) '스킬 심화' 버튼이 심화창(스킬 특성)을 연다 — 문파 무공도는 접힘 (v2.55.2)
   d.getElementById('adeepen').click();
-  ok(d.querySelectorAll('#dmode .dmb').length===2,'심화창에 [스킬 특성][문파 무공도] 토글이 있다');
-  // 기본은 스킬 특성 뷰 — 문파 무공도로 전환하면 트리가 그려진다
-  d.querySelector('#dmode .dmb[data-m="tree"]').click();
-  ok(w.eval("!!document.getElementById('ttree')"),'문파 무공도 전환 시 트리가 그려진다');
-  ok(d.querySelectorAll('#tschtabs .tsch').length===w.eval('treeOrder().length'),
-     '심화창에 문파 탭이 보인다 ('+d.querySelectorAll('#tschtabs .tsch').length+'문파)');
-  w.eval('deepMode="trait"'); w.eval("closeDeepen()");
+  ok(!!d.getElementById('dcontent'),'심화창(스킬 특성)이 열린다');
+  ok(!d.getElementById('ttree'),'문파 무공도(트리)는 더 이상 뜨지 않는다');
+  w.eval("closeDeepen()");
   // 2) 경지 미달이면 코드로도 무공을 못 산다 (기연·트리 외 경로 차단)
   w.eval('S.silver=99999');
   ok(w.eval('learnArt("pagong")')===false,'경지 미달이면 파공권을 못 산다');

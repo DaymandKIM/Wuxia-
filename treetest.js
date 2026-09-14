@@ -81,14 +81,14 @@ setTimeout(()=>{
   ok(w.eval('treeDealloc("bamboo","b11")')===true,'잎 노드는 되돌려진다');
   ok(w.eval('skillPtsSpent()')<spentA,'되돌리면 무공점이 회수된다');
 
-  // 5) 저장·복원
+  // 5) 저장·복원 — 문파 무공도 접힘(v2.55.2): 트리 노드는 저장에서 환급된다(안 되살림)
   w.eval('saveNow()');
   const save=w.localStorage.getItem('wuxia1');
   const w2=boot(save);
   setTimeout(()=>{
-    ok(w2.eval('S.tree.bamboo && S.tree.bamboo.b0===1'),'익힌 노드가 저장·복원된다');
-    ok(w2.eval('S.arts.chulwoo===1 && treeHas("bamboo","b4")'),'배운 무공·마디 익힘 표시가 복원된다');
-    ok(w2.eval('treeBonus("atk")')>=0,'복원 뒤 treeBonus가 다시 계산된다');
+    ok(!(w2.eval('S.tree.bamboo && S.tree.bamboo.b0')),'접기 후 트리 노드는 복원되지 않는다(무공점 환급)');
+    ok(w2.eval('S.arts.chulwoo===1 && treeHas("bamboo","b4")'),'배운 무공·마디 익힘 표시는 복원된다');
+    ok(w2.eval('treeBonus("atk")')===0,'접기 후 treeBonus는 0 (빈 트리)');
     ok(errs.length===0,'런타임 오류 0'+(errs.length?': '+errs[0]:''));
     console.log(bad?('\n★ 실패 '+bad+'건'):'\n문제 없음');
     process.exit(bad?1:0);

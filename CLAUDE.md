@@ -286,12 +286,16 @@ MAX만 유동(×개수 표기). 꾹 누르면 연속 구매.
 그 자리에서(은자+경지). 트리(문파 무공도)는 **스킬 심화창**(#dpanel)으로
 강등 — 무공 탭 우상단 '스킬 심화' 버튼(#adeepen)으로 연다. 67-treepanel은
 openDeepen/closeDeepen/deepenHud로 #dbody에 그린다(옛 openArts→심화로 이관).
-**스킬 심화 특성**(v2.55) — 심화창이 두 갈래: **[스킬 특성]**(배운 무공에
-쿨감·위력·사거리·증폭 특성을 무공점으로 켠다)과 **[문파 무공도]**(노드망).
-데이터 TRAITS(00-data, 초식 cdcut·power·reach / 심법 amp), 엔진 traitBuy·
+**스킬 심화 특성**(v2.55) — 배운 무공에 쿨감·위력·사거리·증폭 특성을 무공점으로
+켠다. 데이터 TRAITS(00-data, 초식 cdcut·power·reach / 심법 amp), 엔진 traitBuy·
 traitMul·traitCdcut, 전투 반영은 30-combat(쿨·피해·회복·사거리)·artMul(amp),
 UI는 67-treepanel(renderTraits, 카드+칩). 배운 무공에만·되돌리기 없음. 저장
-S.traits. sim spend에 특성 sink 추가. 검증 artstest.
+S.traits. sim spend에 특성 sink. 검증 artstest.
+**문파 무공도 접기**(v2.55.2, "심화 탭 둘 다 필요하냐 + 노드 번거롭다") —
+심화창은 **스킬 특성 하나**만. 트리(문파 무공도)는 화면·저장·sim에서 뺐고
+무공점은 전부 특성에 쓴다. 로드 시 S.tree 안 되살림(옛 노드 무공점 환급),
+treeBonus는 빈 트리라 0. **트리 엔진(66-tree·65b-treedata·트리 렌더)은 잠자게
+보존** — 되돌릴 수 있다. 무공 동선: 배우기(은자)→연마·돌파→심화 특성.
 **문파 무공도(스킬트리)** (v2.47) — 문파 탭 + 거미줄 노드망.
 데이터 TREEDATA(src/65b-treedata.js, 8문파 182노드), 엔진 66-tree.js
 (treeAlloc/treeBonus/skillPts — 경지 성당 +2). 패시브 노드는
