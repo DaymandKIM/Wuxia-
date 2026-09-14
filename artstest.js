@@ -30,11 +30,16 @@ const ok=(c,m)=>{ console.log((c?'  ':'  ★실패 ')+m); if(!c)bad++; };
 const {w,errs}=boot();
 setTimeout(()=>{
   const d=w.document;
-  // 1) 무공 탭 = 문파 무공도(트리) 패널 (v2.47 — 옛 평면 타일표 대체)
+  // 1) 무공 탭 = 일반 스킬창(배우기·연마·돌파), [초식][심법] 탭 (v2.54)
   d.getElementById('tab-arts').click();
-  ok(w.eval("!!document.getElementById('ttree')"),'무공 탭이 문파 무공도(트리)를 연다');
+  ok(d.querySelectorAll('#atabs .askind').length===2,'무공 탭에 [초식][심법] 탭이 있다');
+  ok(d.querySelectorAll('.atile').length>0,'무공 타일 그리드가 그려진다');
+  // 1b) '스킬 심화' 버튼이 문파 무공도(트리)를 연다 (노드 업그레이드는 심화로 이관)
+  d.getElementById('adeepen').click();
+  ok(w.eval("!!document.getElementById('ttree')"),'심화 버튼이 문파 무공도(트리)를 연다');
   ok(d.querySelectorAll('#tschtabs .tsch').length===w.eval('treeOrder().length'),
-     '문파 탭이 보인다 ('+d.querySelectorAll('#tschtabs .tsch').length+'문파)');
+     '심화창에 문파 탭이 보인다 ('+d.querySelectorAll('#tschtabs .tsch').length+'문파)');
+  w.eval("closeDeepen()");
   // 2) 경지 미달이면 코드로도 무공을 못 산다 (기연·트리 외 경로 차단)
   w.eval('S.silver=99999');
   ok(w.eval('learnArt("pagong")')===false,'경지 미달이면 파공권을 못 산다');

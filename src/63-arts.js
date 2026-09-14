@@ -71,39 +71,54 @@ function artFxText(a, star, lv){
 let artSel = null;                 // 상세 칸에 떠 있는 무공
 let artDetSig = '';                // 상세 칸 구조 서명 — 같으면 DOM을 안 갈아엎는다
 let artHold = false;               // 연마 꾹 누르는 중 — refreshArts가 DOM을 안 갈아엎게 (v2.36)
+let artTab = 'active';             // 일반 스킬창 탭 — 'active'(초식)·'passive'(심법) (v2.54)
 
+// 스킬창을 [초식][심법] 탭으로 나눈다 (v2.54, "노드는 번거롭다 → 일반 스킬창에
+// 탭으로 배우고 업글") — 상단 탭 + 심화 버튼, 아래 현재 탭의 타일 그리드.
 function buildArtsPanel(){
   const b = $('abody');
-  let h = '';
-  // 섹션은 초식/심법 둘뿐 — 문파는 타일 위 색띠로 보인다.
-  // 문파별로 쪼개면 한 줄에 한두 개뿐이라 세로로 길어진다는 피드백.
-  for (const sec of [['초식 — 스스로 펼친다', 'active'], ['심법 — 몸에 스민다', 'passive']]){
-    const list = ARTS.list.filter(a => a.type === sec[1])
-      .sort((a, b) => (a.fate ? 999 : a.need) - (b.fate ? 999 : b.need));
-    h += '<div class="znote asec">' + sec[0] + '</div><div class="agrid">';
-    for (const a of list){
-      const sc = SCHOOLS[a.school] || SCHOOLS.none;
-      h += '<button class="atile' + (a.fate ? ' fate' : '') + '" data-k="' + a.k +
-           '"><i class="sc" style="background:' + sc.c + '"></i>' +
-           '<span class="g">' + a.h[0] + '</span>' +
-           '<span class="nm">' + a.n + '</span><em class="bd"></em></button>';
-    }
-    h += '</div>';
+  b.innerHTML =
+    '<div id="atabs">' +
+      '<button class="askind" data-t="active">초식</button>' +
+      '<button class="askind" data-t="passive">심법</button>' +
+      '<button id="adeepen">스킬 심화<i class="dot"></i></button>' +
+    '</div>' +
+    '<div id="agridwrap"></div>' +
+    '<div class="adet" id="adet"></div>';
+  for (const el of b.querySelectorAll('.askind'))
+    el.onclick = () => { artTab = el.dataset.t; artDetSig = ''; drawArtGrid(); };
+  $('adeepen').onclick = () => { if (typeof openDeepen === 'function') openDeepen(); };
+  // 처음엔 살 수 있는 것, 없으면 그 탭 첫 무공
+  if (!artSel || !artDef(artSel)){
+    const buyable = ARTS.list.find(a => canLearn(a));
+    if (buyable){ artSel = buyable.k; artTab = buyable.type; }
   }
-  // 상세 칸을 그리드 아래로 (v2.33 — 위에 있으면 타일 누르고 위를 보는 시선
-  // 왕복이 생긴다는 피드백). 타일을 누르면 상세 칸으로 스크롤해 바로 보인다.
-  h += '<div class="adet" id="adet"></div>';
-  b.innerHTML = h;
-  artDetSig = '';                  // 패널을 새로 만들었으니 상세 칸도 다시 그린다
-  b.querySelectorAll('.atile').forEach(el => {
+  drawArtGrid();
+}
+
+// 현재 탭(초식/심법)의 타일 그리드만 다시 그린다 — 상세 칸·탭 줄은 그대로
+function drawArtGrid(){
+  for (const el of $('abody').querySelectorAll('.askind'))
+    el.classList.toggle('on', el.dataset.t === artTab);
+  const list = ARTS.list.filter(a => a.type === artTab)
+    .sort((a, b) => (a.fate ? 999 : a.need) - (b.fate ? 999 : b.need));
+  let h = '<div class="agrid">';
+  for (const a of list){
+    const sc = SCHOOLS[a.school] || SCHOOLS.none;
+    h += '<button class="atile' + (a.fate ? ' fate' : '') + '" data-k="' + a.k +
+         '"><i class="sc" style="background:' + sc.c + '"></i>' +
+         '<span class="g">' + a.h[0] + '</span>' +
+         '<span class="nm">' + a.n + '</span><em class="bd"></em></button>';
+  }
+  h += '</div>';
+  $('agridwrap').innerHTML = h;
+  $('agridwrap').querySelectorAll('.atile').forEach(el => {
     el.onclick = () => { artSel = el.dataset.k; artDetSig = ''; refreshArts();
       const det = $('adet'); if (det && det.scrollIntoView) det.scrollIntoView({ block:'nearest', behavior:'smooth' }); };
   });
-  // 처음엔 살 수 있는 것, 없으면 첫 무공
-  if (!artSel || !artDef(artSel)){
-    const buyable = ARTS.list.find(a => canLearn(a));
-    artSel = (buyable || ARTS.list[0]).k;
-  }
+  // 선택 무공이 이 탭에 없으면 이 탭 첫 무공으로
+  if (!artSel || !list.some(a => a.k === artSel)) artSel = (list[0] || ARTS.list[0]).k;
+  artDetSig = '';
   refreshArts();
 }
 
@@ -224,12 +239,17 @@ function refreshArts(){
 
 function openArts(){ buildArtsPanel(); $('apanel').classList.add('show'); }
 function closeArts(){ $('apanel').classList.remove('show'); }
+// 심화(스킬트리)에 쓸 무공점이 있나 — 67-treepanel이 없어도(검증 도구) 가드
+const deepenReady = () => (typeof skillPtsLeft === 'function') && skillPtsLeft() > 0;
 
 let artLastSilver = -1, artLastRealm = -1, artLastXp = -1;
 function artsHud(){
   const dot = $('tab-arts').firstElementChild;
-  if (dot && dot.classList) dot.classList.toggle('on', canLearnArt());
+  // 배울/올릴 무공이 있거나 심화에 쓸 무공점이 있으면 탭에 알림점
+  if (dot && dot.classList) dot.classList.toggle('on', canLearnArt() || deepenReady());
   if (!$('apanel').classList.contains('show')) return;
+  const dd = $('adeepen') && $('adeepen').firstElementChild;   // 심화 버튼 알림점
+  if (dd && dd.classList) dd.classList.toggle('on', deepenReady());
   const xp = S.artXp[artSel] | 0;
   if (artLastSilver !== S.silver || artLastRealm !== realmLv() || artLastXp !== xp){
     artLastSilver = S.silver; artLastRealm = realmLv(); artLastXp = xp;

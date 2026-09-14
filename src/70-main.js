@@ -47,7 +47,8 @@ loadImg('fx_dark', ASSET.fx_dark);
 loadImg('shaman_m2', ASSET.shaman_m2);
 
 // 하단 탭 — 같은 탭 재클릭이면 닫고, 다른 패널은 접는다
-function closeSheets(){ closeZonePanel(); closeTrain(); closeArts(); closeRealmPanel(); }
+function closeSheets(){ closeZonePanel(); closeTrain(); closeArts(); closeRealmPanel();
+  if (typeof closeDeepen === 'function') closeDeepen(); }
 $('tab-zone').onclick = () => {
   const open = $('zpanel').classList.contains('show');
   closeSheets();
@@ -65,6 +66,9 @@ $('tab-arts').onclick = () => {
 };
 $('aclose').onclick = closeArts;
 $('apanel').onclick = e => { if (e.target.id === 'apanel') closeArts(); };
+// 스킬 심화창(#dpanel) — 무공 패널의 '스킬 심화' 버튼(63-arts)이 openDeepen을 부른다
+$('dclose').onclick = () => closeDeepen();
+$('dpanel').onclick = e => { if (e.target.id === 'dpanel') closeDeepen(); };
 $('trclose').onclick = closeTrain;
 $('trpanel').onclick = e => { if (e.target.id === 'trpanel') closeTrain(); };
 // HUD의 경지 표시를 누르면 전체 사다리를 보여준다

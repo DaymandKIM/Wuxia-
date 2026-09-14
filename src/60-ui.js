@@ -16,7 +16,7 @@ function hud(){
   $('tabs').style.opacity = showing ? '1' : '0';
   // 스킬창·시험 버튼은 패널이 열리면 감춘다 — 패널 위로 떠서 스탯 줄·무공
   // 칸을 가린다는 피드백(v2.33). 어느 시트든 열려 있으면 숨긴다.
-  const panelOpen = ['zpanel','trpanel','apanel','rpanel','tpanel','opanel','fpanel']
+  const panelOpen = ['zpanel','trpanel','apanel','dpanel','rpanel','tpanel','opanel','fpanel']
     .some(id => $(id) && $(id).classList.contains('show'));
   const bars = showing && !panelOpen;
   const sb = $('sbar'); sb.style.opacity = bars ? '1' : '0'; sb.style.pointerEvents = bars ? '' : 'none';
@@ -24,6 +24,7 @@ function hud(){
   if (!showing) return;
   trainHud();                                    // 수련 탭 알림점·열린 패널 갱신
   artsHud();                                     // 무공 탭 알림점·열린 패널 갱신
+  if (typeof deepenHud === 'function') deepenHud();  // 스킬 심화창(트리) 갱신
   skillHud();                                    // 스킬창 — 초식 쿨다운
 
   const st = stage();

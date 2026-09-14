@@ -1,7 +1,8 @@
 /* ── 문파 무공도 패널 (스킬트리 UI) ──────────────────
    무공 탭이 이걸 연다. 문파 탭 + 거미줄 노드망 + 정보 칸.
    66-tree.js 엔진(treeAlloc·treeBonus·skillPtsLeft…)을 그린다.
-   openArts/closeArts/artsHud를 여기서 재정의해 옛 평면 표(63-arts)를 대체한다. */
+   openDeepen/closeDeepen/deepenHud로 심화창(#dpanel)을 그린다. 일반 스킬창
+   (무공 배우기·연마·돌파)은 63-arts. (v2.54 — 트리를 심화로 이관) */
 
 let treeSchool = 'bamboo';
 let treeSelId = null;
@@ -42,18 +43,18 @@ function treeAllocPath(s, id){
   return treeHas(s, id);
 }
 
-function openArts(){ buildTreeUI(); $('apanel').classList.add('show'); renderTreePanel(); }
-function closeArts(){ $('apanel').classList.remove('show'); }
+// v2.54 — 트리(스킬트리)는 이제 '스킬 심화'창(#dpanel)이다. 일반 스킬창(무공
+// 배우기·연마·돌파)은 63-arts가 맡고, 노드 업그레이드는 여기 심화창으로 옮겼다.
+function openDeepen(){ buildTreeUI(); $('dpanel').classList.add('show'); renderTreePanel(); }
+function closeDeepen(){ $('dpanel').classList.remove('show'); }
 // 매 프레임 호출된다(60-ui) — 열린 패널을 매 프레임 통째로 다시 그리면
 // 안 된다. SVG·정보칸(익히기 버튼 포함)이 프레임마다 새로 생겨, 탭 도중에
 // 버튼이 사라져 클릭이 안 먹고 화면이 깜빡인다("무공 화면 이상함·클릭 안 됨").
 // 무공점이 실제로 바뀔 때(경지 상승)만 다시 그린다 — 사용자 조작(노드·탭·
 // 습득)은 그 자리에서 renderTreePanel을 직접 부른다.
 let _artsPts = null;
-function artsHud(){
-  const dot = $('tab-arts').firstElementChild;
-  if (dot && dot.classList) dot.classList.toggle('on', skillPtsLeft() > 0);   // 쓸 무공점 있으면 알림점
-  if ($('apanel').classList.contains('show')){
+function deepenHud(){
+  if ($('dpanel').classList.contains('show')){
     const p = skillPtsLeft();
     if (p !== _artsPts){ _artsPts = p; renderTreePanel(); }
   }
@@ -61,7 +62,7 @@ function artsHud(){
 
 function buildTreeUI(){
   if (!treeNodes(treeSchool).length) treeSchool = treeOrder()[0] || 'bamboo';
-  const body = $('abody');
+  const body = $('dbody');
   body.innerHTML =
     '<div id="tpts"></div>' +
     '<div id="tschtabs"></div>' +
@@ -92,7 +93,7 @@ function renderTreePanel(){
   }
   drawTree(col);
   drawTreeInfo(col);
-  _artsPts = skillPtsLeft();   // 방금 그렸으니 추적값 동기화 (artsHud의 불필요한 재렌더 방지)
+  _artsPts = skillPtsLeft();   // 방금 그렸으니 추적값 동기화 (deepenHud의 불필요한 재렌더 방지)
 }
 
 // 색을 흰/검 쪽으로 섞는다 (발광 고리·유리 하이라이트용)
