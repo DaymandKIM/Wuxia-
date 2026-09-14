@@ -44,28 +44,49 @@ function treeAllocPath(s, id){
   return treeHas(s, id);
 }
 
-// v2.54 — 트리(스킬트리)는 이제 '스킬 심화'창(#dpanel)이다. 일반 스킬창(무공
-// 배우기·연마·돌파)은 63-arts가 맡고, 노드 업그레이드는 여기 심화창으로 옮겼다.
-function openDeepen(){ buildTreeUI(); $('dpanel').classList.add('show'); renderTreePanel(); }
+// v2.54 — 트리는 '스킬 심화'창(#dpanel)이다. v2.55: 심화창이 두 갈래다 —
+// [스킬 특성](배운 무공에 특성 부여)과 [문파 무공도](패시브 노드망). 둘 다
+// 경지 무공점을 쓴다. 상단 토글로 오간다.
+let deepMode = 'trait';
+function openDeepen(){
+  const b = $('dbody');
+  b.innerHTML =
+    '<div id="dmode">' +
+      '<div class="dmtabs">' +
+        '<button class="dmb" data-m="trait">스킬 특성</button>' +
+        '<button class="dmb" data-m="tree">문파 무공도</button>' +
+      '</div><span id="dpts"></span></div>' +
+    '<div id="dcontent"></div>';
+  for (const el of b.querySelectorAll('.dmb'))
+    el.onclick = () => { deepMode = el.dataset.m; renderDeepen(); };
+  $('dpanel').classList.add('show');
+  renderDeepen();
+}
 function closeDeepen(){ $('dpanel').classList.remove('show'); }
-// 매 프레임 호출된다(60-ui) — 열린 패널을 매 프레임 통째로 다시 그리면
-// 안 된다. SVG·정보칸(익히기 버튼 포함)이 프레임마다 새로 생겨, 탭 도중에
-// 버튼이 사라져 클릭이 안 먹고 화면이 깜빡인다("무공 화면 이상함·클릭 안 됨").
-// 무공점이 실제로 바뀔 때(경지 상승)만 다시 그린다 — 사용자 조작(노드·탭·
-// 습득)은 그 자리에서 renderTreePanel을 직접 부른다.
+// 두 갈래를 그린다. 무공점 표시는 상단 고정 바(#dpts)에 공통.
+function renderDeepen(){
+  const dpts = $('dpts');
+  if (dpts) dpts.innerHTML = '남은 무공점 <b>' + fmt(skillPtsLeft()) + '</b>';
+  for (const el of $('dbody').querySelectorAll('.dmb'))
+    el.classList.toggle('on', el.dataset.m === deepMode);
+  if (deepMode === 'tree'){ buildTreeUI(); renderTreePanel(); }
+  else renderTraits();
+  _artsPts = skillPtsLeft();
+}
+// 매 프레임 호출된다(60-ui) — 무공점이 실제로 바뀔 때(경지 상승)만 다시 그린다.
+// 사용자 조작(노드·탭·특성 구매)은 그 자리에서 renderDeepen을 직접 부른다.
 let _artsPts = null;
 function deepenHud(){
   if ($('dpanel').classList.contains('show')){
     const p = skillPtsLeft();
-    if (p !== _artsPts){ _artsPts = p; renderTreePanel(); }
+    if (p !== _artsPts){ _artsPts = p; renderDeepen(); }
   }
 }
 
 function buildTreeUI(){
   if (!treeNodes(treeSchool).length) treeSchool = treeOrder()[0] || 'bamboo';
-  const body = $('dbody');
+  const body = $('dcontent');
   body.innerHTML =
-    '<div id="tpts"></div>' +
     '<div id="tschtabs"></div>' +
     '<div id="ttreewrap"><svg id="ttree" preserveAspectRatio="xMidYMin meet"></svg></div>' +
     '<div id="tinfo"></div>';
@@ -80,11 +101,45 @@ function buildTreeUI(){
   }
 }
 
+// 스킬 특성 뷰 — 배운 무공을 카드로, 특성을 칩으로. 경지 무공점으로 켠다.
+function renderTraits(){
+  const c = $('dcontent');
+  const learned = ARTS.list.filter(a => S.arts[a.k] && traitDefs(a.k).length);
+  if (!learned.length){
+    c.innerHTML = '<div class="dempty">아직 배운 무공이 없다.<br>' +
+      '<small>무공 탭에서 무공을 배우면, 여기서 특성을 붙일 수 있다.</small></div>';
+    return;
+  }
+  let h = '';
+  for (const sec of [['초식 — 동작을 바꾼다','active'], ['심법 — 효과를 키운다','passive']]){
+    const list = learned.filter(a => a.type === sec[1]);
+    if (!list.length) continue;
+    h += '<div class="dsec">' + sec[0] + '</div>';
+    for (const a of list){
+      const sc = SCHOOLS[a.school] || SCHOOLS.none;
+      h += '<div class="tcard" style="border-color:' + sc.c + '55">' +
+        '<div class="tchead"><span class="tcg" style="color:' + sc.c + '">' + a.h[0] + '</span>' +
+        '<b>' + a.n + '</b><small>' + a.h + '</small></div><div class="tchips">';
+      for (const t of traitDefs(a.k)){
+        const own = hasTrait(a.k, t.id), pay = skillPtsLeft() >= (t.c || 0);
+        h += '<button class="tchip' + (own ? ' own' : (pay ? '' : ' poor')) + '"' +
+          ' data-k="' + a.k + '" data-t="' + t.id + '"' + (own ? ' disabled' : '') +
+          (own ? ' style="border-color:' + sc.c + ';background:' + sc.c + '22"' : '') + '>' +
+          '<span class="tcn">' + t.n + ' <em>' + t.h + '</em></span>' +
+          '<span class="tcd">' + t.d + '</span>' +
+          '<span class="tcc">' + (own ? '✓ 익힘' : '<b>' + t.c + '</b> 무공점') + '</span>' +
+          '</button>';
+      }
+      h += '</div></div>';
+    }
+  }
+  c.innerHTML = h;
+  for (const el of c.querySelectorAll('.tchip:not(.own)'))
+    el.onclick = () => { if (traitBuy(el.dataset.k, el.dataset.t)){ saveNow(); renderDeepen(); } };
+}
+
 function renderTreePanel(){
   const S0 = SCHOOLS[treeSchool] || SCHOOLS.none, col = S0.c;
-  const info = realmInfo();
-  $('tpts').innerHTML = '<span>남은 무공점 <b>' + fmt(skillPtsLeft()) + '</b></span>' +
-    '<span class="rlm">' + realmName(info.k) + ' · 성급당 +' + SKILLTREE.ptsPerStar + '</span>';
   // 탭 상태
   for (const b of $('tschtabs').children){
     const s = b.dataset.s, on = s === treeSchool, c = (SCHOOLS[s]||SCHOOLS.none).c;

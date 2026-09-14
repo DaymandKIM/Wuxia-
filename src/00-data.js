@@ -809,13 +809,57 @@ const artEff    = k => (1 + MASTERY.lvPer * (artLv(k) - 1))
                      * (1 + MASTERY.effPer * (artStar(k) - 1));
 const artXpNeed = k => Math.round(MASTERY.useBase * Math.pow(MASTERY.useGrow, artStar(k) - 1));
 const artBreakCost = k => Math.round(artDef(k).cost * Math.pow(MASTERY.costMul, artStar(k)));
+// ── 스킬 심화 특성 (v2.55) ─────────────────────────
+// 배운 무공에 경지 무공점으로 켠다 (심화창). 초식은 동작을, 심법은 효과를 바꾼다.
+// eff 종류: cdcut(쿨 -비율) · power(피해/회복 +비율) · reach(사거리 +비율) · amp(심법 효과 +비율)
+const TRAITS = {
+  // 초식 — 스스로 펼치는 무공. 쿨·위력·사거리를 손본다.
+  pagong:  [ {id:'pa_cd', n:'쾌권',   h:'快拳', c:2, eff:{cdcut:0.18}, d:'권을 빨리 거둔다 — 쿨 −18%'},
+             {id:'pa_pw', n:'중권',   h:'重拳', c:3, eff:{power:0.30}, d:'주먹에 무게를 싣는다 — 위력 +30%'},
+             {id:'pa_rg', n:'원격권', h:'遠擊', c:3, eff:{reach:0.35}, d:'권기가 더 멀리 뻗는다 — 사거리 +35%'} ],
+  whirl:   [ {id:'wh_cd', n:'질풍',   h:'疾風', c:2, eff:{cdcut:0.18}, d:'회전을 서두른다 — 쿨 −18%'},
+             {id:'wh_rg', n:'대선풍', h:'大旋風',c:3, eff:{reach:0.40}, d:'휩쓰는 범위가 넓어진다 — 사거리 +40%'},
+             {id:'wh_pw', n:'맹공',   h:'猛攻', c:3, eff:{power:0.30}, d:'발끝에 힘을 더한다 — 위력 +30%'} ],
+  baekbo:  [ {id:'bb_cd', n:'속지',   h:'速指', c:2, eff:{cdcut:0.18}, d:'지풍을 빨리 모은다 — 쿨 −18%'},
+             {id:'bb_pw', n:'투지',   h:'透指', c:4, eff:{power:0.40}, d:'뼛속까지 스민다 — 위력 +40%'} ],
+  hwalin:  [ {id:'hw_cd', n:'속기',   h:'速氣', c:2, eff:{cdcut:0.20}, d:'숨을 빨리 고른다 — 쿨 −20%'},
+             {id:'hw_pw', n:'대활인', h:'大活人',c:3, eff:{power:0.35}, d:'더 깊이 불어넣는다 — 회복 +35%'} ],
+  bungsan: [ {id:'bs_cd', n:'속붕',   h:'速崩', c:2, eff:{cdcut:0.20}, d:'산을 빨리 무너뜨린다 — 쿨 −20%'},
+             {id:'bs_rg', n:'광붕',   h:'廣崩', c:3, eff:{reach:0.35}, d:'무너지는 범위가 넓어진다 — 사거리 +35%'},
+             {id:'bs_pw', n:'괴력',   h:'怪力', c:4, eff:{power:0.40}, d:'천근의 힘 — 위력 +40%'} ],
+  // 심법 — 몸에 스미는 무공. 자기 효과를 증폭한다(심화 深化).
+  samjae:    [ {id:'sj_amp', n:'심화', h:'深化', c:2, eff:{amp:0.4}, d:'삼재의 이치를 더 깊이 — 효과 +40%'} ],
+  chulwoo:   [ {id:'cw_amp', n:'심화', h:'深化', c:2, eff:{amp:0.4}, d:'대나무의 결을 더 깊이 — 효과 +40%'} ],
+  yuwoon:    [ {id:'yw_amp', n:'심화', h:'深化', c:3, eff:{amp:0.4}, d:'밤길에 더 스민다 — 효과 +40%'} ],
+  honwon:    [ {id:'hw2_amp',n:'심화', h:'深化', c:3, eff:{amp:0.4}, d:'하나로 더 돈다 — 효과 +40%'} ],
+  taeheo:    [ {id:'th_amp', n:'심화', h:'深化', c:4, eff:{amp:0.4}, d:'비어 더 가득 — 효과 +40%'} ],
+  hangma:    [ {id:'hm_amp', n:'심화', h:'深化', c:3, eff:{amp:0.4}, d:'금강이 더 굳는다 — 효과 +40%'} ],
+  maehyang:  [ {id:'mh_amp', n:'심화', h:'深化', c:2, eff:{amp:0.4}, d:'매향이 더 밴다 — 효과 +40%'} ],
+  baekryeon: [ {id:'br_amp', n:'심화', h:'深化', c:3, eff:{amp:0.4}, d:'흰 연꽃이 더 핀다 — 효과 +40%'} ],
+  chwigwon:  [ {id:'cg_amp', n:'심화', h:'深化', c:3, eff:{amp:0.4}, d:'취기가 더 흐른다 — 효과 +40%'} ],
+  mandok:    [ {id:'md_amp', n:'심화', h:'深化', c:3, eff:{amp:0.4}, d:'독이 더 힘이 된다 — 효과 +40%'} ],
+  talhon:    [ {id:'th2_amp',n:'심화', h:'深化', c:4, eff:{amp:0.4}, d:'더 많이 앗는다 — 효과 +40%'} ],
+  guyang:    [ {id:'gy_amp', n:'심화', h:'深化', c:4, eff:{amp:0.4}, d:'아홉 태양이 더 뜨겁다 — 효과 +40%'} ],
+};
+const TRAIT_CAP = { cdcut: 0.6 };              // 쿨 감소 상한 (여럿 쌓아도 이 이상 안 준다)
+const traitDefs = k => TRAITS[k] || [];
+const hasTrait  = (k,id) => !!(S.traits && S.traits[k] && S.traits[k][id]);
+function traitSum(k, kind){
+  let s = 0;
+  for (const t of traitDefs(k)) if (hasTrait(k,t.id) && t.eff[kind]) s += t.eff[kind];
+  return s;
+}
+const traitMul   = (k,kind) => 1 + traitSum(k,kind);          // power·reach·amp 배수
+const traitCdcut = k => Math.min(TRAIT_CAP.cdcut, traitSum(k,'cdcut'));  // 쿨 감소 비율(상한)
+const traitCount = () => { let c=0; for (const k in (S.traits||{})) for (const id in S.traits[k]) c++; return c; };
+
 // 익힌 심법들의 증폭 배수 (1 + 합) — 숙련 성이 오르면 효과도 커진다
 // 트리 패시브 합 — 66-tree.js. 스킬트리 없이 실행되는 검증 도구(sim 등) 대비 가드.
 const tBonus = k => (typeof treeBonus === 'function') ? treeBonus(k) : 0;
 function artMul(kind){
   let m = 1;
   for (const a of ARTS.list)
-    if (S.arts[a.k] && a.type === 'passive' && a[kind]) m += a[kind] * artEff(a.k);
+    if (S.arts[a.k] && a.type === 'passive' && a[kind]) m += a[kind] * artEff(a.k) * traitMul(a.k, 'amp');
   // 심법 효과 증폭(passiveAmp) — 트리가 심법 합의 초과분을 키운다
   if (kind === 'dmg' || kind === 'hp' || kind === 'regen' || kind === 'spd')
     m = 1 + (m - 1) * (1 + tBonus('passiveAmp')/100);

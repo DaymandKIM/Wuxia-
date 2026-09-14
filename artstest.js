@@ -34,12 +34,15 @@ setTimeout(()=>{
   d.getElementById('tab-arts').click();
   ok(d.querySelectorAll('#atabs .askind').length===2,'무공 탭에 [초식][심법] 탭이 있다');
   ok(d.querySelectorAll('.atile').length>0,'무공 타일 그리드가 그려진다');
-  // 1b) '스킬 심화' 버튼이 문파 무공도(트리)를 연다 (노드 업그레이드는 심화로 이관)
+  // 1b) '스킬 심화' 버튼이 심화창을 연다 — [스킬 특성]/[문파 무공도] 두 갈래 (v2.55)
   d.getElementById('adeepen').click();
-  ok(w.eval("!!document.getElementById('ttree')"),'심화 버튼이 문파 무공도(트리)를 연다');
+  ok(d.querySelectorAll('#dmode .dmb').length===2,'심화창에 [스킬 특성][문파 무공도] 토글이 있다');
+  // 기본은 스킬 특성 뷰 — 문파 무공도로 전환하면 트리가 그려진다
+  d.querySelector('#dmode .dmb[data-m="tree"]').click();
+  ok(w.eval("!!document.getElementById('ttree')"),'문파 무공도 전환 시 트리가 그려진다');
   ok(d.querySelectorAll('#tschtabs .tsch').length===w.eval('treeOrder().length'),
      '심화창에 문파 탭이 보인다 ('+d.querySelectorAll('#tschtabs .tsch').length+'문파)');
-  w.eval("closeDeepen()");
+  w.eval('deepMode="trait"'); w.eval("closeDeepen()");
   // 2) 경지 미달이면 코드로도 무공을 못 산다 (기연·트리 외 경로 차단)
   w.eval('S.silver=99999');
   ok(w.eval('learnArt("pagong")')===false,'경지 미달이면 파공권을 못 산다');
@@ -125,6 +128,20 @@ setTimeout(()=>{
     ok(!!modeBtn && modeBtn.textContent==='수동','토글이 현재 모드(수동)를 보여준다');
     w.eval("document.querySelector('#sbar .smode').onclick()");
     ok(w.eval('S.skillManual===false'),'토글을 누르면 자동으로 돌아간다');
+    // 5.11) 스킬 심화 특성 (v2.55) — 배운 무공에 경지 무공점으로 특성을 켠다
+    w.eval('S.rexp=0; while(realmLv()<14) S.rexp=(S.rexp||25)*1.31; S.tree={}; S.traits={}; delete S.arts.bungsan;');
+    ok(w.eval('traitBuy("bungsan","bs_cd")')===false,'안 배운 무공엔 특성 못 준다');
+    w.eval('S.arts.pagong=1;');
+    const pp0=w.eval('skillPtsLeft()');
+    ok(w.eval('traitBuy("pagong","pa_pw")')===true,'배운 무공에 특성을 켠다(중권)');
+    ok(w.eval('skillPtsLeft()')<pp0,'특성이 경지 무공점을 쓴다');
+    ok(w.eval('traitMul("pagong","power")')>1,'특성이 초식 위력 배수에 반영된다');
+    ok(w.eval('traitBuy("pagong","pa_pw")')===false,'같은 특성은 중복으로 못 켠다');
+    // 심화창 특성 뷰 — 배운 무공 카드에 특성 칩이 뜬다
+    w.eval('deepMode="trait"; openDeepen();');
+    ok(d.querySelectorAll('#dcontent .tcard').length>0,'특성 뷰에 배운 무공 카드가 뜬다');
+    ok(d.querySelectorAll('#dcontent .tchip.own').length>0,'켠 특성은 익힘으로 표시된다');
+    w.eval('closeDeepen()');
     w.eval('S.skillManual=true; saveNow();');   // 저장 왕복 검사용으로 수동 남겨둠
     w.eval('delete S.arts.whirl; S.foes.length=0; P.anim="idle";');
     // 6) 저장 왕복
@@ -137,6 +154,7 @@ setTimeout(()=>{
       ok(w2.eval('artStar("chulwoo")')===2,'숙련 성도 저장된다 (청죽공 2성)');
       ok(w2.eval('artLv("chulwoo")')===2,'연마 레벨도 저장된다 (청죽공 Lv2)');
       ok(w2.eval('S.skillManual===true'),'발동 모드(수동)도 저장된다');
+      ok(w2.eval('hasTrait("pagong","pa_pw")===true'),'심화 특성도 저장·복원된다');
       ok(errs.length===0,'런타임 오류 0'+(errs.length?': '+errs[0]:''));
       console.log(bad?('\n★ 실패 '+bad+'건'):'\n문제 없음');
       process.exit(bad?1:0);

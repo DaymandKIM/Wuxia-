@@ -30,14 +30,28 @@ function treeNeedOk(s,n){
 // 무공 마디는 트리로 켤 수 없다 — 무공 탭 '배우기'로 배우면 자동으로 익힘 표시.
 const treeAvail = (s,n) => !treeArtNode(n) && !treeHas(s,n.id) && treeNeedOk(s,n);
 
-// 경지 포인트 — 누적 성 개수 × ptsPerStar. 쓴 점은 익힌 노드 비용의 합.
+// 경지 포인트 — 누적 성 개수 × ptsPerStar. 쓴 점은 익힌 트리 노드 + 스킬 심화 특성 비용의 합.
 const skillPtsTotal = () => realmLv() * SKILLTREE.ptsPerStar;
 function skillPtsSpent(){
   let c=0;
   for (const s in S.tree) for (const id in S.tree[s]){ const n=treeNode(s,id); if(n) c += n.c||0; }
+  for (const k in (S.traits||{})) for (const id in S.traits[k]){          // 심화 특성도 같은 무공점을 쓴다
+    const t = traitDefs(k).find(x=>x.id===id); if(t) c += t.c||0;
+  }
   return c;
 }
 const skillPtsLeft = () => skillPtsTotal() - skillPtsSpent();
+
+// 스킬 심화 특성 — 배운 무공(S.arts)에만, 경지 무공점으로 켠다. 되돌리기 없음(연마·돌파와 같은 결).
+function traitBuy(k, id){
+  if (!S.arts[k]) return false;                                   // 안 배운 무공엔 특성 못 준다
+  const t = traitDefs(k).find(x=>x.id===id);
+  if (!t || hasTrait(k,id) || skillPtsLeft() < (t.c||0)) return false;
+  if (!S.traits) S.traits = {};
+  if (!S.traits[k]) S.traits[k] = {};
+  S.traits[k][id] = 1;
+  return true;
+}
 
 // 저장에서 돌아온 뒤 — 옛 저장에서 트리가 준 무공(S.treeArt)을 걷어낸다.
 // 안 그러면 안 배운 무공이 계속 시전된다. 기연으로 받은 건 별개라 안 건드린다.

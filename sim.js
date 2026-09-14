@@ -20,7 +20,8 @@ const R=new Function(code+`;return {S,P,step:dt=>step(dt),zone:()=>zone(),lv:()=
   canBreak:a=>canBreak(a),breakArt:k=>breakArt(k),
   canLevel:a=>canLevel(a),levelArt:k=>levelArt(k),
   TREE,treeNodes:s=>treeNodes(s),treeAvail:(s,n)=>treeAvail(s,n),
-  treeAlloc:(s,id)=>treeAlloc(s,id),skillPtsLeft:()=>skillPtsLeft()};`)();
+  treeAlloc:(s,id)=>treeAlloc(s,id),skillPtsLeft:()=>skillPtsLeft(),
+  traitDefs:k=>traitDefs(k),hasTrait:(k,id)=>hasTrait(k,id),traitBuy:(k,id)=>traitBuy(k,id)};`)();
 const {S,P}=R;
 
 // 플레이어 흉내 — 30초마다: 가장 싼 수련 스텟 1개, 배울 수 있는 무공, 가능한 돌파
@@ -45,17 +46,25 @@ function spend(){
     for(const a of R.ARTS.list)if(R.canLevel(a)){R.levelArt(a.k);hit=true;}
     if(!hit)break;
   }
-  // 문파 무공도 — 경지 포인트로 열린 노드를 익힌다 (무공 마디 우선, 그다음 싼 것)
-  for(let n=0;n<25;n++){
+  // 경지 무공점 — 심화 특성(배운 무공)과 문파 무공도 노드를 싼 것부터 산다
+  for(let n=0;n<30;n++){
     if(R.skillPtsLeft()<=0)break;
-    let best=null;
+    let best=null;   // {kind, ..., cost}
+    // 스킬 심화 특성 — 배운 무공의 안 켠 특성
+    for(const a of R.ARTS.list){
+      if(!S.arts[a.k])continue;
+      for(const t of R.traitDefs(a.k)){
+        if(R.hasTrait(a.k,t.id)||(t.c||0)>R.skillPtsLeft())continue;
+        if(!best||(t.c||0)<best.cost)best={trait:1,k:a.k,id:t.id,cost:t.c||0};
+      }
+    }
+    // 문파 무공도 노드
     for(const s in R.TREE)for(const nd of R.treeNodes(s)){
       if(!R.treeAvail(s,nd)||(nd.c||0)>R.skillPtsLeft())continue;
-      const score=(nd.eff&&nd.eff.art?0:10)+(nd.c||0);   // 무공 마디 먼저
-      if(!best||score<best.score)best={s,id:nd.id,score};
+      if(!best||(nd.c||0)<best.cost)best={s,id:nd.id,cost:nd.c||0};
     }
     if(!best)break;
-    R.treeAlloc(best.s,best.id);
+    if(best.trait)R.traitBuy(best.k,best.id); else R.treeAlloc(best.s,best.id);
   }
 }
 

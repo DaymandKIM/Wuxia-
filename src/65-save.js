@@ -12,7 +12,7 @@ function saveNow(){
       silver: S.silver, bossDone: S.bossDone, stats: S.stats, rexp: S.rexp,
       arts: S.arts, karma: S.karma, fates: S.fates, fatebits: S.fatebits,
       artXp: S.artXp, artStar: S.artStar, artLv: S.artLv,
-      skillManual: S.skillManual, tree: S.tree,
+      skillManual: S.skillManual, tree: S.tree, traits: S.traits,
     }));
   }catch(e){}                    // 시크릿 모드 등 — 저장만 못 할 뿐 게임은 돈다
 }
@@ -61,6 +61,13 @@ function applySave(d){
       for (const n of TREE[s]) if (d.tree[s][n.id]) (S.tree[s]||(S.tree[s]={}))[n.id]=1;
     }
   treeReapply();
+  // 스킬 심화 특성 — 배운 무공의 유효한 특성만 되살린다 (v2.55)
+  S.traits = {};
+  if (d.traits && typeof d.traits === 'object')
+    for (const k in TRAITS){
+      if (!S.arts[k] || !d.traits[k]) continue;
+      for (const t of TRAITS[k]) if (d.traits[k][t.id]) (S.traits[k]||(S.traits[k]={}))[t.id] = 1;
+    }
   S.karma = Math.max(0, +d.karma || 0);
   S.fates = Math.max(0, d.fates | 0);
   S.fatebits = {};

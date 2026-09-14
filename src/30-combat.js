@@ -283,7 +283,7 @@ function stepArts(dt){
     // 동시 시전 금지 — 시전 중이거나 숨 고르는 중이면 쿨이 차 있어도 기다린다
     if (P.castT > 0 || P.castGapT > 0) continue;
     if (castArt(a)){
-      P.artCd[a.k] = a.cd * (1 - tBonus('cdr')/100);   // 트리 재사용 감소
+      P.artCd[a.k] = a.cd * (1 - tBonus('cdr')/100) * (1 - traitCdcut(a.k));   // 트리 재사용 + 심화 쿨감
       P.castGapT = P.castT + CASTQ.gap;        // 동작이 끝난 뒤 gap 만큼 쉬고 다음 초식
       S.artXp[a.k] = (S.artXp[a.k] | 0) + 1;   // 초식 숙련 — 시전 횟수
     }
@@ -298,7 +298,7 @@ function castByHand(k){
   if ((P.artCd[k] || 0) > 0) return false;                             // 쿨 중
   if (P.castT > 0 || P.castGapT > 0) return false;                     // 동시 시전 금지
   if (!castArt(a)) return false;                                        // 대상이 없으면 아낀다
-  P.artCd[k] = a.cd * (1 - tBonus('cdr')/100);
+  P.artCd[k] = a.cd * (1 - tBonus('cdr')/100) * (1 - traitCdcut(k));
   P.castGapT = P.castT + CASTQ.gap;
   S.artXp[k] = (S.artXp[k] | 0) + 1;
   return true;
@@ -316,7 +316,7 @@ function castArt(a){
   if (a.heal){
     if (P.hp > P.hpMax * a.below) return false;
     beginCast(a.k);
-    P.hp = Math.min(P.hpMax, P.hp + P.hpMax * a.heal * artEff(a.k));
+    P.hp = Math.min(P.hpMax, P.hp + P.hpMax * a.heal * artEff(a.k) * traitMul(a.k, 'power'));
     fxPush({ k:'heal', x:P.x, y:P.y, life:0.7, t:0.7 });
     fxPush({ k:'artname', x:P.x, y:P.y - HERO.h - 10, v:a.n, life:0.8, t:0.8 });
     sfx('kill');
@@ -324,14 +324,16 @@ function castArt(a){
   }
   const alive = S.foes.filter(f => !f.dead);
   if (!alive.length) return false;
-  const dmg = heroDmg() * a.mul * artEff(a.k) * (1 + tBonus('artPower')/100);   // 숙련 성·트리 초식위력
+  const rng = a.range * traitMul(a.k, 'reach');                                 // 심화 사거리
+  const dmg = heroDmg() * a.mul * artEff(a.k) * (1 + tBonus('artPower')/100)
+            * traitMul(a.k, 'power');                                           // 숙련 성·트리 초식위력·심화 위력
   const hits = [];
   if (a.k === 'pagong' || a.k === 'baekbo'){
     // 단일 강타 — 파공권은 가장 가까운, 백보신권은 가장 먼 적
     let best = null, bd = a.k === 'pagong' ? 1e9 : -1;
     for (const f of alive){
       const d = dist(f.x, f.y, P.x, P.y);
-      if (d > a.range) continue;
+      if (d > rng) continue;
       if (a.k === 'pagong' ? d < bd : d > bd){ bd = d; best = f; }
     }
     if (!best) return false;
@@ -345,13 +347,13 @@ function castArt(a){
                 life:HFX.shotT + HFX.fadeT, t:HFX.shotT + HFX.fadeT });
   } else {
     // 광역 — 선풍퇴·붕산장
-    for (const f of alive) if (dist(f.x, f.y, P.x, P.y) <= a.range) hits.push(f);
+    for (const f of alive) if (dist(f.x, f.y, P.x, P.y) <= rng) hits.push(f);
     if (!hits.length) return false;
     beginCast(a.k);
     const gc = (HFX.glow[a.k]||{}).c;
-    fxPush({ k:'ring', x:P.x, y:P.y, r:a.range, c:gc, life:0.4, t:0.4 });
+    fxPush({ k:'ring', x:P.x, y:P.y, r:rng, c:gc, life:0.4, t:0.4 });
     // 광역 초식 파열 (v2.31) — 무공 색 섬광·속도선이 함께 터진다
-    fxBlast(P.x, P.y - HERO.h*0.4, a.range*0.55, gc, true);
+    fxBlast(P.x, P.y - HERO.h*0.4, rng*0.55, gc, true);
     shake(a.k === 'bungsan' ? 10 : 4);
   }
   for (const f of hits){
