@@ -213,7 +213,7 @@ function refreshArts(){
   } else if (!got){
     d += open
       ? '<button class="trbuy" id="abuy"' + (S.silver >= a.cost ? '' : ' disabled') +
-        '><span>' + fmt(a.cost) + '</span><i>' + coin() + '</i></button>'
+        '><span>' + fmt(a.cost) + '</span><i>' + coin() + ' 배우기</i></button>'
       : '<div class="zd need">' + realmName(a.need) + '에 열린다 · ' + coin() + ' ' +
         fmt(a.cost) + '</div>';
   }
