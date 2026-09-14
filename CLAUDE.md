@@ -291,7 +291,11 @@ openDeepen/closeDeepen/deepenHud로 #dbody에 그린다(옛 openArts→심화로
 **문파 무공도(스킬트리)** (v2.47) — 문파 탭 + 거미줄 노드망.
 데이터 TREEDATA(src/65b-treedata.js, 8문파 182노드), 엔진 66-tree.js
 (treeAlloc/treeBonus/skillPts — 경지 성당 +2). 패시브 노드는
-treeBonus로 전투 수식에 합산(수련과 별개 축), 무공 마디는 S.arts로 자동 시전.
+treeBonus로 전투 수식에 합산(수련과 별개 축). **무공 마디(eff.art)는 트리로
+습득 안 됨**(v2.54.2 "배우기도 전에 쓰네") — 트리는 무공을 주지 않고 배운
+무공을 '익힘'으로 비추기만 한다(treeArtNode·treeGift, treeApplyArt 폐지·
+treeAlloc/Avail/Dealloc이 거부). 안 배운 마디는 "무공 탭에서 먼저 배운다".
+옛 저장의 트리 부여 무공은 treeReapply가 S.arts에서 회수(기연·구매는 유지).
 교차 키스톤(강유상제 등)은 두 문파 노드를 다 익혀야 열린다. 검증은 treetest.
 신규 심법 6종 편입, 액티브 3종 보류(docs/트리안/신규무공.md·설계-스킬트리.md).
 **배우기 편의**(v2.50, "트리라서 배우기 힘들다") — 노드 선택 시 **경로 일괄

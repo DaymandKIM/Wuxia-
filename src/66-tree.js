@@ -12,11 +12,13 @@ const TREE = TREEDATA;   // 8문파 182노드 데이터는 65b-treedata.js (생�
 
 const treeNodes = s => TREE[s] || [];
 const treeNode  = (s,id) => (TREE[s]||[]).find(n=>n.id===id);
-// 기연(은거기인)이 무공을 직접 전수하면 S.arts엔 들어오지만 트리(S.tree)엔 없어
-// "안 배웠는데 쓰는" 불일치가 났다. 그 무공의 트리 마디를 '전수받음'으로 쳐서
-// 트리에도 익힘으로 보이게 한다(무공점은 안 든다 — skillPtsSpent는 S.tree만 셈).
+// v2.54.2 — 무공 습득은 '배우기' 버튼(63-arts)만 한다. 트리(심화)는 무공을
+// 주지 않고, 이미 배운 무공의 마디를 '익힘'으로 비추기만 한다. 안 그러면
+// 트리 마디를 켜는 순간 안 배운 무공이 시전됐다("배우기도 전에 쓰네").
+const treeArtNode = n => !!(n && n.eff && n.eff.art);
+// 무공 마디는 그 무공을 배웠으면(어느 경로든 S.arts) 무공점 없이 익힘으로 보인다.
 const treeGift  = (s,id) => { const n=treeNode(s,id);
-  return !!(n && n.eff && n.eff.art && S.arts[n.eff.art] && !(S.treeArt && S.treeArt[n.eff.art])); };
+  return treeArtNode(n) && !!S.arts[n.eff.art]; };
 const treeHas   = (s,id) => !!(S.tree[s] && S.tree[s][id]) || treeGift(s,id);
 
 // 교차 노드: 다른 문파 조건까지 충족돼야 열린다
@@ -25,7 +27,8 @@ function treeNeedOk(s,n){
   if (n.cross && !(S.tree[n.cross] && S.tree[n.cross][n.crossNode])) return false;
   return true;
 }
-const treeAvail = (s,n) => !treeHas(s,n.id) && treeNeedOk(s,n);
+// 무공 마디는 트리로 켤 수 없다 — 무공 탭 '배우기'로 배우면 자동으로 익힘 표시.
+const treeAvail = (s,n) => !treeArtNode(n) && !treeHas(s,n.id) && treeNeedOk(s,n);
 
 // 경지 포인트 — 누적 성 개수 × ptsPerStar. 쓴 점은 익힌 노드 비용의 합.
 const skillPtsTotal = () => realmLv() * SKILLTREE.ptsPerStar;
@@ -36,34 +39,28 @@ function skillPtsSpent(){
 }
 const skillPtsLeft = () => skillPtsTotal() - skillPtsSpent();
 
-// 무공 마디 = 기존 무공 습득(경지 조건 대신 트리로). 되돌리면 회수.
-function treeApplyArt(n, on){
-  if (!n.eff || !n.eff.art) return;
-  const k = n.eff.art;
-  if (!S.treeArt) S.treeArt = {};
-  if (on){ S.arts[k] = 1; S.treeArt[k] = 1; }
-  else if (S.treeArt[k]){ delete S.treeArt[k]; delete S.arts[k]; }
-}
-// 저장에서 돌아온 뒤 — 익힌 무공 마디의 습득 상태를 복원한다
+// 저장에서 돌아온 뒤 — 옛 저장에서 트리가 준 무공(S.treeArt)을 걷어낸다.
+// 안 그러면 안 배운 무공이 계속 시전된다. 기연으로 받은 건 별개라 안 건드린다.
 function treeReapply(){
-  S.treeArt = {};
-  for (const s in S.tree) for (const id in S.tree[s]){
-    const n=treeNode(s,id); if(n) treeApplyArt(n, true);
+  if (S.treeArt) for (const k in S.treeArt){
+    const a = (typeof artDef === 'function') ? artDef(k) : null;
+    if (!(a && a.fate)) delete S.arts[k];   // 트리가 준 무공만 회수 (기연·구매는 유지)
   }
+  S.treeArt = {};
 }
 
 function treeAlloc(s,id){
   const n=treeNode(s,id);
-  if (!n || treeHas(s,id) || !treeNeedOk(s,n) || skillPtsLeft() < (n.c||0)) return false;
+  // 무공 마디는 트리로 못 익힌다 — 무공 탭 '배우기' 몫 ("배우기도 전에 쓰네")
+  if (!n || treeArtNode(n) || treeHas(s,id) || !treeNeedOk(s,n) || skillPtsLeft() < (n.c||0)) return false;
   if (!S.tree[s]) S.tree[s] = {};
   S.tree[s][id] = 1;
-  treeApplyArt(n, true);
   return true;
 }
 function treeDealloc(s,id){
   const n=treeNode(s,id);
-  if (!n || !treeHas(s,id) || n.k==='root') return false;
-  if (!(S.tree[s] && S.tree[s][id])) return false;   // 기연 전수 마디는 되돌릴 수 없다(무공점 안 썼음)
+  if (!n || !treeHas(s,id) || n.k==='root' || treeArtNode(n)) return false;
+  if (!(S.tree[s] && S.tree[s][id])) return false;   // 익힘 표시만 되는 마디(무공점 안 씀)는 못 되돌린다
   // 뒤 마디가 이 노드에 기대면 못 되돌린다
   for (const m of treeNodes(s))
     if (treeHas(s,m.id) && m.need && m.need.includes(id)) return false;
@@ -71,7 +68,6 @@ function treeDealloc(s,id){
   for (const os in TREE) for (const m of treeNodes(os))
     if (m.cross===s && m.crossNode===id && treeHas(os,m.id)) return false;
   delete S.tree[s][id];
-  treeApplyArt(n, false);
   return true;
 }
 

@@ -53,38 +53,41 @@ setTimeout(()=>{
   w.eval('S.tree.bamboo.b12=1;');   // castSpd 노드
   ok(w.eval('treeBonus("castSpd")')>0,'시전 속도 노드가 합산된다');
 
-  // 2) 무공 마디 — b4=청죽공(심법 chulwoo) 익히면 습득된다
-  ok(w.eval('treeAlloc("bamboo","b4")')===true,'무공 마디(청죽공)를 익힌다');
-  ok(w.eval('S.arts.chulwoo===1'),'무공 마디를 익히면 그 무공이 습득된다(S.arts)');
-  ok(w.eval('S.treeArt.chulwoo===1'),'트리가 준 무공으로 표시된다');
-  // 심법이 실제 배수에 반영 (청죽공은 hp 계열 → artMul('hp'))
+  // 2) 무공 마디 — 트리로는 못 배운다(무공 탭 '배우기' 몫). "배우기도 전에 쓰네" 방지.
+  //    b4=청죽공(심법 chulwoo). 트리 클릭으로 습득되면 안 된다.
+  ok(w.eval('treeAlloc("bamboo","b4")')===false,'무공 마디는 트리로 못 익힌다 (배우기 몫)');
+  ok(w.eval('!S.arts.chulwoo'),'트리 클릭으로는 무공이 습득되지 않는다');
+  // 무공 탭에서 배우면(learnArt) 그 마디가 자동으로 익힘 표시 + 무공점 안 듦
+  w.eval('S.silver=1e9; learnArt("chulwoo");');
+  ok(w.eval('S.arts.chulwoo===1'),'무공 탭에서 배우면 습득된다(S.arts)');
+  const spentB=w.eval('skillPtsSpent()');
+  ok(w.eval('treeHas("bamboo","b4")'),'배운 무공의 트리 마디가 자동 익힘 표시된다');
+  ok(w.eval('skillPtsSpent()')===spentB,'그 마디는 무공점을 쓰지 않는다');
   ok(w.eval('artMul("hp")')>1,'익힌 심법이 artMul에 반영된다 (hp '+w.eval('artMul("hp").toFixed(3)')+')');
 
-  // 액티브 초식 마디 습득 → 자동 시전 검증 (파공권을 트리로 습득시켜 본다)
-  w.eval(`TREE.bamboo.push({id:'bx',x:0,y:900,k:'major',n:'시험초식',h:'',c:2,need:['b0'],eff:{art:'pagong'}});`);
-  ok(w.eval('treeAlloc("bamboo","bx")')===true && w.eval('S.arts.pagong===1'),'액티브 초식 마디도 습득된다(파공권)');
+  // 액티브 초식 — 무공 탭에서 배우면 자동 시전 루프를 탄다
+  w.eval('learnArt("pagong");');
+  ok(w.eval('S.arts.pagong===1'),'초식(파공권)도 무공 탭에서 배운다');
   w.eval(`gotoZone(0,3); S.intro=0; S.foes.length=0; spawnFoe();
     S.foes[0].x=P.x+30; S.foes[0].y=P.y; S.foes[0].hp=1e9; S.foes[0].hpMax=1e9;
     P.hp=P.hpMax; P.castT=0; P.castGapT=0; P.artCd={}; S.fx.length=0;
     for(let i=0;i<40;i++) stepArts(1/60);`);
   ok(w.eval('P.artCd.pagong!==undefined'),'습득한 초식이 자동 시전 루프를 탄다 (쿨 진입)');
+  ok(w.eval('treeDealloc("bamboo","b4")')===false,'무공 마디는 트리로 되돌릴 수 없다');
 
   // 4) 되돌리기 — b0은 뒤 마디가 많아 못 되돌린다, 잎 노드는 회수된다
   ok(w.eval('treeDealloc("bamboo","b0")')===false,'뒤 마디가 있으면 되돌릴 수 없다');
   const spentA=w.eval('skillPtsSpent()');
   ok(w.eval('treeDealloc("bamboo","b11")')===true,'잎 노드는 되돌려진다');
   ok(w.eval('skillPtsSpent()')<spentA,'되돌리면 무공점이 회수된다');
-  // 무공 마디 되돌리면 습득 해제
-  w.eval('treeDealloc("bamboo","bx")');
-  ok(w.eval('!S.arts.pagong'),'무공 마디를 되돌리면 습득이 해제된다');
 
   // 5) 저장·복원
   w.eval('saveNow()');
   const save=w.localStorage.getItem('wuxia1');
   const w2=boot(save);
   setTimeout(()=>{
-    ok(w2.eval('S.tree.bamboo && S.tree.bamboo.b4===1'),'익힌 노드가 저장·복원된다');
-    ok(w2.eval('S.arts.chulwoo===1 && S.treeArt.chulwoo===1'),'무공 마디 습득도 복원된다');
+    ok(w2.eval('S.tree.bamboo && S.tree.bamboo.b0===1'),'익힌 노드가 저장·복원된다');
+    ok(w2.eval('S.arts.chulwoo===1 && treeHas("bamboo","b4")'),'배운 무공·마디 익힘 표시가 복원된다');
     ok(w2.eval('treeBonus("atk")')>=0,'복원 뒤 treeBonus가 다시 계산된다');
     ok(errs.length===0,'런타임 오류 0'+(errs.length?': '+errs[0]:''));
     console.log(bad?('\n★ 실패 '+bad+'건'):'\n문제 없음');

@@ -20,6 +20,7 @@ function treeClosure(s, id){
     if (treeHas(s, nid) || need.has(nid)) return;
     const n = treeNode(s, nid); if (!n) return;
     need.add(nid);
+    if (treeArtNode(n)) blocked = true;   // 무공 마디는 무공 탭에서 배워야 열린다 (자동 습득 불가)
     if (n.cross && !(S.tree[n.cross] && S.tree[n.cross][n.crossNode])) blocked = true;
     if (n.need) n.need.forEach(visit);
   };
@@ -164,7 +165,7 @@ function drawTree(col){
       svg.appendChild(svgEl('circle', { cx:n.x, cy:n.y, r:r+6, fill:'none',
         stroke: has?colHi:(avail?dim:'#2b3542'), 'stroke-width':1.2, 'stroke-dasharray':'3 4' }));
     }
-    // 기연으로 전수받은 마디 — 금 점선 고리 (무공점 없이 익혀 있다)
+    // 배운 무공 마디 — 금 점선 고리 (무공 탭·기연으로 익힘, 무공점 안 듦)
     if (gift){
       svg.appendChild(svgEl('circle', { cx:n.x, cy:n.y, r:r+7, fill:'none',
         stroke:'#e9c451', 'stroke-width':1.6, 'stroke-dasharray':'2 4', opacity:.9 }));
@@ -199,7 +200,7 @@ function drawTreeInfo(col){
   if (!n) n = nodes[0];
   if (!n){ info.innerHTML = ''; return; }
   const has = treeHas(treeSchool, n.id), avail = treeAvail(treeSchool, n);
-  const gift = treeGift(treeSchool, n.id);
+  const isArt = treeArtNode(n);
   const kindMap = { root:'입문', minor:'소절', major:'무공', keystone:'비전', cross:'문파 교차 비전' };
   // 여기까지 익히는 데 필요한 (안 익힌) 마디 전부 — 앞 마디를 한 번에 켠다
   const cl = has ? {ids:[],cost:0,blocked:false} : treeClosure(treeSchool, n.id);
@@ -207,7 +208,10 @@ function drawTreeInfo(col){
   const canPay = skillPtsLeft() >= cl.cost;
   const left = skillPtsLeft();
   let btn, hint = '';
-  if (gift){ btn = ''; hint = '<b style="color:#e9c451">기연 전수</b> — 무공점 없이 익혀 있다.'; }
+  // 무공 마디는 트리로 못 배운다 — 무공 탭 '배우기'로 배우면 자동 익힘 ("배우기도 전에 쓰네")
+  if (isArt){ btn = '';
+    hint = has ? '익힌 무공이다 — <b>무공 탭</b>에서 배웠다. (심화 특성은 다음 단계)'
+               : '<b>무공 탭</b>에서 「' + n.n + '」을 먼저 배운다 — 배우면 여기가 열린다.'; }
   else if (has && n.k!=='root'){ btn = '<button class="tundo">되돌리기</button>'; hint = '익힘.'; }
   else if (has){ btn = ''; hint = '익힘 (입문).'; }
   else if (cl.blocked){
