@@ -45,6 +45,9 @@ loadImg('fx_gate', ASSET.fx_gate);
 loadImg('fx_aura', ASSET.fx_aura);
 loadImg('fx_dark', ASSET.fx_dark);
 loadImg('shaman_m2', ASSET.shaman_m2);
+// 배경 소품 스프라이트 — 구역 시트에서 추출 (v2.59)
+for (const z in PROPS){ const D = PROPS[z];
+  if (D.kind === 'sprite') for (const p of D.pick) loadImg(p[0], ASSET[p[0]]); }
 
 // 하단 탭 — 같은 탭 재클릭이면 닫고, 다른 패널은 접는다
 function closeSheets(){ closeZonePanel(); closeTrain(); closeArts(); closeRealmPanel();

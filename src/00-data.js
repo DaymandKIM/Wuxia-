@@ -154,41 +154,17 @@ const AMB = {
   heaven:  { kind:'cloud', n:4,  c:'22,30,26',    spd:11 },   // 흐르는 구름 그림자
 };
 
-// 구역별 지형 스캐터 — 시트 없이 절차적으로 깐다. 월드 좌표에 고정돼
-// 이동하면 뒤로 지나간다(AMB는 화면 고정, 이건 땅 고정). 무상태(셀 좌표
-// 해시)라 저장·sim 무관. kind=그리는 방식, cols=팔레트, dens=셀이 채워질
-// 확률, sz=[최소,최대] 크기. 격자 대신 '보는 재미'를 주는 땅 층.
-const TERR = {
-  bamboo:  { kind:'grass', cols:['#586b3c','#6d8749','#83a15a'],          dens:0.60, sz:[7,15] },
-  village: { kind:'leaf',  cols:['#7a6238','#8f7444','#5a4a2e','#6b5a3a'], dens:0.66, sz:[2,2]  },
-  cave:    { kind:'rock',  cols:['#3b3d44','#4b4e56','#2d2f35'],          dens:0.46, sz:[5,11] },
-  snow:    { kind:'drift', cols:['#eaf0f7','#d6dfea','#c4d0e0'],          dens:0.40, sz:[14,30] },
-  heaven:  { kind:'tuft',  cols:['#5d7850','#6d885b','#8a7a55','#55503f'], dens:0.48, sz:[5,11] },
-};
-
-// 구역별 랜드마크 소품 — 잔 스캐터(TERR)보다 크고 성기게, 뒤 층에 세운다.
-// 역시 시트 없이 절차로 그린다. 월드 좌표 고정(넓은 격자 grid), 무상태(셀 해시).
-// dens=셀 채움 확률, grid=배치 간격, h=[최소,최대] 높이. cols=팔레트.
-// 그림체는 스프라이트와 맞춘다 — 픽셀 블록(정수 정렬 fillRect)·다크 아웃라인
-// (line)·플랫 셀 음영(shade). 곡선·안티앨리어싱 없음. (렌더는 50-render.)
-// 그림체는 스프라이트와 맞춘다 — 픽셀 블록·다크 아웃라인(line). 입체는 3톤:
-// hi(하이라이트 왼쪽)·본색·shade(그림자 오른쪽). (렌더는 50-render.)
+// 구역별 배경 소품 — 사용자 제미나이 시트에서 추출한 스프라이트 (v2.59).
+// kind:'sprite', pick:[에셋키, 게임 높이, 가중치] — 가중 랜덤. 랜드마크는 드물게,
+// 잔소품 잦게. 월드 좌표 고정(넓은 격자 grid)·무상태(셀 해시)라 저장·sim 무관.
+// 절차 드로잉(옛 TERR·픽셀 소품)은 폐기 — 시트가 온 구역만 채운다.
+// (날씨 입자 눈·재·낙엽·반딧불·구름은 AMB에서 계속 절차로 그린다.)
 const PROPS = {
-  bamboo:  { kind:'stalk', dens:0.50, grid:200, h:[58,112],
-             cols:{ stem:'#7aa04e', hi:'#9ac267', shade:'#54742f', node:'#3f5528',
-                    leaf:'#8fbb57', leaf2:'#a7d06e', line:'#232d18' } },
-  village: { kind:'ruin',  dens:0.42, grid:210, h:[18,32],
-             cols:{ clay:'#8a6a48', hi:'#a6875f', shade:'#674c31', dark:'#38291a',
-                    wood:'#6e5537', woodhi:'#8a6b42', line:'#281e13' } },
-  cave:    { kind:'mite',  dens:0.46, grid:190, h:[28,66],
-             cols:{ rock:'#4a4f59', hi:'#646b7a', shade:'#2f343c', edge:'#7e8698',
-                    crystal:'#6fe0ea', line:'#171b21' } },
-  snow:    { kind:'pine',  dens:0.42, grid:205, h:[70,120],
-             cols:{ leaf:'#3f6048', hi:'#517858', shade:'#284031', snow:'#f2f6fc',
-                    snow2:'#cfdcec', trunk:'#5a4632', line:'#1a251e' } },
-  heaven:  { kind:'cairn', dens:0.40, grid:200, h:[20,42],
-             cols:{ stone:'#94907c', hi:'#aca890', shade:'#6b6656', dark:'#514c3b',
-                    shrub:'#52704a', shrub2:'#688a5a', line:'#22261b' } },
+  bamboo:  { kind:'sprite', dens:0.50, grid:150,
+             pick:[ ['bamboo_big',100,3], ['bamboo_mid',76,3], ['bamboo_one',66,3],
+                    ['bamboo_shoot',30,2], ['bamboo_rock',26,1], ['bamboo_fern',36,2],
+                    ['bamboo_log',24,1],   ['bamboo_grass',22,3] ] },
+  // village·cave·snow·heaven — 시트 오면 sprite로 추가.
 };
 
 // 난이도 — 전역 단계 g(1~50)가 축이다. 구역은 배경·계보·서사의 단위.
