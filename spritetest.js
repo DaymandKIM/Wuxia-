@@ -57,9 +57,9 @@ function png(buf) {
 
 // ── 게임 데이터 읽기 ────────────────────────────────────
 const data = fs.readFileSync(__dirname+'/src/00-data.js', 'utf8');
-const { FOES, ANIM, HERO, HFX } = new Function(
+const { FOES, ANIM, HERO, HFX, WEAPONMOVES } = new Function(
   data.replace('"use strict";', '').replace(/const zone\s*=[\s\S]*?;\n/, '') +
-  ';return {FOES, ANIM, HERO, HFX};')();
+  ';return {FOES, ANIM, HERO, HFX, WEAPONMOVES};')();
 
 let bad = 0;
 function check(label, file, w, h, noEdge) {
@@ -125,8 +125,8 @@ check('정권 왼손',   'punchb.png', HFX.aw.punch * 4, HERO.h);
 check('발차기 옆',   'kickside.png', HFX.aw.kickside * 4, HERO.h);
 check('발차기 돌려', 'kickround.png', HFX.aw.kickround * 4, HERO.h);
 check('발차기 뛰어', 'kickhigh.png', HFX.aw.kickhigh * 4, HERO.h);
-for (const k of ['swordthrust','swordslash','swordspin'])   // 검 장착 기본공격 (v2.72)
-  check('검 ' + k, k + '.png', HFX.aw[k] * 4, HERO.h);
+for (const wk in WEAPONMOVES) for (const m of WEAPONMOVES[wk])   // 무기별 기본공격 (v2.72 검 · v2.72.1 부채)
+  check(wk + ' ' + m.key, m.key + '.png', HFX.aw[m.key] * 4, HERO.h);
 for (const ck in HFX.cast)   // 시전 스트립은 초식마다 별도
   // 시전 스트립은 원본 칸이 이펙트를 경계까지 그려 접촉이 정상 — 크기만 본다
   check('hero cast ' + ck, HFX.cast[ck][0] + '.png', HFX.cast[ck][1] * HFX.cast[ck][2], HERO.h, true);

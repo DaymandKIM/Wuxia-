@@ -1,3 +1,10 @@
+# v2.72.1 — 부채 공격 모션 (사용자 시트 sheets/hero_fan2.png, 2026-09-15)
+
+- WEAPONMOVES.fan = **휘두르기(fansweep, 0)·회전(fanspin, 5)·찌르기(fanstrike, 15)**. `hero_fan2.py`(hero_sword2 틀).
+  컷 선택은 스크립트 머리말에(발차기+부채 별 컷·접은 부채 겨눔 컷은 안 씀). HFX.aw 62/64/62.
+- spritetest·fxtest가 WEAPONMOVES를 돌며 무기별 무브셋을 자동 검사한다(새 무기는 데이터에 얹기만 하면 검사됨).
+- 검증 review/hero_fan2.png·blackcheck·전 회귀·크로뮴 실기.
+
 # v2.72 — 검 공격 모션: 검을 끼면 기본공격이 바뀐다 (사용자 시트 sheets/hero_sword2.png, 2026-09-15)
 
 - **무기별 무브셋** WEAPONMOVES(00-data) — 무기 자리에 낀 종류(heroWeaponKind)로 atkPool이 무브셋을 고른다.
