@@ -51,6 +51,7 @@ function buildTrainPanel(){
   h += '</div>';
   for (const s of TRAIN.list){
     h += '<div class="zrow trow" id="tr-' + s.k + '">' +
+         '<img class="tico" src="' + (ASSET['train_' + s.k] || '') + '" alt="">' +   // 스텟 아이콘 (v2.62)
          '<div class="trl"><div class="zn">' + s.n + ' <em id="trlv-' + s.k + '"></em></div>' +
          '<div class="zd" id="trfx-' + s.k + '">' + s.d + '</div></div>' +
          '<button class="trbuy" data-k="' + s.k + '"><span id="trc-' + s.k + '"></span><i>' + coin() + '</i></button>' +

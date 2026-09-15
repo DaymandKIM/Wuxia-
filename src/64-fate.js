@@ -40,6 +40,7 @@ function maybeFate(){
   if (!S.fatePending || fateEv) return;
   fateEv = rollFate();
   fateAutoT = FATE.autoSec;
+  $('fart').src = ASSET['fate_' + FATE.art[fateEv.k]] || '';   // 카드 일러스트 (v2.62)
   $('ftitle').textContent = fateEv.n;
   $('ftext').innerHTML = fateEv.d + '<br><b>' + fateEv.r + '</b>';
   $('fpanel').classList.add('show');

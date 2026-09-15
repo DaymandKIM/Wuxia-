@@ -975,6 +975,7 @@ const FATE = {
   fragW:     0.35,               // 조각이 뽑힐 가중치 (그 외엔 균등)
   scrollMul: 250,                // 낡은 비급 은자 = 현재 처치 드랍 × 이 값
   elixirExp: 0.6,                // 영약 수련치 = 다음 승급 필요량 × 이 값
+  art: { scroll:'book', elixir:'herb', master:'hermit', frag:'frag' },   // 카드 일러스트 키(fate_*)
   pool: [
     { k:'scroll', n:'낡은 비급',   d:'바위 틈에서 손때 묻은 책이 나왔다' },
     { k:'elixir', n:'천년 영약',   d:'달빛 아래 향긋한 열매가 익어 있었다' },
