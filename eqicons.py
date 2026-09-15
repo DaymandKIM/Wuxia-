@@ -27,6 +27,9 @@ def main(grade, path):
         ci = int(np.bincount(np.clip((xx * 6) // W, 0, 5)).argmax()); cells[ci].append(j + 1)
     out = []
     for i, k in enumerate(KINDS):
+        # 칸 안 가장 큰 덩어리의 20% 미만 조각은 버린다(v2.81.1 전설 봉 시트: 봉 옆에 떨어진 짧은 토막·큰 반짝임 — 아이콘에선 잡동사니).
+        # 권갑은 두 장갑이 비슷한 크기라 둘 다 남는다.
+        big = max(sizes[j - 1] for j in cells[i]); cells[i] = [j for j in cells[i] if sizes[j - 1] >= big * 0.2]
         m = np.isin(lab, cells[i]); yy, xx = np.where(m)
         crop = np.zeros((yy.max() - yy.min() + 1, xx.max() - xx.min() + 1, 4), np.uint8)
         crop[..., :3] = A[yy.min():yy.max() + 1, xx.min():xx.max() + 1]; crop[..., 3] = m[yy.min():yy.max() + 1, xx.min():xx.max() + 1] * 255
