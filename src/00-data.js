@@ -164,7 +164,19 @@ const PROPS = {
              pick:[ ['bamboo_big',100,3], ['bamboo_mid',76,3], ['bamboo_one',66,3],
                     ['bamboo_shoot',30,2], ['bamboo_rock',26,1], ['bamboo_fern',36,2],
                     ['bamboo_log',24,1],   ['bamboo_grass',22,3] ] },
-  // village·cave·snow·heaven — 시트 오면 sprite로 추가.
+  village: { kind:'sprite', dens:0.46, grid:155,
+             pick:[ ['vil_jar',42,1], ['vil_pot',26,2], ['vil_post',46,2], ['vil_fence',40,1],
+                    ['vil_stump',40,2], ['vil_stump2',42,1], ['vil_wheel',46,1], ['vil_tiles',28,2],
+                    ['vil_bush',44,3], ['vil_planks',24,3] ] },
+  cave:    { kind:'sprite', dens:0.46, grid:150,
+             pick:[ ['cav_mite',80,2], ['cav_mite2',56,2], ['cav_crystal',58,1], ['cav_boulder',46,2],
+                    ['cav_rubble',34,3], ['cav_mushroom',40,2], ['cav_spire',72,2], ['cav_shard',18,3] ] },
+  snow:    { kind:'sprite', dens:0.44, grid:160,
+             pick:[ ['sno_pine',102,3], ['sno_pine2',82,3], ['sno_deadtree',96,1], ['sno_rock',34,3],
+                    ['sno_drift',26,3], ['sno_ice',48,1], ['sno_bush',40,2], ['sno_stump',40,2] ] },
+  heaven:  { kind:'sprite', dens:0.44, grid:158,
+             pick:[ ['hev_cairn',48,2], ['hev_windtree',66,2], ['hev_boulder',48,2], ['hev_bonsai',72,1],
+                    ['hev_menhir',64,1], ['hev_grass',42,3], ['hev_stones',30,3], ['hev_flag',74,1] ] },
 };
 
 // 난이도 — 전역 단계 g(1~50)가 축이다. 구역은 배경·계보·서사의 단위.
