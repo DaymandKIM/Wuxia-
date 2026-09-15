@@ -357,12 +357,15 @@ const TEST = true;
 // 적 종류 — 구역마다 등장 목록이 다르다
 const FOES = {
   bandit: {
-    n:'대나무 강도', w:56, h:51,
-    anim:{ idle:['idle'], walk:['walk','run'],
-           atk:['atk0','atk1','atk2'], hit:['hit'], death:['death','death2'] },
-    // atk 3프레임을 공격 시간(FOE.dur 0.55초)에 맞춘다 — 7fps(0.43초)면 마지막
-    // 프레임이 0.12초 얼어붙었다(v2.55.3). 3/5.4≈0.556초로 꽉 채운다.
-    fps:{ idle:3, walk:6, atk:5.4, hit:6, death:5 },
+    // v2.64 재작업 — 붉은 두건·가죽 조끼·단도 산적 (사용자 시트 sheets/bandit.png, bandit.py).
+    // 옛 판은 옷·머리가 주인공과 같아 헷갈렸다. 시체 컷은 돌바닥이 몸과 같은 색이라
+    // 못 떼어내 죽음은 피격→무릎 2컷.
+    n:'대나무 강도', w:60, h:49,
+    anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'],
+           atk:['atk0','atk1','atk2','atk3'],     // 웅크림 → 찌르기 → 참격 → 갈무리
+           hit:['hit'], death:['hit','death0'] },
+    // atk 4프레임을 공격 시간(FOE.dur 0.55초)에 맞춘다 — 4/7.3≈0.55초
+    fps:{ idle:4, walk:7, atk:7.3, hit:6, death:4 },
     hp:1.0, dmg:1.0, spd:1.0, range:44,   // 기준
   },
   wisp: {
@@ -382,20 +385,17 @@ const FOES = {
     hp:0.78, dmg:1.15, spd:1.45, range:60,   // 도약이 길다
   },
   shaman: {
-    // 시전 프레임(m1)에 기운까지 한 장으로 들어 있어 캔버스가 넓다.
-    // 몸은 56x54 — 그림자·기울임·체력바는 sw/bh 를 쓴다.
-    n:'대나무 주술사', w:198, h:63, sw:56, bh:54,
-    anim:{ idle:['idle'], walk:['walk','run'],
-           // 기본 공격 — 손에 구체를 모아 쏜다 (m0 자세만 쓴다)
-           atk:['idle','m0','m0','m0','idle'],
-           // 스킬 — 모으다(m0) 터뜨리고(m1) 갈무리한다(m3).
-           // m1 한 장에 기운까지 들어 있다. 시트에서 가운데 두 칸이
-           // 원래 한 그림이라 그렇게 잘랐다.
-           skill:['m0','m0','m0','m1','m1','m3'],
-           hit:['cast'], death:['cast'] },
-    // skill 6프레임을 시전 시간(skillDur 1.0초) 안에 맞춘다 — 5.5fps(1.09초)면
-    // 마지막 컷(m3 갈무리)이 안 나왔다(v2.55.3). 6/6.2≈0.97초로 끝까지 보인다.
-    fps:{ idle:3, walk:6, atk:6.4, skill:6.2, hit:5, death:4 },
+    // v2.64 재작업 — 사용자 시트 2장(sheets/shaman.png 대기·걷기·주문·피격·죽음,
+    // shaman_b.png 지팡이 공격, shaman.py). 옛 판은 지팡이를 추정으로 이어 붙였었다.
+    // 주문 컷(cast2)에 기탄이 함께 그려져 캔버스가 넓다 — 몸은 40x50 (sw/bh).
+    // 큰 구체 탄 그림 shaman_m2는 옛 시트 것을 그대로 쓴다(50-render).
+    n:'대나무 주술사', w:82, h:56, sw:40, bh:50,
+    anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'],
+           atk:['cast0','cast1','cast2','cast3'],       // 지팡이 들기 → 구체 빛 → 기탄 발사 → 내림
+           skill:['staff0','staff1','staff2','staff3'], // 큰 구체 — 지팡이 들어 내리쳐 뻗으며 쏜다
+           hit:['hit'], death:['death0','death1','death2'] },   // 비틀 → 무릎 → 엎어짐
+    // skill 4프레임을 시전 시간(skillDur 1.0초)에 맞춘다(4/4=1.0초). atk 4컷은 0.67초.
+    fps:{ idle:3.5, walk:6, atk:6, skill:4, hit:5, death:4 },
     hp:0.55, dmg:0.85, spd:0.85,
     ranged:true, range:96, shotSpd:170, atkAt:0.55,
     skillCd:7.5, skillDur:1.0, skillAt:0.55, skillDmg:2.2, skillR:26,

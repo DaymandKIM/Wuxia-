@@ -117,9 +117,10 @@ review/            검사판 PNG (생성물)
 |---|---|---|
 | `frog.py` | `sheets/frog_idle.png` `sheets/frog_atk.png` | 돌아간다 |
 | `demonsheet.py` → `demonclean.py` | `sheets/demon.png` | 돌아간다 (순서 지켜야 함) |
-| `shamanmagic.py` | `sheets/shaman_magic.png` | 돌아간다 (`shamanstaff.py` 먼저) |
-| `shamanstaff.py` | `raw/shaman/` | 지팡이를 추정으로 이어 붙인다 |
-| `bandit.py` `wisp.py` `panther.py` `bossfx.py` | **시트 없음** | 못 돌린다 |
+| `bandit.py` → `foesheet.py` | `sheets/bandit.png` | 돌아간다 (v2.64, 4×4 공용 추출기) |
+| `shaman.py` → `foesheet.py` | `sheets/shaman.png` + `shaman_b.png` | 돌아간다 (v2.64, 두 시트 합침) |
+| `wisp.py` `panther.py` `bossfx.py` | **시트 없음** | 못 돌린다 |
+| `shamanmagic.py` `shamanstaff.py` | — | 옛 주술사(추정 지팡이). v2.64에 대체돼 쓰지 않는다 |
 | `shaman.py` `demon.py` `shamanorb.py` | — | 옛 버전. 쓰지 않는다 |
 
 시트가 없는 것들은 `assets/`의 결과물만 남아 있다. 다시 뽑으려면 시트가 필요하다.
@@ -173,6 +174,9 @@ review/            검사판 PNG (생성물)
 
 없으면 `w`·`h`를 쓴다.
 
+**시트 방향은 눈으로 단정하지 말고 실기로 확인한다.** 강도 시트(v2.64)를 왼쪽 보기로
+오판해 반전했더니 게임에서 주인공에게 등을 돌렸다. 뽑은 뒤 반드시 주인공 좌·우에 세운
+크로뮴 스크린샷으로 확인한다.
 **적 스프라이트 기본 방향은 오른쪽이다.** `f.dir = P.x >= f.x ? 1 : -1`이고
 dir이 음수일 때만 좌우 반전하므로, 에셋은 오른쪽을 봐야 양쪽에서 주인공을
 향한다. AI 시트가 왼쪽을 보면 추출 때 뒤집는다 — 단, 칸마다 방향이 섞인
