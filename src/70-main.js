@@ -62,7 +62,8 @@ for (const z in GROUNDTEX.keys){ const k = GROUNDTEX.keys[z]; if (ASSET[k]) load
 
 // 하단 탭 — 같은 탭 재클릭이면 닫고, 다른 패널은 접는다
 function closeSheets(){ closeZonePanel(); closeTrain(); closeArts(); closeRealmPanel(); closeEquip();
-  if (typeof closeDeepen === 'function') closeDeepen(); }
+  if (typeof closeDeepen === 'function') closeDeepen();
+  const tp = $('tpanel'); if (tp) tp.classList.remove('show'); }   // [테스트 전용] 시험 패널이 DOM 뒤라 열린 채면 다른 패널을 덮어 못 눌렀다(v2.70.4)
 $('tab-zone').onclick = () => {
   const open = $('zpanel').classList.contains('show');
   closeSheets();
@@ -101,7 +102,7 @@ $('rpanel').onclick = e => { if (e.target.id === 'rpanel') closeRealmPanel(); };
 let TESTSPEED = 1;
 if (TEST){
   $('tbtn').classList.add('on');
-  $('tbtn').onclick   = () => $('tpanel').classList.toggle('show');
+  $('tbtn').onclick   = () => { const open = $('tpanel').classList.contains('show'); closeSheets(); if (!open) $('tpanel').classList.add('show'); };
   $('tclose').onclick = () => $('tpanel').classList.remove('show');
   $('tpanel').onclick = e => { if (e.target.id === 'tpanel') $('tpanel').classList.remove('show'); };
   $('tdown').onclick  = () => { if (!P.dead && S.intro <= 0) downHero(); };

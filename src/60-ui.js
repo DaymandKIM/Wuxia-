@@ -16,7 +16,7 @@ function hud(){
   $('tabs').style.opacity = showing ? '1' : '0';
   // 스킬창·시험 버튼은 패널이 열리면 감춘다 — 패널 위로 떠서 스탯 줄·무공
   // 칸을 가린다는 피드백(v2.33). 어느 시트든 열려 있으면 숨긴다.
-  const panelOpen = ['zpanel','trpanel','apanel','dpanel','rpanel','tpanel','opanel','fpanel']
+  const panelOpen = ['zpanel','trpanel','apanel','dpanel','rpanel','tpanel','opanel','fpanel','epanel']   // epanel 누락 → 장비 탭 위로 스킬창 쿨이 비쳤다(v2.70.4)
     .some(id => $(id) && $(id).classList.contains('show'));
   const bars = showing && !panelOpen;
   const sb = $('sbar'); sb.style.opacity = bars ? '1' : '0'; sb.style.pointerEvents = bars ? '' : 'none';

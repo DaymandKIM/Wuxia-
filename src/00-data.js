@@ -986,7 +986,7 @@ const EQUIP = {
     // 무기 자리 = 무림 무기 체계(사용자 확정 v2.70.3: "권 검 도 창 봉 등 우리가 나눴던 체계"). **권은 한 종류** —
     // 맨주먹 계열의 장비 이름은 게임 관례대로 권갑(拳套). 종류[3] = 아이콘 키(없으면 eq_<종류>). 아이콘 없는
     // 종류는 화면·드랍에서 빠진다(eqKinds) — 권갑 아이콘이 오면 저절로 등장.
-    { k:'weapon',  n:'무기',   stat:'atk',  kinds:[['fist','권갑','spd','eq_fist'],['sword','검','crit'],['saber','도','aspd'],['spear','창','cdmg'],['staff','봉','regen'],['ironball','철구','hp'],['fan','철선','gold']] },
+    { k:'weapon',  n:'무기',   stat:'atk',  kinds:[['fist','권갑','spd','eq_fist'],['sword','검','crit'],['saber','도','aspd'],['spear','창','cdmg'],['staff','봉','regen'],['fan','부채','gold']] },   // 철구는 뺐고 철선은 부채로(v2.70.4, 사용자)
     { k:'armor',   n:'방어구', stat:'hp',   kinds:[['robe','무복','regen'],['vest','피갑','aspd'],['lamellar','찰갑','hp'],['cloak','도롱이','spd']] },
     { k:'trinket', n:'장신구', stat:'gold', kinds:[['pendant','옥패','crit'],['ring','반지','cdmg'],['beads','염주','regen'],['talisman','부적','atk'],['gourd','호리병','hp'],['ribbon','비단끈','spd']] },
   ],

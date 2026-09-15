@@ -34,7 +34,7 @@ setTimeout(()=>{
   // 1) 드랍
   ok(EQ.slots.every(sl=>S.equip[sl.k] && S.equip[sl.k].g===0) && S.equip.weapon.k==='sword','시작 장비: 자리마다 일반 하나(권갑 아이콘이 없는 동안 무기는 검)');
   EQ.dropCh=1; S.inv={}; S.codex={}; S.itemLv={}; S.equip={weapon:null,armor:null,trinket:null};
-  ok(w.eqKinds(EQ.slots[0]).length===6 && !w.eqKinds(EQ.slots[0]).some(k=>k[0]==='fist'),'아이콘 없는 권갑은 화면·드랍에서 빠진다(무기 6종 보임)');
+  ok(w.eqKinds(EQ.slots[0]).length===5 && !w.eqKinds(EQ.slots[0]).some(k=>k[0]==='fist'),'아이콘 없는 권갑은 화면·드랍에서 빠진다(무기 5종 보임)');
   S.equip={weapon:null,armor:null,trinket:null};
   for(let i=0;i<40;i++) w.rollDrop(false);
   ok(EQ.slots.every(sl=>S.equip[sl.k]),'40번 드랍에 빈 자리 셋이 첫 장비를 꼈다');
@@ -50,16 +50,16 @@ setTimeout(()=>{
   ok(!w.canMerge('fan',4),'최고 등급(전설)은 합성 안 됨');
   // 3) 자동 장착·직접 장착
   ok(S.equip.weapon.k==='sword' && S.equip.weapon.g===0,'첫 장비(일반 검)를 끼고 있다');
-  ok(w.eqAutoEquipAll()>=1 && S.equip.weapon.k==='fan' && S.equip.weapon.g===4,'자동 장착: 장착 효과 최대(전설 철선)로');
+  ok(w.eqAutoEquipAll()>=1 && S.equip.weapon.k==='fan' && S.equip.weapon.g===4,'자동 장착: 장착 효과 최대(전설 부채)로');
   ok(w.eqWear('sword',3) && S.equip.weapon.k==='sword' && S.equip.weapon.g===3,'직접 장착: 영웅 검');
   ok(w.eqWear('spear',4)===false,'없는 장비는 못 낀다');
-  // 레벨 반영 자동 장착 — 영웅 검을 많이 올리면 전설 철선보다 강해진다
+  // 레벨 반영 자동 장착 — 영웅 검을 많이 올리면 전설 부채보다 강해진다
   S.silver=1e15; while(w.levelItem('sword',3));
   ok(w.itemLv('sword',3)===EQ.grades[3].lvCap,'영웅 검 레벨 상한 '+EQ.grades[3].lvCap);
-  ok(w.itemPct('sword',3)>w.itemPct('fan',4) && !w.eqBetterAny(),'강화한 영웅 검(+'+w.itemPct('sword',3).toFixed(0)+'%)이 전설 철선(+'+w.itemPct('fan',4).toFixed(0)+'%)보다 세다 → 갈아입을 것 없음');
+  ok(w.itemPct('sword',3)>w.itemPct('fan',4) && !w.eqBetterAny(),'강화한 영웅 검(+'+w.itemPct('sword',3).toFixed(0)+'%)이 전설 부채(+'+w.itemPct('fan',4).toFixed(0)+'%)보다 세다 → 갈아입을 것 없음');
   // 4) 레벨업 비용·효과·안 낀 것도
   S.silver=1e12; const c0=w.lvCost('fan',4); const dmg0=w.eval('heroDmg()'); const hold0=w.eqBonus('atk');
-  ok(w.levelItem('fan',4) && S.silver===1e12-c0 && w.itemLv('fan',4)===1,'안 낀 전설 철선도 강화된다 (비용 '+c0+')');
+  ok(w.levelItem('fan',4) && S.silver===1e12-c0 && w.itemLv('fan',4)===1,'안 낀 전설 부채도 강화된다 (비용 '+c0+')');
   ok(w.eqBonus('atk')>hold0 && w.eval('heroDmg()')>dmg0,'안 낀 아이템 강화로 보유 효과·피해가 오른다');
   // 5) 보유 효과·부가 효과
   S.inv={}; S.codex={}; S.itemLv={}; S.equip={weapon:null,armor:null,trinket:null};
@@ -85,7 +85,7 @@ setTimeout(()=>{
       d3.getElementById('tab-equip').click();
       ok(d3.getElementById('epanel').classList.contains('show'),'장비 탭이 패널을 연다');
       ok(d3.querySelectorAll('#etabs .askind').length===3,'[무기][방어구][장신구] 탭');
-      ok(d3.querySelectorAll('.eqcard').length===30,'무기 탭 카드 = 아이콘 있는 6종×5등급');
+      ok(d3.querySelectorAll('.eqcard').length===25,'무기 탭 카드 = 아이콘 있는 5종×5등급');
       d3.querySelector('.eqcard.seen').click();
       ok(!d3.getElementById('eqdet').hidden && !!d3.getElementById('eqdlv'),'카드를 누르면 상세(장착·강화·합성)가 열린다');
       d3.querySelector('#etabs .askind[data-t="trinket"]').click();
