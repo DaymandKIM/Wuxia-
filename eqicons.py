@@ -40,7 +40,14 @@ def main(grade, path, slot='weapon'):
         sm = ci.resize((max(1, round(ci.width * s)), max(1, round(ci.height * s))), Image.LANCZOS)
         al = np.array(sm); al = np.dstack([al[..., :3], (al[..., 3] >= 96) * 255]).astype(np.uint8); sm = Image.fromarray(al)
         icon = Image.new('RGBA', (96, 96), (0, 0, 0, 0)); icon.paste(sm, ((96 - sm.width) // 2, (96 - sm.height) // 2), sm)
-        icon.save(f'assets/eq_{k}_{grade}.png'); out.append(icon)
+        # 팔레트 PNG로 저장 (v2.82.4) — RGBA 7~9KB → ~3KB. 빌드가 15MB(한도 16MB)라 등급 아이콘 112장이 다 오면 넘칠 뻔했다.
+        # 투명은 알파 0 픽셀을 전용 색 하나로 격리해 quantize(색 127 + 투명 1, 디더 없음 — 아이콘은 작아 밴딩이 안 보인다).
+        q = icon.convert('RGBA'); alpha = np.array(q)[..., 3] > 0
+        quant = q.convert('RGB').quantize(colors=127, method=2, dither=Image.NONE)
+        palette = list(quant.getpalette()[:381]) + [255, 0, 255]           # 0~126 색, 127 = 투명(마젠타)
+        arr = np.array(quant, dtype=np.uint8); arr[~alpha] = 127
+        pal = Image.fromarray(arr, 'P'); pal.putpalette(palette + [0] * (768 - len(palette)))
+        pal.save(f'assets/eq_{k}_{grade}.png', transparency=127, optimize=True); out.append(icon)
         print(f'  eq_{k}_{grade}: 원본 {ci.size} → {sm.size}, 덩어리 {len(cells[i])}')
     R = Image.new('RGB', (N * 96 * 3 + 70, 96 * 3), (14, 19, 25))
     for i, ic in enumerate(out):

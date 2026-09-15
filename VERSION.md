@@ -1,3 +1,9 @@
+# v2.82.4 — 등급 아이콘을 팔레트 PNG로 (빌드 15.0MB → 14.6MB, 2026-09-15)
+
+- 등급 아이콘 50장이 RGBA 7~9KB였고 빌드가 16MB 한도에 근접했다(방어구·장신구 62장이 더 올 예정). eqicons.py가 quantize(127색,
+  디더 없음)+투명 인덱스 127로 저장 → 장당 ~3KB, 합 472KB→166KB. 전 등급 재추출, 육안·spritetest·equiptest 동일.
+- 첫 시도는 양자화 팔레트를 새 P 이미지에 안 옮겨 아이콘이 검게 나왔다 — 팔레트는 quant.getpalette()에서 가져와 붙인다.
+
 # v2.82.3 — 방어구 아이콘 고급(등급 1) 4종 반영 (사용자 시트 sheets/eq_armor_1.png, 2026-09-15)
 
 - `python eqicons.py 1 --slot=armor`. 검사판 review/eq_armor_1.png. 희귀~초월 5장 대기.
