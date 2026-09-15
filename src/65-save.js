@@ -2,7 +2,9 @@
    localStorage에 진행을 남기고, 다시 켜면 자리 비운 시간만큼
    근사 모델로 수련을 이어 준다. 숫자는 전부 00-data.js의 SAVE·OFFLINE.
 */
+let resetting = false;           // 초기화 중엔 저장하지 않는다 (v2.66 — "저장 초기화가 안 됨")
 function saveNow(){
+  if (resetting) return;
   try{
     localStorage.setItem(SAVE.key, JSON.stringify({
       v: SAVE.ver, at: Date.now(),
@@ -12,7 +14,7 @@ function saveNow(){
       silver: S.silver, bossDone: S.bossDone, stats: S.stats, rexp: S.rexp,
       arts: S.arts, karma: S.karma, fates: S.fates, fatebits: S.fatebits,
       artXp: S.artXp, artStar: S.artStar, artLv: S.artLv,
-      skillManual: S.skillManual, tree: S.tree, traits: S.traits,
+      skillManual: S.skillManual, tree: S.tree, traits: S.traits, equip: S.equip,
     }));
   }catch(e){}                    // 시크릿 모드 등 — 저장만 못 할 뿐 게임은 돈다
 }
@@ -53,6 +55,15 @@ function applySave(d){
       S.artLv[a.k] = clamp(d.artLv[a.k] | 0, 1, artLvCap(a.k));   // 성 로드 뒤라 상한이 맞다
   }
   S.skillManual = !!d.skillManual;              // 발동 모드 (예전 저장엔 없다 → 자동)
+  // 장비 (v2.66) — 자리마다 종류·품계·강화가 유효한 것만 되살린다
+  S.equip = { weapon:null, armor:null, trinket:null };
+  if (d.equip && typeof d.equip === 'object')
+    for (const sl of EQUIP.slots){
+      const it = d.equip[sl.k];
+      if (!it || typeof it !== 'object' || !sl.kinds.some(x => x[0] === it.k)) continue;
+      const g = clamp(it.g|0, 0, EQUIP.grades.length-1);
+      S.equip[sl.k] = { k: it.k, g, lv: clamp(it.lv|0, 0, EQUIP.lvCap[g]) };
+    }
   // 문파 무공도 접기(v2.55.2) — 트리 노드는 되살리지 않는다(무공점 환급).
   // 무공점은 이제 스킬 특성에만 쓴다. 트리가 줬던 무공은 treeReapply가 걷어낸다.
   S.tree = {};
@@ -73,9 +84,14 @@ function applySave(d){
   S.fatePending = S.karma >= karmaNeed() ? 1 : 0;
 }
 
+// 초기화 — 키를 지우고 새로 연다. 예전엔 reload 직전 pagehide/visibilitychange의
+// saveNow가 지운 자리에 현재 상태를 다시 써 넣어 초기화가 안 됐다("버튼이 적용 안 됨").
 function resetSave(){
+  resetting = true;
   try{ localStorage.removeItem(SAVE.key); }catch(e){}
-  location.reload();
+  try{ location.reload(); }catch(e){}
+  // 샌드박스(아티팩트 iframe)가 reload를 막으면 같은 주소로 다시 연다
+  setTimeout(() => { try{ location.href = location.href; }catch(e){} }, 300);
 }
 
 // 지금 단계에서 한 마리 잡는 데 걸리는 시간(초) — 근사

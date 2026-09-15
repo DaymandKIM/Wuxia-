@@ -955,16 +955,42 @@ function artMul(kind){
   return m;
 }
 
+// 장비 보너스 합 — 68-equip.js. 장비 없이 조립되는 도구 대비 가드.
+const eBonus = k => (typeof eqBonus === 'function') ? eqBonus(k) : 0;
 const heroDmg   = ()=> HERO.atkDmg * Math.pow(GROW.dmg, realmLv())
-                        * (1 + (statBonus('atk')+tBonus('atk'))/100) * artMul('dmg');
+                        * (1 + (statBonus('atk')+tBonus('atk')+eBonus('atk'))/100) * artMul('dmg');
 const heroHpMax = ()=> Math.round(HERO.hp * Math.pow(GROW.hp, realmLv())
-                        * (1 + (statBonus('hp')+tBonus('hp'))/100) * artMul('hp'));
+                        * (1 + (statBonus('hp')+tBonus('hp')+eBonus('hp'))/100) * artMul('hp'));
 const heroRegen = ()=> HERO.regen * Math.pow(GROW.regen, realmLv())
-                        * (1 + (statBonus('regen')+tBonus('regen'))/100) * artMul('regen');
+                        * (1 + (statBonus('regen')+tBonus('regen')+eBonus('regen'))/100) * artMul('regen');
 const heroSpd   = ()=> HERO.spd * (1 + (statBonus('spd')+tBonus('spd'))/100) * artMul('spd');
 const heroAtkSpd= ()=> 1 + (statBonus('aspd')+tBonus('aspd')) / 100 + (artMul('aspd')-1);   // 공격 동작·간격 (심법 매향심결 등)
-const critCh    = ()=> (statBonus('crit')+tBonus('crit')) / 100 + (artMul('crit')-1);
+const critCh    = ()=> (statBonus('crit')+tBonus('crit')+eBonus('crit')) / 100 + (artMul('crit')-1);
 const critMul   = ()=> TRAIN.critMul + (statBonus('cdmg')+tBonus('cdmg')) / 100;
+
+// 장비 (v2.66) — 세 자리(무기·방어구·장신구). 처치 드랍(구역이 깊을수록 높은 품계)이
+// 지금 것보다 좋으면 **자동 장착**(강화 레벨 전승), 아니면 **자동 판매** — 방치형이라
+// 인벤토리·비교 UI를 두지 않는다. 강화는 은자(현 단계 처치 은자에 비례해 후반 은자 적체의
+// 소비처가 된다). 효과는 전부 %(수련과 같은 철학 — 지수 세계에서 고정치는 무의미).
+const EQUIP = {
+  slots: [
+    { k:'weapon',  n:'무기',   stat:'atk',  sub:null,    kinds:[['sword','검'],['saber','도'],['spear','창'],['staff','봉'],['ironball','권갑'],['fan','철선']] },
+    { k:'armor',   n:'방어구', stat:'hp',   sub:'regen', kinds:[['robe','무복'],['vest','피갑'],['lamellar','찰갑'],['cloak','도롱이']] },
+    { k:'trinket', n:'장신구', stat:'gold', sub:'crit',  kinds:[['pendant','옥패'],['ring','반지'],['beads','염주'],['talisman','부적'],['gourd','호리병'],['ribbon','비단끈']] },
+  ],
+  statName: { atk:'공격', hp:'체력', regen:'회복', gold:'은자 획득', crit:'치명타' },
+  grades: [ { n:'범품', c:'#9aa7b5', base:8 },  { n:'양품', c:'#6fd3a8', base:14 },
+            { n:'진품', c:'#69a8dd', base:22 }, { n:'보물', c:'#c58cff', base:32 },
+            { n:'신물', c:'#ffd95e', base:45 } ],
+  gradeW: [[70,25,5,0,0],[45,35,17,3,0],[25,38,27,9,1],[10,30,35,20,5],[3,20,37,30,10]],   // 구역별 품계 가중
+  dropCh: 0.03,                  // 처치당 드랍 확률
+  bossDrop: 1,                   // 보스는 반드시
+  lvPer: 0.04,                   // 강화 1당 기본 효과 ×(1+0.04·lv) — 상한 lv면 범품 1.8배·신물 2.6배
+  lvCap: [20,25,30,35,40],       // 품계별 강화 상한 — 낮으면 금방 차서 은자 소비처가 사라진다(sim)
+  subRate: 0.5,                  // 부가 효과(방어구 회복·장신구 치명타)는 주 효과의 절반
+  costK: 12, costGrow: 1.18,     // 강화 비용 = 현 단계 처치 은자 × costK × costGrow^lv
+  sell: 3,                       // 판매 = 처치 은자 × sell × (품계+1)
+};
 
 // 은자 — 첫 재화. 처치 드랍 + 보스 첫 격파 + 오프라인 정산.
 // ※ 수치는 임시. 쓸 곳(심법)이 들어오면 sim으로 다시 잡는다.
@@ -975,7 +1001,7 @@ const SILVER = {
   firstMul: 50,                  // 보스 첫 격파 보너스 = 처치 드랍 × 이 값
 };
 const killSilver = ()=> Math.round(SILVER.base * Math.pow(SILVER.grow, gstage()-1)
-                                   * (1 + (statBonus('gold')+tBonus('gold'))/100));
+                                   * (1 + (statBonus('gold')+tBonus('gold')+eBonus('gold'))/100));
 
 // 기연 — 공짜 랜덤이 아니라 누적의 정산 (조사 결론·장무기 공식).
 // 인연(緣)이 쌓이면 단계 제패 순간 기연이 나타난다. 고난(쓰러짐)이 크게 쌓인다.

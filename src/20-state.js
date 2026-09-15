@@ -33,6 +33,8 @@ const S = {
   tree: {},                      // 문파 무공도 — 익힌 노드 { 문파키: { 노드id:1 } }
   treeArt: {},                   // (구) 트리로 습득한 무공 — v2.54.2에서 폐지, 옛 저장 회수용
   traits: {},                    // 스킬 심화 특성 { 무공키: { 특성id:1 } } (v2.55)
+  equip: { weapon:null, armor:null, trinket:null },   // 장비 { k:종류, g:품계 0~4, lv:강화 } (v2.66)
+  eqLog: [],                     // 최근 드랍 기록 (저장 안 함)
   karma: 0,                      // 인연 — 기연의 재료
   fates: 0,                      // 만난 기연 횟수
   fatePending: 0,                // >0 이면 기연이 기다린다

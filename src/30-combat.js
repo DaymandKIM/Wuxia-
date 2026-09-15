@@ -221,6 +221,7 @@ function hurtFoe(f, dmg, crit){
       toast(zone().boss + ' 첫 격파 · 은자 +' + fmt(bonus));
     }
     S.silver += sv;
+    if (typeof rollDrop === 'function') rollDrop(f.boss);   // 장비 드랍 (v2.66)
     fxPush({ k:'burst', x:f.x, y:f.y - (foeM(f).bh||foeM(f).h)*0.4, life:0.3, t:0.3 });
     sfx('kill');
   }

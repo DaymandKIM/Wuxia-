@@ -3,7 +3,7 @@
    기본 24시간(느림, ~1분). 짧게 보려면 SIM_MIN=60 node sim.js */
 const fs=require('fs');
 const ORDER=['00-data.js','10-engine.js','15-audio.js','20-state.js','30-combat.js',
-             '40-step.js','50-render.js','60-ui.js','62-train.js','63-arts.js','65b-treedata.js','66-tree.js'];
+             '40-step.js','50-render.js','60-ui.js','62-train.js','63-arts.js','65b-treedata.js','66-tree.js','68-equip.js'];
 let code=ORDER.map(f=>fs.readFileSync(__dirname+'/src/'+f,'utf8')).join('\n').replace('"use strict";','');
 const noop=()=>{};
 const ctx=new Proxy({},{get:(t,k)=>k==='canvas'?{width:1170,height:2532}:()=>{},set:()=>true});
@@ -21,7 +21,8 @@ const R=new Function(code+`;return {S,P,step:dt=>step(dt),zone:()=>zone(),lv:()=
   canLevel:a=>canLevel(a),levelArt:k=>levelArt(k),
   TREE,treeNodes:s=>treeNodes(s),treeAvail:(s,n)=>treeAvail(s,n),
   treeAlloc:(s,id)=>treeAlloc(s,id),skillPtsLeft:()=>skillPtsLeft(),
-  traitDefs:k=>traitDefs(k),hasTrait:(k,id)=>hasTrait(k,id),traitBuy:(k,id)=>traitBuy(k,id)};`)();
+  traitDefs:k=>traitDefs(k),hasTrait:(k,id)=>hasTrait(k,id),traitBuy:(k,id)=>traitBuy(k,id),
+  EQUIP,enhCost:k=>enhCost(k),canEnhance:k=>canEnhance(k),enhance:k=>enhance(k)};`)();
 const {S,P}=R;
 
 // 플레이어 흉내 — 30초마다: 가장 싼 수련 스텟 1개, 배울 수 있는 무공, 가능한 돌파
@@ -59,6 +60,13 @@ function spend(){
     }
     if(!best)break;
     R.traitBuy(best.k,best.id);
+  }
+  // 장비 강화 (v2.66) — 틱당 최대 3회, 싼 자리부터. 드랍·자동 장착은 전투 코드가 한다.
+  for(let n=0;n<3;n++){
+    let b=null,c=1e18;
+    for(const sl of R.EQUIP.slots) if(R.canEnhance(sl.k)){ const cc=R.enhCost(sl.k); if(cc<c){c=cc;b=sl.k;} }
+    if(!b)break;
+    R.enhance(b);
   }
 }
 

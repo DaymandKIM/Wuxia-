@@ -112,14 +112,21 @@
   #tbtn:active{background:#7a5238;}
   #tspd{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px;}
   /* overflow:hidden — 닫힌 시트(아래로 밀린 상태)가 컨테이너 밖 탭바 위로 삐져나오지 않게 */
-  #zpanel,#tpanel,#trpanel,#rpanel,#apanel,#dpanel{position:absolute;inset:0 0 var(--tabh) 0;pointer-events:none;
+  #zpanel,#tpanel,#trpanel,#rpanel,#apanel,#dpanel,#epanel{position:absolute;inset:0 0 var(--tabh) 0;pointer-events:none;
     overflow:hidden;background:rgba(6,8,11,0);transition:background .2s;display:flex;align-items:flex-end;}
-  #zpanel.show,#tpanel.show,#trpanel.show,#rpanel.show,#apanel.show,#dpanel.show{pointer-events:auto;background:rgba(6,8,11,.72);}
+  #zpanel.show,#tpanel.show,#trpanel.show,#rpanel.show,#apanel.show,#dpanel.show,#epanel.show{pointer-events:auto;background:rgba(6,8,11,.72);}
   .zsheet{width:100%;background:#12161c;border-top:1.5px solid #2b333d;
     border-radius:16px 16px 0 0;padding:0 0 calc(env(safe-area-inset-bottom) + 14px);
     transform:translateY(100%);transition:transform .24s cubic-bezier(.2,.8,.3,1);
     max-height:76%;overflow:auto;}
-  #zpanel.show .zsheet,#tpanel.show .zsheet,#trpanel.show .zsheet,#rpanel.show .zsheet,#apanel.show .zsheet,#dpanel.show .zsheet{transform:translateY(0);}
+  #zpanel.show .zsheet,#tpanel.show .zsheet,#trpanel.show .zsheet,#rpanel.show .zsheet,#apanel.show .zsheet,#dpanel.show .zsheet,#epanel.show .zsheet{transform:translateY(0);}
+  /* 장비 패널 (v2.66) — 자리 카드: 아이콘+강화 배지 · 이름(품계색) · 효과 · 강화 버튼 */
+  .eqrow{display:flex;align-items:center;gap:10px;}
+  .eqico{position:relative;width:44px;height:44px;flex:none;background:#0e1319;border:1.5px solid #2b333d;border-radius:10px;display:flex;align-items:center;justify-content:center;}
+  .eqico img{width:34px;height:34px;object-fit:contain;image-rendering:pixelated;}
+  .eqico b{position:absolute;right:-4px;bottom:-5px;font-size:10px;background:#12161c;border:1px solid #2b333d;border-radius:6px;padding:1px 4px;color:#cfe0f2;}
+  .eqsl{color:#8b97a5;font-size:12px;}
+  .zn em{font-style:normal;}
   /* 수련 패널 줄 */
   /* 배수 토글은 스크롤해도 위에 붙어 있는다 (스탯창 보기 불편 피드백) */
   .zst.tramt{position:sticky;top:44px;z-index:2;background:#12161c;
@@ -368,12 +375,19 @@
   <div id="tabs">
     <button id="tab-arts"><img class="ti" alt="">무공<i class="dot"></i></button>
     <button id="tab-train"><img class="ti" alt="">수련<i class="dot"></i></button>
+    <button id="tab-equip"><img class="ti" alt="">장비<i class="dot"></i></button>
     <button id="tab-zone"><img class="ti" alt="">사냥터</button>
   </div>
   <div id="apanel">
     <div class="zsheet">
       <div class="zhd">무공<button id="aclose">✕</button></div>
       <div id="abody"></div>
+    </div>
+  </div>
+  <div id="epanel">
+    <div class="zsheet">
+      <div class="zhd">장비<span id="esilver"></span><button id="eclose">✕</button></div>
+      <div id="ebody"></div>
     </div>
   </div>
   <div id="dpanel">

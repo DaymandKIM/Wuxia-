@@ -17,12 +17,13 @@
 | 적 강도 지수 곡선 | `DIFF` `BOSS` | foeHp/foeDmg |
 | **문파 무공도 (스킬트리)** — 경지 포인트로 노드 개방, 패시브 %·무공 마디 | `TREE`(65b-treedata)·`SKILLTREE` | spend()가 열린 노드를 무공 마디 우선·싼 것부터 익힘. treeBonus가 heroDmg 등 전투 수식에 합산(수련과 별개 축), 무공 마디는 S.arts로 자동 시전 |
 | **성장형 기본공격** — 성급대로 동작 해금 | `ATKMOVES` | 전투 시각·판정 동일(스프라이트만 교대), DPS 영향 없음 |
+| **장비** (v2.66) — 3자리 % 보너스, 처치 드랍 자동 장착(전승)·판매, 은자 강화 | `EQUIP` | 드랍·장착·판매는 전투 코드(rollDrop)가 그대로, spend()가 싼 자리부터 강화(틱당 3회). eqBonus가 heroDmg·hp·regen·crit·killSilver에 합산 |
 
 ## 시뮬 밖 — 별도로 검증하는 것
 
 - **기연** (64-fate) — sim ORDER에 없다. 기능은 fatetest.js, 보상 크기는 수동 계산.
 - **오프라인 정산** (65-save) — savetest.js + VERSION.md v1.9의 근사 모델 보정.
-- 미구현: 발동 3모드 · 무공 레벨업 · 장비 · 문파 — **들어오는 즉시 위 표와 spend()에 추가.**
+- 미구현: 발동 3모드 · 문파 — **들어오는 즉시 위 표와 spend()에 추가.**
 
 ## 실행과 판정
 

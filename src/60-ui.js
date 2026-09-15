@@ -24,6 +24,7 @@ function hud(){
   if (!showing) return;
   trainHud();                                    // 수련 탭 알림점·열린 패널 갱신
   artsHud();                                     // 무공 탭 알림점·열린 패널 갱신
+  if (typeof equipHud === 'function') equipHud();  // 장비 탭 (v2.66)
   if (typeof deepenHud === 'function') deepenHud();  // 스킬 심화창(트리) 갱신
   skillHud();                                    // 스킬창 — 초식 쿨다운
 
