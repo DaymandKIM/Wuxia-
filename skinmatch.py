@@ -14,7 +14,7 @@ v2.76.4~6의 반대 방향(새 시트 톤으로 옛 것을 맞춤)은 폐기 —
 import sys
 import numpy as np
 from PIL import Image
-NEW = ['punch', 'punchdbl', 'punchup', 'kickside', 'kickround', 'kickhigh', 'idle', 'hit', 'fansweep', 'fanspin', 'fanstrike']
+NEW = ['punch', 'punchdbl', 'punchup', 'kickside', 'kickround', 'kickhigh', 'idle', 'hit', 'fansweep', 'fanspin', 'fanstrike', 'medit']
 SKIN  = np.array([225., 160., 132.])
 CLOTH = np.array([75., 80., 121.])
 ROBE  = np.array([212., 191., 167.])

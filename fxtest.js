@@ -208,6 +208,11 @@ setTimeout(()=>{
     if (drew('hero_run', w.eval('HFX.aw.run'))) runFrames.add(fr);
   }
   ok(runFrames.size===RUNN,RUNN+'프레임 모두 그려진다 ('+runFrames.size+'/'+RUNN+')');
+  // 3.77) 운기조식 6컷 (v2.77 사용자 시트 hero_medit2) — 프레임마다 hero_medit을 제 폭으로
+  const MEDN=w.eval('ANIM.medit[0]'); let medFrames=new Set();
+  for (let fr=0; fr<MEDN; fr++){ w.eval('P.anim="medit"; P.af='+(fr+0.1)+'; S.downT=3;'); renderNow(); if (drew('hero_medit', w.eval('HFX.aw.medit'))) medFrames.add(fr); }
+  ok(MEDN===6 && medFrames.size===MEDN,'운기조식 6컷이 폭 '+w.eval('HFX.aw.medit')+'으로 모두 그려진다 ('+medFrames.size+'/'+MEDN+')');
+  w.eval('S.downT=0;');
   // idle — 정면 전투 자세 단일 컷 (사용자 시트 14번)
   ok(w.eval('ANIM.idle[0]')===1,'대기는 단일 컷이다');
   w.eval('P.anim="idle"; P.af=0;'); renderNow();

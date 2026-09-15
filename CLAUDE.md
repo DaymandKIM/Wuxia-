@@ -53,7 +53,7 @@ node lint.js           # 정의 없는 호출·빠진 필수 함수
 node spritetest.js     # 선언 규격 vs 실제 PNG · 캔버스 가장자리 접촉
 python review.py       # 눈으로 볼 대조 PNG → review/review-<종류>.png
 python blackcheck.py [이름...]  # 검은 막대·부유 조각 눈검사판(흰 배경 확대) → review/blackcheck.png
-python skinmatch.py [키...]     # 주먹4·발차기3·부채3 계열 스트립의 살·옷·도복을 질주 톤으로 (기본 11종 — 다시 뽑으면 다시 돌린다)
+python skinmatch.py [키...]     # 주먹4·발차기3·부채3·운기조식 계열 스트립의 살·옷·도복을 질주 톤으로 (기본 목록 — 다시 뽑으면 다시 돌린다)
 node test.js           # jsdom으로 실제 실행 (오류 0 이어야 한다)
 node sim.js            # 24시간 진행 시뮬 (소비 전략 포함, SIM_MIN=분 으로 단축)
 node animtest.js       # 공격 동작이 피격에 끊기는지
@@ -124,9 +124,10 @@ review/            검사판 PNG (생성물)
 | `shaman.py` → `foesheet.py` | `sheets/shaman.png` + `shaman_b.png` | 돌아간다 (v2.64, 두 시트 합침) |
 | `panther.py` `wisp.py` → `foesheet.py` | `sheets/panther.png` `sheets/wisp.png` | 돌아간다 (v2.65 — 테두리 줄 검출 격자) |
 | `hero_sheet.py` + `hero_*2.py` | `sheets/hero_*2.png` | 돌아간다 (v2.73 — **그림 기준** 공용 추출기. 아래 8개 스크립트는 컷 선택만) |
-| `hero_pose2.py` | 주먹4·발차기2 시트 | 돌아간다 (v2.76.5 — 대기·피격은 주먹4(황갈 얼굴 기준 시트), 경공은 발차기2+skinmatch. 운기조식·시전만 옛 시트) |
+| `hero_pose2.py` | 주먹4·발차기2 시트 | 돌아간다 (v2.76.5 — 대기·피격은 주먹4(황갈 얼굴 기준 시트), 경공은 발차기2+skinmatch. 시전만 옛 시트) |
 | `hero_kick3.py` | `sheets/hero_kick3.png` | **현행** (v2.76.1 — 발차기 3종, gridless. 기준 컷은 곧게 선 (0,0)으로 hero_punch4와 배율 일치) |
 | `hero_kick2.py` | `sheets/hero_kick2.png` | 옛 발차기(v2.71) — **v2.76.2부터 kickside2·kickround2·kickhigh2 동작으로 되살림**(raw/kick2_old = 원본). hero_pose2 피격·경공 컷도 여기서 |
+| `hero_medit2.py` | `sheets/hero_medit2.png` | **현행** (v2.77 — 운기조식 6컷 루프, gridless + skinmatch) |
 | `hero_run2.py` | `sheets/hero_run2.png` | 돌아간다 (v2.71.1 질주 6컷 → v2.76.8 scale_mul 1.02 키 46. **톤의 기준 컷** — skinmatch 안 돌린다) |
 | `hero_punch4.py` | `sheets/hero_punch4.png` | **현행** (v2.76 — 주먹 3종 정권·연환권·승룡권, gridless. 잔상 컷은 마젠타라 폐기) |
 | `hero_punch3.py` | `sheets/hero_fx.png` 2·3줄 | 권기 정권 두 판 → qipunch·qipunchb(순환 맨 끝 마무리 일격). scale_mul 0.94 — 키 44~45로 다른 동작과 통일(v2.76.8) |
@@ -175,7 +176,7 @@ review/            검사판 PNG (생성물)
   크롭하고 캔버스 규격을 자동으로 잰다(review/hero_specs.json → HFX.aw/fh). 칸 단위 크롭 금지.
 - **주인공 컷은 한 시트 계열로 통일한다**(v2.73.2 "여전히 이상"): 옛 시트(흰 도복·날씬)와 새 시트(베이지·굵은
   윤곽)가 섞이면 피격 때마다 딴 인물이 깜빡인다. 새 동작이 들어오면 대기·피격·경공까지 같은 계열로 맞춘다.
-  남은 옛 컷: medit(운기조식)·cast*(초식 시전) — 새 시트가 오면 교체.
+  남은 옛 컷: cast*(초식 시전) — 새 시트가 오면 교체(운기조식은 v2.77에 교체).
 - **옅은 배경 시트에선 도복이 배경으로 지워진다**(v2.73.1 "도복이 배경에 묻힘"): 배경 (171,138,167)과 도복
   베이지 (185,165,130)가 ±40 안이다. 배경 판정은 반드시 **색상(자줏빛)** 조건을 같이 건다. 그리고 **검사판
   배경은 흰색이 아니라 게임 바닥색**으로 — 흰 배경은 도복이 비치는 구멍을 못 보여 준다(hero_sheet 검사판).
