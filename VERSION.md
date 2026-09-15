@@ -1,3 +1,7 @@
+# v2.82.3 — 방어구 아이콘 고급(등급 1) 4종 반영 (사용자 시트 sheets/eq_armor_1.png, 2026-09-15)
+
+- `python eqicons.py 1 --slot=armor`. 검사판 review/eq_armor_1.png. 희귀~초월 5장 대기.
+
 # v2.82.2 — 방어구 아이콘 일반(등급 0) 4종 반영 (사용자 시트 sheets/eq_armor_0.png, 2026-09-15)
 
 - `python eqicons.py 0 --slot=armor` → eq_robe/vest/lamellar/cloak_0. 검사판 review/eq_armor_0.png. 고급~초월 6장 대기.
