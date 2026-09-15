@@ -61,8 +61,10 @@ function artFxText(a, star, lv){
   if (a.hp)    parts.push('체력 +' + Math.round(a.hp*100*e) + '%');
   if (a.regen) parts.push('회복 +' + Math.round(a.regen*100*e) + '%');
   if (a.spd)   parts.push('이동 +' + Math.round(a.spd*100*e) + '%');
-  if (a.mul)   parts.push('정권 ' + (a.mul*e).toFixed(1).replace(/\.0$/,'') + '배 · ' + a.cd + '초마다');
-  if (a.heal)  parts.push('체력 ' + Math.round(a.heal*100*e) + '% 회복 · ' + a.cd + '초마다');
+  // 초식 위력은 "공격력 N%"로 (v2.69.7 — "기준이 정권인 게 이상해"). 지금 공격력으로 환산한
+  // 실제 피해(≈)를 곁들여 숫자가 몸으로 읽히게 한다.
+  if (a.mul)   parts.push('공격력 ' + Math.round(a.mul*e*100) + '% (피해 ≈' + fmt(heroDmg()*a.mul*e) + ') · ' + a.cd + '초마다');
+  if (a.heal)  parts.push('최대 체력의 ' + Math.round(a.heal*100*e) + '% 회복 (≈' + fmt(heroHpMax()*a.heal*e) + ') · ' + a.cd + '초마다');
   if (a.ref)   parts.push('받은 피해 ' + Math.round(a.guard*100) + '% 흘리고 ' +
                           (a.ref*e).toFixed(1).replace(/\.0$/,'') + '배 되돌림 · ' + a.cd + '초마다');
   return parts.join(' · ');
