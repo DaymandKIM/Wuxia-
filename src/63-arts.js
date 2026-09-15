@@ -107,7 +107,9 @@ function drawArtGrid(){
     const sc = SCHOOLS[a.school] || SCHOOLS.none;
     h += '<button class="atile' + (a.fate ? ' fate' : '') + '" data-k="' + a.k +
          '"><i class="sc" style="background:' + sc.c + '"></i>' +
-         '<span class="g">' + a.h[0] + '</span>' +
+         (ASSET['sch_' + a.school] ? '<img class="se" src="' + ASSET['sch_' + a.school] + '" alt="">' : '') +   // 문파 엠블럼 (v2.63)
+         (ASSET['art_' + a.k] ? '<img class="gi" src="' + ASSET['art_' + a.k] + '" alt="">'                      // 무공 아이콘 메달
+                              : '<span class="g">' + a.h[0] + '</span>') +
          '<span class="nm">' + a.n + '</span><em class="bd"></em></button>';
   }
   h += '</div>';
@@ -136,7 +138,7 @@ function refreshArts(){
     // 익힌 무공은 문파색 테두리 + 옅은 문파색 바탕 — 안 익힌 것과 확실히 갈린다
     el.style.borderColor = got ? sc.c : '';
     el.style.background = got ? sc.c + '22' : '';
-    el.querySelector('.g').style.color = got ? sc.c : '';
+    const g = el.querySelector('.g'); if (g) g.style.color = got ? sc.c : '';   // 아이콘 메달 타일엔 .g가 없다 (v2.63)
     el.querySelector('.nm').textContent =
       a.n + (got && artStar(a.k) > 1 ? ' ' + artStar(a.k) + '성' : '');
     // 배지 — ▲ 돌파 가능 · + 배울 수 있음 ("뭘 할 수 있는지 안 보인다"는 피드백)

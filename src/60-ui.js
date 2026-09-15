@@ -78,6 +78,10 @@ function skillHud(){
       const g = document.createElement('span'); g.className = 'g';
       g.textContent = a.h[0];                   // 한자 한 글자 (표 타일과 같은 표기)
       g.style.color = col;
+      if (ASSET['art_' + a.k]){                 // 무공 아이콘 메달 (v2.63) — 있으면 한자 대신
+        const im = document.createElement('img'); im.className = 'gi'; im.src = ASSET['art_' + a.k]; im.alt = '';
+        d.appendChild(im); g.style.display = 'none';
+      }
       const m = document.createElement('i'); m.className = 'cdm';
       const s = document.createElement('b'); s.className = 'cds';
       d.appendChild(g); d.appendChild(m); d.appendChild(s);

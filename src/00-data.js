@@ -309,6 +309,9 @@ const AURA = {
 };
 
 // 구역별 보스 등장 문구
+// 보스 초상 컷인 (v2.63) — 등장 문구 옆에 초상이 문구와 같은 알파로 떠오른다. 사용자 시트.
+const BOSSFACE = { bamboo:'boss_demon', village:'boss_ghost', cave:'boss_golem', snow:'boss_tiger', heaven:'boss_thunder' };
+const FACECUT = { h: 0.16, x: 0.84, slide: 0.03, pad: 6, textX: 0.42 };   // 높이(H비율)·초상 중심 x·슬라이드·여백·문구 중심 x(초상 있을 때)
 const BOSSCRY = {
   bamboo:  '죽림의 주인이 깨어난다',
   village: '폐촌의 원혼이 일어선다',

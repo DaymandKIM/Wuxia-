@@ -50,6 +50,7 @@ for (const z in PROPS){ const D = PROPS[z];
   if (D.kind === 'sprite') for (const p of D.pick) loadImg(p[0], ASSET[p[0]]); }
 // 상단 원경 — 시트가 들어온 구역만 (에셋 없으면 건너뛴다)
 for (const z in BACKDROP.keys){ const k = BACKDROP.keys[z]; if (ASSET[k]) loadImg(k, ASSET[k]); }
+for (const z in BOSSFACE){ const k = BOSSFACE[z]; if (ASSET[k]) loadImg(k, ASSET[k]); }   // 보스 초상 컷인
 // 바닥 텍스처 — 시트가 들어온 구역만
 for (const z in GROUNDTEX.keys){ const k = GROUNDTEX.keys[z]; if (ASSET[k]) loadImg(k, ASSET[k]); }
 

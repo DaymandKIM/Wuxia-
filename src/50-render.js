@@ -951,11 +951,25 @@ function drawSummon(ox, oy){
       ctx.fillStyle = '#f0d9a8';
       ctx.font = Math.round(H*0.038) + 'px Jua,-apple-system,sans-serif';
       const yy = H*0.30 - (1-clamp(bt/0.3,0,1)) * H*0.02;
-      ctx.fillText(cry, W/2, yy);
+      const face = IMG[BOSSFACE[zone().k]];
+      const hasFace = !!(face && face.complete && face.naturalWidth);
+      const tx = hasFace ? W * FACECUT.textX : W/2;              // 초상이 있으면 문구는 왼쪽으로
+      ctx.fillText(cry, tx, yy);
+      // 초상 컷인 — 문구 오른쪽, 같은 알파, 살짝 오른쪽에서 밀려든다
+      if (hasFace){
+        const fh = Math.round(H * FACECUT.h), fw = Math.round(fh * face.naturalWidth / face.naturalHeight);
+        const fx = Math.round(W * FACECUT.x + (1 - clamp(bt/0.3, 0, 1)) * H * FACECUT.slide - fw/2);
+        const fy = Math.round(yy - fh * 0.62);
+        ctx.fillStyle = 'rgba(8,10,14,.55)';
+        ctx.fillRect(fx - FACECUT.pad, fy - FACECUT.pad, fw + FACECUT.pad*2, fh + FACECUT.pad*2);
+        draw(face, fx, fy, fw, fh);
+        ctx.strokeStyle = 'rgba(240,217,168,.6)'; ctx.lineWidth = 2;
+        ctx.strokeRect(fx - FACECUT.pad + 1, fy - FACECUT.pad + 1, fw + FACECUT.pad*2 - 2, fh + FACECUT.pad*2 - 2);
+      }
       ctx.strokeStyle = 'rgba(240,217,168,.45)'; ctx.lineWidth = 2;
       const lw = W*0.20;
       ctx.beginPath();
-      ctx.moveTo(W/2-lw, yy + H*0.028); ctx.lineTo(W/2+lw, yy + H*0.028);
+      ctx.moveTo(tx-lw, yy + H*0.028); ctx.lineTo(tx+lw, yy + H*0.028);
       ctx.stroke();
       ctx.restore();
       ctx.globalAlpha = 1;
