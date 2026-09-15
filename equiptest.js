@@ -43,12 +43,11 @@ setTimeout(()=>{
   ok(w.codexCount()>0 && Object.keys(S.inv).length>0,'도감 '+w.codexCount()+'종 · 주머니에 쌓였다 (v2.79 권갑도 떨어진다)');
   // 2) 합성 수동
   S.inv={}; S.codex={}; S.itemLv={}; S.equip={weapon:null,armor:null,trinket:null};
-  w.eqGain('sword',0,3);                                    // 첫 검은 빈 자리에 끼워진다 → 낀 것 제외하면 여분 2
-  ok(S.inv.sword[0]===3 && !w.canMerge('sword',0),'낀 것은 합성 재료에서 빠진다: 일반 검 3(1 착용)은 아직 합성 불가 (v2.82)');
-  w.eqGain('sword',0,1);
-  ok(S.inv.sword[0]===4 && w.canMerge('sword',0),'4개(1 착용 + 여분 3)면 합성 가능 — 저절로 합쳐지진 않는다');
-  ok(w.eqMerge('sword',0) && S.inv.sword[0]===1 && S.inv.sword[1]===1 && w.eqSeen('sword',1) && S.equip.weapon.k==='sword' && S.equip.weapon.g===0,
-     '합성: 여분 일반 검 3 → 고급 검 1, 낀 일반 검은 남는다');
+  w.eqGain('sword',0,3);                                    // 첫 검은 빈 자리에 끼워진다
+  ok(S.inv.sword[0]===3 && w.canMerge('sword',0),'3개 모여도 저절로 합쳐지지 않는다 (합성 가능 표시) — 낀 것도 재료 (v2.82.1)');
+  ok(w.eqMerge('sword',0) && S.inv.sword[0]===0 && S.inv.sword[1]===1 && w.eqSeen('sword',1) && S.equip.weapon.k==='sword' && S.equip.weapon.g===0,
+     '합성: 일반 검 3 → 고급 검 1, 낀 일반 검은 개수 0이어도 계속 끼고 있다(얻어 본 것은 열림)');
+  ok(w.eqWear('sword',0) && w.eqWear('sword',1) && w.eqWear('sword',0),'얻어 본 장비는 개수 0이어도 다시 낄 수 있다');
   w.eqGain('sword',1,8);
   ok(w.eqMergeAll()===4 && S.inv.sword[1]===0 && S.inv.sword[2]===0 && S.inv.sword[3]===1,'일괄 합성: 고급 9 → 희귀 3 → 영웅 1 (4회)');
   w.eqGain('fan',4,3);
@@ -60,7 +59,7 @@ setTimeout(()=>{
   ok(S.equip.weapon.k==='sword' && S.equip.weapon.g===0,'첫 장비(일반 검)를 끼고 있다');
   ok(w.eqAutoEquipAll()>=1 && S.equip.weapon.k==='fan' && S.equip.weapon.g===4,'자동 장착: 장착 효과 최대(전설 부채)로');
   ok(w.eqWear('sword',3) && S.equip.weapon.k==='sword' && S.equip.weapon.g===3,'직접 장착: 영웅 검');
-  ok(w.eqWear('spear',4)===false,'없는 장비는 못 낀다');
+  ok(w.eqWear('spear',4)===false,'얻어 본 적 없는 장비는 못 낀다');
   ok(w.eqUnwear('weapon')===true && S.equip.weapon===null,'무기 벗기 → 맨손 (v2.76.9)');
   ok(w.eqUnwear('weapon')===false,'이미 맨손이면 벗을 게 없다');
   ok(w.eqWear('sword',3),'벗은 뒤 다시 낄 수 있다');

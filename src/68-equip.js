@@ -66,9 +66,9 @@ function eqGain(k, g, n){
   return true;
 }
 // 합성 — 같은 아이템 mergeN개 → 한 등급 위 1개 (한 번). 최고 등급은 안 된다.
-// 착용 중인 것은 합성 재료에서 뺀다 (v2.82, 사용자: "합성 시에 장비가 하나도 없어지는 건 이상") — 낀 것 하나는 남는다
-function eqWornN(k, g){ const kd = eqKind(k), it = kd && S.equip[kd.sl.k]; return it && it.k === k && it.g === g ? 1 : 0; }
-function eqSpare(k, g){ return eqInv(k)[g] - eqWornN(k, g); }
+// 합성은 낀 것도 재료로 쓴다 (v2.82.1, 사용자: "낀 것도 업글해도 되지 — 한 번 얻은 건 열어주는 식으로"). 착용은 주머니 개수가
+// 아니라 **얻어 본 적(도감)** 에 묶인다 — 낀 것을 합성해 개수가 0이 돼도 계속 끼고 있고, 얻어 본 장비는 언제든 다시 낀다.
+function eqSpare(k, g){ return eqInv(k)[g]; }
 function canMerge(k, g){ return g < EQUIP.grades.length - 1 && eqSpare(k, g) >= EQUIP.mergeN; }
 function eqMerge(k, g){
   if (!canMerge(k, g)) return false;
@@ -81,8 +81,8 @@ function eqMergeAll(){ let n = 0; for (const sl of EQUIP.slots) for (const kd of
 // 자동 장착 — 자리마다 가진 것 중 장착 효과(레벨 반영)가 가장 큰 것
 function eqBest(slotK){
   const sl = eqSlot(slotK); let best = null, bp = -1;
-  for (const kd of sl.kinds){ const inv = S.inv[kd[0]]; if (!inv) continue;
-    for (let g = 0; g < EQUIP.grades.length; g++) if (inv[g] > 0){ const p = itemPct(kd[0], g); if (p > bp){ bp = p; best = { k: kd[0], g }; } } }
+  for (const kd of sl.kinds)
+    for (let g = 0; g < EQUIP.grades.length; g++) if (eqSeen(kd[0], g)){ const p = itemPct(kd[0], g); if (p > bp){ bp = p; best = { k: kd[0], g }; } }   // 얻어 본 것 전부 (v2.82.1)
   return best;
 }
 function eqAutoEquip(slotK){
@@ -92,7 +92,7 @@ function eqAutoEquip(slotK){
 }
 function eqAutoEquipAll(){ let n = 0; for (const sl of EQUIP.slots) if (eqAutoEquip(sl.k)) n++; return n; }
 function eqWear(k, g){
-  const kd = eqKind(k); if (!kd || !(eqInv(k)[g] > 0)) return false;
+  const kd = eqKind(k); if (!kd || !eqSeen(k, g)) return false;          // 얻어 본 것이면 개수 0이어도 낀다 (v2.82.1)
   S.equip[kd.sl.k] = { k, g }; eqLogPush(itemLabel(k, g) + ' 장착'); return true;
 }
 // 무기 벗기 → 맨손(주먹·발차기 무브셋). v2.76.9 사용자: "무기 중에 권이 없어서 주먹 모션을 못 봐" — 권갑 아이콘이 올 때까지
@@ -204,7 +204,7 @@ function refreshEquip(){
       '<div class="zst">' +
       (worn && kd.sl.k === 'weapon'
         ? '<button class="sb" id="eqdwear">벗기 · 맨손</button>'
-        : '<button class="sb" id="eqdwear"' + (worn || n <= 0 ? ' disabled' : '') + '>' + (worn ? '착용 중' : '장착') + '</button>') +
+        : '<button class="sb" id="eqdwear"' + (worn || !seen ? ' disabled' : '') + '>' + (worn ? '착용 중' : '장착') + '</button>') +
       '<button class="trbuy" id="eqdlv"' + (canLevelItem(k, g) ? '' : ' disabled') + '><span>' + (lv >= cap ? '상한' : '강화 ' + fmt(lvCost(k, g))) + '</span><i>' + coin() + '</i></button>' +
       '<button class="sb" id="eqdmerge"' + (canMerge(k, g) ? '' : ' disabled') + '>합성 ' + EQUIP.mergeN + '→1' + (g < EQUIP.grades.length - 1 ? (worn && n > 0 && n - 1 < EQUIP.mergeN ? ' (낀 것 제외)' : '') : ' (최고)') + '</button>' +
       '</div>';
