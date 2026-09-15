@@ -3,7 +3,9 @@
    또는 카드 상세에서 직접). 아이템마다 레벨(S.itemLv) — 장착 효과·보유 효과가 그 레벨을 탄다.
    얻어 본 아이템(S.codex 비트)은 영구 보유 효과. 전투 수식은 00-data의 heroDmg 등이 eqBonus(stat)를 합산. */
 function eqSlot(k){ return EQUIP.slots.find(s => s.k === k); }
-function eqKind(kindK){ for (const sl of EQUIP.slots){ const x = sl.kinds.find(v => v[0] === kindK); if (x) return { sl, k:x[0], n:x[1], sub:x[2] }; } return null; }
+function eqKind(kindK){ for (const sl of EQUIP.slots){ const x = sl.kinds.find(v => v[0] === kindK); if (x) return { sl, k:x[0], n:x[1], sub:x[2], icon:x[3] }; } return null; }
+// 아이콘 — 종류에 지정된 키, 없으면 eq_<종류>, 그것도 없으면 주먹(train_atk)
+function eqIcon(k){ const kd = eqKind(k); return ASSET[(kd && kd.icon) || ''] || ASSET['eq_' + k] || ASSET.train_atk || ''; }
 function eqInv(k){ return S.inv[k] || (S.inv[k] = EQUIP.grades.map(() => 0)); }
 function eqLvs(k){ return S.itemLv[k] || (S.itemLv[k] = EQUIP.grades.map(() => 0)); }
 function itemLv(k, g){ return (S.itemLv[k] || [])[g] | 0; }
@@ -96,7 +98,7 @@ function eqCard(k, g, worn){
   const G = EQUIP.grades[g], n = eqInv(k)[g], seen = eqSeen(k, g), lv = itemLv(k, g);
   return '<button class="eqcard' + (seen ? ' seen' : '') + (n > 0 ? ' have' : '') + (worn ? ' worn' : '') +
     (eqSel && eqSel.k === k && eqSel.g === g ? ' sel' : '') + '" data-k="' + k + '" data-g="' + g + '" style="--gc:' + G.c + '">' +
-    '<img src="' + (ASSET['eq_' + k] || '') + '" alt="">' +
+    '<img src="' + eqIcon(k) + '" alt="">' +
     (seen ? '<em>Lv' + lv + '</em>' : '') + (n > 0 ? '<b>×' + n + '</b>' : '') + (worn ? '<i>착용</i>' : '') +
     (canMerge(k, g) ? '<s>합</s>' : '') + '</button>';
 }
@@ -135,10 +137,10 @@ function refreshEquip(){
   if (!it) top.innerHTML = '<div class="zn"><span class="eqsl">' + sl.n + '</span> 비었다</div><div class="zd">적이 떨어뜨린다</div>';
   else {
     const G = EQUIP.grades[it.g], kd = eqKind(it.k), pct = slotPct(sl.k), cx = codexPct(sl);
-    top.innerHTML = '<div class="eqrow"><div class="eqico" style="border-color:' + G.c + '"><img src="' + (ASSET['eq_' + it.k] || '') + '" alt=""><b>Lv' + itemLv(it.k, it.g) + '</b></div>' +
+    top.innerHTML = '<div class="eqrow"><div class="eqico" style="border-color:' + G.c + '"><img src="' + eqIcon(it.k) + '" alt=""><b>Lv' + itemLv(it.k, it.g) + '</b></div>' +
       '<div class="trl"><div class="zn"><span class="eqsl">' + sl.n + '</span> <em style="color:' + G.c + '">' + G.n + ' ' + kd.n + '</em></div>' +
-      '<div class="zd">' + EQUIP.statName[sl.stat] + ' +' + pct.toFixed(1) + '% · ' + EQUIP.statName[kd.sub] + ' +' + (pct * EQUIP.subRate).toFixed(1) + '%' +
-      '<br>보유 효과 합 ' + EQUIP.statName[sl.stat] + ' +' + cx.toFixed(1) + '%</div></div></div>';
+      '<div class="zd">' + EQUIP.statName[sl.stat] + ' +' + pct.toFixed(1) + '%<br>' + EQUIP.statName[kd.sub] + ' +' + (pct * EQUIP.subRate).toFixed(1) + '%' +
+      '<br><span class="eqhold">보유 효과 합 ' + EQUIP.statName[sl.stat] + ' +' + cx.toFixed(1) + '%</span></div></div></div>';
   }
   const mc = mergeCount(); $('eqmerge').textContent = '일괄 합성' + (mc ? ' (' + mc + ')' : ''); $('eqmerge').disabled = !mc;
   $('eqauto').classList.toggle('on', eqBetterAny());
@@ -149,9 +151,11 @@ function refreshEquip(){
     const worn = S.equip[kd.sl.k] && S.equip[kd.sl.k].k === k && S.equip[kd.sl.k].g === g;
     d.hidden = false;
     d.innerHTML = '<div class="zn"><em style="color:' + G.c + '">' + G.n + '</em> ' + kd.n + ' <small>Lv ' + lv + ' / ' + cap + ' · 보유 ×' + n + '</small></div>' +
-      '<div class="zd">장착: ' + EQUIP.statName[kd.sl.stat] + ' +' + itemPct(k, g).toFixed(1) + '% · ' + EQUIP.statName[kd.sub] + ' +' + (itemPct(k, g) * EQUIP.subRate).toFixed(1) + '%' +
-      (lv < cap ? ' <i>→ +' + itemPct(k, g, lv + 1).toFixed(1) + '%</i>' : '') + '</div>' +
-      '<div class="zd">보유: ' + EQUIP.statName[kd.sl.stat] + ' +' + itemHold(k, g).toFixed(2) + '%' + (lv < cap ? ' <i>→ +' + itemHold(k, g, lv + 1).toFixed(2) + '%</i>' : '') + ' (영구)</div>' +
+      '<div class="zd"><span class="eqlab">장착</span>' + EQUIP.statName[kd.sl.stat] + ' +' + itemPct(k, g).toFixed(1) + '%' +
+      (lv < cap ? ' <i>→ +' + itemPct(k, g, lv + 1).toFixed(1) + '%</i>' : '') +
+      '<br><span class="eqlab"></span>' + EQUIP.statName[kd.sub] + ' +' + (itemPct(k, g) * EQUIP.subRate).toFixed(1) + '%' +
+      (lv < cap ? ' <i>→ +' + (itemPct(k, g, lv + 1) * EQUIP.subRate).toFixed(1) + '%</i>' : '') + '</div>' +
+      '<div class="zd"><span class="eqlab">보유</span>' + EQUIP.statName[kd.sl.stat] + ' +' + itemHold(k, g).toFixed(2) + '%' + (lv < cap ? ' <i>→ +' + itemHold(k, g, lv + 1).toFixed(2) + '%</i>' : '') + ' <small>(영구)</small></div>' +
       '<div class="zst">' +
       '<button class="sb" id="eqdwear"' + (worn || n <= 0 ? ' disabled' : '') + '>' + (worn ? '착용 중' : '장착') + '</button>' +
       '<button class="trbuy" id="eqdlv"' + (canLevelItem(k, g) ? '' : ' disabled') + '><span>' + (lv >= cap ? '상한' : '강화 ' + fmt(lvCost(k, g))) + '</span><i>' + coin() + '</i></button>' +

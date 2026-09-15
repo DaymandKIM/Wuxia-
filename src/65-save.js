@@ -60,6 +60,17 @@ function applySave(d){
   // v2.66/67 저장의 자리 강화(eqLv·장비 lv)는 장착품의 아이템 레벨로 옮긴다.
   S.equip = { weapon:null, armor:null, trinket:null }; S.inv = {}; S.itemLv = {}; S.codex = {};
   const NG = EQUIP.grades.length;
+  // v2.70.1: 무기 자리가 권(맨손 계열)이 되면서 옛 검·도·창·봉·철선은 권갑으로 옮긴다(개수 합·레벨 최대·도감 합)
+  const OLDW = { sword:1, saber:1, spear:1, staff:1, fan:1 };
+  if (d.inv || d.codex || d.itemLv || (d.equip && d.equip.weapon)){
+    d = Object.assign({}, d, { inv: Object.assign({}, d.inv || {}), itemLv: Object.assign({}, d.itemLv || {}), codex: Object.assign({}, d.codex || {}), equip: Object.assign({}, d.equip || {}) });
+    for (const ok in OLDW){
+      if (Array.isArray(d.inv[ok])){ const t = d.inv.gauntlet || (d.inv.gauntlet = Array.from({length:NG}, () => 0)); d.inv[ok].forEach((n, i) => { t[i] = (t[i]|0) + (n|0); }); delete d.inv[ok]; }
+      if (Array.isArray(d.itemLv[ok])){ const t = d.itemLv.gauntlet || (d.itemLv.gauntlet = Array.from({length:NG}, () => 0)); d.itemLv[ok].forEach((n, i) => { t[i] = Math.max(t[i]|0, n|0); }); delete d.itemLv[ok]; }
+      if (d.codex[ok]){ d.codex.gauntlet = (d.codex.gauntlet|0) | (d.codex[ok]|0); delete d.codex[ok]; }
+      if (d.equip.weapon && d.equip.weapon.k === ok) d.equip.weapon = Object.assign({}, d.equip.weapon, { k:'gauntlet' });
+    }
+  }
   for (const sl of EQUIP.slots){
     const it = d.equip && d.equip[sl.k];
     if (it && typeof it === 'object' && sl.kinds.some(x => x[0] === it.k))

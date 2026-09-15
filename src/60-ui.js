@@ -267,7 +267,7 @@ function closeRealmPanel(){ $('rpanel').classList.remove('show'); }
 // 스킬 툴팁 — 이름·한자·효과·쿨. 슬롯 위에 뜨고 화면 오른쪽에 붙는다.
 function showSkillTip(a, el){
   const t = $('stip'); if (!t) return;
-  const fx = typeof artFxText === 'function' ? artFxText(a) : '';
+  const fx = typeof artFxLines === 'function' ? artFxLines(a) : '';
   const star = typeof artStar === 'function' ? artStar(a.k) : 1;
   t.innerHTML = '<b>' + a.n + '</b> <i>' + a.h + (star > 1 ? ' · ' + star + '성' : '') + '</i>' +
     '<div>' + a.d + '</div>' +

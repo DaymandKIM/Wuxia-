@@ -983,7 +983,10 @@ const critMul   = ()=> TRAIN.critMul + (statBonus('cdmg')+tBonus('cdmg')+eBonus(
 // 장착 효과가 가장 큰 것을 낀다. 효과는 전부 %(지수 세계에서 고정치는 무의미).
 const EQUIP = {
   slots: [
-    { k:'weapon',  n:'무기',   stat:'atk',  kinds:[['sword','검','crit'],['saber','도','aspd'],['spear','창','cdmg'],['staff','봉','regen'],['ironball','철구','hp'],['fan','철선','gold']] },
+    // 무기 자리는 당분간 **권(拳) — 맨손 계열**(사용자 확정 v2.70.1: "지금 무기는 맨손 혹은 권으로,
+    // 나중에 무기를 추가"). 종류[3] = 아이콘 키(없으면 주먹 아이콘 train_atk). 검·도·창·봉·철선
+    // 아이콘(eq_*)은 무기가 들어올 때 쓴다. 옛 저장의 검류 아이템은 권갑으로 옮긴다(65-save).
+    { k:'weapon',  n:'권',     stat:'atk',  kinds:[['gauntlet','권갑','crit','eq_gauntlet'],['wraps','권포','aspd','eq_wraps'],['knuckle','철권','cdmg','eq_knuckle'],['claw','조갑','regen','eq_claw'],['ironball','철구','hp','eq_ironball'],['bracer','완갑','gold','eq_bracer']] },
     { k:'armor',   n:'방어구', stat:'hp',   kinds:[['robe','무복','regen'],['vest','피갑','aspd'],['lamellar','찰갑','hp'],['cloak','도롱이','spd']] },
     { k:'trinket', n:'장신구', stat:'gold', kinds:[['pendant','옥패','crit'],['ring','반지','cdmg'],['beads','염주','regen'],['talisman','부적','atk'],['gourd','호리병','hp'],['ribbon','비단끈','spd']] },
   ],

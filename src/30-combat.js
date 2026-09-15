@@ -218,7 +218,7 @@ function hurtFoe(f, dmg, crit){
       S.bossDone[S.zi] = 1;
       const bonus = killSilver() * SILVER.firstMul;
       sv += bonus;
-      toast(zone().boss + ' 첫 격파 · 은자 +' + fmt(bonus));
+      toast(zone().boss + ' 첫 격파\n은자 +' + fmt(bonus));
     }
     S.silver += sv;
     if (typeof rollDrop === 'function') rollDrop(f.boss);   // 장비 드랍 (v2.66)
@@ -262,7 +262,7 @@ function downHero(){
   if (S.karma >= karmaNeed()) S.fatePending = 1;
   S.kills = Math.max(0, Math.floor(S.kills * 0.5));
   sfx('down');
-  toast('쓰러졌다 · 운기조식');
+  toast('쓰러졌다\n운기조식');
 }
 
 function reviveHero(){

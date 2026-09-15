@@ -69,6 +69,8 @@ function artFxText(a, star, lv){
                           (a.ref*e).toFixed(1).replace(/\.0$/,'') + '배 되돌림 · ' + a.cd + '초마다');
   return parts.join(' · ');
 }
+// 줄바꿈 표시용 — 설명 아래 효과 한 줄씩 (v2.70.1 "줄바꿈이 필수")
+function artFxLines(a, star, lv){ const t = artFxText(a, star, lv); return t ? t.split(' · ').join('<br>') : ''; }
 
 let artSel = null;                 // 상세 칸에 떠 있는 무공
 let artDetSig = '';                // 상세 칸 구조 서명 — 같으면 DOM을 안 갈아엎는다
@@ -182,7 +184,7 @@ function refreshArts(){
   let d = '<div class="zn">' + a.n + ' <small>' + a.h + '</small>' +
           ' <i class="sch" style="color:' + sc.c + '">' + sc.n + '</i>' +
           (got ? ' <em>익힘</em>' : (a.fate ? ' <em class="fate">기연</em>' : '')) + '</div>' +
-          '<div class="zd">' + a.d + (artFxText(a) ? ' · ' + artFxText(a) : '') + '</div>';
+          '<div class="zd">' + a.d + (artFxText(a) ? '<b class="trv">' + artFxLines(a) + '</b>' : '') + '</div>';
   if (got){
     // 연마 — 은자로 바로 올린다. 상한에 닿으면 돌파가 다음 문이다
     if (a.cost !== undefined){
@@ -201,7 +203,7 @@ function refreshArts(){
       d += '<div class="zd">숙련 ' + st + '성 · <span id="axp">' +
            Math.min(xp, need) + ' / ' + need + '</span>' +
            (a.type === 'active' ? ' (시전 횟수)' : ' (처치 수)') + '</div>' +
-           '<div class="zd need">돌파하면 → ' + artFxText(a, st + 1) + '</div>';
+           '<div class="zd need">돌파하면 →<br>' + artFxLines(a, st + 1) + '</div>';
       const lvFull = a.cost === undefined || artLv(a.k) >= artLvCap(a.k);
       if (xp >= need && lvFull)
         d += '<button class="trbuy" id="abrk"' + (S.silver >= cost ? '' : ' disabled') +

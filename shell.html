@@ -152,6 +152,9 @@
   .eqdet{margin:10px 12px 4px;padding:10px 14px;background:#171d25;border:1.5px solid #3c6f9e;border-radius:11px;}
   .eqdet .zn small{font-size:11px;color:#8b97a5;margin-left:4px;}
   .eqdet .zd i{font-style:normal;color:#7fc78f;}
+  .eqlab{display:inline-block;width:34px;color:#8b97a5;font-size:11px;}
+  .eqhold{color:#e8c96a;}
+  .eqdet .zd small{color:#6b7683;}
   .eqdet .zst .sb{padding:8px 12px;font-size:12.5px;}
   .eqdet .zst .trbuy{min-width:0;padding:6px 12px;}
   .zn em{font-style:normal;}
@@ -357,6 +360,7 @@
   #toast{position:absolute;left:50%;top:36%;transform:translate(-50%,-50%) scale(.9);
     background:rgba(12,15,20,.92);border:1.5px solid #3a4553;border-radius:10px;
     padding:10px 20px;font-size:15px;font-weight:900;color:#f0e2b8;letter-spacing:.06em;
+    white-space:pre-line;text-align:center;line-height:1.45;   /* 줄바꿈 허용 (v2.70.1) */
     opacity:0;transition:opacity .18s,transform .18s;}
   #toast.show{opacity:1;transform:translate(-50%,-50%) scale(1);}
   /* 타이틀 화면 (v2.65) — 사용자 일러스트 배경 + 주인공 초상. 아무 데나 누르면 걷힌다.
