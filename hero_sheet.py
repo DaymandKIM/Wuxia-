@@ -35,10 +35,10 @@ def groups(v):
     if s is not None: out.append((s, p))
     return out
 
-def _lines(frac):
+def _lines(frac, maxw=4):
     out = []
     for (a, b) in groups(np.where(frac > 0.7)[0]):
-        if b - a + 1 > 4: continue
+        if b - a + 1 > maxw: continue
         while a > 0 and frac[a - 1] > 0.3 and b - a < 5: a -= 1
         while b + 1 < len(frac) and frac[b + 1] > 0.3 and b - a < 5: b += 1
         out.append((a, b))
@@ -49,14 +49,34 @@ class Sheet:
         A = np.array(Image.open(path).convert('RGB')).astype(int)
         self.A = A; self.BG = np.median(A.reshape(-1, 3), 0)
         r, g, b = A[..., 0], A[..., 1], A[..., 2]
-        near = (np.abs(A - self.BG) < 40).all(2)
+        # 배경 = 진한 마젠타 | (중앙값 ±40 **이면서 자줏빛**: r·b가 g보다 큼). 옅은 시트(도·창·봉·주먹)는 배경이
+        # (171,138,167)라 도복의 어두운 베이지(185,165,130)가 ±40 안에 들어 배경으로 지워졌다("도복이 배경에 묻힘",
+        # v2.73.1) — 베이지·살색·흰 도복은 b<g라 자줏빛 조건에서 걸러진다.
+        # 자줏빛이면 ±70까지 배경(줄 곁 안티에일리어스 119,94,124가 52 벗어나 그림으로 남았다 — 머리카락 80,55,85는 90 벗어나 안전)
+        near = (np.abs(A - self.BG) < 70).all(2) & ((r - g) > 8) & ((b - g) > 8)
         fg0 = ~((((r - g) > 50) & ((b - g) > 50)) | near)
         dark = A.sum(2) < self.BG.sum() - 150
-        cl, rl = _lines(dark.mean(0)), _lines(dark.mean(1))
-        self.xs = [(cl[i][1] + 1, cl[i + 1][0] - 1) for i in range(len(cl) - 1) if cl[i + 1][0] - cl[i][1] > 40]
+        rl = _lines(dark.mean(1))
         self.ys = [(rl[i][1] + 1, rl[i + 1][0] - 1) for i in range(len(rl) - 1) if rl[i + 1][0] - rl[i][1] > 40]
+        cl = _lines(dark.mean(0))
+        xs = [(cl[i][1] + 1, cl[i + 1][0] - 1) for i in range(len(cl) - 1) if cl[i + 1][0] - cl[i][1] > 40]
+        # 칸 폭 검증 — 부채 시트는 4번째 칸 오른쪽 줄이 행마다 1~2px 어긋나 한 열로는 70%를 못 넘어 빠졌고, 그 칸이
+        # 여백까지 합쳐진 170px로 잡혀 줄(1px 어두운 선)이 그림으로 남았다(v2.73.1). 중앙값보다 15% 넘게 넓은 칸은
+        # '앞 칸 폭만큼 간 자리' ±6px에서 어두운 비율이 가장 높은 열을 줄로 삼아 쪼갠다.
+        med = int(np.median([b - a for (a, b) in xs]))
+        fixed = []
+        for (a, b) in xs:
+            if b - a > med * 1.15:
+                lo, hi = a + med - 6, a + med + 6
+                fr = dark[:, lo:hi + 1].mean(0); x = lo + int(fr.argmax())
+                if fr.max() > 0.35: fixed.append((a, x - 3)); cl.append((x - 2, x + 2)); continue
+            fixed.append((a, b))
+        cl.sort(); self.xs = fixed
         assert len(self.xs) == cols and len(self.ys) == rows, (self.xs, self.ys)
         # 테두리 줄 띠(안티에일리어스 포함)
+        # 줄 띠는 양옆 2px 더 — 줄 곁 안티에일리어스 열(119,94,124)은 '어두운 줄' 판정 밖이라 여백에 세로 띠로
+        # 남아 인물에 붙었다(v2.73.1 "자주 세로선"). 넓힌 띠는 무기가 가로지르면 어차피 이어 붙인다.
+        cl = [(max(0, a - 2), b + 2) for (a, b) in cl]; rl = [(max(0, a - 2), b + 2) for (a, b) in rl]
         band = np.zeros(fg0.shape, bool)
         for (a, b) in cl: band[:, a:b + 1] = True
         for (a, b) in rl: band[a:b + 1, :] = True
@@ -81,6 +101,8 @@ class Sheet:
             else:
                 # 여백에만 있는 작은 조각이 칸 모서리·변 가운데 표식 자리면 버린다(부채 시트의 ㄱ자·눈금 —
                 # 인물에 붙으면 세로선으로 떠 보였다). 큰 조각(300px↑)은 무기 끝일 수 있어 남긴다.
+                w_, h_ = xx.max() - xx.min() + 1, yy.max() - yy.min() + 1
+                if (h_ > 80 and w_ <= 8) or (w_ > 80 and h_ <= 8): continue   # 여백의 가늘고 긴 것 = 줄 잔재
                 cx_, cy_ = xx.mean(), yy.mean(); mark = False
                 for (y0, y1) in self.ys:
                     for (x0, x1) in self.xs:
@@ -171,10 +193,12 @@ def edge_expand(rgba):
 
 def shrink(rgba, scale):
     e = edge_expand(rgba)
+    # 얇은 것(찌르기 칼날은 원본 2px → 0.5px)이 축소에서 사라지지 않게 알파를 1px 두껍게 하고 문턱을 96으로 (v2.73.1)
+    a = ndi.binary_dilation(e[..., 3] > 0, np.ones((3, 3), bool))
     w = max(1, round(e.shape[1] * scale)); h = max(1, round(e.shape[0] * scale))
     rgb = Image.fromarray(e[..., :3]).resize((w, h), Image.LANCZOS)
-    al = Image.fromarray(e[..., 3]).resize((w, h), Image.LANCZOS)
-    out = np.dstack([np.array(rgb), (np.array(al) >= 128) * 255]).astype(np.uint8)
+    al = Image.fromarray((a * 255).astype(np.uint8)).resize((w, h), Image.LANCZOS)
+    out = np.dstack([np.array(rgb), (np.array(al) >= 96) * 255]).astype(np.uint8)
     lab, n = ndi.label(out[..., 3] > 0)
     for i in range(1, n + 1):
         m = lab == i
@@ -198,10 +222,10 @@ def extract(sheet_path, strips, review_path, center='hair', share_width=False):
         half = max(max(cx, sw - cx) for (sm, cx, g, below, _, _) in frames for sw in [sm.shape[1]])
         W = int(np.ceil(half)) * 2 + 2
         # 위·아래 여분: 그림이 캔버스 끝 행에 닿으면 1행 더 준다(가장자리 접촉 = 잘림으로 보는 spritetest 규약)
-        need_top = max((sm.shape[0] - below) - (GROUND + 1) for (sm, cx, g, below, _, _) in frames)
+        need_top = max((sm.shape[0] - below + max(0, g)) - (GROUND + 1) for (sm, cx, g, below, _, _) in frames)   # 뜬 컷은 g만큼 더 위
         need_bot = max(below - (H0 - GROUND - 1) for (sm, cx, g, below, _, _) in frames)
-        top_extra = int(np.ceil(need_top)) + 1 if need_top >= 0 else 0
-        bot_extra = int(np.ceil(need_bot)) + 1 if need_bot >= 0 else 0
+        top_extra = int(np.ceil(need_top)) + 1 if need_top > -1 else 0     # 반올림으로 0행에 닿는 경우까지 여분
+        bot_extra = int(np.ceil(need_bot)) + 1 if need_bot > -1 else 0
         all_frames[key] = frames; dims[key] = (W, top_extra, bot_extra)
     if share_width:                                     # 교대로 트는 두 판(정권)은 폭이 같아야 한다
         Wm = max(w for (w, t, b) in dims.values()); dims = {k: (Wm, t, b) for k, (w, t, b) in dims.items()}
@@ -219,7 +243,8 @@ def extract(sheet_path, strips, review_path, center='hair', share_width=False):
         specs[key] = (W, Hc, top_extra)
         print(f'  → {key}: 폭 {W} · 높이 {Hc} · 위 여분 {top_extra} · 아래 여분 {bot_extra}')
     Sc = 4; pad = 8
-    R = Image.new('RGB', (max(s.shape[1] for s in review) * Sc + pad * 2, sum(s.shape[0] * Sc + pad for s in review) + pad), 'white'); y = pad
+    # 검사판 배경은 게임 바닥색 — 흰 배경은 도복이 비치는 구멍을 못 보여 줬다(v2.73.1)
+    R = Image.new('RGB', (max(s.shape[1] for s in review) * Sc + pad * 2, sum(s.shape[0] * Sc + pad for s in review) + pad), (112, 128, 84)); y = pad
     for s in review:
         im = Image.fromarray(s).resize((s.shape[1] * Sc, s.shape[0] * Sc), Image.NEAREST); R.paste(im, (pad, y), im); y += s.shape[0] * Sc + pad
     R.save(review_path); print('검사판', review_path)
