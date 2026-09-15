@@ -15,6 +15,16 @@ a = np.array(Image.open(src).convert('RGB')).astype(int)
 r, g, b = a[:, :, 0], a[:, :, 1], a[:, :, 2]
 H, W = r.shape
 
+# --patch x,y,w,h : 그 사각형에 **바로 왼쪽 같은 크기 띠를 복사**해 메운다 — 평균색으로
+# 칠하면 언덕·땅 경계에 걸친 자리가 연한 상자로 남는다(v2.61 죽림). 복사면 경계 기울기가
+# 이어진다. (제미나이 ✦ 워터마크가 땅 띠 위에 찍혀 오는 경우)
+for arg in sys.argv[2:]:
+    if arg.startswith('--patch'):
+        x, y, w, h = map(int, arg.split('=')[1].split(','))
+        a[y:y + h, x:x + w] = a[y:y + h, x - w:x]
+        r, g, b = a[:, :, 0], a[:, :, 1], a[:, :, 2]
+        print('패치 (%d,%d %dx%d) ← 왼쪽 띠 복사' % (x, y, w, h))
+
 # 순마젠타에 가까울수록 0, 멀수록 255 — 경계는 부드럽게
 mag = (r > 190) & (b > 190) & (g < 90)
 edge = (r > 150) & (b > 150) & (g < 130) & ~mag          # 마젠타 물든 가장자리
@@ -26,9 +36,9 @@ rr[edge] = np.minimum(rr[edge], gg[edge] + 40)
 bb[edge] = np.minimum(bb[edge], gg[edge] + 40)
 rgba = np.dstack([rr, gg, bb, alpha]).astype(np.uint8)
 
-# 좌우 이음새 — 끝 4px를 서로 섞는다. **둘 다 불투명인 행만** — 한쪽이 하늘(투명)이면
-# 마젠타 RGB가 섞여 들어와 이음새에 분홍 세로선이 생긴다.
-k = 4
+# 좌우 이음새 — 끝 k px를 서로 섞는다(원경은 완전 무봉이 아니라 넓게). **둘 다 불투명인
+# 행만** — 한쪽이 하늘(투명)이면 마젠타 RGB가 섞여 들어와 이음새에 분홍 세로선이 생긴다.
+k = 24
 for i in range(k):
     t = (i + 1) / (k + 1)
     li, ri = i, W - k + i
