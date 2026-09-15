@@ -32,7 +32,7 @@ setTimeout(()=>{
   const d=w.document, S=w.eval('S'), EQ=w.eval('EQUIP');
   w.closeTitle && w.closeTitle();
   // 1) 드랍
-  ok(EQ.slots.every(sl=>S.equip[sl.k] && S.equip[sl.k].g===0) && S.equip.weapon.k==='sword','시작 장비: 자리마다 일반 하나(권갑 아이콘이 없는 동안 무기는 검)');
+  ok(S.equip.weapon===null && S.equip.armor && S.equip.armor.g===0 && S.equip.trinket && S.equip.trinket.g===0,'시작 장비: 방어구·장신구 일반 하나, 무기는 없음(맨손 시작 — 권갑 아이콘 대기)');
   EQ.dropCh=1; S.inv={}; S.codex={}; S.itemLv={}; S.equip={weapon:null,armor:null,trinket:null};
   ok(w.eqKinds(EQ.slots[0]).length===5 && !w.eqKinds(EQ.slots[0]).some(k=>k[0]==='fist'),'아이콘 없는 권갑은 화면·드랍에서 빠진다(무기 5종 보임)');
   S.equip={weapon:null,armor:null,trinket:null};

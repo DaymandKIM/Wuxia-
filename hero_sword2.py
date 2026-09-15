@@ -3,7 +3,7 @@
   2줄 = 치켜듦·내려베기(별 폭발)·사선 호·큰 원 베기·낮은 베기(흙)·기수식
   3줄 = 치켜듦·큰 세로 호·찌르기·찌르기(별)·베기 호(별)·낮은 기수식
 동작(4컷, 임팩트 index2):
-  swordthrust 찌르기 = 1줄 [0,2,3,4]  기수식→검 내림→찌르기 별→사선 호
+  swordthrust 찌르기 = 1줄 [0,2,3] + 3줄2  기수식→검 내림→찌르기 별→찌르기 뻗음 (1줄5 사선 호는 검이 안 보여 뺌, v2.72.5)
   swordslash  베기   = 3줄0 + 2줄 [0,1,2]  치켜듦→더 높이→내려베기 별→사선 호
   swordspin   회전베기 = 2줄5 · 3줄1 · 2줄3 · 2줄4  기수식→큰 세로 호→큰 원 베기→낮은 베기
 배율·정렬은 hero_kick2와 같다(머리 중심·칸 바닥). 결과: assets/sword*.png + review/hero_sword2.png
@@ -13,7 +13,7 @@ from PIL import Image
 import hero_kick2 as K
 
 SHEET = 'sheets/hero_sword2.png'; STAND_H = 172
-STRIPS = { 'swordthrust': ([(0,0),(0,2),(0,3),(0,4)], 60),
+STRIPS = { 'swordthrust': ([(0,0),(0,2),(0,3),(2,2)], 60),
            'swordslash':  ([(2,0),(1,0),(1,1),(1,2)], 60),
            'swordspin':   ([(1,5),(2,1),(1,3),(1,4)], 64) }
 def main():

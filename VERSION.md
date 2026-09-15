@@ -1,3 +1,10 @@
+# v2.72.5 — 첫 시작은 맨손 (사용자: "첫 시작은 주먹 공격, 검 공격 이상한데", 2026-09-15)
+
+- 시작 무기 목록에서 검을 뺐다(EQUIP.starter.weapon ['fist']) — 권갑 아이콘이 없는 동안은 **무기 없이 시작**해
+  양주먹·발차기로 싸운다. 검·도 등은 사냥에서 떨어지면 빈 자리에 끼워져 그때부터 그 무기 동작.
+- 검 찌르기 마지막 컷을 사선 호(1줄 5칸, 검이 안 보이고 호만 남아 어색)에서 **3줄 3칸 찌르기 뻗음**으로 교체.
+- 검증 equiptest(무기 없음 시작)·fxtest·spritetest·savetest·크로뮴 새 게임(무기 null·무브셋 punch).
+
 # v2.72.4 — 봉 공격 모션 (사용자 시트 sheets/hero_staff2.png, 2026-09-15) — 무기 5종 동작 완성
 
 - WEAPONMOVES.staff = **휘두르기(staffswing, 0)·쓸기(staffsweep, 5)·회전(staffspin, 15)**. `hero_staff2.py`.
