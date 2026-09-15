@@ -124,7 +124,8 @@ review/            검사판 PNG (생성물)
 | `panther.py` `wisp.py` → `foesheet.py` | `sheets/panther.png` `sheets/wisp.png` | 돌아간다 (v2.65 — 테두리 줄 검출 격자) |
 | `hero_sheet.py` + `hero_*2.py` | `sheets/hero_*2.png` | 돌아간다 (v2.73 — **그림 기준** 공용 추출기. 아래 8개 스크립트는 컷 선택만) |
 | `hero_pose2.py` | 주먹·발차기 시트 | 돌아간다 (v2.73.2 — 대기·피격·경공 컷을 새 시트에서. 운기조식·시전만 옛 시트) |
-| `hero_kick2.py` | `sheets/hero_kick2.png` | 돌아간다 (v2.71, 주인공 발차기 3종 — 칸 바닥 기준·머리 정렬) |
+| `hero_kick3.py` | `sheets/hero_kick3.png` | **현행** (v2.76.1 — 발차기 3종, gridless. 기준 컷은 곧게 선 (0,0)으로 hero_punch4와 배율 일치) |
+| `hero_kick2.py` | `sheets/hero_kick2.png` | 옛 발차기(v2.71). raw/kick2_old 보관. 쓰지 않는다 (hero_pose2의 피격·경공 컷에는 아직 쓴다) |
 | `hero_run2.py` | `sheets/hero_run2.png` | 돌아간다 (v2.71.1, 질주 6컷 — hero_kick2의 격자·축소 재사용) |
 | `hero_punch4.py` | `sheets/hero_punch4.png` | **현행** (v2.76 — 주먹 3종 정권·연환권·승룡권, gridless. 잔상 컷은 마젠타라 폐기) |
 | `hero_punch3.py` | `sheets/hero_fx.png` 2·3줄 | 옛 권기 정권 두 판(v2.74.1). raw/punch3_old 보관. 쓰지 않는다 |
@@ -456,7 +457,8 @@ cost 20만은 연마·돌파용(습득은 여전히 기연만). 태극 원반 �
   (사용자 동의). 색은 경지 하나가 말한다.
 - **기본공격**(v2.49 각도별 발차기 → v2.71 시트 교체) — ATKMOVES `[{key,need}]` = **양주먹(punch,
   need0)·옆차기(kickside, need5)·돌려차기(kickround, need10)·뛰어차기(kickhigh, need15)** 4종.
-  발차기 3종은 sheets/hero_kick2.png(3줄×6칸)에서 hero_kick2.py로 뽑는다(아래 v2.49 설명은 옛 시트 이력).
+  발차기 3종은 sheets/hero_kick3.png(3줄×6칸)에서 hero_kick3.py로 뽑는다(v2.76.1 — 아래 v2.49 설명은 옛 시트 이력).
+  **gridless 기준 컷(stand_cell)은 곧게 선 자세로** — 내지름·챔버처럼 낮은 자세를 기준으로 잡으면 다른 시트와 배율이 어긋난다.
   **무기별 무브셋**(v2.72) — WEAPONMOVES[무기 종류]가 있으면 그 무브셋(검 = 찌르기·베기·회전베기 hero_sword2 · 부채 = 휘두르기·회전·찌르기 hero_fan2 · 도 = 베기·내려찍기·회전베기 hero_saber2 · 창 = 찌르기·쓸기·회전 hero_spear2 · 봉 = 휘두르기·쓸기·회전 hero_staff2 — v2.72.4로 무기 5종 완성),
   없으면 맨손 ATKMOVES. heroWeaponKind()가 S.equip.weapon.k를 본다. **v2.75부터 무기 동작은 전부 need 0**(든 순간부터
   3동작 순환), 맨손은 주먹 3종+옆차기가 처음부터(v2.76)·돌려차기 5·뛰어차기 10 — 사용자: "스타일마다 3가지 이상이어야 실감". 새 무기 시트가 오면 WEAPONMOVES에 얹고

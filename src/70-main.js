@@ -5,8 +5,8 @@ loadImg('hero_atk',   ASSET.atk);
 loadImg('hero_punch',    ASSET.punch);     // 기본공격 주먹 3종 (v2.76 사용자 시트 hero_punch4) — 정권
 loadImg('hero_punchdbl', ASSET.punchdbl);  // 연환권
 loadImg('hero_punchup',  ASSET.punchup);   // 승룡권
-loadImg('hero_kickside', ASSET.kickside);  // 기본공격 옆차기 (v2.49, 성급 5)
-loadImg('hero_kickround', ASSET.kickround); // 기본공격 돌려차기 (v2.71, 성급 10)
+loadImg('hero_kickside', ASSET.kickside);  // 기본공격 옆차기 (v2.76.1 사용자 시트 hero_kick3, 처음부터)
+loadImg('hero_kickround', ASSET.kickround); // 기본공격 돌려차기 (hero_kick3, 성급 5)
 loadImg('hero_swordthrust', ASSET.swordthrust); // 검 장착 기본공격 3종 (v2.72, 사용자 시트 hero_sword2)
 loadImg('hero_swordslash',  ASSET.swordslash);
 loadImg('hero_swordspin',   ASSET.swordspin);
@@ -22,7 +22,7 @@ loadImg('hero_spearspin',   ASSET.spearspin);
 loadImg('hero_staffswing', ASSET.staffswing);   // 봉 장착 기본공격 3종 (v2.72.4, 사용자 시트 hero_staff2)
 loadImg('hero_staffsweep', ASSET.staffsweep);
 loadImg('hero_staffspin',  ASSET.staffspin);
-loadImg('hero_kickhigh', ASSET.kickhigh);  // 기본공격 뛰어차기 (v2.71, 성급 15)
+loadImg('hero_kickhigh', ASSET.kickhigh);  // 기본공격 뛰어차기 (hero_kick3, 성급 10)
 loadImg('hero_flykick',  ASSET.flykick);   // 도약 화염 발차기 (v2.46, 성급 9)
 loadImg('hero_firekick', ASSET.firekick);  // 화염 옆차기 (v2.46, 성급 13)
 loadImg('hero_cresckick', ASSET.cresckick);  // 초승달 참격 발차기 (v2.47.1, 성급 17)

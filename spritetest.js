@@ -124,9 +124,9 @@ const fhOf = k => (HFX.fh && HFX.fh[k]) ? HFX.fh[k][0] : HERO.h;
 check('정권',   'punch.png',    HFX.aw.punch * 4,    fhOf('punch'));      // v2.76 주먹 3종(hero_punch4) — 키 큰 캔버스는 fh
 check('연환권', 'punchdbl.png', HFX.aw.punchdbl * 4, fhOf('punchdbl'));
 check('승룡권', 'punchup.png',  HFX.aw.punchup * 4,  fhOf('punchup'));
-check('발차기 옆',   'kickside.png', HFX.aw.kickside * 4, HERO.h);
-check('발차기 돌려', 'kickround.png', HFX.aw.kickround * 4, HERO.h);
-check('발차기 뛰어', 'kickhigh.png', HFX.aw.kickhigh * 4, HERO.h);
+check('발차기 옆',   'kickside.png',  HFX.aw.kickside * 4,  fhOf('kickside'));   // v2.76.1 hero_kick3
+check('발차기 돌려', 'kickround.png', HFX.aw.kickround * 4, fhOf('kickround'));
+check('발차기 뛰어', 'kickhigh.png',  HFX.aw.kickhigh * 4,  fhOf('kickhigh'));
 for (const wk in WEAPONMOVES) for (const m of WEAPONMOVES[wk])   // 무기별 기본공격 — 키 큰 캔버스는 HFX.fh (v2.73)
   check(wk + ' ' + m.key, m.key + '.png', HFX.aw[m.key] * 4, (HFX.fh && HFX.fh[m.key]) ? HFX.fh[m.key][0] : HERO.h);
 for (const ck in HFX.cast)   // 시전 스트립은 초식마다 별도
