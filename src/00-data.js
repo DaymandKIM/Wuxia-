@@ -169,17 +169,19 @@ const TERR = {
 // 구역별 랜드마크 소품 — 잔 스캐터(TERR)보다 크고 성기게, 뒤 층에 세운다.
 // 역시 시트 없이 절차로 그린다. 월드 좌표 고정(넓은 격자 grid), 무상태(셀 해시).
 // dens=셀 채움 확률, grid=배치 간격, h=[최소,최대] 높이. cols=팔레트.
+// 그림체는 스프라이트와 맞춘다 — 픽셀 블록(정수 정렬 fillRect)·다크 아웃라인
+// (line)·플랫 셀 음영(shade). 곡선·안티앨리어싱 없음. (렌더는 50-render.)
 const PROPS = {
   bamboo:  { kind:'stalk', dens:0.50, grid:200, h:[58,112],
-             cols:{ stem:'#79974e', node:'#4e6534', leaf:'#93bd60' } },   // 대나무 줄기
-  village: { kind:'ruin',  dens:0.42, grid:210, h:[16,30],
-             cols:{ clay:'#7d6144', dark:'#4f3d29', wood:'#6a5236' } },    // 항아리·말뚝·그루터기
-  cave:    { kind:'mite',  dens:0.46, grid:190, h:[26,64],
-             cols:{ rock:'#3a3e46', edge:'#5e6470', crystal:'#66dbe4' } }, // 종유석·결정
+             cols:{ stem:'#7aa04e', shade:'#5f8038', node:'#48602f', leaf:'#95c25e', line:'#26301a' } },
+  village: { kind:'ruin',  dens:0.42, grid:210, h:[18,32],
+             cols:{ clay:'#8a6a48', shade:'#6d5236', dark:'#3f301f', wood:'#6e5537', line:'#2c2116' } },
+  cave:    { kind:'mite',  dens:0.46, grid:190, h:[28,66],
+             cols:{ rock:'#4a4f59', shade:'#363b44', edge:'#6b7280', crystal:'#6fe0ea', line:'#1b1f26' } },
   snow:    { kind:'pine',  dens:0.42, grid:205, h:[70,120],
-             cols:{ leaf:'#3c5a44', dark:'#314e39', snow:'#eef4fb', trunk:'#5a4632' } }, // 침엽수
-  heaven:  { kind:'cairn', dens:0.40, grid:200, h:[18,40],
-             cols:{ stone:'#8f8975', dark:'#6f6a58', shrub:'#4f6b45' } },  // 돌탑·관목
+             cols:{ leaf:'#3f6048', shade:'#2f4b39', snow:'#f0f5fb', trunk:'#5a4632', line:'#1e2a22' } },
+  heaven:  { kind:'cairn', dens:0.40, grid:200, h:[20,42],
+             cols:{ stone:'#94907c', shade:'#726d5c', dark:'#5f5a4a', shrub:'#52704a', line:'#25281d' } },
 };
 
 // 난이도 — 전역 단계 g(1~50)가 축이다. 구역은 배경·계보·서사의 단위.
