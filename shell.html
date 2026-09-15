@@ -319,7 +319,8 @@
     border:1px solid #2b333d;border-radius:11px;}
   #zstage .zsttl{font-family:var(--fw);font-size:13px;color:#cdd6e0;margin-bottom:7px;}
   #zstage .zsttl small{color:#6b7683;font-size:11px;}
-  #zstage .zst{margin-top:0;}
+  #zstage .zst{margin-top:0;display:grid;grid-template-columns:repeat(5,1fr);}   /* 한 줄에 5단계씩 — 1~5 / 6~10 / 보스 (v2.70.5, 사용자) */
+  #zstage .zst .sb{min-width:0;padding-left:0;padding-right:0;text-align:center;}
 
   #opanel{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
     pointer-events:none;opacity:0;background:rgba(6,8,11,.66);transition:opacity .2s;}
