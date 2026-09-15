@@ -167,6 +167,7 @@ function refreshEquip(){
     const ub = $('equnwear'); if (ub) ub.onclick = () => { if (eqUnwear(sl.k)){ toast('무기를 벗었다\n맨손 주먹·발차기'); buildEquipPanel(); } };
   }
   const mc = mergeCount(); $('eqmerge').textContent = '일괄 합성' + (mc ? ' (' + mc + ')' : ''); $('eqmerge').disabled = !mc;
+  $('eqmerge').classList.toggle('on', mc > 0);   // 합성할 게 있으면 호박색으로 (v2.79.1 사용자: "활성화되면 색을 바꿔 잘 보이게")
   $('eqauto').classList.toggle('on', eqBetterAny());
   // 상세
   const d = $('eqdet');
