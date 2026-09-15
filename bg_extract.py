@@ -49,6 +49,19 @@ for i in range(k):
     rgba[both, li, :3] = mixL[both]
     rgba[both, ri, :3] = mixR[both]
 
+# 아래 평평한 땅색 띠 잘라내기 — 옛 단색 페이드용이던 띠가 디졸브(v2.61.7)에선 반투명
+# 회색 띠로 남는다. 행 표준편차가 작은(균일한) 바닥 행을 위로 올라가며 걷는다.
+trim = H
+c0, c1 = int(W * 0.05), int(W * 0.95)                 # 가장자리 섞은 열은 뺀다
+base = rgba[H - 1, c0:c1, :3].astype(int).mean(0)
+while trim > int(H * 0.6):
+    row = rgba[trim - 1, c0:c1]
+    if row[:, 3].min() == 0: break
+    rgb = row[:, :3].astype(int)
+    if rgb.std(0).mean() > 14 or np.abs(rgb.mean(0) - base).max() > 14: break
+    trim -= 1
+if trim < H:
+    print('아래 평평한 띠 %dpx 제거' % (H - trim)); rgba = rgba[:trim]
 out = '%s/assets/bg_%s.png' % (R, zone)
 im = Image.fromarray(rgba, 'RGBA')
 # 용량 — 게임은 높이 ~290px로 그리니 폭 1024면 충분(2000px 시트는 2배 오버샘플).

@@ -214,9 +214,13 @@ const GROUNDTEX = {
 };
 
 const BACKDROP = {
-  h: 0.34, par: 0.22, fade: 40, fadeSteps: 40,   // 페이드 계단 수 — 16단도 줄무늬가 보여 ≈1px 단
-  cull: 0.5,                                      // 지평선(fade의 이 비율 지점) 위 소품은 안 그린다
+  hz: 0.30,                                     // 지평선 y (VH 비율) — 원경 그림의 바닥이 여기 온다
+  hDef: 0.30, h: { cave: 0.21 },                // 그림 높이(VH 비율) — 크기와 지평선을 분리. 동굴 시트는 크게 그려져 작게
+  par: 0.22,                                    // 카메라 x 패럴럭스 배율
+  fade: 64, fadeSteps: 16, fadePow: 1.6,                      // 아래 fade px: 원경 알파를 빼며 바닥 텍스처 위로 디졸브 (평균색 칠하기 → 평평한 띠가 생겨 폐기)
+  cull: 0.5,                                    // 지평선 위(fade의 이 비율 지점부터) 소품 안 세움
   keys: { bamboo:'bg_bamboo', village:'bg_village', cave:'bg_cave', snow:'bg_snow', heaven:'bg_heaven' },
+  sky:  { bamboo:'#becfbc', village:'#a78e76', cave:'#3f444b', snow:'#cddae8', heaven:'#d8dbc6' },  // 그림 위 남는 하늘(시트 윗줄 평균)
 };
 
 // 난이도 — 전역 단계 g(1~50)가 축이다. 구역은 배경·계보·서사의 단위.

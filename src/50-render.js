@@ -33,24 +33,31 @@ function thash(cx, cy, s){
 // (옛 절차 지형 스캐터 TERR·drawTerr는 폐기 — 시트 스프라이트로 대체, v2.59.
 //  날씨 입자는 AMB/drawAmbient에서 계속 그린다.)
 
-// 상단 원경 — 화면 고정 띠, 가로 타일링, 카메라 x에 par 배로 느리게 흐른다.
-// 아래 fade 띠는 땅색 알파 계단으로 녹여 지평선을 잇는다(그라디언트 없이 — jsdom 스텁).
+// 상단 원경 — 지평선(hz)에 그림 바닥을 맞추고, 그림 위 남는 하늘은 시트 윗줄 색으로.
+// 가로 타일링, 카메라 x에 par 배로 느리게 흐른다. 아래 fade px는 그림 알파를 계단으로
+// 빼서 **바닥 텍스처 위로 디졸브**한다 — 평균색을 칠하면 평평한 띠가 생겼다(v2.61.7).
 function drawBackdrop(ox){
-  const img = IMG[BACKDROP.keys[zone().k]];
+  const zk = zone().k, img = IMG[BACKDROP.keys[zk]];
   if (!img || !img.complete || !img.naturalWidth) return;
-  const sh = Math.round(VH * BACKDROP.h);
-  const sw = Math.max(1, Math.round(sh * img.naturalWidth / img.naturalHeight));
+  const nw = img.naturalWidth, nh = img.naturalHeight;
+  const hzY = Math.round(VH * BACKDROP.hz);
+  const sh = Math.round(VH * (BACKDROP.h[zk] || BACKDROP.hDef));
+  const sw = Math.max(1, Math.round(sh * nw / nh));
+  const y0 = hzY - sh;
   const off = -(((ox * BACKDROP.par) % sw) + sw) % sw;
-  for (let x = off; x < VW; x += sw) draw(img, Math.round(x), 0, sw, sh);
-  // 녹일 색 — 바닥 텍스처가 있으면 그 평균색(땅색과 밝기가 다르면 띠가 생긴다)
-  const tex = IMG[GROUNDTEX.keys[zone().k]];
-  const g = (tex && tex.complete && tex.naturalWidth && GROUNDTEX.avg[zone().k]) || zone().ground;
-  const n = BACKDROP.fadeSteps, band = BACKDROP.fade / n;
   ctx.save();
-  ctx.fillStyle = g;
-  for (let i = 0; i < n; i++){                         // 아래로 갈수록 땅색이 짙어진다
-    ctx.globalAlpha = (i + 1) / (n + 1);
-    ctx.fillRect(0, Math.round(sh - BACKDROP.fade + i * band), VW, Math.ceil(band) + 1);
+  ctx.fillStyle = BACKDROP.sky[zk] || zone().ground;              // 그림 위 하늘
+  if (y0 > 0) ctx.fillRect(0, 0, VW, y0 + 1);
+  const F = Math.min(BACKDROP.fade, sh - 2), solid = sh - F, n = BACKDROP.fadeSteps;
+  const srcSolid = nh * solid / sh;                                // 원본 좌표계 높이
+  for (let x = off; x < VW; x += sw)                               // 위쪽 불투명부
+    draw(img, 0, 0, nw, srcSolid, Math.round(x), y0, sw, solid);
+  const bandH = F / n, srcBand = nh * bandH / sh;
+  for (let i = 0; i < n; i++){                                     // 아래 디졸브 계단
+    ctx.globalAlpha = Math.pow(1 - (i + 0.5) / n, BACKDROP.fadePow);   // 아래로 갈수록 빨리 빠진다
+    const dy = y0 + solid + i * bandH, sy = srcSolid + i * srcBand;
+    for (let x = off; x < VW; x += sw)
+      draw(img, 0, sy, nw, srcBand, Math.round(x), Math.round(dy), sw, Math.ceil(bandH) + 1);
   }
   ctx.restore();
 }
@@ -58,7 +65,7 @@ function drawBackdrop(ox){
 function horizonY(){
   const img = IMG[BACKDROP.keys[zone().k]];
   if (!img || !img.complete || !img.naturalWidth) return -1e9;
-  return Math.round(VH * BACKDROP.h) - BACKDROP.fade * BACKDROP.cull;
+  return Math.round(VH * BACKDROP.hz) - BACKDROP.fade * BACKDROP.cull;
 }
 // 배경 소품 — 시트 스프라이트를 넓은 격자에 성기게. 인물 뒤 층. 가시 셀만.
 function drawProps(ox, oy){
