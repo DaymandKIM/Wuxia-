@@ -949,15 +949,23 @@ function drawSummon(ox, oy){
       ctx.globalAlpha = ta;
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.fillStyle = '#f0d9a8';
-      ctx.font = Math.round(H*0.038) + 'px Jua,-apple-system,sans-serif';
+      let fpx = Math.round(H*0.038);
+      ctx.font = fpx + 'px Jua,-apple-system,sans-serif';
       const yy = H*0.30 - (1-clamp(bt/0.3,0,1)) * H*0.02;
       const face = IMG[BOSSFACE[zone().k]];
       const hasFace = !!(face && face.complete && face.naturalWidth);
-      const tx = hasFace ? W * FACECUT.textX : W/2;              // 초상이 있으면 문구는 왼쪽으로
+      const fh = hasFace ? Math.round(H * FACECUT.h) : 0;
+      const fw = hasFace ? Math.round(fh * face.naturalWidth / face.naturalHeight) : 0;
+      // 초상이 있으면 문구는 초상 왼쪽 남는 폭 가운데, 넘치면 폰트를 줄여 맞춘다 (v2.63)
+      const margin = Math.round(W * 0.03);
+      const leftW = hasFace ? Math.round(W * FACECUT.x - fw/2 - FACECUT.pad*2) - margin : W - margin*2;
+      const tx = hasFace ? margin + leftW/2 : W/2;
+      const mt = ctx.measureText ? ctx.measureText(cry) : null;           // jsdom 스텁 가드
+      const tw = (mt && mt.width) || 0;
+      if (tw > leftW){ fpx = Math.max(10, Math.floor(fpx * leftW / tw)); ctx.font = fpx + 'px Jua,-apple-system,sans-serif'; }
       ctx.fillText(cry, tx, yy);
       // 초상 컷인 — 문구 오른쪽, 같은 알파, 살짝 오른쪽에서 밀려든다
       if (hasFace){
-        const fh = Math.round(H * FACECUT.h), fw = Math.round(fh * face.naturalWidth / face.naturalHeight);
         const fx = Math.round(W * FACECUT.x + (1 - clamp(bt/0.3, 0, 1)) * H * FACECUT.slide - fw/2);
         const fy = Math.round(yy - fh * 0.62);
         ctx.fillStyle = 'rgba(8,10,14,.55)';
