@@ -89,14 +89,17 @@ function refreshTrain(){
   for (const s of TRAIN.list){
     const n = statLv(s.k);
     $('trlv-' + s.k).textContent = 'Lv ' + n + ' / ' + cap;
+    // 예상값은 이번에 실제로 살 개수만큼 오른 값 (v2.62.1 — x10·MAX인데 한 단계 뒤만 보여줬다)
+    const p = n >= cap ? { cnt: 0, cost: 0, ok: false } : trainPlan(s.k);
+    const to = Math.min(cap, n + (p.cnt > 0 ? p.cnt : 1));
     $('trfx-' + s.k).textContent =
-      s.d + ' · ' + s.f(statBonus(s.k)) + ' → ' + s.f(statBonus(s.k, n + 1));
+      s.d + ' · ' + s.f(statBonus(s.k)) + ' → ' + s.f(statBonus(s.k, to)) +
+      (p.cnt > 1 ? ' (' + p.cnt + '단계)' : '');
     const btn = $('trbody').querySelector('.trbuy[data-k="' + s.k + '"]');
     if (n >= cap){
       $('trc-' + s.k).textContent = '상한';
       btn.disabled = true;
     } else {
-      const p = trainPlan(s.k);
       // 배수를 다 채우면 금액만, 살 수 있는 만큼만 사면 ×개수를 함께 (v2.36)
       const tag = p.cnt > 1 && (trainAmt === 'MAX' || p.cnt !== trainAmt) ? ' ×' + p.cnt : '';
       $('trc-' + s.k).textContent =
