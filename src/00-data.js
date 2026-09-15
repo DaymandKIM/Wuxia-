@@ -22,7 +22,7 @@ const HERO = {
 
 // 동작: [프레임수, 초당프레임]
 const ANIM = {
-  idle:  [1, 4],                 // v2.43 — 정면 전투 자세 단일 컷 (사용자 시트 14번)
+  idle:  [1, 4],                 // 정면 전투 자세 단일 컷 — v2.73.2부터 주먹 시트 기수식(hero_pose2, 폭 HFX.aw.idle)
   run:   [6, 10],                // v2.71.1 — 사용자 시트 hero_run2 1줄 6컷 질주 (v2.44 10컷 시트 대체, hero_run2.py)
   atk:   [4, 8],                 // 4프레임 0.5초 — 정권 찌르기
   hit:   [2, 7],
@@ -34,7 +34,7 @@ const HFX = {
   castFps: 10,                   // 시전 재생 속도 — 16은 컷이 씹혀 보였다 (4성 0.6~0.9초)
   shotT: 0.28,                   // 권기 탄 비행 시간 (구 streak과 동일)
   fadeT: 0.22,                   // 탄 소멸 연출
-  aw: { aidle: 50, katk: 70, punch: 52, swordthrust: 78, swordslash: 52, swordspin: 56, fansweep: 58, fanspin: 48, fanstrike: 50, saberslash: 58, sabersmash: 56, saberspin: 54, spearthrust: 68, spearsweep: 52, spearspin: 50, staffswing: 48, staffsweep: 52, staffspin: 50, kickside: 56, kickround: 58, kickhigh: 52, flykick: 44, firekick: 44, cresckick: 46, burstkick: 46, run: 34, punchb: 52 },   // 특수 동작 프레임 폭 (v2.73 — 주인공 시트는 hero_sheet가 그림에 맞춰 재고 review/hero_specs.json에 적는다)
+  aw: { aidle: 50, katk: 70, punch: 52, swordthrust: 78, swordslash: 52, swordspin: 56, fansweep: 58, fanspin: 48, fanstrike: 50, saberslash: 58, sabersmash: 56, saberspin: 54, spearthrust: 68, spearsweep: 52, spearspin: 50, staffswing: 48, staffsweep: 52, staffspin: 50, kickside: 56, kickround: 58, kickhigh: 52, flykick: 44, firekick: 44, cresckick: 46, burstkick: 46, run: 34, punchb: 52, idle: 32, hit: 32 },   // 특수 동작 프레임 폭 (v2.73 — 주인공 시트는 hero_sheet가 그림에 맞춰 재고 review/hero_specs.json에 적는다. idle·hit도 v2.73.2부터 새 시트)
   // 캔버스 높이가 51을 넘는 동작 [높이, 위 여분] — 머리 위로 든 무기·큰 원 기운. 렌더는 위 여분만큼 위로 올려 땅을 맞춘다(v2.73)
   fh: { swordslash: [53, 2], spearspin: [54, 3], staffspin: [54, 3] },
   // 기본공격 = 양주먹(punch, 권기 정권) + 발차기 3종(kickside·kickround·kickhigh) 4프레임
@@ -79,8 +79,8 @@ const DASH = {
   hold:  0.16,   // 착지 경직(초) — 착지 컷을 보여준 뒤 바로 공격
   // 날기·착지 컷은 시트가 확대(줌인)로 그려져 머리가 커 보였다("경공 쓸 때
   // 머리 커짐" 제보) — 대기/질주 컷과 머리·몸 크기가 맞도록 줄여 그린다(v2.53).
-  fw:31, fh:32,  // 날기 컷 규격 (원본 43×45에서 축소)
-  lw:30, lh:44,  // 착지 컷 규격 (원본 37×54에서 축소)
+  fw:30, fh:51,  // 날기 컷 = 발차기 시트 도약 컷(v2.73.2, hero_pose2 — 새 시트로 통일. 51 캔버스·땅 48행)
+  lw:32, lh:51,  // 착지 컷 = 발차기 시트 웅크림 컷
   lift:  15,     // 비행 중 공중에 뜨는 높이 (작아진 컷에 맞춰 낮춤)
 };
 

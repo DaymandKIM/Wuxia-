@@ -204,7 +204,7 @@ setTimeout(()=>{
   // idle — 정면 전투 자세 단일 컷 (사용자 시트 14번)
   ok(w.eval('ANIM.idle[0]')===1,'대기는 단일 컷이다');
   w.eval('P.anim="idle"; P.af=0;'); renderNow();
-  ok(drew('hero_idle', w.eval('HERO.w')),'대기 자세가 그려진다');
+  ok(drew('hero_idle', w.eval('HFX.aw.idle||HERO.w')),'대기 자세가 그려진다 (v2.73.2 새 시트 기수식, 폭 HFX.aw.idle)');
   w.eval('P.anim="idle";');
 
   // 3.8) 구역 분위기 — 다섯 구역 모두 렌더가 오류 없이 돈다 (입자·어둑함·구름)
