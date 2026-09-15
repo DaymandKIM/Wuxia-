@@ -201,6 +201,14 @@ const PROPS = {
 // x의 par 배만 흘러(패럴럭스) 깊이감. 아래 fade px는 땅색으로 녹여 지평선을 잇는다.
 // 이미지(key)는 docs/프롬프트-배경.md 시트에서 bg_extract.py로 뽑는다 — 없으면
 // 아무것도 안 그린다. 바닥 텍스처는 두지 않는다(스프라이트·이펙트와 경쟁).
+// 바닥 텍스처 — 큰 무봉 그림 한 장을 카메라와 1:1로 2D 타일링(32px 타일 아님).
+// 땅색 위에 알파 a로 얹어 가독성을 지킨다(스프라이트·이펙트가 이 위에 그려진다).
+// 텍스처가 있으면 옅은 이동감 격자는 끈다. 시트 → ground_extract.py. 없으면 단색.
+const GROUNDTEX = {
+  a: 0.9, scale: 1,
+  keys: { bamboo:'ground_bamboo', village:'ground_village', cave:'ground_cave', snow:'ground_snow', heaven:'ground_heaven' },
+};
+
 const BACKDROP = {
   h: 0.34, par: 0.22, fade: 40, fadeSteps: 40,   // 페이드 계단 수 — 16단도 줄무늬가 보여 ≈1px 단
   cull: 0.5,                                      // 지평선(fade의 이 비율 지점) 위 소품은 안 그린다

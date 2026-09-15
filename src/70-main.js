@@ -50,6 +50,8 @@ for (const z in PROPS){ const D = PROPS[z];
   if (D.kind === 'sprite') for (const p of D.pick) loadImg(p[0], ASSET[p[0]]); }
 // 상단 원경 — 시트가 들어온 구역만 (에셋 없으면 건너뛴다)
 for (const z in BACKDROP.keys){ const k = BACKDROP.keys[z]; if (ASSET[k]) loadImg(k, ASSET[k]); }
+// 바닥 텍스처 — 시트가 들어온 구역만
+for (const z in GROUNDTEX.keys){ const k = GROUNDTEX.keys[z]; if (ASSET[k]) loadImg(k, ASSET[k]); }
 
 // 하단 탭 — 같은 탭 재클릭이면 닫고, 다른 패널은 접는다
 function closeSheets(){ closeZonePanel(); closeTrain(); closeArts(); closeRealmPanel();

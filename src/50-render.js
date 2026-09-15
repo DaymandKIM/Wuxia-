@@ -2,6 +2,18 @@
 function drawGround(ox, oy){
   ctx.fillStyle = zone().ground;
   ctx.fillRect(0, 0, VW, VH);
+  // 바닥 텍스처(시트) — 카메라와 1:1로 2D 타일링. 있으면 격자는 생략.
+  const tex = IMG[GROUNDTEX.keys[zone().k]];
+  if (tex && tex.complete && tex.naturalWidth){
+    const tw = Math.max(1, Math.round(tex.naturalWidth * GROUNDTEX.scale));
+    const th = Math.max(1, Math.round(tex.naturalHeight * GROUNDTEX.scale));
+    const sx = -(((ox % tw) + tw) % tw), sy = -(((oy % th) + th) % th);
+    ctx.save(); ctx.globalAlpha = GROUNDTEX.a;
+    for (let y = sy; y < VH; y += th)
+      for (let x = sx; x < VW; x += tw) draw(tex, Math.round(x), Math.round(y), tw, th);
+    ctx.restore();
+    return;
+  }
   // 옅은 격자로 이동감만 준다
   ctx.strokeStyle = 'rgba(0,0,0,.055)'; ctx.lineWidth = 1;
   const T = 32;
