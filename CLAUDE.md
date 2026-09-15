@@ -128,7 +128,8 @@ review/            검사판 PNG (생성물)
 | `hero_run2.py` | `sheets/hero_run2.png` | 돌아간다 (v2.71.1, 질주 6컷 — hero_kick2의 격자·축소 재사용) |
 | `hero_punch3.py` | `sheets/hero_fx.png` 2·3줄 | **현행** (v2.74.1 — 옛 권기 정권을 새 추출기로. 새 주먹 시트는 밋밋해 폐기) |
 | `hero_punch2.py` | `sheets/hero_punch2.png` | 대기·피격 컷(hero_pose2)에만 쓴다. 정권으로는 안 쓴다 |
-| `hero_sword3.py` | `sheets/hero_sword3.png` | **현행** (v2.74 재작업 시트 — 액자선 없음, gridless 모드·기준 컷 배율) |
+| `hero_sword4.py` | `sheets/hero_sword4.png` | **현행** (v2.74.5 2차 재작업 — 하늘색 검기, 다른 무기와 통일) |
+| `hero_sword3.py` | `sheets/hero_sword3.png` | 1차 재작업(흰 검기). 보관 |
 | `hero_sword2.py` | `sheets/hero_sword2.png` | 옛 시트(액자선에 잘림). 쓰지 않는다 |
 | `hero_fan2.py` | `sheets/hero_fan2.png` | 돌아간다 (v2.72.1, 부채 3종 — hero_sword2 틀) |
 | `hero_saber3.py` | `sheets/hero_saber3.png` | **현행** (v2.74.2 재작업 시트, gridless) |
