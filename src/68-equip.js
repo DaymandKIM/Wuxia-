@@ -5,7 +5,8 @@
 function eqSlot(k){ return EQUIP.slots.find(s => s.k === k); }
 function eqKind(kindK){ for (const sl of EQUIP.slots){ const x = sl.kinds.find(v => v[0] === kindK); if (x) return { sl, k:x[0], n:x[1], sub:x[2], icon:x[3] }; } return null; }
 // 아이콘 — 종류에 지정된 키, 없으면 eq_<종류>, 그것도 없으면 주먹(train_atk)
-function eqIcon(k){ const kd = eqKind(k); return ASSET[(kd && kd.icon) || ''] || ASSET['eq_' + k] || ''; }
+// 아이콘 — 등급별(eq_<종류>_<등급>, v2.80 사용자 시트)이 있으면 그것, 없으면 종류 기본(eq_<종류> 또는 kinds[3])
+function eqIcon(k, g){ const kd = eqKind(k); return (g !== undefined && ASSET['eq_' + k + '_' + g]) || ASSET[(kd && kd.icon) || ''] || ASSET['eq_' + k] || ''; }
 function eqHasIcon(k){ return !!eqIcon(k); }
 function eqKinds(sl){ return sl.kinds.filter(kd => eqHasIcon(kd[0])); }   // 화면·드랍에 쓰는 종류 = 아이콘 있는 것만
 // 시작 장비 — 자리에 아무것도 없고(장착·주머니·도감) 시작 종류가 있으면 일반 등급 하나를 주고 낀다
@@ -119,7 +120,7 @@ function eqCard(k, g, worn){
   const G = EQUIP.grades[g], n = eqInv(k)[g], seen = eqSeen(k, g), lv = itemLv(k, g);
   return '<button class="eqcard' + (seen ? ' seen' : '') + (n > 0 ? ' have' : '') + (worn ? ' worn' : '') +
     (eqSel && eqSel.k === k && eqSel.g === g ? ' sel' : '') + '" data-k="' + k + '" data-g="' + g + '" style="--gc:' + G.c + '">' +
-    '<img src="' + eqIcon(k) + '" alt="">' +
+    '<img src="' + eqIcon(k, g) + '" alt="">' +
     (seen ? '<em>Lv' + lv + '</em>' : '') + (n > 0 ? '<b>×' + n + '</b>' : '') + (worn ? '<i>착용</i>' : '') +
     (canMerge(k, g) ? '<s>합</s>' : '') + '</button>';
 }
@@ -159,7 +160,7 @@ function refreshEquip(){
     '<div class="zd">' + (sl.k === 'weapon' ? '주먹·발차기로 싸운다<br>무기를 끼면 그 무기 동작으로' : '적이 떨어뜨린다') + '</div>';
   else {
     const G = EQUIP.grades[it.g], kd = eqKind(it.k), pct = slotPct(sl.k), cx = codexPct(sl);
-    top.innerHTML = '<div class="eqrow"><div class="eqico" style="border-color:' + G.c + '"><img src="' + eqIcon(it.k) + '" alt=""><b>Lv' + itemLv(it.k, it.g) + '</b></div>' +
+    top.innerHTML = '<div class="eqrow"><div class="eqico" style="border-color:' + G.c + '"><img src="' + eqIcon(it.k, it.g) + '" alt=""><b>Lv' + itemLv(it.k, it.g) + '</b></div>' +
       '<div class="trl"><div class="zn"><span class="eqsl">' + sl.n + '</span> <em style="color:' + G.c + '">' + G.n + ' ' + kd.n + '</em></div>' +
       '<div class="zd">' + EQUIP.statName[sl.stat] + ' +' + pct.toFixed(1) + '%<br>' + EQUIP.statName[kd.sub] + ' +' + (pct * EQUIP.subRate).toFixed(1) + '%' +
       '<br><span class="eqhold">보유 효과 합 ' + EQUIP.statName[sl.stat] + ' +' + cx.toFixed(1) + '%</span></div></div>' +
