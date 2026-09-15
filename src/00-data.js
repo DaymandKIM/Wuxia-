@@ -166,6 +166,22 @@ const TERR = {
   heaven:  { kind:'tuft',  cols:['#5d7850','#6d885b','#8a7a55','#55503f'], dens:0.48, sz:[5,11] },
 };
 
+// 구역별 랜드마크 소품 — 잔 스캐터(TERR)보다 크고 성기게, 뒤 층에 세운다.
+// 역시 시트 없이 절차로 그린다. 월드 좌표 고정(넓은 격자 grid), 무상태(셀 해시).
+// dens=셀 채움 확률, grid=배치 간격, h=[최소,최대] 높이. cols=팔레트.
+const PROPS = {
+  bamboo:  { kind:'stalk', dens:0.50, grid:200, h:[58,112],
+             cols:{ stem:'#79974e', node:'#4e6534', leaf:'#93bd60' } },   // 대나무 줄기
+  village: { kind:'ruin',  dens:0.42, grid:210, h:[16,30],
+             cols:{ clay:'#7d6144', dark:'#4f3d29', wood:'#6a5236' } },    // 항아리·말뚝·그루터기
+  cave:    { kind:'mite',  dens:0.46, grid:190, h:[26,64],
+             cols:{ rock:'#3a3e46', edge:'#5e6470', crystal:'#66dbe4' } }, // 종유석·결정
+  snow:    { kind:'pine',  dens:0.42, grid:205, h:[70,120],
+             cols:{ leaf:'#3c5a44', dark:'#314e39', snow:'#eef4fb', trunk:'#5a4632' } }, // 침엽수
+  heaven:  { kind:'cairn', dens:0.40, grid:200, h:[18,40],
+             cols:{ stone:'#8f8975', dark:'#6f6a58', shrub:'#4f6b45' } },  // 돌탑·관목
+};
+
 // 난이도 — 전역 단계 g(1~50)가 축이다. 구역은 배경·계보·서사의 단위.
 // 원 확정 복원: 단계당 1.30배 + 처치 목표 24+단계×7. 선형 몹은 벽이 안
 // 생겨 60분에 콘텐츠가 끝났다(소모 속도 우려) — 지수여야 전선이 생기고,
