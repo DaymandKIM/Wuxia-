@@ -21,18 +21,44 @@ function thash(cx, cy, s){
 // (옛 절차 지형 스캐터 TERR·drawTerr는 폐기 — 시트 스프라이트로 대체, v2.59.
 //  날씨 입자는 AMB/drawAmbient에서 계속 그린다.)
 
+// 상단 원경 — 화면 고정 띠, 가로 타일링, 카메라 x에 par 배로 느리게 흐른다.
+// 아래 fade 띠는 땅색 알파 계단으로 녹여 지평선을 잇는다(그라디언트 없이 — jsdom 스텁).
+function drawBackdrop(ox){
+  const img = IMG[BACKDROP.keys[zone().k]];
+  if (!img || !img.complete || !img.naturalWidth) return;
+  const sh = Math.round(VH * BACKDROP.h);
+  const sw = Math.max(1, Math.round(sh * img.naturalWidth / img.naturalHeight));
+  const off = -(((ox * BACKDROP.par) % sw) + sw) % sw;
+  for (let x = off; x < VW; x += sw) draw(img, Math.round(x), 0, sw, sh);
+  const g = zone().ground, n = BACKDROP.fadeSteps, band = BACKDROP.fade / n;
+  ctx.save();
+  ctx.fillStyle = g;
+  for (let i = 0; i < n; i++){                         // 아래로 갈수록 땅색이 짙어진다
+    ctx.globalAlpha = (i + 1) / (n + 1);
+    ctx.fillRect(0, Math.round(sh - BACKDROP.fade + i * band), VW, Math.ceil(band) + 1);
+  }
+  ctx.restore();
+}
+// 원경이 깔린 구역의 지평선 화면 y — 이 위는 '하늘'이라 소품을 세우지 않는다
+function horizonY(){
+  const img = IMG[BACKDROP.keys[zone().k]];
+  if (!img || !img.complete || !img.naturalWidth) return -1e9;
+  return Math.round(VH * BACKDROP.h) - BACKDROP.fade * BACKDROP.cull;
+}
 // 배경 소품 — 시트 스프라이트를 넓은 격자에 성기게. 인물 뒤 층. 가시 셀만.
 function drawProps(ox, oy){
   const D = PROPS[zone().k]; if (!D) return;
   const G = D.grid;
   const cx0 = Math.floor(ox / G) - 1, cx1 = Math.floor((ox + VW) / G) + 1;
   const cy0 = Math.floor(oy / G) - 1, cy1 = Math.floor((oy + VH) / G) + 1;
+  const hy = horizonY();
   ctx.save();
   for (let cx = cx0; cx <= cx1; cx++){
     for (let cy = cy0; cy <= cy1; cy++){
       if (thash(cx, cy, 31) > D.dens) continue;
       const x = Math.round(cx * G + thash(cx, cy, 32) * G - ox);
       const y = Math.round(cy * G + thash(cx, cy, 33) * G - oy);
+      if (y < hy) continue;                           // 지평선 위(원경 띠)엔 소품 없음
       propSprite(D, x, y, cx, cy);
     }
   }
@@ -503,6 +529,7 @@ function render(){
   ctx.setTransform(SC,0,0,SC, Math.round(sh*SC), Math.round(sh*SC));
   const ox = S.camX - VW/2, oy = S.camY - VH/2;
   drawGround(ox, oy);
+  drawBackdrop(ox);                           // 맨 뒤 — 상단 원경(패럴럭스, 시트 있을 때만)
   drawProps(ox, oy);                          // 뒤 층 — 배경 소품 스프라이트(시트 추출)
   drawAmbient(false);                        // 땅 위 층 — 구름 그림자·동굴 어둑함
   drawGateFade(ox, oy);                       // 보스 등장 후 문이 어둠 속으로 스러진다 (뒤에)

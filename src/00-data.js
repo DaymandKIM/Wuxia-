@@ -179,6 +179,16 @@ const PROPS = {
                     ['hev_menhir',64,1], ['hev_grass',42,3], ['hev_stones',30,3], ['hev_flag',74,1] ] },
 };
 
+// 상단 원경 배경 — 화면 위쪽 h(VH 비율)에 구역별 원경 한 장을 가로 타일링, 카메라
+// x의 par 배만 흘러(패럴럭스) 깊이감. 아래 fade px는 땅색으로 녹여 지평선을 잇는다.
+// 이미지(key)는 docs/프롬프트-배경.md 시트에서 bg_extract.py로 뽑는다 — 없으면
+// 아무것도 안 그린다. 바닥 텍스처는 두지 않는다(스프라이트·이펙트와 경쟁).
+const BACKDROP = {
+  h: 0.34, par: 0.22, fade: 40, fadeSteps: 40,   // 페이드 계단 수 — 16단도 줄무늬가 보여 ≈1px 단
+  cull: 0.5,                                      // 지평선(fade의 이 비율 지점) 위 소품은 안 그린다
+  keys: { bamboo:'bg_bamboo', village:'bg_village', cave:'bg_cave', snow:'bg_snow', heaven:'bg_heaven' },
+};
+
 // 난이도 — 전역 단계 g(1~50)가 축이다. 구역은 배경·계보·서사의 단위.
 // 원 확정 복원: 단계당 1.30배 + 처치 목표 24+단계×7. 선형 몹은 벽이 안
 // 생겨 60분에 콘텐츠가 끝났다(소모 속도 우려) — 지수여야 전선이 생기고,
