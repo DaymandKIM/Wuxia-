@@ -53,6 +53,7 @@ node lint.js           # 정의 없는 호출·빠진 필수 함수
 node spritetest.js     # 선언 규격 vs 실제 PNG · 캔버스 가장자리 접촉
 python review.py       # 눈으로 볼 대조 PNG → review/review-<종류>.png
 python blackcheck.py [이름...]  # 검은 막대·부유 조각 눈검사판(흰 배경 확대) → review/blackcheck.png
+python skinmatch.py [키...]     # 옛 시트 스트립 살색을 새 시트 톤으로 (권기·옛 발차기·경공 컷 — 다시 뽑으면 다시 돌린다)
 node test.js           # jsdom으로 실제 실행 (오류 0 이어야 한다)
 node sim.js            # 24시간 진행 시뮬 (소비 전략 포함, SIM_MIN=분 으로 단축)
 node animtest.js       # 공격 동작이 피격에 끊기는지
@@ -151,6 +152,9 @@ review/            검사판 PNG (생성물)
 
 - **비율이 다른 시트는 머리 폭으로 맞춘다**(v2.76.3 "머리가 왜 이리 크냐"): hero_fx는 머리 큰 치비라 몸 높이(BODY_PX 47)로
   맞추면 머리가 27px(새 시트 20~23)로 튄다. extract(scale_mul=)로 줄인다 — 몸이 조금 작아져도 머리가 먼저 보인다.
+- **옛 시트는 살색도 다르다**(v2.76.4 "피부색이 오묘하게 다르다"): hero_fx·hero_kick2는 (224,152,120) 주황빛, 새 시트는
+  (208,176,144) 베이지. 옛 스트립을 쓰면 `python skinmatch.py`로 맞춘다. 기준색은 자동으로 재지 말 것 — 새 시트는 살색과
+  도복 베이지가 r-g 20~32로 겹쳐 마스크가 그늘만 잡는다(TARGET 명시).
 - **이펙트 색은 시트 프롬프트에서 못 박는다**: 자주·분홍 잔상은 마젠타 배경 판정에 먹혀 못 뽑는다(v2.76). 파랑·청록·흰·금만.
 - **짧은 무기는 같은 시트의 온전한 컷에서 잘라 붙인다**(v2.74.6, 사용자): hero_sheet.extract(patch=...) 훅으로
   원본 해상도에서 손질한다. 예: hero_sword4.graft — 기증 칼날을 자루 끝·축에 맞춰 늘려 투명한 자리와 별 위에 칠함.
