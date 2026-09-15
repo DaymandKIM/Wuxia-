@@ -34,10 +34,10 @@ const HFX = {
   castFps: 10,                   // 시전 재생 속도 — 16은 컷이 씹혀 보였다 (4성 0.6~0.9초)
   shotT: 0.28,                   // 권기 탄 비행 시간 (구 streak과 동일)
   fadeT: 0.22,                   // 탄 소멸 연출
-  aw: { aidle: 50, katk: 70, punch: 54, punchdbl: 56, punchup: 54, swordthrust: 90, swordslash: 74, swordspin: 56, fansweep: 58, fanspin: 56, fanstrike: 60, saberslash: 60, sabersmash: 60, saberspin: 60, spearthrust: 58, spearsweep: 58, spearspin: 58, staffswing: 58, staffsweep: 56, staffspin: 56, kickside: 70, kickround: 72, kickhigh: 70, flykick: 44, firekick: 44, cresckick: 46, burstkick: 46, run: 34, idle: 32, hit: 32 },   // 특수 동작 프레임 폭 (v2.73 — 주인공 시트는 hero_sheet가 그림에 맞춰 재고 review/hero_specs.json에 적는다. idle·hit도 v2.73.2부터 새 시트. 주먹 3종은 v2.76 hero_punch4, 발차기 3종은 v2.76.1 hero_kick3)
+  aw: { aidle: 50, katk: 70, punch: 54, punchdbl: 56, punchup: 54, qipunch: 82, qipunchb: 82, kickside2: 56, kickround2: 58, kickhigh2: 52, swordthrust: 90, swordslash: 74, swordspin: 56, fansweep: 58, fanspin: 56, fanstrike: 60, saberslash: 60, sabersmash: 60, saberspin: 60, spearthrust: 58, spearsweep: 58, spearspin: 58, staffswing: 58, staffsweep: 56, staffspin: 56, kickside: 70, kickround: 72, kickhigh: 70, flykick: 44, firekick: 44, cresckick: 46, burstkick: 46, run: 34, idle: 32, hit: 32 },   // 특수 동작 프레임 폭 (v2.73 — 주인공 시트는 hero_sheet가 그림에 맞춰 재고 review/hero_specs.json에 적는다. idle·hit도 v2.73.2부터 새 시트. 주먹 3종은 v2.76 hero_punch4, 발차기 3종은 v2.76.1 hero_kick3)
   // 캔버스 높이가 51을 넘는 동작 [높이, 위 여분] — 머리 위로 든 무기·큰 원 기운. 렌더는 위 여분만큼 위로 올려 땅을 맞춘다(v2.73)
-  fh: { punchdbl: [53, 2], swordslash: [53, 2], swordspin: [52, 1], fansweep: [54, 3], fanspin: [53, 2], fanstrike: [54, 3], saberslash: [53, 2], sabersmash: [53, 2], saberspin: [54, 3], spearspin: [52, 1], staffswing: [52, 1], staffspin: [52, 1] },
-  // 기본공격 = 주먹 3종(punch·punchdbl·punchup) + 발차기 3종(kickside·kickround·kickhigh) 4프레임
+  fh: { punchdbl: [53, 2], qipunch: [52, 1], qipunchb: [55, 4], swordslash: [53, 2], swordspin: [52, 1], fansweep: [54, 3], fanspin: [53, 2], fanstrike: [54, 3], saberslash: [53, 2], sabersmash: [53, 2], saberspin: [54, 3], spearspin: [52, 1], staffswing: [52, 1], staffspin: [52, 1] },
+  // 기본공격 = 주먹 5종(punch·punchdbl·punchup + 옛 권기 qipunch·qipunchb) + 발차기 6종(kickside/round/high + 옛 *2) 4프레임
   // (v2.71 — 사용자 시트 sheets/hero_kick2.png 3줄, hero_kick2.py로 추출. 머리 중심 정렬·칸 바닥 기준)
   // kickside 70·kickround 72·kickhigh 70 (v2.76.1 hero_kick3 — 기운·초승달까지 담아 폭이 넓다, 좌우 대칭 캔버스)
   // run 44 — 질주가 넓어(보폭·옷자락) 35 칸에선 좌우가 잘려 폭을 준다 (v2.45)
@@ -139,12 +139,18 @@ const HITFRAME = 2;              // 공격 몇 번째 프레임에서 판정하�
 //   처음엔 양주먹만, 발차기는 need 성급부터 해금. 앞으로 성급대로 더 얹는다.
 //   기본공격은 지금 열린 동작들을 순서대로 돌려 쓴다(cycle).
 const ATKMOVES = [
-  { key:'punch',    need:0 },   // 정권 — 기수식→잽→내지름→초승달 기운 (v2.76 사용자 주먹 시트 hero_punch4 1줄. 옛 권기 katka/katkb는 보존)
-  { key:'punchdbl', need:0 },   // 연환권 — 잽→내지름 흙먼지→큰 원 기운 (hero_punch4 2줄)
-  { key:'punchup',  need:0 },   // 승룡권 — 뒤로 당겼다 치켜올려 올려치기 (hero_punch4 3줄+1·2줄 조합). 맨손도 처음부터 3형태
-  { key:'kickside',  need:0 },   // 옆차기 — 처음부터(v2.75). 무릎 접었다 수평으로 내지르며 초승달 기운
-  { key:'kickround', need:5 },   // 돌려차기 — 이류(성급 5)부터. 구름 자세에서 휘둘러 별 임팩트
-  { key:'kickhigh',  need:10 },  // 뛰어차기 — 절정(성급 10)부터. 웅크렸다 도약해 공중에서 찬다
+  // v2.76.2 (사용자: "기존 것들도 잘 살려서 넣어") — 새 시트 6동작 + 옛 시트 5동작을 전부 돌려 쓴다. 주먹·발차기를 번갈아 배열.
+  { key:'punch',     need:0 },   // 정권 — 기수식→잽→내지름→초승달 기운 (v2.76 사용자 주먹 시트 hero_punch4 1줄)
+  { key:'kickside',  need:0 },   // 옆차기 — 챔버→차기→푸른 기운 임팩트→뻗음 (v2.76.1 hero_kick3)
+  { key:'punchdbl',  need:0 },   // 연환권 — 잽→내지름 흙먼지→큰 원 기운 (hero_punch4 2줄)
+  { key:'kickside2', need:0 },   // 옆차기(옛, hero_kick2 v2.71) — 무릎 접었다 수평으로 내지르며 초승달 기운
+  { key:'punchup',   need:0 },   // 승룡권 — 뒤로 당겼다 치켜올려 올려치기 (hero_punch4 3줄+1·2줄 조합)
+  { key:'qipunch',   need:0 },   // 권기 정권 오른손(옛, hero_fx 2줄 — v2.74.1 hero_punch3) — 파란 권기가 뻗는다
+  { key:'qipunchb',  need:0 },   // 권기 정권 왼손(옛, hero_fx 3줄)
+  { key:'kickround', need:5 },   // 돌려차기 — 이류(성급 5)부터. 챔버→차기→작은 초승달→큰 초승달 (hero_kick3)
+  { key:'kickround2',need:5 },   // 돌려차기(옛, hero_kick2) — 구름 자세에서 휘둘러 별 임팩트
+  { key:'kickhigh',  need:10 },  // 뛰어차기 — 절정(성급 10)부터. 챔버→도약→별 임팩트·흙먼지→착지 뻗음 (hero_kick3)
+  { key:'kickhigh2', need:10 },  // 뛰어차기(옛, hero_kick2) — 웅크렸다 도약해 공중에서 찬다
   // 성급별 발차기 각도가 는다(사용자 시트 c0f865d3 — "발차기도 각도별로 있어").
   // 화염 발차기류(flykick·firekick)는 뺐다(v2.48). 초승달·도약(cresckick·burstkick)은
   // 추후 초식(스킬)으로 쓸 후보 — 에셋·loadImg는 남겨 둔다.

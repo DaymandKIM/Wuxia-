@@ -102,11 +102,11 @@ setTimeout(()=>{
 
 
   // 3) 기본공격 (v2.49) — 양주먹=권기 정권(katka/katkb 양손 파란빛), 성급 오르면 각도별 발차기가 섞인다
-  ok(w.eval('ATKMOVES.map(m=>m.key).join()')==='punch,punchdbl,punchup,kickside,kickround,kickhigh',
-     '기본공격 무브셋 = 정권·연환권·승룡권·옆차기·돌려차기·뛰어차기 6종 (v2.76)');
-  w.eval('S.equip.weapon=null; S.rexp=0;');                // 맨손(시작 장비 검을 벗김) · 삼류 1성 — 발차기 미해금
-  ok(w.eval('atkPool().map(m=>m.key).join()')==='punch,punchdbl,punchup,kickside',
-     '낮은 성급엔 주먹 3종+옆차기 (v2.76 — 맨손도 처음부터 3형태 이상)');
+  ok(w.eval('ATKMOVES.map(m=>m.key).join()')==='punch,kickside,punchdbl,kickside2,punchup,qipunch,qipunchb,kickround,kickround2,kickhigh,kickhigh2',
+     '기본공격 무브셋 = 새 6종 + 옛 5종(권기 정권 두 판·옛 발차기 3종) 11종 (v2.76.2 "기존 것들도 살려서")');
+  w.eval('S.equip.weapon=null; S.rexp=0;');                // 맨손(시작 장비 검을 벗김) · 삼류 1성 — 돌려·뛰어차기 미해금
+  ok(w.eval('atkPool().map(m=>m.key).join()')==='punch,kickside,punchdbl,kickside2,punchup,qipunch,qipunchb',
+     '낮은 성급엔 주먹 5종+옆차기 2종 (v2.76.2)');
   w.eval('S.rexp=1e12;');                                  // 높은 경지 — 전 발차기 해금
   ok(w.eval('atkPool().some(m=>m.key==="kickside")') && w.eval('atkPool().some(m=>m.key==="kickhigh")'),
      '성급이 오르면 각도별 발차기가 섞인다 ('+w.eval('atkPool().length')+'종)');
@@ -124,12 +124,16 @@ setTimeout(()=>{
   ok(drew('hero_kickround',w.eval('HFX.aw.kickround')),'돌려차기 스트립이 제 폭('+w.eval('HFX.aw.kickround')+')으로 그려진다');
   w.eval('P.atkKey="kickhigh";'); renderNow();
   ok(drew('hero_kickhigh',w.eval('HFX.aw.kickhigh')),'뛰어차기 스트립이 제 폭('+w.eval('HFX.aw.kickhigh')+')으로 그려진다');
+  for (const k of ['qipunch','qipunchb','kickside2','kickround2','kickhigh2']){   // v2.76.2 되살린 옛 동작 — 제 스트립·제 폭
+    w.eval('S.fx.length=0; P.atkT=0.3; P.af=2; P.atkKey="'+k+'";'); renderNow();
+    ok(drew('hero_'+k,w.eval('HFX.aw.'+k)),'옛 동작 '+k+' 스트립이 제 폭('+w.eval('HFX.aw.'+k)+')으로 그려진다');
+  }
   // 공격을 여러 번 하면 열린 동작을 돌려 쓴다
   w.eval(`S.rexp=1e12; P.atkMove=0; P.atkCd=0; P.atkT=0; S.foes.length=0; spawnFoe();
     S.foes[0].x=P.x+20; S.foes[0].y=P.y; S.foes[0].hp=1e12; S.foes[0].hpMax=1e12;
-    window.__keys={}; for(let i=0;i<9;i++){ P.atkCd=0; P.atkT=0; heroAttack(); window.__keys[P.atkKey]=1; }`);
-  ok(w.eval('window.__keys.punch && window.__keys.punchdbl && window.__keys.punchup && window.__keys.kickside && window.__keys.kickround && window.__keys.kickhigh'),
-     '연속 공격이 주먹 3종·발차기 3종을 돌려 쓴다');
+    window.__keys={}; for(let i=0;i<14;i++){ P.atkCd=0; P.atkT=0; heroAttack(); window.__keys[P.atkKey]=1; }`);
+  ok(w.eval('ATKMOVES.every(m=>window.__keys[m.key])'),
+     '연속 공격이 11종(새 주먹·발차기 + 옛 권기·발차기)을 전부 돌려 쓴다');
   // 3.5) 무기 장착 → 무기별 무브셋 (v2.72 검 · v2.72.1 부채) — 무기 자리의 종류가 기본공격 동작을 정한다
   for (const wk of Object.keys(w.eval('WEAPONMOVES'))){
     const keys=w.eval('WEAPONMOVES.'+wk+'.map(m=>m.key)');

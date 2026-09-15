@@ -5,6 +5,11 @@ loadImg('hero_atk',   ASSET.atk);
 loadImg('hero_punch',    ASSET.punch);     // 기본공격 주먹 3종 (v2.76 사용자 시트 hero_punch4) — 정권
 loadImg('hero_punchdbl', ASSET.punchdbl);  // 연환권
 loadImg('hero_punchup',  ASSET.punchup);   // 승룡권
+loadImg('hero_qipunch',  ASSET.qipunch);   // 옛 권기 정권 오른손·왼손 (hero_fx, v2.76.2 되살림 — "기존 것들도 살려서")
+loadImg('hero_qipunchb', ASSET.qipunchb);
+loadImg('hero_kickside2',  ASSET.kickside2);   // 옛 발차기 3종 (hero_kick2, v2.76.2 되살림)
+loadImg('hero_kickround2', ASSET.kickround2);
+loadImg('hero_kickhigh2',  ASSET.kickhigh2);
 loadImg('hero_kickside', ASSET.kickside);  // 기본공격 옆차기 (v2.76.1 사용자 시트 hero_kick3, 처음부터)
 loadImg('hero_kickround', ASSET.kickround); // 기본공격 돌려차기 (hero_kick3, 성급 5)
 loadImg('hero_swordthrust', ASSET.swordthrust); // 검 장착 기본공격 3종 (v2.72, 사용자 시트 hero_sword2)

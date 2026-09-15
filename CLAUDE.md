@@ -125,10 +125,10 @@ review/            검사판 PNG (생성물)
 | `hero_sheet.py` + `hero_*2.py` | `sheets/hero_*2.png` | 돌아간다 (v2.73 — **그림 기준** 공용 추출기. 아래 8개 스크립트는 컷 선택만) |
 | `hero_pose2.py` | 주먹·발차기 시트 | 돌아간다 (v2.73.2 — 대기·피격·경공 컷을 새 시트에서. 운기조식·시전만 옛 시트) |
 | `hero_kick3.py` | `sheets/hero_kick3.png` | **현행** (v2.76.1 — 발차기 3종, gridless. 기준 컷은 곧게 선 (0,0)으로 hero_punch4와 배율 일치) |
-| `hero_kick2.py` | `sheets/hero_kick2.png` | 옛 발차기(v2.71). raw/kick2_old 보관. 쓰지 않는다 (hero_pose2의 피격·경공 컷에는 아직 쓴다) |
+| `hero_kick2.py` | `sheets/hero_kick2.png` | 옛 발차기(v2.71) — **v2.76.2부터 kickside2·kickround2·kickhigh2 동작으로 되살림**(raw/kick2_old = 원본). hero_pose2 피격·경공 컷도 여기서 |
 | `hero_run2.py` | `sheets/hero_run2.png` | 돌아간다 (v2.71.1, 질주 6컷 — hero_kick2의 격자·축소 재사용) |
 | `hero_punch4.py` | `sheets/hero_punch4.png` | **현행** (v2.76 — 주먹 3종 정권·연환권·승룡권, gridless. 잔상 컷은 마젠타라 폐기) |
-| `hero_punch3.py` | `sheets/hero_fx.png` 2·3줄 | 옛 권기 정권 두 판(v2.74.1). raw/punch3_old 보관. 쓰지 않는다 |
+| `hero_punch3.py` | `sheets/hero_fx.png` 2·3줄 | 권기 정권 두 판(v2.74.1) — **v2.76.2부터 qipunch·qipunchb 동작으로 되살림**(raw/punch3_old = 원본) |
 | `hero_punch2.py` | `sheets/hero_punch2.png` | 대기·피격 컷(hero_pose2)에만 쓴다. 정권으로는 안 쓴다 |
 | `hero_sword4.py` | `sheets/hero_sword4.png` | **현행** (v2.74.5 2차 재작업 — 하늘색 검기, 다른 무기와 통일) |
 | `hero_sword3.py` | `sheets/hero_sword3.png` | 1차 재작업(흰 검기). 보관 |
@@ -461,7 +461,7 @@ cost 20만은 연마·돌파용(습득은 여전히 기연만). 태극 원반 �
   **gridless 기준 컷(stand_cell)은 곧게 선 자세로** — 내지름·챔버처럼 낮은 자세를 기준으로 잡으면 다른 시트와 배율이 어긋난다.
   **무기별 무브셋**(v2.72) — WEAPONMOVES[무기 종류]가 있으면 그 무브셋(검 = 찌르기·베기·회전베기 hero_sword2 · 부채 = 휘두르기·회전·찌르기 hero_fan2 · 도 = 베기·내려찍기·회전베기 hero_saber2 · 창 = 찌르기·쓸기·회전 hero_spear2 · 봉 = 휘두르기·쓸기·회전 hero_staff2 — v2.72.4로 무기 5종 완성),
   없으면 맨손 ATKMOVES. heroWeaponKind()가 S.equip.weapon.k를 본다. **v2.75부터 무기 동작은 전부 need 0**(든 순간부터
-  3동작 순환), 맨손은 주먹 3종+옆차기가 처음부터(v2.76)·돌려차기 5·뛰어차기 10 — 사용자: "스타일마다 3가지 이상이어야 실감". 새 무기 시트가 오면 WEAPONMOVES에 얹고
+  3동작 순환), 맨손은 주먹 5종+옆차기 2종이 처음부터(v2.76.2 — 새 시트 6동작 + 옛 권기 정권·옛 발차기 5동작 = 11종, **옛 동작은 버리지 않고 합친다**)·돌려차기 5·뛰어차기 10 — 사용자: "스타일마다 3가지 이상이어야 실감". 새 무기 시트가 오면 WEAPONMOVES에 얹고
   HFX.aw·loadImg만 더하면 spritetest·fxtest가 WEAPONMOVES를 돌며 자동 검사한다. atkPool()=열린
   동작, heroAttack이 P.atkMove로 돌려 쓰고 P.atkKey로 이번 타 결정(삼류=양주먹만,
   이류부터 옆차기, 초절정부터 높은차기 — 성급 오를수록 발차기 각도가 는다).
