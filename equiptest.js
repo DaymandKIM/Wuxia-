@@ -43,9 +43,12 @@ setTimeout(()=>{
   ok(w.codexCount()>0 && Object.keys(S.inv).length>0,'도감 '+w.codexCount()+'종 · 주머니에 쌓였다 (v2.79 권갑도 떨어진다)');
   // 2) 합성 수동
   S.inv={}; S.codex={}; S.itemLv={}; S.equip={weapon:null,armor:null,trinket:null};
-  w.eqGain('sword',0,3);
-  ok(S.inv.sword[0]===3 && w.canMerge('sword',0),'3개 모여도 저절로 합쳐지지 않는다 (합성 가능 표시)');
-  ok(w.eqMerge('sword',0) && S.inv.sword[0]===0 && S.inv.sword[1]===1 && w.eqSeen('sword',1),'합성: 일반 검 3 → 고급 검 1, 도감에 오른다');
+  w.eqGain('sword',0,3);                                    // 첫 검은 빈 자리에 끼워진다 → 낀 것 제외하면 여분 2
+  ok(S.inv.sword[0]===3 && !w.canMerge('sword',0),'낀 것은 합성 재료에서 빠진다: 일반 검 3(1 착용)은 아직 합성 불가 (v2.82)');
+  w.eqGain('sword',0,1);
+  ok(S.inv.sword[0]===4 && w.canMerge('sword',0),'4개(1 착용 + 여분 3)면 합성 가능 — 저절로 합쳐지진 않는다');
+  ok(w.eqMerge('sword',0) && S.inv.sword[0]===1 && S.inv.sword[1]===1 && w.eqSeen('sword',1) && S.equip.weapon.k==='sword' && S.equip.weapon.g===0,
+     '합성: 여분 일반 검 3 → 고급 검 1, 낀 일반 검은 남는다');
   w.eqGain('sword',1,8);
   ok(w.eqMergeAll()===4 && S.inv.sword[1]===0 && S.inv.sword[2]===0 && S.inv.sword[3]===1,'일괄 합성: 고급 9 → 희귀 3 → 영웅 1 (4회)');
   w.eqGain('fan',4,3);
@@ -65,6 +68,10 @@ setTimeout(()=>{
   S.silver=1e15; while(w.levelItem('sword',3));
   ok(w.itemLv('sword',3)===EQ.grades[3].lvCap,'영웅 검 레벨 상한 '+EQ.grades[3].lvCap);
   ok(w.itemPct('sword',3)>w.itemPct('fan',4) && !w.eqBetterAny(),'강화한 영웅 검(+'+w.itemPct('sword',3).toFixed(0)+'%)이 전설 부채(+'+w.itemPct('fan',4).toFixed(0)+'%)보다 세다 → 갈아입을 것 없음');
+  // 무기별 스탯 조합 (v2.82) — 검은 공격력+치명타, 봉은 공격력+체력+회복, 안 가진 종류도 상세 계산이 된다
+  ok(w.kindEff('sword').crit>0 && !w.kindEff('sword').hp && w.kindEff('staff').hp>0 && w.kindEff('staff').regen>0,'무기별 스탯 조합: 검=공격·치명 / 봉=공격·체력·회복');
+  ok(Math.abs(w.eqBonus('atk')-(w.itemPct('sword',3)*w.kindEff('sword').atk+w.codexStat(EQ.slots[0],'atk')+w.codexStat(EQ.slots[1],'atk')+w.codexStat(EQ.slots[2],'atk')))<1e-9,'장착 공격력 = 낀 검 효과×조합 + 보유 효과');
+  ok(w.eqBonus('crit')>0 && w.itemStats('staff',6).length===3,'치명타 보너스가 붙고, 안 가진 초월 봉도 스탯 3줄이 계산된다');
   // 4) 레벨업 비용·효과·안 낀 것도
   S.silver=1e12; const c0=w.lvCost('fan',4); const dmg0=w.eval('heroDmg()'); const hold0=w.eqBonus('atk');
   ok(w.levelItem('fan',4) && S.silver===1e12-c0 && w.itemLv('fan',4)===1,'안 낀 전설 부채도 강화된다 (비용 '+c0+')');
@@ -75,7 +82,7 @@ setTimeout(()=>{
   const hb=w.eqBonus('atk'); const expect=(8+14+22)*EQ.codexRate;
   ok(Math.abs(hb-expect)<1e-9,'보유 효과: 얻어 본 창 3등급 = +'+hb.toFixed(2)+'% (장착 없이)');
   w.eqGain('saber',2,1);
-  ok(w.eqBonus('aspd')>0 && w.eqBonus('crit')===0,'도를 끼면 공격 속도(부가), 치명타는 없음');
+  ok(w.eqBonus('cdmg')>0 && w.eqBonus('aspd')===0,'도를 끼면 치명 피해(도 조합), 공격 속도는 없음 (v2.82)');
   // 6) 저장·복원·이월
   S.inv={sword:[2,0,0,0,0],robe:[0,0,1,0,0]}; S.itemLv={sword:[5,0,0,0,0]}; S.codex={sword:1,robe:4}; S.equip={weapon:{k:'sword',g:0},armor:{k:'robe',g:2},trinket:null};
   w.saveNow(); const saved=w.localStorage.getItem('wuxia1');
