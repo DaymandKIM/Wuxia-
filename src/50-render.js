@@ -215,9 +215,8 @@ function drawHero(ox, oy){
   // 자리에 주먹이 배 앞 살덩이로 떠 옷이 뚫린 듯 보였다("옷이 이상해" 피드백) —
   // 시트에 권기가 구워져 있어 맨손 합성이 무리였다. 성장 표현은 경지 기운이 담당.
   if (P.anim === 'atk'){
-    // 기본공격 (v2.48) — 양주먹은 권기 정권(katka/katkb, 양손 파란빛) 교대, 그 외(발차기)는 제 스트립.
-    if (!P.atkKey || P.atkKey === 'punch'){ key = P.atkAlt ? 'punchb' : 'punch'; fw = HFX.aw.punch; }   // v2.71.2 — 사용자 주먹 시트 두 판 교대(옛 katka/katkb 권기 판 대체)
-    else { key = P.atkKey; fw = HFX.aw[key] || HERO.w; }
+    // 기본공격 (v2.48) — 동작 키가 곧 스트립(주먹 3종·발차기 3종·무기 동작). v2.76: 두 판 교대(punchb) 폐지, 주먹도 세 동작이 돌아간다.
+    key = P.atkKey || 'punch'; fw = HFX.aw[key] || HERO.w;
   }
   else if (P.anim === 'cast'){
     const ck = HFX.cast[P.castK] || HFX.cast.pagong;

@@ -126,7 +126,8 @@ review/            검사판 PNG (생성물)
 | `hero_pose2.py` | 주먹·발차기 시트 | 돌아간다 (v2.73.2 — 대기·피격·경공 컷을 새 시트에서. 운기조식·시전만 옛 시트) |
 | `hero_kick2.py` | `sheets/hero_kick2.png` | 돌아간다 (v2.71, 주인공 발차기 3종 — 칸 바닥 기준·머리 정렬) |
 | `hero_run2.py` | `sheets/hero_run2.png` | 돌아간다 (v2.71.1, 질주 6컷 — hero_kick2의 격자·축소 재사용) |
-| `hero_punch3.py` | `sheets/hero_fx.png` 2·3줄 | **현행** (v2.74.1 — 옛 권기 정권을 새 추출기로. 새 주먹 시트는 밋밋해 폐기) |
+| `hero_punch4.py` | `sheets/hero_punch4.png` | **현행** (v2.76 — 주먹 3종 정권·연환권·승룡권, gridless. 잔상 컷은 마젠타라 폐기) |
+| `hero_punch3.py` | `sheets/hero_fx.png` 2·3줄 | 옛 권기 정권 두 판(v2.74.1). raw/punch3_old 보관. 쓰지 않는다 |
 | `hero_punch2.py` | `sheets/hero_punch2.png` | 대기·피격 컷(hero_pose2)에만 쓴다. 정권으로는 안 쓴다 |
 | `hero_sword4.py` | `sheets/hero_sword4.png` | **현행** (v2.74.5 2차 재작업 — 하늘색 검기, 다른 무기와 통일) |
 | `hero_sword3.py` | `sheets/hero_sword3.png` | 1차 재작업(흰 검기). 보관 |
@@ -458,12 +459,14 @@ cost 20만은 연마·돌파용(습득은 여전히 기연만). 태극 원반 �
   발차기 3종은 sheets/hero_kick2.png(3줄×6칸)에서 hero_kick2.py로 뽑는다(아래 v2.49 설명은 옛 시트 이력).
   **무기별 무브셋**(v2.72) — WEAPONMOVES[무기 종류]가 있으면 그 무브셋(검 = 찌르기·베기·회전베기 hero_sword2 · 부채 = 휘두르기·회전·찌르기 hero_fan2 · 도 = 베기·내려찍기·회전베기 hero_saber2 · 창 = 찌르기·쓸기·회전 hero_spear2 · 봉 = 휘두르기·쓸기·회전 hero_staff2 — v2.72.4로 무기 5종 완성),
   없으면 맨손 ATKMOVES. heroWeaponKind()가 S.equip.weapon.k를 본다. **v2.75부터 무기 동작은 전부 need 0**(든 순간부터
-  3동작 순환), 맨손은 양주먹 두 판+옆차기가 처음부터·돌려차기 5·뛰어차기 10 — 사용자: "스타일마다 3가지 이상이어야 실감". 새 무기 시트가 오면 WEAPONMOVES에 얹고
+  3동작 순환), 맨손은 주먹 3종+옆차기가 처음부터(v2.76)·돌려차기 5·뛰어차기 10 — 사용자: "스타일마다 3가지 이상이어야 실감". 새 무기 시트가 오면 WEAPONMOVES에 얹고
   HFX.aw·loadImg만 더하면 spritetest·fxtest가 WEAPONMOVES를 돌며 자동 검사한다. atkPool()=열린
   동작, heroAttack이 P.atkMove로 돌려 쓰고 P.atkKey로 이번 타 결정(삼류=양주먹만,
   이류부터 옆차기, 초절정부터 높은차기 — 성급 오를수록 발차기 각도가 는다).
-  **양주먹은 권기 정권 두 판**(punch/punchb — v2.74.1 hero_punch3.py가 옛 hero_fx 시트 2·3줄을 새 추출기로) —
-  drawHero atk가 punch 무브를 두 판 교대로 그린다. 새 주먹 시트(hero_punch2)는 밋밋해 정권에선 뺐다(사용자).
+  **주먹은 3종**(v2.76 — punch 정권·punchdbl 연환권·punchup 승룡권, 사용자 시트 hero_punch4.py. 두 판 교대
+  punch/punchb·P.atkAlt는 폐지, 동작 키가 곧 스트립). 옛 권기 정권(hero_punch3)은 raw/punch3_old 보관.
+  **잔상(반투명 분신) 컷은 마젠타 시트에서 못 뽑는다** — 잔상 픽셀이 (224,0,224)라 배경 판정에 먹혀 윤곽만 남는다.
+  잔상이 필요하면 시트 프롬프트에 "afterimage in solid non-magenta color"를 넣거나 코드 고스트로 만든다.
   **옛 시트에 쓸 만한 컷이 있으면 버리지 말고 조합한다**(사용자 확정) — 새 시트가 더 나쁠 수 있다. 발차기는 각기 hero_kickside(폭 54)·
   hero_kickhigh(폭 60), 전 공격 4컷·임팩트 index2(HITFRAME 2 유지 위해 4컷 리샘플,
   마지막 컷=완전히 뻗음). 높은차기는 든 다리가 높아 캔버스(51) 위 여백 3px 남게

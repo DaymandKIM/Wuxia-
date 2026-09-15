@@ -121,8 +121,9 @@ check('권기 왼손',   'katkb.png', HFX.aw.katk * 4, 51, true);
 // katka/katkb는 파란 권기(분리된 기운)가 정상이라 부유 조각 검사 제외
 // 각도별 발차기 (v2.49) — 실제 기본공격 스프라이트. ANIM에 없어 여기서 명시 검사.
 const fhOf = k => (HFX.fh && HFX.fh[k]) ? HFX.fh[k][0] : HERO.h;
-check('정권 오른손', 'punch.png',  HFX.aw.punch * 4, fhOf('punch'));    // v2.74.1 권기 정권(hero_fx) 두 판 — 키 큰 캔버스
-check('정권 왼손',   'punchb.png', HFX.aw.punch * 4, fhOf('punchb'));
+check('정권',   'punch.png',    HFX.aw.punch * 4,    fhOf('punch'));      // v2.76 주먹 3종(hero_punch4) — 키 큰 캔버스는 fh
+check('연환권', 'punchdbl.png', HFX.aw.punchdbl * 4, fhOf('punchdbl'));
+check('승룡권', 'punchup.png',  HFX.aw.punchup * 4,  fhOf('punchup'));
 check('발차기 옆',   'kickside.png', HFX.aw.kickside * 4, HERO.h);
 check('발차기 돌려', 'kickround.png', HFX.aw.kickround * 4, HERO.h);
 check('발차기 뛰어', 'kickhigh.png', HFX.aw.kickhigh * 4, HERO.h);

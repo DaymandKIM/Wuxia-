@@ -2,8 +2,9 @@
 loadImg('hero_idle',  ASSET.idle);
 loadImg('hero_run',   ASSET.run);
 loadImg('hero_atk',   ASSET.atk);
-loadImg('hero_punch',  ASSET.punch);    // 기본공격 양주먹 오른손 정권 (v2.71.2 시트)
-loadImg('hero_punchb', ASSET.punchb);   // 왼손 기운 정권 — 공격마다 교대
+loadImg('hero_punch',    ASSET.punch);     // 기본공격 주먹 3종 (v2.76 사용자 시트 hero_punch4) — 정권
+loadImg('hero_punchdbl', ASSET.punchdbl);  // 연환권
+loadImg('hero_punchup',  ASSET.punchup);   // 승룡권
 loadImg('hero_kickside', ASSET.kickside);  // 기본공격 옆차기 (v2.49, 성급 5)
 loadImg('hero_kickround', ASSET.kickround); // 기본공격 돌려차기 (v2.71, 성급 10)
 loadImg('hero_swordthrust', ASSET.swordthrust); // 검 장착 기본공격 3종 (v2.72, 사용자 시트 hero_sword2)
