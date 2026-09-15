@@ -138,6 +138,7 @@ if (sv){
   const away = (Date.now() - sv.at) / 1000;
   if (away >= OFFLINE.min) og = offlineGains(away);
 }
+eqStarter();                 // 시작 장비 — 빈 자리에 일반 하나(새 게임·옛 저장 공통, v2.70.2)
 enterStage(true);            // 시작은 연출한다
 // 타이틀 화면 (v2.65) — 배경 일러스트가 있으면 덮고, 누르면 걷힌다. 게임은 뒤에서 돈다.
 // 복귀 카드는 걷힌 뒤에 — 안 그러면 타이틀 뒤에서 6초 만에 스스로 닫혀 못 본다.

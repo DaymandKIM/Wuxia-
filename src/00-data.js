@@ -998,6 +998,11 @@ const EQUIP = {
   dropCh: 0.05,                  // 처치당 드랍 확률
   bossDrop: 1,                   // 보스는 반드시
   mergeN: 3,                     // 같은 것 N개 → 한 등급 위 1개
+  // 아이콘 없는 종류는 화면·드랍에서 뺀다(v2.70.2, 사용자: "이미지가 아직 없으면 넣지 말고") —
+  // eq_<종류>(또는 kinds[3]) 에셋이 들어오면 저절로 나타난다. 옛 저장의 검·도·창·봉·철선은 legacyWeapon으로.
+  legacyWeapon: 'ironball',
+  // 시작 장비(v2.70.2, 사용자: "첫 장비는 주고") — 자리마다 일반 등급 하나. 앞의 것부터 아이콘이 있는 종류를 준다.
+  starter: { weapon:['gauntlet','ironball'], armor:['robe'], trinket:['pendant'] },
   subRate: 0.4,                  // 종류별 부가 효과 = 주 효과의 이 비율
   codexRate: 0.15,               // 보유 효과 = 그 아이템 장착 효과 × 이 비율 (얻어 본 것 전부, 영구)
   lvPer: 0.03,                   // 레벨 1당 효과 ×(1+0.03·lv) — 전설 100렙 = 4배

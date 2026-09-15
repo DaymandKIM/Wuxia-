@@ -5,7 +5,20 @@
 function eqSlot(k){ return EQUIP.slots.find(s => s.k === k); }
 function eqKind(kindK){ for (const sl of EQUIP.slots){ const x = sl.kinds.find(v => v[0] === kindK); if (x) return { sl, k:x[0], n:x[1], sub:x[2], icon:x[3] }; } return null; }
 // 아이콘 — 종류에 지정된 키, 없으면 eq_<종류>, 그것도 없으면 주먹(train_atk)
-function eqIcon(k){ const kd = eqKind(k); return ASSET[(kd && kd.icon) || ''] || ASSET['eq_' + k] || ASSET.train_atk || ''; }
+function eqIcon(k){ const kd = eqKind(k); return ASSET[(kd && kd.icon) || ''] || ASSET['eq_' + k] || ''; }
+function eqHasIcon(k){ return !!eqIcon(k); }
+function eqKinds(sl){ return sl.kinds.filter(kd => eqHasIcon(kd[0])); }   // 화면·드랍에 쓰는 종류 = 아이콘 있는 것만
+// 시작 장비 — 자리에 아무것도 없고(장착·주머니·도감) 시작 종류가 있으면 일반 등급 하나를 주고 낀다
+function eqStarter(){
+  let n = 0;
+  for (const sl of EQUIP.slots){
+    if (S.equip[sl.k]) continue;
+    if (sl.kinds.some(kd => eqSeen(kd[0], 0) || (S.inv[kd[0]] || []).some(x => x > 0))) continue;
+    const k = (EQUIP.starter[sl.k] || []).find(eqHasIcon); if (!k) continue;
+    eqGain(k, 0, 1); S.equip[sl.k] = { k, g:0 }; eqLogPush(itemLabel(k, 0) + ' — 시작 장비'); n++;
+  }
+  return n;
+}
 function eqInv(k){ return S.inv[k] || (S.inv[k] = EQUIP.grades.map(() => 0)); }
 function eqLvs(k){ return S.itemLv[k] || (S.itemLv[k] = EQUIP.grades.map(() => 0)); }
 function itemLv(k, g){ return (S.itemLv[k] || [])[g] | 0; }
@@ -71,11 +84,12 @@ function canLevelItem(k, g){ return eqSeen(k, g) && itemLv(k, g) < EQUIP.grades[
 function levelItem(k, g){ if (!canLevelItem(k, g)) return false; S.silver -= lvCost(k, g); eqLvs(k)[g]++; return true; }
 function eqBetterAny(){ return EQUIP.slots.some(sl => { const b = eqBest(sl.k); return b && itemPct(b.k, b.g) > slotPct(sl.k) + 1e-9; }); }
 function canEquipAny(){ return mergeCount() > 0 || eqBetterAny(); }   // 탭 알림점 — 할 일이 있다
-function codexCount(){ let n = 0; for (const sl of EQUIP.slots) for (const kd of sl.kinds) for (let g = 0; g < EQUIP.grades.length; g++) if (eqSeen(kd[0], g)) n++; return n; }
+function codexCount(){ let n = 0; for (const sl of EQUIP.slots) for (const kd of eqKinds(sl)) for (let g = 0; g < EQUIP.grades.length; g++) if (eqSeen(kd[0], g)) n++; return n; }
 // 드랍 굴리기 — 구역 등급 가중으로 등급, 자리·종류는 균등
 function newItem(zi){
   const sl = EQUIP.slots[Math.floor(Math.random() * EQUIP.slots.length)];
-  const kind = sl.kinds[Math.floor(Math.random() * sl.kinds.length)][0];
+  const ks = eqKinds(sl); if (!ks.length) return null;
+  const kind = ks[Math.floor(Math.random() * ks.length)][0];
   const w = EQUIP.gradeW[clamp(zi, 0, EQUIP.gradeW.length - 1)];
   let r = Math.random() * w.reduce((a, b) => a + b, 0), g = 0;
   for (let i = 0; i < w.length; i++){ r -= w[i]; if (r < 0){ g = i; break; } }
@@ -84,7 +98,8 @@ function newItem(zi){
 function rollDrop(boss){
   const ch = boss ? EQUIP.bossDrop : EQUIP.dropCh;
   if (!(ch > 0) || Math.random() >= ch) return null;
-  const it = newItem(S.zi), first = !eqSeen(it.k, it.g);
+  const it = newItem(S.zi); if (!it) return null;
+  const first = !eqSeen(it.k, it.g);
   eqGain(it.k, it.g, 1);
   eqLogPush(itemLabel(it.k, it.g) + ' 획득');
   if (first || it.g >= 2) toast(itemLabel(it.k, it.g) + ' 획득');
@@ -111,10 +126,10 @@ function buildEquipPanel(){
   h += '<div class="zrow eqtop" id="eqtop"></div>';
   h += '<div class="eqbtns"><button class="sb" id="eqmerge"></button><button class="sb" id="eqauto">자동 장착</button></div>';
   // 아이템 카드 — 등급 줄
-  for (let g = EQUIP.grades.length - 1; g >= 0; g--){
+  for (let g = 0; g < EQUIP.grades.length; g++){                    // 일반이 위(v2.70.2, 사용자: "등급 낮은 게 위에서부터")
     const G = EQUIP.grades[g];
     h += '<div class="eqsec" style="color:' + G.c + '">' + G.n + ' <i>장착 ' + G.base + '% · Lv 상한 ' + G.lvCap + '</i></div><div class="eqcards">';
-    for (const kd of sl.kinds){ const worn = S.equip[sl.k] && S.equip[sl.k].k === kd[0] && S.equip[sl.k].g === g; h += eqCard(kd[0], g, worn); }
+    for (const kd of eqKinds(sl)){ const worn = S.equip[sl.k] && S.equip[sl.k].k === kd[0] && S.equip[sl.k].g === g; h += eqCard(kd[0], g, worn); }
     h += '</div>';
   }
   h += '<div class="eqdet" id="eqdet" hidden></div>';
@@ -132,7 +147,7 @@ function buildEquipPanel(){
 }
 function refreshEquip(){
   $('esilver').innerHTML = coin() + ' ' + fmt(S.silver);
-  $('eqcnt').textContent = '도감 ' + codexCount() + '/' + EQUIP.slots.reduce((a, sl) => a + sl.kinds.length, 0) * EQUIP.grades.length;
+  $('eqcnt').textContent = '도감 ' + codexCount() + '/' + EQUIP.slots.reduce((a, sl) => a + eqKinds(sl).length, 0) * EQUIP.grades.length;
   const sl = eqSlot(eqTab), it = S.equip[sl.k], top = $('eqtop');
   if (!it) top.innerHTML = '<div class="zn"><span class="eqsl">' + sl.n + '</span> 비었다</div><div class="zd">적이 떨어뜨린다</div>';
   else {

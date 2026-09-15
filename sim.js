@@ -13,6 +13,7 @@ const els={};const mk=id=>els[id]||(els[id]={id,style:{},classList:{add:noop,rem
 global.document={getElementById:mk,createElement:()=>mk('x'),body:{appendChild:noop},querySelectorAll:()=>[]};
 global.window=global;global.innerWidth=390;global.innerHeight=844;global.devicePixelRatio=3;
 global.addEventListener=noop;
+global.ASSET=Object.fromEntries(fs.readdirSync(__dirname+'/assets').filter(f=>f.endsWith('.png')).map(f=>[f.slice(0,-4),'x']));  // 장비 종류 필터(아이콘 있는 것만)
 global.Image=class{constructor(){}set src(v){}get complete(){return true;}get naturalWidth(){return 56;}};
 const R=new Function(code+`;return {S,P,step:dt=>step(dt),zone:()=>zone(),lv:()=>lv(),gstage:()=>gstage(),
   realmInfo:()=>realmInfo(),statLv:k=>statLv(k),trainCost:(k,n)=>trainCost(k,n),trainCap:()=>trainCap(),
