@@ -21,6 +21,7 @@ const S = {
   downs: 0,
   silver: 0,                     // 은자
   bossDone: [],                  // 구역별 보스 첫 격파 여부 (0/1)
+  reach: [],                     // 구역별 가 본 최고 단계(1~11) — 사냥터 패널에서 고를 수 있는 범위 (v2.70.6)
   stats: {},                     // 수련 레벨 { atk, hp, regen, spd, crit }
   rexp: 0,                       // 수련치 — 경지의 재료
   arts: {},                      // 익힌 무공 { key: 1 }

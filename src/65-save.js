@@ -11,7 +11,7 @@ function saveNow(){
       zi: S.zi, stage: S.stage, kills: S.kills,
       best: S.best, unlocked: S.unlocked,
       totalKills: S.totalKills, downs: S.downs,
-      silver: S.silver, bossDone: S.bossDone, stats: S.stats, rexp: S.rexp,
+      silver: S.silver, bossDone: S.bossDone, reach: S.reach, stats: S.stats, rexp: S.rexp,
       arts: S.arts, karma: S.karma, fates: S.fates, fatebits: S.fatebits,
       artXp: S.artXp, artStar: S.artStar, artLv: S.artLv,
       skillManual: S.skillManual, tree: S.tree, traits: S.traits, equip: S.equip,
@@ -39,6 +39,8 @@ function applySave(d){
   S.silver     = Math.max(0, d.silver|0);           // 예전 저장엔 없다 → 0
   S.bossDone   = Array.isArray(d.bossDone)
     ? d.bossDone.slice(0, ZONES.length).map(v => v ? 1 : 0) : [];
+  S.reach = Array.isArray(d.reach) ? d.reach.slice(0, ZONES.length).map(v => clamp(v|0, 0, BOSS_STAGE)) : [];   // 옛 저장엔 없다 → 지금 단계에서 시작
+  for (let i = 0; i < S.zi; i++) if (!S.reach[i]) S.reach[i] = BOSS_STAGE;   // 지나온 구역은 끝까지 가 본 것
   S.stats = {};
   if (d.stats && typeof d.stats === 'object')
     for (const s of TRAIN.list) S.stats[s.k] = Math.max(0, d.stats[s.k]|0);

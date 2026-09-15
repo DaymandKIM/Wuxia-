@@ -92,7 +92,7 @@ src/20-state.js    S(게임) · P(주인공)
 src/30-combat.js   공격·피해·쓰러짐
 src/40-step.js     매 프레임 갱신
 src/50-render.js   그리기
-src/60-ui.js       HUD·토스트·사냥터 여정 지도(buildZonePanel — SVG 노드망, v2.56)
+src/60-ui.js       HUD·토스트·사냥터 여정 지도(buildZonePanel — 지도 노드는 선택, 이동은 단계 줄·S.reach 가 본 단계까지, v2.70.6)
 src/62-train.js    수련(스텟 구매) 패널·탭 알림점
 src/63-arts.js     무공 패널·습득·탭 알림점 (초식 시전은 30-combat)
 src/64-fate.js     기연 — 인연 정산 이벤트·카드 (인연 축적은 30-combat)

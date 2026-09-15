@@ -45,6 +45,13 @@ setTimeout(()=>{
     const t=[...sbs].find(b=>b.dataset.z==='4'&&b.dataset.s==='7');
     t.onclick({stopPropagation(){},target:t});
     console.log('천산 7단계 이동 → '+w.eval('zone().n')+' '+w.eval('S.stage')+'단계 · 연출'+w.eval('S.intro').toFixed(1));
+    // 구역 노드는 선택만 — 이동하지 않는다 (v2.70.6)
+    d.getElementById('tab-zone').onclick();
+    const t2=[...d.querySelectorAll('#zmap .znode[data-z]')].find(nd=>nd.dataset.z==='2'); t2.onclick();
+    const sel2=[...d.querySelectorAll('.sb[data-z]')].every(b=>b.dataset.z==='2');
+    console.log('동굴 노드 누름 → 단계 줄이 동굴('+sel2+') · 아직 '+w.eval('zone().n')+' '+w.eval('S.stage')+'단계 (이동 안 함: '+(w.eval('S.zi')===4)+')');
+    console.log('가 본 단계 reach: '+JSON.stringify(w.eval('S.reach'))+' (천산 7)');
+    if(!sel2||w.eval('S.zi')!==4||w.eval('S.reach[4]')!==7) errs.push('구역 선택/이동 분리 실패');
   }catch(e){ console.log('실패:',e.message); }
   console.log('오류:', errs.length?errs.slice(0,2):'없음');
   process.exit(0);
