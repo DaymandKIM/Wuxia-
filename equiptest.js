@@ -5,7 +5,7 @@
    4) 아이템 레벨: 은자 소비·장착/보유 효과 상승·상한 · 안 낀 아이템도 강화 가능(보유 효과)
    5) 보유 효과는 얻어 본 것 전부 영구 · 종류별 부가 효과
    6) 저장·복원 · v2.67 저장(eqLv) 이월 · 깨진 값 잘림
-   7) 패널: 탭 3 · 카드 6×5 · 상세 열림·버튼 */
+   7) 패널: 탭 3 · 카드 6×7 · 상세 열림·버튼 */
 const fs=require('fs');const {JSDOM}=require('jsdom');
 const html=fs.readFileSync(process.env.WUXIA_OUT || __dirname+'/dist/wuxia.html','utf8');
 const ctxStub=new Proxy({},{get:(t,k)=>{
@@ -49,7 +49,10 @@ setTimeout(()=>{
   w.eqGain('sword',1,8);
   ok(w.eqMergeAll()===4 && S.inv.sword[1]===0 && S.inv.sword[2]===0 && S.inv.sword[3]===1,'일괄 합성: 고급 9 → 희귀 3 → 영웅 1 (4회)');
   w.eqGain('fan',4,3);
-  ok(!w.canMerge('fan',4),'최고 등급(전설)은 합성 안 됨');
+  ok(w.canMerge('fan',4),'전설도 합성된다 (→ 신화, v2.81)');
+  w.eqGain('staff',6,3);
+  ok(!w.canMerge('staff',6),'최고 등급(초월)은 합성 안 됨');
+  S.inv.staff[6]=0; S.codex.staff=0;                       // 아래 자동 장착 검사(전설 부채가 최대)를 위해 치운다
   // 3) 자동 장착·직접 장착
   ok(S.equip.weapon.k==='sword' && S.equip.weapon.g===0,'첫 장비(일반 검)를 끼고 있다');
   ok(w.eqAutoEquipAll()>=1 && S.equip.weapon.k==='fan' && S.equip.weapon.g===4,'자동 장착: 장착 효과 최대(전설 부채)로');
@@ -84,13 +87,13 @@ setTimeout(()=>{
     const {w:w3}=boot(JSON.stringify(old));
     setTimeout(()=>{
       const S3=w3.eval('S');
-      ok(S3.equip.weapon.k==='saber' && S3.equip.weapon.g===4 && S3.itemLv.saber[4]===7 && S3.equip.armor===null && S3.itemLv.ring[3]===9,'옛 저장: 등급 잘림, 자리 강화 7·장비 lv 9는 아이템 레벨로 이월, 없는 종류 버림');
+      ok(S3.equip.weapon.k==='saber' && S3.equip.weapon.g===6 && S3.itemLv.saber[6]===7 && S3.equip.armor===null && S3.itemLv.ring[3]===9,'옛 저장: 등급 잘림(최고 6 초월), 자리 강화 7·장비 lv 9는 아이템 레벨로 이월, 없는 종류 버림');
       // 7) 패널
       const d3=w3.document; w3.closeTitle && w3.closeTitle();
       d3.getElementById('tab-equip').click();
       ok(d3.getElementById('epanel').classList.contains('show'),'장비 탭이 패널을 연다');
       ok(d3.querySelectorAll('#etabs .askind').length===3,'[무기][방어구][장신구] 탭');
-      ok(d3.querySelectorAll('.eqcard').length===30,'무기 탭 카드 = 6종×5등급 (v2.79 권갑 포함)');
+      ok(d3.querySelectorAll('.eqcard').length===42,'무기 탭 카드 = 6종×7등급 (v2.81 신화·초월)');
       d3.querySelector('.eqcard.seen').click();
       ok(!d3.getElementById('eqdet').hidden && !!d3.getElementById('eqdlv'),'카드를 누르면 상세(장착·강화·합성)가 열린다');
       d3.querySelector('#etabs .askind[data-t="trinket"]').click();
