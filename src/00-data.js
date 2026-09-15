@@ -34,7 +34,7 @@ const HFX = {
   castFps: 10,                   // 시전 재생 속도 — 16은 컷이 씹혀 보였다 (4성 0.6~0.9초)
   shotT: 0.28,                   // 권기 탄 비행 시간 (구 streak과 동일)
   fadeT: 0.22,                   // 탄 소멸 연출
-  aw: { aidle: 50, katk: 70, punch: 48, kickside: 54, kickround: 56, kickhigh: 60, flykick: 44, firekick: 44, cresckick: 46, burstkick: 46, run: 46 },   // 특수 동작 프레임 폭
+  aw: { aidle: 50, katk: 70, punch: 48, swordthrust: 60, swordslash: 60, swordspin: 64, kickside: 54, kickround: 56, kickhigh: 60, flykick: 44, firekick: 44, cresckick: 46, burstkick: 46, run: 46 },   // 특수 동작 프레임 폭
   // 기본공격 = 양주먹(punch, 권기 정권) + 발차기 3종(kickside·kickround·kickhigh) 4프레임
   // (v2.71 — 사용자 시트 sheets/hero_kick2.png 3줄, hero_kick2.py로 추출. 머리 중심 정렬·칸 바닥 기준)
   // kickside 54·kickround 56·kickhigh 60 — 발이 옆·위로 뻗어 폭이 넓다(좌우 대칭 캔버스)
@@ -145,7 +145,17 @@ const ATKMOVES = [
   // 화염 발차기류(flykick·firekick)는 뺐다(v2.48). 초승달·도약(cresckick·burstkick)은
   // 추후 초식(스킬)으로 쓸 후보 — 에셋·loadImg는 남겨 둔다.
 ];
-function atkPool(){ const p=ATKMOVES.filter(m=>realmLv()>=m.need); return p.length?p:[ATKMOVES[0]]; }
+// 무기별 무브셋 (v2.72, 사용자: "검 공격 모션 — 검 장착하면 사용") — 무기 자리에 낀 종류로 기본공격 동작이 바뀐다.
+// 검(sword) = 사용자 시트 hero_sword2 3종. 없는 무기(권갑·도·창·봉·부채)는 맨손 ATKMOVES — 시트가 오면 여기 얹는다.
+const WEAPONMOVES = {
+  sword: [
+    { key:'swordthrust', need:0 },   // 찌르기 — 기수식→검 내림→찌르기 별→사선 호
+    { key:'swordslash',  need:5 },   // 베기 — 치켜듦→내려베기 별→사선 호
+    { key:'swordspin',   need:15 },  // 회전베기 — 큰 세로 호→큰 원 베기→낮은 베기
+  ],
+};
+function heroWeaponKind(){ return (typeof S !== 'undefined' && S.equip && S.equip.weapon) ? S.equip.weapon.k : null; }
+function atkPool(){ const set=WEAPONMOVES[heroWeaponKind()]||ATKMOVES; const p=set.filter(m=>realmLv()>=m.need); return p.length?p:[set[0]]; }
 // 공격 프레임별 주먹 끝 위치 (프레임 중앙·바닥 기준 오프셋)
 // 원본 그림에 손 끝이 잘려 있어, 이 자리에 작은 원을 얹어 마무리한다.
 const FIST = [

@@ -125,6 +125,7 @@ review/            검사판 PNG (생성물)
 | `hero_kick2.py` | `sheets/hero_kick2.png` | 돌아간다 (v2.71, 주인공 발차기 3종 — 칸 바닥 기준·머리 정렬) |
 | `hero_run2.py` | `sheets/hero_run2.png` | 돌아간다 (v2.71.1, 질주 6컷 — hero_kick2의 격자·축소 재사용) |
 | `hero_punch2.py` | `sheets/hero_punch2.png` | 돌아간다 (v2.71.2, 정권 두 판 — 옅은 배경·모서리 표식 시트) |
+| `hero_sword2.py` | `sheets/hero_sword2.png` | 돌아간다 (v2.72, 검 3종 — 검기 호가 줄을 가로질러 문턱 0.7) |
 | `bossfx.py` | **시트 없음** | 못 돌린다 |
 | `shamanmagic.py` `shamanstaff.py` | — | 옛 주술사(추정 지팡이). v2.64에 대체돼 쓰지 않는다 |
 | `shaman.py` `demon.py` `shamanorb.py` | — | 옛 버전. 쓰지 않는다 |
@@ -422,7 +423,10 @@ cost 20만은 연마·돌파용(습득은 여전히 기연만). 태극 원반 �
   (사용자 동의). 색은 경지 하나가 말한다.
 - **기본공격**(v2.49 각도별 발차기 → v2.71 시트 교체) — ATKMOVES `[{key,need}]` = **양주먹(punch,
   need0)·옆차기(kickside, need5)·돌려차기(kickround, need10)·뛰어차기(kickhigh, need15)** 4종.
-  발차기 3종은 sheets/hero_kick2.png(3줄×6칸)에서 hero_kick2.py로 뽑는다(아래 v2.49 설명은 옛 시트 이력). atkPool()=열린
+  발차기 3종은 sheets/hero_kick2.png(3줄×6칸)에서 hero_kick2.py로 뽑는다(아래 v2.49 설명은 옛 시트 이력).
+  **무기별 무브셋**(v2.72) — WEAPONMOVES[무기 종류]가 있으면 그 무브셋(검 = 찌르기·베기·회전베기, hero_sword2),
+  없으면 맨손 ATKMOVES. heroWeaponKind()가 S.equip.weapon.k를 본다. 새 무기 시트가 오면 WEAPONMOVES에 얹고
+  HFX.aw·loadImg·spritetest·fxtest를 같이 늘린다. atkPool()=열린
   동작, heroAttack이 P.atkMove로 돌려 쓰고 P.atkKey로 이번 타 결정(삼류=양주먹만,
   이류부터 옆차기, 초절정부터 높은차기 — 성급 오를수록 발차기 각도가 는다).
   **양주먹은 사용자 주먹 시트 두 판**(punch/punchb, v2.71.2 — hero_punch2.py) — drawHero atk가 punch 무브를

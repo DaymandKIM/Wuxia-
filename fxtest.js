@@ -105,7 +105,7 @@ setTimeout(()=>{
   ok(w.eval('ATKMOVES.length')===4 && w.eval('ATKMOVES[0].key')==='punch'
      && w.eval('ATKMOVES[1].key')==='kickside' && w.eval('ATKMOVES[2].key')==='kickround' && w.eval('ATKMOVES[3].key')==='kickhigh',
      '기본공격 무브셋 = 양주먹·옆차기·돌려차기·뛰어차기 4종');
-  w.eval('S.rexp=0;');                                     // 삼류 1성 — 발차기 미해금
+  w.eval('S.equip.weapon=null; S.rexp=0;');                // 맨손(시작 장비 검을 벗김) · 삼류 1성 — 발차기 미해금
   ok(w.eval('atkPool().length')===1 && w.eval('atkPool()[0].key')==='punch',
      '낮은 성급엔 양주먹만');
   w.eval('S.rexp=1e12;');                                  // 높은 경지 — 전 발차기 해금
@@ -129,6 +129,20 @@ setTimeout(()=>{
     window.__keys={}; for(let i=0;i<9;i++){ P.atkCd=0; P.atkT=0; heroAttack(); window.__keys[P.atkKey]=1; }`);
   ok(w.eval('window.__keys.punch && window.__keys.kickside && window.__keys.kickround && window.__keys.kickhigh'),
      '연속 공격이 양주먹·옆차기·돌려차기·뛰어차기를 돌려 쓴다');
+  // 3.5) 검 장착 → 검 무브셋 (v2.72) — 무기 자리의 종류가 기본공격 동작을 정한다
+  w.eval('S.equip.weapon={k:"sword",g:0}; S.rexp=0;');
+  ok(w.eval('atkPool().length')===1 && w.eval('atkPool()[0].key')==='swordthrust','검을 끼고 낮은 성급이면 찌르기만');
+  w.eval('S.rexp=1e12;');
+  ok(w.eval('atkPool().map(m=>m.key).join()')==='swordthrust,swordslash,swordspin','성급이 오르면 찌르기·베기·회전베기 3종');
+  for (const k of ['swordthrust','swordslash','swordspin']){
+    w.eval('S.fx.length=0; P.castT=0; P.atkT=0.3; P.anim="atk"; P.af=2; P.atkKey="'+k+'";'); renderNow();
+    ok(drew('hero_'+k,w.eval('HFX.aw.'+k)),k+' 스트립이 제 폭('+w.eval('HFX.aw.'+k)+')으로 그려진다');
+  }
+  w.eval(`P.atkMove=0; window.__keys={}; S.foes.length=0; spawnFoe(); S.foes[0].x=P.x+20; S.foes[0].y=P.y; S.foes[0].hp=1e12; S.foes[0].hpMax=1e12;
+    for(let i=0;i<6;i++){ P.atkCd=0; P.atkT=0; heroAttack(); window.__keys[P.atkKey]=1; }`);
+  ok(w.eval('window.__keys.swordthrust && window.__keys.swordslash && window.__keys.swordspin && !window.__keys.punch'),'검을 끼면 연속 공격이 검 동작만 돌려 쓴다');
+  w.eval('S.equip.weapon=null;');
+  ok(w.eval('atkPool()[0].key')==='punch','검을 벗으면 맨손(양주먹)으로 돌아온다');
 
   // 3.5) 제패 연출 중 방향 고정 — 사방으로 밀려나는 적을 쫓아 파닥이지 않는다
   w.eval(`S.rexp=1e12; P.dir=1; P.atkT=0; P.atkCd=0; S.foes.length=0;

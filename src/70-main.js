@@ -6,6 +6,9 @@ loadImg('hero_punch',  ASSET.punch);    // 기본공격 양주먹 오른손 정�
 loadImg('hero_punchb', ASSET.punchb);   // 왼손 기운 정권 — 공격마다 교대
 loadImg('hero_kickside', ASSET.kickside);  // 기본공격 옆차기 (v2.49, 성급 5)
 loadImg('hero_kickround', ASSET.kickround); // 기본공격 돌려차기 (v2.71, 성급 10)
+loadImg('hero_swordthrust', ASSET.swordthrust); // 검 장착 기본공격 3종 (v2.72, 사용자 시트 hero_sword2)
+loadImg('hero_swordslash',  ASSET.swordslash);
+loadImg('hero_swordspin',   ASSET.swordspin);
 loadImg('hero_kickhigh', ASSET.kickhigh);  // 기본공격 뛰어차기 (v2.71, 성급 15)
 loadImg('hero_flykick',  ASSET.flykick);   // 도약 화염 발차기 (v2.46, 성급 9)
 loadImg('hero_firekick', ASSET.firekick);  // 화염 옆차기 (v2.46, 성급 13)

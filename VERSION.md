@@ -1,3 +1,13 @@
+# v2.72 — 검 공격 모션: 검을 끼면 기본공격이 바뀐다 (사용자 시트 sheets/hero_sword2.png, 2026-09-15)
+
+- **무기별 무브셋** WEAPONMOVES(00-data) — 무기 자리에 낀 종류(heroWeaponKind)로 atkPool이 무브셋을 고른다.
+  검 = **찌르기(swordthrust, 성급 0)·베기(swordslash, 5)·회전베기(swordspin, 15)** 4컷씩. 다른 무기(권갑·도·창·
+  봉·부채)는 아직 맨손 ATKMOVES — 시트가 오면 WEAPONMOVES에 얹는다. 대기·질주 컷엔 검이 없다(시트 없음).
+- 추출 `hero_sword2.py`(hero_kick2 공용): 흰 검기 호가 테두리 줄을 가로질러 줄 검출 문턱 0.85→0.7. 컷 선택은
+  스크립트 머리말에. HFX.aw 60/60/64, loadImg 3종.
+- 지금은 시작 무기가 검이라(권갑 아이콘 대기) **새 게임이 검술로 시작**한다 — 권갑 아이콘이 오면 맨손으로 시작.
+- 검증 review/hero_sword2.png·blackcheck·spritetest 3종·fxtest(검 무브셋·제 폭·검만 돌려 씀·벗으면 맨손)·크로뮴 실기.
+
 # v2.71.2 — 주인공 주먹 공격 교체 (사용자 시트 sheets/hero_punch2.png, 2026-09-15)
 
 - 양주먹 기본공격이 **사용자 시트 두 판 교대**가 됐다: 오른손 정권 punch = 1줄 [기수식→뻗음→별 임팩트→뻗음],
