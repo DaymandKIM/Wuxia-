@@ -124,7 +124,7 @@ review/            검사판 PNG (생성물)
 | `shaman.py` → `foesheet.py` | `sheets/shaman.png` + `shaman_b.png` | 돌아간다 (v2.64, 두 시트 합침) |
 | `panther.py` `wisp.py` → `foesheet.py` | `sheets/panther.png` `sheets/wisp.png` | 돌아간다 (v2.65 — 테두리 줄 검출 격자) |
 | `hero_sheet.py` + `hero_*2.py` | `sheets/hero_*2.png` | 돌아간다 (v2.73 — **그림 기준** 공용 추출기. 아래 8개 스크립트는 컷 선택만) |
-| `hero_pose2.py` | 주먹·발차기 시트 | 돌아간다 (v2.73.2 — 대기·피격·경공 컷을 새 시트에서. 운기조식·시전만 옛 시트) |
+| `hero_pose2.py` | 주먹4·발차기2 시트 | 돌아간다 (v2.76.5 — 대기·피격은 주먹4(황갈 얼굴 기준 시트), 경공은 발차기2+skinmatch. 운기조식·시전만 옛 시트) |
 | `hero_kick3.py` | `sheets/hero_kick3.png` | **현행** (v2.76.1 — 발차기 3종, gridless. 기준 컷은 곧게 선 (0,0)으로 hero_punch4와 배율 일치) |
 | `hero_kick2.py` | `sheets/hero_kick2.png` | 옛 발차기(v2.71) — **v2.76.2부터 kickside2·kickround2·kickhigh2 동작으로 되살림**(raw/kick2_old = 원본). hero_pose2 피격·경공 컷도 여기서 |
 | `hero_run2.py` | `sheets/hero_run2.png` | 돌아간다 (v2.71.1, 질주 6컷 — hero_kick2의 격자·축소 재사용) |
@@ -152,9 +152,11 @@ review/            검사판 PNG (생성물)
 
 - **비율이 다른 시트는 머리 폭으로 맞춘다**(v2.76.3 "머리가 왜 이리 크냐"): hero_fx는 머리 큰 치비라 몸 높이(BODY_PX 47)로
   맞추면 머리가 27px(새 시트 20~23)로 튄다. extract(scale_mul=)로 줄인다 — 몸이 조금 작아져도 머리가 먼저 보인다.
-- **옛 시트는 살색도 다르다**(v2.76.4 "피부색이 오묘하게 다르다"): hero_fx·hero_kick2는 (224,152,120) 주황빛, 새 시트는
-  (208,176,144) 베이지. 옛 스트립을 쓰면 `python skinmatch.py`로 맞춘다. 기준색은 자동으로 재지 말 것 — 새 시트는 살색과
-  도복 베이지가 r-g 20~32로 겹쳐 마스크가 그늘만 잡는다(TARGET 명시).
+- **시트마다 살색이 다르다**(v2.76.4~5 "피부색이 오묘하게 다르다"·"얼굴색 다시 봐봐"): hero_fx·hero_kick2 주황 (224,152,120) /
+  hero_punch2 창백한 베이지 (204,184,156) / **hero_punch4·hero_kick3 황갈 (203,138,125) ← 기준**. 옛 스트립을 쓰면
+  `python skinmatch.py`로 맞추고, 대기·피격 같은 단일 컷은 기준 시트(주먹4)에서 다시 뽑는다. **살색은 r-g>40 마스크로만
+  재라** — r-g 20 마스크는 도복 베이지(185,165,130)를 살색으로 세서 기준색이 도복색이 됐다(v2.76.4 사고).
+  얼굴 확대 대조는 `review/face_compare.png`(스크립트는 VERSION v2.76.5 참조).
 - **이펙트 색은 시트 프롬프트에서 못 박는다**: 자주·분홍 잔상은 마젠타 배경 판정에 먹혀 못 뽑는다(v2.76). 파랑·청록·흰·금만.
 - **짧은 무기는 같은 시트의 온전한 컷에서 잘라 붙인다**(v2.74.6, 사용자): hero_sheet.extract(patch=...) 훅으로
   원본 해상도에서 손질한다. 예: hero_sword4.graft — 기증 칼날을 자루 끝·축에 맞춰 늘려 투명한 자리와 별 위에 칠함.

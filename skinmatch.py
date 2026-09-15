@@ -2,8 +2,9 @@
 옛 시트(hero_fx 권기·hero_kick2 발차기)는 살색이 (224,152,120) 주황빛, 새 시트(hero_punch4·hero_kick3)는 (208,176,144)
 베이지다. 살색 픽셀(r>140 · r-g>40 · g-b>15 — 흙먼지·도복 베이지는 r-g 20 안팎이라 안 잡힘)만 채널별 비율로 옮긴다.
 사용: python skinmatch.py [키...]  (기본: qipunch qipunchb kickside2 kickround2 kickhigh2 dashfly dashland)
-기준색 TARGET은 새 시트 밝은 살색 (210,178,146)(hero_punch4 상위 색 (208,176,144)·(216,184,152)) — 자동으로 재면 새 시트는
-살색과 도복 베이지(185,165,130)가 r-g 20~32로 겹쳐 마스크가 그늘만 잡는다(첫 시도 사고). 옛 스트립을 다시 뽑으면 다시 돌린다.
+기준색 TARGET은 새 시트(hero_punch4·hero_kick3) **얼굴의 밝은 30% 평균 (203,138,125)** — 불그레한 황갈색이다.
+두 번 틀렸다: ① 자동으로 재니 그늘만 잡혀 어두웠고 ② (210,178,146)은 얼굴이 아니라 **도복 베이지**였다(r-g 20 마스크가
+도복을 살색으로 셌다). 얼굴만 재려면 r-g>40 마스크(황갈 살색 64, 도복 20, 흙먼지 30). 옛 스트립을 다시 뽑으면 다시 돌린다.
 """
 import sys
 import numpy as np
@@ -12,7 +13,7 @@ OLD = ['qipunch', 'qipunchb', 'kickside2', 'kickround2', 'kickhigh2', 'dashfly',
 def skin_mask(F):
     a = F[..., 3] > 0; r, g, b = F[..., 0], F[..., 1], F[..., 2]
     return a & (r > 140) & ((r - g) > 40) & ((g - b) > 15) & (b < 170)
-TARGET = np.array([210., 178., 146.])     # 새 시트 밝은 살색
+TARGET = np.array([203., 138., 125.])     # 새 시트(주먹4·발차기3) 얼굴 밝은 30% 평균 — 불그레한 황갈
 if __name__ == '__main__':
     keys = sys.argv[1:] or OLD
     target = TARGET
