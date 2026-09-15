@@ -126,7 +126,8 @@ review/            검사판 PNG (생성물)
 | `hero_pose2.py` | 주먹·발차기 시트 | 돌아간다 (v2.73.2 — 대기·피격·경공 컷을 새 시트에서. 운기조식·시전만 옛 시트) |
 | `hero_kick2.py` | `sheets/hero_kick2.png` | 돌아간다 (v2.71, 주인공 발차기 3종 — 칸 바닥 기준·머리 정렬) |
 | `hero_run2.py` | `sheets/hero_run2.png` | 돌아간다 (v2.71.1, 질주 6컷 — hero_kick2의 격자·축소 재사용) |
-| `hero_punch2.py` | `sheets/hero_punch2.png` | 돌아간다 (v2.71.2, 정권 두 판 — 옅은 배경·모서리 표식 시트) |
+| `hero_punch3.py` | `sheets/hero_fx.png` 2·3줄 | **현행** (v2.74.1 — 옛 권기 정권을 새 추출기로. 새 주먹 시트는 밋밋해 폐기) |
+| `hero_punch2.py` | `sheets/hero_punch2.png` | 대기·피격 컷(hero_pose2)에만 쓴다. 정권으로는 안 쓴다 |
 | `hero_sword3.py` | `sheets/hero_sword3.png` | **현행** (v2.74 재작업 시트 — 액자선 없음, gridless 모드·기준 컷 배율) |
 | `hero_sword2.py` | `sheets/hero_sword2.png` | 옛 시트(액자선에 잘림). 쓰지 않는다 |
 | `hero_fan2.py` | `sheets/hero_fan2.png` | 돌아간다 (v2.72.1, 부채 3종 — hero_sword2 틀) |
@@ -453,8 +454,9 @@ cost 20만은 연마·돌파용(습득은 여전히 기연만). 태극 원반 �
   HFX.aw·loadImg만 더하면 spritetest·fxtest가 WEAPONMOVES를 돌며 자동 검사한다. atkPool()=열린
   동작, heroAttack이 P.atkMove로 돌려 쓰고 P.atkKey로 이번 타 결정(삼류=양주먹만,
   이류부터 옆차기, 초절정부터 높은차기 — 성급 오를수록 발차기 각도가 는다).
-  **양주먹은 사용자 주먹 시트 두 판**(punch/punchb, v2.71.2 — hero_punch2.py) — drawHero atk가 punch 무브를
-  두 판 교대로 그린다. (v2.48~71.1은 권기 정권 katka/katkb 교대였고 에셋은 보존.) 발차기는 각기 hero_kickside(폭 54)·
+  **양주먹은 권기 정권 두 판**(punch/punchb — v2.74.1 hero_punch3.py가 옛 hero_fx 시트 2·3줄을 새 추출기로) —
+  drawHero atk가 punch 무브를 두 판 교대로 그린다. 새 주먹 시트(hero_punch2)는 밋밋해 정권에선 뺐다(사용자).
+  **옛 시트에 쓸 만한 컷이 있으면 버리지 말고 조합한다**(사용자 확정) — 새 시트가 더 나쁠 수 있다. 발차기는 각기 hero_kickside(폭 54)·
   hero_kickhigh(폭 60), 전 공격 4컷·임팩트 index2(HITFRAME 2 유지 위해 4컷 리샘플,
   마지막 컷=완전히 뻗음). 높은차기는 든 다리가 높아 캔버스(51) 위 여백 3px 남게
   배율을 가장 큰 프레임 기준으로 줄였다. spritetest에 발차기 2종 명시 검사 추가

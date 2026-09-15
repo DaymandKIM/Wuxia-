@@ -56,9 +56,14 @@ class Sheet:
         near = (np.abs(A - self.BG) < 70).all(2) & ((r - g) > 8) & ((b - g) > 8)
         fg0 = ~((((r - g) > 50) & ((b - g) > 50)) | near)
         dark = A.sum(2) < self.BG.sum() - 150
-        rl = _lines(dark.mean(1))
+        mw = 20 if A.shape[1] >= 1500 else 4           # 큰 시트(2000px, hero_fx)는 줄이 12~17px라 두께 상한을 키운다
+        # 격자선은 칸 피치(크기÷칸 수)의 배수 자리에만 있다 — 그 자리 ±12% 밖의 후보(인물의 어두운 열, 0.72)는 버린다
+        def on_pitch(lines, size, n):
+            pitch = size / n
+            return [(a, b) for (a, b) in lines if min(abs((a + b) / 2 - k * pitch) for k in range(n + 1)) < pitch * 0.12]
+        rl = on_pitch(_lines(dark.mean(1), maxw=mw), A.shape[0], rows)
         self.ys = [(rl[i][1] + 1, rl[i + 1][0] - 1) for i in range(len(rl) - 1) if rl[i + 1][0] - rl[i][1] > 40]
-        cl = _lines(dark.mean(0))
+        cl = on_pitch(_lines(dark.mean(0), maxw=mw), A.shape[1], cols)
         xs = [(cl[i][1] + 1, cl[i + 1][0] - 1) for i in range(len(cl) - 1) if cl[i + 1][0] - cl[i][1] > 40]
         # 칸 폭 검증 — 부채 시트는 4번째 칸 오른쪽 줄이 행마다 1~2px 어긋나 한 열로는 70%를 못 넘어 빠졌고, 그 칸이
         # 여백까지 합쳐진 170px로 잡혀 줄(1px 어두운 선)이 그림으로 남았다(v2.73.1). 중앙값보다 15% 넘게 넓은 칸은
@@ -224,9 +229,9 @@ def shrink(rgba, scale):
         if m.sum() <= 2: out[m] = 0          # 축소 뒤 떨어진 점
     return out
 
-def extract(sheet_path, strips, review_path, center='hair', share_width=False, stand_cell=None):
+def extract(sheet_path, strips, review_path, center='hair', share_width=False, stand_cell=None, rows=3, cols=6):
     """strips = {키: [(줄, 칸), ...]} → assets/<키>.png. 캔버스는 그림에 맞춰 자동. 반환 {키: (폭, 높이, 위 여분)}"""
-    S = Sheet(sheet_path); scale = BODY_PX / (S.stand_h(*stand_cell) if stand_cell else STAND_H)
+    S = Sheet(sheet_path, rows=rows, cols=cols); scale = BODY_PX / (S.stand_h(*stand_cell) if stand_cell else STAND_H)
     if stand_cell: print(f'  기준 컷 r{stand_cell[0]}c{stand_cell[1]} 높이 {S.stand_h(*stand_cell)} → 배율 {scale:.3f}')
     specs, review, all_frames, dims = {}, [], {}, {}
     for key, picks in strips.items():
