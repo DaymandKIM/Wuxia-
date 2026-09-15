@@ -61,7 +61,7 @@ function spend(){
     if(!best)break;
     R.traitBuy(best.k,best.id);
   }
-  // 장비 강화 (v2.66) — 틱당 최대 3회, 싼 자리부터. 드랍·자동 장착은 전투 코드가 한다.
+  // 장비 자리 강화 (v2.66/67) — 틱당 최대 3회, 싼 자리부터. 드랍·합성·자동 장착은 전투 코드가 한다.
   for(let n=0;n<3;n++){
     let b=null,c=1e18;
     for(const sl of R.EQUIP.slots) if(R.canEnhance(sl.k)){ const cc=R.enhCost(sl.k); if(cc<c){c=cc;b=sl.k;} }

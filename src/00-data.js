@@ -963,33 +963,37 @@ const heroHpMax = ()=> Math.round(HERO.hp * Math.pow(GROW.hp, realmLv())
                         * (1 + (statBonus('hp')+tBonus('hp')+eBonus('hp'))/100) * artMul('hp'));
 const heroRegen = ()=> HERO.regen * Math.pow(GROW.regen, realmLv())
                         * (1 + (statBonus('regen')+tBonus('regen')+eBonus('regen'))/100) * artMul('regen');
-const heroSpd   = ()=> HERO.spd * (1 + (statBonus('spd')+tBonus('spd'))/100) * artMul('spd');
-const heroAtkSpd= ()=> 1 + (statBonus('aspd')+tBonus('aspd')) / 100 + (artMul('aspd')-1);   // 공격 동작·간격 (심법 매향심결 등)
+const heroSpd   = ()=> HERO.spd * (1 + (statBonus('spd')+tBonus('spd')+eBonus('spd'))/100) * artMul('spd');
+const heroAtkSpd= ()=> 1 + (statBonus('aspd')+tBonus('aspd')+eBonus('aspd')) / 100 + (artMul('aspd')-1);   // 공격 동작·간격 (심법 매향심결 등)
 const critCh    = ()=> (statBonus('crit')+tBonus('crit')+eBonus('crit')) / 100 + (artMul('crit')-1);
-const critMul   = ()=> TRAIN.critMul + (statBonus('cdmg')+tBonus('cdmg')) / 100;
+const critMul   = ()=> TRAIN.critMul + (statBonus('cdmg')+tBonus('cdmg')+eBonus('cdmg')) / 100;
 
-// 장비 (v2.66) — 세 자리(무기·방어구·장신구). 처치 드랍(구역이 깊을수록 높은 품계)이
-// 지금 것보다 좋으면 **자동 장착**(강화 레벨 전승), 아니면 **자동 판매** — 방치형이라
-// 인벤토리·비교 UI를 두지 않는다. 강화는 은자(현 단계 처치 은자에 비례해 후반 은자 적체의
-// 소비처가 된다). 효과는 전부 %(수련과 같은 철학 — 지수 세계에서 고정치는 무의미).
+// 장비 (v2.67 도감형 — 사용자 확정 "다른 방치형을 따라간다") — 세 자리(무기·방어구·장신구),
+// 16종 × 5품계 = 80칸 도감. 처치 드랍은 전부 주머니(S.inv)에 쌓이고, 같은 종류·품계 mergeN개는
+// 자동으로 한 품계 위로 합쳐진다. 자리엔 가진 것 중 가장 높은 품계를 자동 장착(같은 품계면
+// 유지 — 종류마다 부가 효과가 달라 도감에서 직접 골라 낄 수도 있다).
+// **보유 효과(도감)**: 한 번이라도 얻은 칸마다 그 자리 주 효과에 영구 보너스(codexRate) —
+// 잡템도 버릴 게 없고 80칸이 장기 목표다. 강화는 자리(슬롯)에 붙어 은자로 올린다(장비를
+// 갈아껴도 유지). 효과는 전부 %(지수 세계에서 고정치는 무의미).
 const EQUIP = {
   slots: [
-    { k:'weapon',  n:'무기',   stat:'atk',  sub:null,    kinds:[['sword','검'],['saber','도'],['spear','창'],['staff','봉'],['ironball','권갑'],['fan','철선']] },
-    { k:'armor',   n:'방어구', stat:'hp',   sub:'regen', kinds:[['robe','무복'],['vest','피갑'],['lamellar','찰갑'],['cloak','도롱이']] },
-    { k:'trinket', n:'장신구', stat:'gold', sub:'crit',  kinds:[['pendant','옥패'],['ring','반지'],['beads','염주'],['talisman','부적'],['gourd','호리병'],['ribbon','비단끈']] },
+    { k:'weapon',  n:'무기',   stat:'atk',  kinds:[['sword','검','crit'],['saber','도','aspd'],['spear','창','cdmg'],['staff','봉','regen'],['ironball','철구','hp'],['fan','철선','gold']] },
+    { k:'armor',   n:'방어구', stat:'hp',   kinds:[['robe','무복','regen'],['vest','피갑','aspd'],['lamellar','찰갑','hp'],['cloak','도롱이','spd']] },
+    { k:'trinket', n:'장신구', stat:'gold', kinds:[['pendant','옥패','crit'],['ring','반지','cdmg'],['beads','염주','regen'],['talisman','부적','atk'],['gourd','호리병','hp'],['ribbon','비단끈','spd']] },
   ],
-  statName: { atk:'공격', hp:'체력', regen:'회복', gold:'은자 획득', crit:'치명타' },
+  statName: { atk:'공격', hp:'체력', regen:'회복', gold:'은자 획득', crit:'치명타', cdmg:'치명 피해', aspd:'공격 속도', spd:'이동 속도' },
   grades: [ { n:'범품', c:'#9aa7b5', base:8 },  { n:'양품', c:'#6fd3a8', base:14 },
             { n:'진품', c:'#69a8dd', base:22 }, { n:'보물', c:'#c58cff', base:32 },
             { n:'신물', c:'#ffd95e', base:45 } ],
   gradeW: [[70,25,5,0,0],[45,35,17,3,0],[25,38,27,9,1],[10,30,35,20,5],[3,20,37,30,10]],   // 구역별 품계 가중
-  dropCh: 0.03,                  // 처치당 드랍 확률
+  dropCh: 0.05,                  // 처치당 드랍 확률 — 도감형은 잡템이 재료라 조금 잦게
   bossDrop: 1,                   // 보스는 반드시
-  lvPer: 0.04,                   // 강화 1당 기본 효과 ×(1+0.04·lv) — 상한 lv면 범품 1.8배·신물 2.6배
-  lvCap: [20,25,30,35,40],       // 품계별 강화 상한 — 낮으면 금방 차서 은자 소비처가 사라진다(sim)
-  subRate: 0.5,                  // 부가 효과(방어구 회복·장신구 치명타)는 주 효과의 절반
+  mergeN: 3,                     // 같은 것 N개 → 한 품계 위 1개 (자동)
+  subRate: 0.4,                  // 종류별 부가 효과 = 주 효과의 이 비율
+  codexRate: 0.12,               // 보유 효과 — 얻어 본 칸마다 (그 품계 base × 이 비율)% 를 자리 주 효과에 영구 가산
+  lvPer: 0.04,                   // 자리 강화 1당 장착 효과 ×(1+0.04·lv)
+  lvCap: 40,                     // 자리 강화 상한
   costK: 12, costGrow: 1.18,     // 강화 비용 = 현 단계 처치 은자 × costK × costGrow^lv
-  sell: 3,                       // 판매 = 처치 은자 × sell × (품계+1)
 };
 
 // 은자 — 첫 재화. 처치 드랍 + 보스 첫 격파 + 오프라인 정산.
