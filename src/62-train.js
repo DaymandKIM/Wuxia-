@@ -92,9 +92,10 @@ function refreshTrain(){
     // 예상값은 이번에 실제로 살 개수만큼 오른 값 (v2.62.1 — x10·MAX인데 한 단계 뒤만 보여줬다)
     const p = n >= cap ? { cnt: 0, cost: 0, ok: false } : trainPlan(s.k);
     const to = Math.min(cap, n + (p.cnt > 0 ? p.cnt : 1));
-    $('trfx-' + s.k).textContent =
-      s.d + ' · ' + s.f(statBonus(s.k)) + ' → ' + s.f(statBonus(s.k, to)) +
-      (p.cnt > 1 ? ' (' + p.cnt + '단계)' : '');
+    // 설명은 한 줄, 수치(지금 → 다음)는 다음 줄 (v2.69.9 — 한 줄에 붙이니 가독성이 떨어졌다)
+    $('trfx-' + s.k).innerHTML =
+      s.d + '<b class="trv">' + s.f(statBonus(s.k)) + ' → ' + s.f(statBonus(s.k, to)) +
+      (p.cnt > 1 ? ' <i>(' + p.cnt + '단계)</i>' : '') + '</b>';
     const btn = $('trbody').querySelector('.trbuy[data-k="' + s.k + '"]');
     if (n >= cap){
       $('trc-' + s.k).textContent = '상한';
