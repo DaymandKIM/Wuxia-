@@ -138,7 +138,42 @@ function heroAttack(){
   P.atkT = ANIM.atk[0] / ANIM.atk[1] / heroAtkSpd();   // 공격 속도만큼 빨리 지나간다
   P.atkCd = HERO.atkCd / heroAtkSpd();
   P.hitDone = false;
+  // 들어가는 발밑 흙먼지 (v2.78) — 뒷발 쪽에서 작게 피어올라 뒤로 흩어진다
+  fxPush({ k:'stepdust', x:P.x - P.dir * 5, y:P.y, dir:P.dir, sd:(Math.random()*89)|0, life:FXD.stepdust.life, t:FXD.stepdust.life });
   return true;
+}
+// 동작별 임팩트 (v2.78, 사용자: "공격 모션에 알맞게 이펙트") — FXD.moveFx[동작]이 결을 고른다. 없는 키는 옛 참격 호.
+// 치명타면 색만 금빛으로. 위치 x·y는 맞은 적의 몸통 높이, 발밑 것(spin·blunt)은 f.y.
+function heroImpactFx(f, iy, crit){
+  const st = FXD.moveFx[P.atkKey] || 'slash', D = FXD[st] || {}, c = crit ? FXD.crit.c : (D.c || FXD.hit.c);
+  const x = f.x, sd = (Math.random()*2-1);
+  if (st === 'impact'){                       // 주먹 — 짧은 방사선 별 + 작은 고리
+    fxPush({ k:'rays', x, y:iy, r:D.r, n:D.n, len:D.len, c, sd:Math.random()*6.28, life:D.life, t:D.life });
+    fxPush({ k:'wave', x, y:iy, r:D.r + 6, c, life:D.life * 1.4, t:D.life * 1.4 });
+  } else if (st === 'rise'){                  // 승룡권 — 위로 솟는 빛줄기 + 위로 튀는 불티
+    fxPush({ k:'streak', x, y:iy - D.len * 0.4, ang:-Math.PI/2, len:D.len, w:D.w, c, life:D.life, t:D.life });
+    fxPush({ k:'sparks', x, y:iy, c, up:1, sd:(Math.random()*89)|0, life:FXD.spark.life, t:FXD.spark.life });
+  } else if (st === 'qi'){                    // 권기 — 파란 대파열
+    fxBlast(x, iy, D.r, crit ? FXD.crit.c : D.c, true);
+  } else if (st === 'kick' || st === 'kickup'){   // 발차기 — 넓은(위로 기운) 초승달 호
+    fxPush({ k:'slash', x, y:iy, dir:P.dir, c, r:D.r * (crit ? FXD.slash.crit : 1), span:D.span, tiltA:D.tilt, sd,
+             life:FXD.slash.life * 1.2, t:FXD.slash.life * 1.2 });
+  } else if (st === 'cut' || st === 'cutdown' || st === 'pierce'){   // 검흔·관통선 — 방향은 P.dir로 거울
+    const ang = D.ang * P.dir + sd * 0.15;
+    fxPush({ k:'streak', x, y:iy, ang:P.dir < 0 && st === 'pierce' ? Math.PI : ang, len:D.len, w:D.w, c, life:D.life, t:D.life });
+    if (st === 'cutdown') fxPush({ k:'stepdust', x, y:f.y, dir:P.dir, sd:(Math.random()*89)|0, life:FXD.stepdust.life, t:FXD.stepdust.life });
+  } else if (st === 'spin'){                  // 회전 — 발밑 큰 원형 충격파(두 겹)
+    fxPush({ k:'wave', x, y:f.y, r:D.r, c, life:D.life, t:D.life });
+    fxPush({ k:'wave', x, y:f.y, r:D.r * 0.6, c, life:D.life * 0.7, t:D.life * 0.7 });
+  } else if (st === 'blunt'){                 // 봉 — 둔탁한 고리 + 발밑 흙 튐
+    fxPush({ k:'wave', x, y:iy, r:D.r, c, life:D.life, t:D.life });
+    fxPush({ k:'stepdust', x, y:f.y, dir:-P.dir, sd:(Math.random()*89)|0, life:FXD.stepdust.life, t:FXD.stepdust.life });
+  } else if (st === 'petal'){                 // 부채 — 흩날리는 청록 잎 조각
+    fxPush({ k:'petals', x, y:iy, dir:P.dir, n:D.n, spd:D.spd, c, sd:(Math.random()*89)|0, life:D.life, t:D.life });
+  } else {                                    // 기본 — 참격 호 (v2.61)
+    fxPush({ k:'slash', x, y:iy, dir:P.dir, c:crit ? FXD.crit.c : FXD.hit.c, r:FXD.slash.r * (crit ? FXD.slash.crit : 1), sd,
+             life:FXD.slash.life, t:FXD.slash.life });
+  }
 }
 
 // 공격 판정 — 지정 프레임에 한 번만
@@ -164,10 +199,8 @@ function heroHitCheck(){
       const iy = f.y - (foeM(f).bh||foeM(f).h)*0.45;
       if (crit) fxBlast(f.x, iy, FXD.crit.r, FXD.crit.c, true);
       else fxBlast(f.x, iy, FXD.hit.r, FXD.hit.c);
-      // 참격 호 (v2.61) — 임팩트 지점에 주인공이 보는 쪽으로 볼록한 네온 초승달
-      fxPush({ k:'slash', x:f.x, y:iy, dir:P.dir, c:crit ? FXD.crit.c : FXD.hit.c,
-               r:FXD.slash.r * (crit ? FXD.slash.crit : 1), sd:(Math.random()*2-1),
-               life:FXD.slash.life, t:FXD.slash.life });
+      // 동작별 임팩트 결 (v2.78) — 주먹은 충격 별, 발차기는 넓은 호, 검은 검흔, 창은 관통선, 회전은 큰 원 …
+      heroImpactFx(f, iy, crit);
       // 치명타 — 발밑 네온 링 + 미세 경직 (경직은 loop에서만 적용, sim 무관)
       if (crit){
         fxPush({ k:'critring', x:f.x, y:f.y, r:FXD.critring.r, c:FXD.crit.c,

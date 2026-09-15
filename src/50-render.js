@@ -206,6 +206,7 @@ function drawHero(ox, oy){
     return;
   }
   shadow(x, y, HERO.w);
+  if (P.anim === 'medit') drawMeditAura(x, y);   // 운기조식 — 몸 뒤 후광·발밑 광륜·호흡 고리 (v2.78)
   let [n] = ANIM[P.anim];
   // 절정부터 정권에 권기가 붙는다 — 같은 동작, 다른 그림.
   // 시전(cast)은 초식마다 스트립·프레임 수가 다르다.
@@ -389,9 +390,10 @@ function drawFx(ox, oy){
       ctx.strokeStyle = 'rgb(' + (e.c || '236,244,255') + ')';
       ctx.lineWidth = 1.6;
       ctx.globalAlpha = a * 0.85;
-      for (let i = 0; i < FXD.rays.n; i++){
-        const ang = i/FXD.rays.n*Math.PI*2 + (e.sd||0);
-        const r0 = (e.r||20) + p*95, ln = FXD.rays.len * (0.5 + ambHash(i,7)*0.8) * a;
+      const RN = e.n || FXD.rays.n, RL = e.len || FXD.rays.len, RS = e.n ? 40 : 95;   // 동작별 임팩트(v2.78)는 짧고 촘촘·덜 뻗는다
+      for (let i = 0; i < RN; i++){
+        const ang = i/RN*Math.PI*2 + (e.sd||0);
+        const r0 = (e.r||20) + p*RS, ln = RL * (0.5 + ambHash(i,7)*0.8) * a;
         ctx.beginPath();
         ctx.moveTo(x + Math.cos(ang)*r0,      y + Math.sin(ang)*r0*0.62);
         ctx.lineTo(x + Math.cos(ang)*(r0+ln), y + Math.sin(ang)*(r0+ln)*0.62);
@@ -406,7 +408,7 @@ function drawFx(ox, oy){
       ctx.fillStyle = 'rgb(' + (e.c || '255,220,150') + ')';
       for (let i = 0; i < FXD.spark.n; i++){
         const h1 = ambHash(i, 11 + (e.sd||0)), h2 = ambHash(i, 23 + (e.sd||0));
-        const ang = h1 * Math.PI * 2, spd = FXD.spark.spd * (0.4 + h2);
+        const ang = e.up ? (-Math.PI/2 + (h1 - 0.5) * 1.3) : h1 * Math.PI * 2, spd = FXD.spark.spd * (0.4 + h2);   // up: 위로 튄다(승룡권, v2.78)
         const px = e.x + Math.cos(ang)*spd*el - ox;
         const py = e.y + Math.sin(ang)*spd*el*0.6 + FXD.spark.g*el*el*0.5 - oy;
         ctx.globalAlpha = a;
@@ -431,7 +433,8 @@ function drawFx(ox, oy){
       // 그라디언트 없이 동심 호 세 겹(넓은 여운·중간·흰 심)으로 발광을 낸다.
       const D = FXD.slash, p = 1 - a;
       const r = e.r * (0.55 + 0.45 * Math.sqrt(p));
-      const base = (e.dir < 0 ? Math.PI : 0) + (e.sd || 0) * D.tilt;
+      const base = (e.dir < 0 ? Math.PI : 0) + (e.sd || 0) * D.tilt + (e.tiltA || 0) * (e.dir < 0 ? -1 : 1);   // tiltA: 뛰어차기 위로 기운 호(v2.78)
+      const SPAN = e.span || D.span;
       ctx.save();
       ctx.translate(x, y);
       ctx.scale(1, 0.82);                          // 옆에서 본 시점 — 살짝 납작하게
@@ -443,7 +446,45 @@ function drawFx(ox, oy){
         ctx.strokeStyle = col;
         ctx.lineWidth = D.w * wk * (0.6 + a * 0.6);
         ctx.globalAlpha = a * ak;
-        ctx.beginPath(); ctx.arc(-r * 0.35, 0, r, -D.span, D.span); ctx.stroke();
+        ctx.beginPath(); ctx.arc(-r * 0.35, 0, r, -SPAN, SPAN); ctx.stroke();
+      }
+      ctx.restore();
+    } else if (e.k === 'streak'){
+      // 검흔·관통선·솟는 빛줄기 (v2.78) — 임팩트 지점을 지나는 한 줄기. 안쪽 흰 심 + 바깥 색 여운, 늘어나며 옅어진다.
+      const p = 1 - a, L = e.len * (0.5 + 0.5 * Math.sqrt(p)), c = Math.cos(e.ang), sn = Math.sin(e.ang);
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.lineCap = 'round';
+      for (const [wk, ak, col] of [[3.0, 0.2, 'rgb(' + e.c + ')'], [1.5, 0.55, 'rgb(' + e.c + ')'], [0.7, 0.95, '#ffffff']]){
+        ctx.strokeStyle = col; ctx.lineWidth = e.w * wk * (0.5 + a * 0.5); ctx.globalAlpha = a * ak;
+        ctx.beginPath(); ctx.moveTo(x - c * L, y - sn * L * 0.8); ctx.lineTo(x + c * L, y + sn * L * 0.8); ctx.stroke();
+      }
+      ctx.restore();
+    } else if (e.k === 'petals'){
+      // 부채 — 청록 잎 조각(작은 호)이 보는 쪽으로 흩날리며 돌다 잦아든다 (v2.78)
+      const el = e.t - e.life;
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.strokeStyle = 'rgb(' + e.c + ')'; ctx.lineWidth = 1.6; ctx.lineCap = 'round';
+      for (let i = 0; i < e.n; i++){
+        const h1 = ambHash(i, 31 + (e.sd||0)), h2 = ambHash(i, 47 + (e.sd||0));
+        const ang = (e.dir < 0 ? Math.PI : 0) + (h1 - 0.5) * 1.6, spd = e.spd * (0.5 + h2);
+        const px = e.x + Math.cos(ang) * spd * el - ox, py = e.y + Math.sin(ang) * spd * el * 0.6 - 18 * el + 40 * el * el - oy;
+        const rot = h2 * 6.28 + el * 9;
+        ctx.globalAlpha = a * 0.9;
+        ctx.beginPath(); ctx.arc(px, py, 3, rot, rot + 2.2); ctx.stroke();
+      }
+      ctx.restore();
+    } else if (e.k === 'stepdust'){
+      // 발밑 흙먼지 (v2.78) — 가산 없이 옅은 흙색 원 몇 개가 뒤로 밀리며 떠올라 스러진다
+      const D = FXD.stepdust, el = e.t - e.life;
+      ctx.save();
+      ctx.fillStyle = 'rgb(' + D.c + ')';
+      for (let i = 0; i < D.n; i++){
+        const h1 = ambHash(i, 53 + (e.sd||0)), h2 = ambHash(i, 71 + (e.sd||0));
+        const px = x - e.dir * (4 + h1 * 10) * (el / e.t) - e.dir * i * 2, py = y - 1 - (2 + h2 * 6) * (el / e.t);
+        ctx.globalAlpha = a * 0.5;
+        ctx.beginPath(); ctx.arc(px, py, D.r * (0.7 + h2 * 0.6) * (0.6 + (el / e.t) * 0.8), 0, Math.PI*2); ctx.fill();
       }
       ctx.restore();
     } else if (e.k === 'critring'){
@@ -822,6 +863,31 @@ function drawBossBar(ox, oy){
    바닥에서 피어올라 몸을 타고 흩어진다. 방울마다 시작 시각이 달라
    끊이지 않고 이어진다.
 */
+// 운기조식 연출 (v2.78, 사용자: "운기조식에 알맞게 이펙트") — 스프라이트 뒤에 그린다.
+// 후광: 몸 뒤 온기 원광(가산, 아주 옅게) · 광륜: 발밑 타원이 숨 쉬듯 맥동 · 호흡 고리: 6컷 루프 위상에 맞춰 발밑에서 퍼진다
+function drawMeditAura(x, y){
+  const M = FXD.meditFx, fade = Math.min(1, S.downT / 0.5), br = 0.5 + 0.5 * Math.sin(S.t * 2.2);
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  ctx.fillStyle = 'rgb(' + M.halo.c + ')';
+  for (let i = 3; i >= 1; i--){                                     // 후광 — 동심원 세 겹
+    ctx.globalAlpha = fade * M.halo.a * (0.6 + 0.4 * br) / i;
+    ctx.beginPath(); ctx.arc(x, y - HERO.h * 0.5, M.halo.r * (0.5 + 0.3 * i), 0, Math.PI*2); ctx.fill();
+  }
+  const rr = M.ring.r * (1 + M.ring.pulse * br);                    // 광륜 — 발밑 타원
+  ctx.strokeStyle = 'rgb(' + M.ring.c + ')'; ctx.lineWidth = M.ring.w; ctx.globalAlpha = fade * M.ring.a * (0.7 + 0.3 * br);
+  ctx.save(); ctx.translate(x, y); ctx.scale(1, 1 / HERO.atkFlat / 1.4);
+  ctx.beginPath(); ctx.arc(0, 0, rr, 0, Math.PI*2); ctx.stroke();
+  ctx.globalAlpha *= 0.35; ctx.lineWidth = M.ring.w * 2.6;
+  ctx.beginPath(); ctx.arc(0, 0, rr * 0.92, 0, Math.PI*2); ctx.stroke();
+  // 호흡 고리 — 루프 한 바퀴마다 한 번, 발밑에서 퍼지며 옅어진다
+  const ph = (P.af % ANIM.medit[0]) / ANIM.medit[0];
+  const br2 = M.breath.r0 + (M.breath.r1 - M.breath.r0) * Math.sqrt(ph);
+  ctx.globalAlpha = fade * M.breath.a * (1 - ph); ctx.lineWidth = M.breath.w; ctx.strokeStyle = 'rgb(' + M.breath.c + ')';
+  ctx.beginPath(); ctx.arc(0, 0, br2, 0, Math.PI*2); ctx.stroke();
+  ctx.restore();
+  ctx.restore();
+}
 function drawQi(x, y){
   const fade = Math.min(1, S.downT / 0.5);      // 끝날 때 잦아든다
   for (let i = 0; i < QI.n; i++){
@@ -846,6 +912,18 @@ function drawQi(x, y){
     ctx.arc(x + sway, y - 2 - up, r * 0.55, 0, Math.PI*2);
     ctx.fill();
   }
+  // 반짝이는 빛알 (v2.78) — 몸 둘레에서 천천히 떠오르며 깜빡인다(가산)
+  const M = FXD.meditFx.motes;
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = 'rgb(' + M.c + ')';
+  for (let i = 0; i < M.n; i++){
+    const h1 = ambHash(i, 91), h2 = ambHash(i, 97);
+    const t = ((S.t / M.period) + h1) % 1, tw = 0.5 + 0.5 * Math.sin(S.t * (5 + h2 * 4) + i);
+    const a = Math.sin(t * Math.PI) * tw * 0.9 * fade; if (a <= 0.03) continue;
+    const px = x + (h2 - 0.5) * 2 * M.spread + Math.sin(S.t * 1.3 + i) * 2, py = y - 8 - t * M.rise;
+    ctx.globalAlpha = a; ctx.beginPath(); ctx.arc(px, py, M.r, 0, Math.PI*2); ctx.fill();
+    ctx.globalAlpha = a * 0.35; ctx.beginPath(); ctx.arc(px, py, M.r * 2.4, 0, Math.PI*2); ctx.fill();
+  }
+  ctx.restore();
   ctx.globalAlpha = 1;
 }
 

@@ -117,6 +117,34 @@ const FXD = {
   artname:  { size:13, pop:1.6, popT:0.16, stroke:3, rise:14, c:'#f4faff', glowA:0.45 },
   // 초식 시전 절차 발광 배율 — 반경·알파를 조금 키워 네온 결 (인물 가림 금지: 1.5 미만)
   castGlow: { r:1.3, a:0.62, rim:0.55 },
+  // ── 동작별 임팩트 결 (v2.78, 사용자: "공격 모션에 알맞게 이펙트를 — 잘 어울려서 이상하지 않고 멋지게") ──
+  // 기본 파열(wave·sparks)은 그대로 두고, 참격 호 자리에 동작 성격에 맞는 한 가지를 얹는다. 없는 키는 옛 참격 호.
+  moveFx: {
+    punch:'impact', punchdbl:'impact', punchup:'rise', qipunch:'qi', qipunchb:'qi',
+    kickside:'kick', kickround:'kick', kickhigh:'kickup', kickside2:'kick', kickround2:'kick', kickhigh2:'kickup',
+    swordthrust:'pierce', swordslash:'cut', swordspin:'spin', saberslash:'cut', sabersmash:'cutdown', saberspin:'spin',
+    spearthrust:'pierce', spearsweep:'cut', spearspin:'spin', staffswing:'blunt', staffsweep:'blunt', staffspin:'spin',
+    fansweep:'petal', fanspin:'spin', fanstrike:'petal',
+  },
+  impact:  { n:6, len:10, r:9, life:0.2, c:'255,236,200' },        // 주먹 — 짧은 방사선 별 + 작은 고리(둔탁한 충격)
+  rise:    { len:28, w:2.2, life:0.24, c:'255,224,150' },           // 승룡권 — 위로 솟는 빛줄기 + 위로 튀는 불티
+  qi:      { r:24, c:'120,190,255' },                               // 권기 — 파란 대파열(섬광·속도선까지)
+  kick:    { span:1.7, r:27, tilt:0.25, c:'180,236,255' },          // 발차기 — 넓은 초승달 호
+  kickup:  { span:1.3, r:27, tilt:-0.9, c:'180,236,255' },          // 뛰어차기 — 위로 기운 호
+  cut:     { len:36, w:2.4, ang:-0.75, life:0.16, c:'200,240,255' }, // 검·도·창 쓸기 — 사선 검흔
+  cutdown: { len:34, w:2.6, ang:1.2,  life:0.18, c:'200,240,255' }, // 내려찍기 — 세로 검흔 + 땅 먼지
+  pierce:  { len:44, w:2.0, ang:0,    life:0.15, c:'220,245,255' }, // 찌르기 — 수평 관통 섬선
+  spin:    { r:32, life:0.4, c:'200,240,255' },                     // 회전 — 발밑 큰 원형 충격파
+  blunt:   { r:15, life:0.26, c:'255,220,170' },                    // 봉 — 둔탁한 충격 고리 + 흙 튐
+  petal:   { n:5, spd:70, life:0.5, c:'190,255,230' },              // 부채 — 흩날리는 청록 잎 조각
+  stepdust:{ n:3, life:0.32, r:3.2, c:'170,158,128' },              // 공격 들어갈 때 발밑 흙먼지(가산 아님)
+  // 운기조식 연출 (v2.78) — 몸 뒤 온기 후광 · 발밑 광륜(숨 쉬듯 맥동) · 6컷 루프에 맞춰 퍼지는 호흡 고리 · 반짝이는 빛알
+  meditFx: {
+    halo:   { r:17, a:0.14, c:'255,236,190' },
+    ring:   { r:19, w:1.5, a:0.5, c:'190,240,255', pulse:0.12 },
+    breath: { r0:6, r1:30, w:1.3, a:0.55, c:'190,240,255' },
+    motes:  { n:6, r:1.3, spread:20, rise:28, period:2.6, c:'255,246,210' },
+  },
 };
 function auraKey(){
   const k = realmLv();

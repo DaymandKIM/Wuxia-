@@ -53,7 +53,7 @@ node lint.js           # 정의 없는 호출·빠진 필수 함수
 node spritetest.js     # 선언 규격 vs 실제 PNG · 캔버스 가장자리 접촉
 python review.py       # 눈으로 볼 대조 PNG → review/review-<종류>.png
 python blackcheck.py [이름...]  # 검은 막대·부유 조각 눈검사판(흰 배경 확대) → review/blackcheck.png
-python skinmatch.py [키...]     # 주먹4·발차기3·부채3·운기조식 계열 스트립의 살·옷·도복을 질주 톤으로 (기본 목록 — 다시 뽑으면 다시 돌린다)
+python skinmatch.py [키...]     # 스트립의 살·옷·도복을 질주 톤으로 (기본 목록=주먹4·발차기3·부채3·운기조식 계열. 질주·cast* 빼고 전부 돌려도 안전 — 다시 뽑으면 다시 돌린다)
 node test.js           # jsdom으로 실제 실행 (오류 0 이어야 한다)
 node sim.js            # 24시간 진행 시뮬 (소비 전략 포함, SIM_MIN=분 으로 단축)
 node animtest.js       # 공격 동작이 피격에 끊기는지
@@ -520,6 +520,9 @@ cost 20만은 연마·돌파용(습득은 여전히 기연만). 태극 원반 �
   loop에서 step만 멈춤, sim 무관)·탄 잔상(drawTrail, fly 탄·권기·지풍, 술병 제외)·
   피해 숫자 팝(dmgpop)·castGlow. 수치 전부 FXD. **createRadialGradient는 jsdom
   스텁이 없어 테스트가 터진다 — 쓰지 마라.** 검증 fxtest.
+- **동작별 임팩트**(v2.78, "공격 모션에 알맞게 이펙트"): FXD.moveFx[동작 키] → 결 이름(impact·rise·qi·kick·kickup·cut·cutdown·
+  pierce·spin·blunt·petal), heroImpactFx가 파열 위에 하나 얹는다. 새 동작 키는 이 표에 결을 정해 준다(없으면 옛 참격 호).
+  공격 시작에 발밑 흙먼지(stepdust). 운기조식은 drawMeditAura(후광·광륜·호흡 고리)+drawQi 빛알, 수치 FXD.meditFx. 검증 fxtest.
 - **초식 시전 동작**: 액티브 5종 전용 cast 스트립 6~9프레임(HFX.cast,
   [에셋·폭·수]), castFps 16. **컷 수는 숙련 성에 비례**(v2.4, castStar):
   1성은 절반쯤(뼈대), 4성이 전체 — 처음·끝 컷은 지키고 중간을 덜어낸다

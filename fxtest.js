@@ -208,10 +208,24 @@ setTimeout(()=>{
     if (drew('hero_run', w.eval('HFX.aw.run'))) runFrames.add(fr);
   }
   ok(runFrames.size===RUNN,RUNN+'프레임 모두 그려진다 ('+runFrames.size+'/'+RUNN+')');
+  // 3.78) 동작별 임팩트 (v2.78) — 동작 키마다 FXD.moveFx가 고른 결의 이펙트가 S.fx에 든다
+  const want={punch:'rays', punchup:'streak', qipunch:'flash', kickside:'slash', kickhigh:'slash', swordslash:'streak', spearthrust:'streak',
+              saberspin:'wave', staffswing:'wave', fansweep:'petals', fanspin:'wave'};
+  for (const k in want){
+    w.eval(`S.fx.length=0; S.foes.length=0; spawnFoe(); S.foes[0].x=P.x+16; S.foes[0].y=P.y; S.foes[0].hp=1e12; S.foes[0].hpMax=1e12;
+      P.atkKey="${k}"; P.atkT=0.3; P.af=2.5; P.hitDone=false; heroHitCheck();`);
+    const kinds=w.eval('S.fx.map(e=>e.k).join()');
+    ok(kinds.split(',').includes(want[k]), k+' 임팩트에 '+want[k]+' 이펙트 ('+kinds+')');
+  }
+  w.eval('S.fx.length=0; S.foes.length=0; P.atkCd=0; P.atkT=0; spawnFoe(); S.foes[0].x=P.x+16; S.foes[0].y=P.y; heroAttack();');
+  ok(w.eval('S.fx.some(e=>e.k==="stepdust")'),'공격 들어갈 때 발밑 흙먼지가 인다');
+  w.eval('S.fx.length=0; S.foes.length=0;'); renderNow();
+  ok(true,'동작별 임팩트 렌더 통과 (오류는 마지막 검사에서 확인)');
   // 3.77) 운기조식 6컷 (v2.77 사용자 시트 hero_medit2) — 프레임마다 hero_medit을 제 폭으로
   const MEDN=w.eval('ANIM.medit[0]'); let medFrames=new Set();
   for (let fr=0; fr<MEDN; fr++){ w.eval('P.anim="medit"; P.af='+(fr+0.1)+'; S.downT=3;'); renderNow(); if (drew('hero_medit', w.eval('HFX.aw.medit'))) medFrames.add(fr); }
   ok(MEDN===6 && medFrames.size===MEDN,'운기조식 6컷이 폭 '+w.eval('HFX.aw.medit')+'으로 모두 그려진다 ('+medFrames.size+'/'+MEDN+')');
+  ok(arcs.length > w.eval('QI.n')*2 + 6,'운기조식 후광·광륜·호흡 고리·빛알이 그려진다 (원 '+arcs.length+'개)');
   w.eval('S.downT=0;');
   // idle — 정면 전투 자세 단일 컷 (사용자 시트 14번)
   ok(w.eval('ANIM.idle[0]')===1,'대기는 단일 컷이다');
