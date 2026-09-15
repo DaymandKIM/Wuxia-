@@ -78,6 +78,12 @@ function eqWear(k, g){
   const kd = eqKind(k); if (!kd || !(eqInv(k)[g] > 0)) return false;
   S.equip[kd.sl.k] = { k, g }; eqLogPush(itemLabel(k, g) + ' 장착'); return true;
 }
+// 무기 벗기 → 맨손(주먹·발차기 무브셋). v2.76.9 사용자: "무기 중에 권이 없어서 주먹 모션을 못 봐" — 권갑 아이콘이 올 때까지
+// 무기를 한 번 끼면 맨손으로 돌아갈 길이 없었다. 자동 장착은 버튼을 눌러야만 다시 낀다.
+function eqUnwear(slotK){
+  const it = S.equip[slotK]; if (!it) return false;
+  S.equip[slotK] = null; eqLogPush(itemLabel(it.k, it.g) + ' 벗음 — 맨손'); return true;
+}
 // 강화(레벨업) — 은자. 가진 아이템만(개수 0이어도 얻어 봤으면 보유 효과용으로 허용).
 function lvCost(k, g){ return Math.round(killSilver() * EQUIP.costK * (g + 1) * Math.pow(EQUIP.costGrow, itemLv(k, g))); }
 function canLevelItem(k, g){ return eqSeen(k, g) && itemLv(k, g) < EQUIP.grades[g].lvCap && S.silver >= lvCost(k, g); }
@@ -149,13 +155,16 @@ function refreshEquip(){
   $('esilver').innerHTML = coin() + ' ' + fmt(S.silver);
   $('eqcnt').textContent = '도감 ' + codexCount() + '/' + EQUIP.slots.reduce((a, sl) => a + eqKinds(sl).length, 0) * EQUIP.grades.length;
   const sl = eqSlot(eqTab), it = S.equip[sl.k], top = $('eqtop');
-  if (!it) top.innerHTML = '<div class="zn"><span class="eqsl">' + sl.n + '</span> 비었다</div><div class="zd">적이 떨어뜨린다</div>';
+  if (!it) top.innerHTML = '<div class="zn"><span class="eqsl">' + sl.n + '</span> ' + (sl.k === 'weapon' ? '맨손' : '비었다') + '</div>' +
+    '<div class="zd">' + (sl.k === 'weapon' ? '주먹·발차기로 싸운다<br>무기를 끼면 그 무기 동작으로' : '적이 떨어뜨린다') + '</div>';
   else {
     const G = EQUIP.grades[it.g], kd = eqKind(it.k), pct = slotPct(sl.k), cx = codexPct(sl);
     top.innerHTML = '<div class="eqrow"><div class="eqico" style="border-color:' + G.c + '"><img src="' + eqIcon(it.k) + '" alt=""><b>Lv' + itemLv(it.k, it.g) + '</b></div>' +
       '<div class="trl"><div class="zn"><span class="eqsl">' + sl.n + '</span> <em style="color:' + G.c + '">' + G.n + ' ' + kd.n + '</em></div>' +
       '<div class="zd">' + EQUIP.statName[sl.stat] + ' +' + pct.toFixed(1) + '%<br>' + EQUIP.statName[kd.sub] + ' +' + (pct * EQUIP.subRate).toFixed(1) + '%' +
-      '<br><span class="eqhold">보유 효과 합 ' + EQUIP.statName[sl.stat] + ' +' + cx.toFixed(1) + '%</span></div></div></div>';
+      '<br><span class="eqhold">보유 효과 합 ' + EQUIP.statName[sl.stat] + ' +' + cx.toFixed(1) + '%</span></div></div>' +
+      (sl.k === 'weapon' ? '<button class="sb" id="equnwear">벗기 · 맨손</button>' : '') + '</div>';
+    const ub = $('equnwear'); if (ub) ub.onclick = () => { if (eqUnwear(sl.k)){ toast('무기를 벗었다\n맨손 주먹·발차기'); buildEquipPanel(); } };
   }
   const mc = mergeCount(); $('eqmerge').textContent = '일괄 합성' + (mc ? ' (' + mc + ')' : ''); $('eqmerge').disabled = !mc;
   $('eqauto').classList.toggle('on', eqBetterAny());
@@ -172,11 +181,13 @@ function refreshEquip(){
       (lv < cap ? ' <i>→ +' + (itemPct(k, g, lv + 1) * EQUIP.subRate).toFixed(1) + '%</i>' : '') + '</div>' +
       '<div class="zd"><span class="eqlab">보유</span>' + EQUIP.statName[kd.sl.stat] + ' +' + itemHold(k, g).toFixed(2) + '%' + (lv < cap ? ' <i>→ +' + itemHold(k, g, lv + 1).toFixed(2) + '%</i>' : '') + ' <small>(영구)</small></div>' +
       '<div class="zst">' +
-      '<button class="sb" id="eqdwear"' + (worn || n <= 0 ? ' disabled' : '') + '>' + (worn ? '착용 중' : '장착') + '</button>' +
+      (worn && kd.sl.k === 'weapon'
+        ? '<button class="sb" id="eqdwear">벗기 · 맨손</button>'
+        : '<button class="sb" id="eqdwear"' + (worn || n <= 0 ? ' disabled' : '') + '>' + (worn ? '착용 중' : '장착') + '</button>') +
       '<button class="trbuy" id="eqdlv"' + (canLevelItem(k, g) ? '' : ' disabled') + '><span>' + (lv >= cap ? '상한' : '강화 ' + fmt(lvCost(k, g))) + '</span><i>' + coin() + '</i></button>' +
       '<button class="sb" id="eqdmerge"' + (canMerge(k, g) ? '' : ' disabled') + '>합성 ' + EQUIP.mergeN + '→1' + (g < EQUIP.grades.length - 1 ? '' : ' (최고)') + '</button>' +
       '</div>';
-    $('eqdwear').onclick = () => { if (eqWear(k, g)) buildEquipPanel(); };
+    $('eqdwear').onclick = () => { if (worn && kd.sl.k === 'weapon' ? eqUnwear(kd.sl.k) : eqWear(k, g)) buildEquipPanel(); };
     $('eqdmerge').onclick = () => { if (eqMerge(k, g)) buildEquipPanel(); };
     const lb = $('eqdlv'); let iv = 0; const stop = ()=>{ if (iv){ clearInterval(iv); iv = 0; } };
     lb.onpointerdown = e => { e.preventDefault(); if (levelItem(k, g)) refreshEquip(); stop();

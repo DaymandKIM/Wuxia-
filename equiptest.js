@@ -53,6 +53,9 @@ setTimeout(()=>{
   ok(w.eqAutoEquipAll()>=1 && S.equip.weapon.k==='fan' && S.equip.weapon.g===4,'자동 장착: 장착 효과 최대(전설 부채)로');
   ok(w.eqWear('sword',3) && S.equip.weapon.k==='sword' && S.equip.weapon.g===3,'직접 장착: 영웅 검');
   ok(w.eqWear('spear',4)===false,'없는 장비는 못 낀다');
+  ok(w.eqUnwear('weapon')===true && S.equip.weapon===null,'무기 벗기 → 맨손 (v2.76.9 — 권갑 아이콘 대기 중 주먹 동작을 보려면)');
+  ok(w.eqUnwear('weapon')===false,'이미 맨손이면 벗을 게 없다');
+  ok(w.eqWear('sword',3),'벗은 뒤 다시 낄 수 있다');
   // 레벨 반영 자동 장착 — 영웅 검을 많이 올리면 전설 부채보다 강해진다
   S.silver=1e15; while(w.levelItem('sword',3));
   ok(w.itemLv('sword',3)===EQ.grades[3].lvCap,'영웅 검 레벨 상한 '+EQ.grades[3].lvCap);
