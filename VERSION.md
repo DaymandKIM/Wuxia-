@@ -1,3 +1,10 @@
+# v2.72.4 — 봉 공격 모션 (사용자 시트 sheets/hero_staff2.png, 2026-09-15) — 무기 5종 동작 완성
+
+- WEAPONMOVES.staff = **휘두르기(staffswing, 0)·쓸기(staffsweep, 5)·회전(staffspin, 15)**. `hero_staff2.py`.
+  컷 선택은 스크립트 머리말에(봉 둘 교차·세워 꽂음·낮게 가로 쥠·세워 쥠·가로 찌르기는 안 씀). HFX.aw 66.
+- 이로써 검·부채·도·창·봉 5종이 제 동작을 갖는다. 권갑만 아이콘(eq_fist) 대기 — 맨손 ATKMOVES를 쓴다.
+- 검증 review/hero_staff2.png·blackcheck·전 회귀(무기별 자동 검사)·크로뮴 실기.
+
 # v2.72.3 — 창 공격 모션 (사용자 시트 sheets/hero_spear2.png, 2026-09-15)
 
 - WEAPONMOVES.spear = **찌르기(spearthrust, 0)·쓸기(spearsweep, 5)·회전(spearspin, 15)**. `hero_spear2.py`.

@@ -18,6 +18,9 @@ loadImg('hero_saberspin',  ASSET.saberspin);
 loadImg('hero_spearthrust', ASSET.spearthrust);   // 창 장착 기본공격 3종 (v2.72.3, 사용자 시트 hero_spear2)
 loadImg('hero_spearsweep',  ASSET.spearsweep);
 loadImg('hero_spearspin',   ASSET.spearspin);
+loadImg('hero_staffswing', ASSET.staffswing);   // 봉 장착 기본공격 3종 (v2.72.4, 사용자 시트 hero_staff2)
+loadImg('hero_staffsweep', ASSET.staffsweep);
+loadImg('hero_staffspin',  ASSET.staffspin);
 loadImg('hero_kickhigh', ASSET.kickhigh);  // 기본공격 뛰어차기 (v2.71, 성급 15)
 loadImg('hero_flykick',  ASSET.flykick);   // 도약 화염 발차기 (v2.46, 성급 9)
 loadImg('hero_firekick', ASSET.firekick);  // 화염 옆차기 (v2.46, 성급 13)

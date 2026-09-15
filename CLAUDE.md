@@ -129,6 +129,7 @@ review/            검사판 PNG (생성물)
 | `hero_fan2.py` | `sheets/hero_fan2.png` | 돌아간다 (v2.72.1, 부채 3종 — hero_sword2 틀) |
 | `hero_saber2.py` | `sheets/hero_saber2.png` | 돌아간다 (v2.72.2, 도 3종 — hero_sword2 틀) |
 | `hero_spear2.py` | `sheets/hero_spear2.png` | 돌아간다 (v2.72.3, 창 3종 — 폭 66) |
+| `hero_staff2.py` | `sheets/hero_staff2.png` | 돌아간다 (v2.72.4, 봉 3종 — 폭 66) |
 | `bossfx.py` | **시트 없음** | 못 돌린다 |
 | `shamanmagic.py` `shamanstaff.py` | — | 옛 주술사(추정 지팡이). v2.64에 대체돼 쓰지 않는다 |
 | `shaman.py` `demon.py` `shamanorb.py` | — | 옛 버전. 쓰지 않는다 |
@@ -427,7 +428,7 @@ cost 20만은 연마·돌파용(습득은 여전히 기연만). 태극 원반 �
 - **기본공격**(v2.49 각도별 발차기 → v2.71 시트 교체) — ATKMOVES `[{key,need}]` = **양주먹(punch,
   need0)·옆차기(kickside, need5)·돌려차기(kickround, need10)·뛰어차기(kickhigh, need15)** 4종.
   발차기 3종은 sheets/hero_kick2.png(3줄×6칸)에서 hero_kick2.py로 뽑는다(아래 v2.49 설명은 옛 시트 이력).
-  **무기별 무브셋**(v2.72) — WEAPONMOVES[무기 종류]가 있으면 그 무브셋(검 = 찌르기·베기·회전베기 hero_sword2 · 부채 = 휘두르기·회전·찌르기 hero_fan2 · 도 = 베기·내려찍기·회전베기 hero_saber2 · 창 = 찌르기·쓸기·회전 hero_spear2),
+  **무기별 무브셋**(v2.72) — WEAPONMOVES[무기 종류]가 있으면 그 무브셋(검 = 찌르기·베기·회전베기 hero_sword2 · 부채 = 휘두르기·회전·찌르기 hero_fan2 · 도 = 베기·내려찍기·회전베기 hero_saber2 · 창 = 찌르기·쓸기·회전 hero_spear2 · 봉 = 휘두르기·쓸기·회전 hero_staff2 — v2.72.4로 무기 5종 완성),
   없으면 맨손 ATKMOVES. heroWeaponKind()가 S.equip.weapon.k를 본다. 새 무기 시트가 오면 WEAPONMOVES에 얹고
   HFX.aw·loadImg만 더하면 spritetest·fxtest가 WEAPONMOVES를 돌며 자동 검사한다. atkPool()=열린
   동작, heroAttack이 P.atkMove로 돌려 쓰고 P.atkKey로 이번 타 결정(삼류=양주먹만,
