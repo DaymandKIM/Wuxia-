@@ -276,7 +276,7 @@
   .zn em.fate{color:#e8c96a;}
   .zd.need{color:#7a97b5;margin-top:3px;}
   .znote.asec{margin-top:9px;font-family:var(--fw);font-size:14px;color:#b7c2cf;letter-spacing:.04em;}
-  .zhd{position:sticky;top:0;background:#12161c;display:flex;justify-content:space-between;
+  .zhd{position:sticky;top:0;z-index:5;background:#12161c;display:flex;justify-content:space-between;   /* z-index — 아이콘(filter가 쌓임 맥락을 만든다)이 머리글 위로 스크롤돼 겹쳤다 (v2.69.10) */
     align-items:center;padding:14px 16px 10px;font-family:var(--fw);font-size:17px;color:#e8eef6;
     letter-spacing:.06em;border-bottom:1px solid #1e242c;}
   .zhd button{background:none;border:0;color:#7f8b99;font-size:19px;padding:2px 6px;}
