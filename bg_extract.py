@@ -67,6 +67,9 @@ if trim < H:
 for arg in sys.argv[2:]:
     if arg.startswith('--pad'):
         n = int(arg.split('=')[1]); Hh = rgba.shape[0]
+        # 덧대기는 축소 전 원본 해상도에서 하니, 2000px 시트는 최종(1024)에서 반으로 준다 —
+        # N은 최종 픽셀 기준으로 받아 원본 배율로 환산한다 (v2.69.5: 설산 120이 61이 됐었다)
+        n = int(round(n * max(1.0, W / 1024.0)))
         band = rgba[Hh - 6:Hh].astype(int)
         # 집 벽이 맨 아래까지 닿아 있어 그 줄을 그대로 이으면 벽이 물에 비친 듯 줄무늬가 된다 —
         # 줄마다 중앙값에 가까운 픽셀(땅)만 골라 가로로 섞어 벽 구조 없는 땅 띠를 만든다
