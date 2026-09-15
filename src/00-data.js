@@ -282,7 +282,9 @@ const FOES = {
     n:'대나무 강도', w:56, h:51,
     anim:{ idle:['idle'], walk:['walk','run'],
            atk:['atk0','atk1','atk2'], hit:['hit'], death:['death','death2'] },
-    fps:{ idle:3, walk:6, atk:7, hit:6, death:5 },
+    // atk 3프레임을 공격 시간(FOE.dur 0.55초)에 맞춘다 — 7fps(0.43초)면 마지막
+    // 프레임이 0.12초 얼어붙었다(v2.55.3). 3/5.4≈0.556초로 꽉 채운다.
+    fps:{ idle:3, walk:6, atk:5.4, hit:6, death:5 },
     hp:1.0, dmg:1.0, spd:1.0, range:44,   // 기준
   },
   wisp: {
@@ -313,7 +315,9 @@ const FOES = {
            // 원래 한 그림이라 그렇게 잘랐다.
            skill:['m0','m0','m0','m1','m1','m3'],
            hit:['cast'], death:['cast'] },
-    fps:{ idle:3, walk:6, atk:6.4, skill:5.5, hit:5, death:4 },
+    // skill 6프레임을 시전 시간(skillDur 1.0초) 안에 맞춘다 — 5.5fps(1.09초)면
+    // 마지막 컷(m3 갈무리)이 안 나왔다(v2.55.3). 6/6.2≈0.97초로 끝까지 보인다.
+    fps:{ idle:3, walk:6, atk:6.4, skill:6.2, hit:5, death:4 },
     hp:0.55, dmg:0.85, spd:0.85,
     ranged:true, range:96, shotSpd:170, atkAt:0.55,
     skillCd:7.5, skillDur:1.0, skillAt:0.55, skillDmg:2.2, skillR:26,
