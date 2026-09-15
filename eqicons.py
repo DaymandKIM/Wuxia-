@@ -1,5 +1,5 @@
 """무기 아이콘 등급 시트 → assets/eq_<종류>_<등급>.png 6장 (v2.80, 사용자: "6종씩 무기 뽑을 프롬프트").
-시트: 1줄 6칸(권갑·검·도·창·봉·부채 순), 마젠타/분홍 배경, 칸 사이 세로선(어둡거나 흰색). 칸은 균등 6분할, 구분선은 '칸 높이 85%↑·폭 24px↓ 덩어리'로 버림.
+시트: 1줄 6칸(권갑·검·도·창·봉·부채 순), 마젠타/분홍 배경, 칸 사이 세로선(어둡거나 흰색). 시트 전체 덩어리 라벨링 → 픽셀이 가장 많은 칸에 통째로(칸을 넘는 칼끝도 잘리지 않음). 구분선은 '칸 높이 85%↑·폭 24px↓ 덩어리'로 버림.
 배경 = 마젠타(r-g>50·b-g>50) 또는 자줏빛 근접(중앙값 ±70·r>g+8·b>g+8). 가장 큰 덩어리(+150px 넘는 조각)만 남기고 tight bbox →
 96×96 안에 긴 변 92px(기존 아이콘 채움 0.96)로 LANCZOS 축소, 알파 문턱 96. 검사판 review/eq_weapons_<등급>.png
 사용: python eqicons.py <등급 0~4> [sheets/eq_weapons_<등급>.png]
@@ -13,24 +13,29 @@ def main(grade, path):
     im = Image.open(path).convert('RGB'); A = np.array(im).astype(int); H, W = A.shape[:2]
     r, g, b = A[..., 0], A[..., 1], A[..., 2]; BG = np.median(A.reshape(-1, 3), 0)
     bg = (((r - g) > 50) & ((b - g) > 50)) | ((np.abs(A - BG) < 70).all(2) & ((r - g) > 8) & ((b - g) > 8))
-    fg = ~bg; out = []
+    fg = ~bg
+    # 칸 구분선은 시트마다 색이 다르다(어두운 선·흰 선) — 칸 높이의 85% 넘게 뻗은 가는(≤24px) 세로 덩어리는 버린다
+    lab, n = ndi.label(fg); objs = ndi.find_objects(lab); sizes = ndi.sum(np.ones(lab.shape), lab, range(1, n + 1))
+    def bar(sl): return (sl[0].stop - sl[0].start) >= H * 0.85 and (sl[1].stop - sl[1].start) <= 24
+    # 그림 기준(v2.80.3 영웅 시트: 검이 옆 칸까지 넘어가 칼끝·자루가 옆 아이콘에 조각으로 붙었다) — 시트 전체 덩어리를
+    # 라벨링해 각 덩어리를 픽셀이 가장 많이 든 칸에 통째로 준다. 칸 단위 크롭 금지(hero_sheet와 같은 원칙).
+    cells = {i: [] for i in range(6)}
+    for j in range(n):
+        sl = objs[j]
+        if sizes[j] < 150 or bar(sl): continue
+        yy, xx = np.where(lab[sl] == j + 1); xx = xx + sl[1].start
+        ci = int(np.bincount(np.clip((xx * 6) // W, 0, 5)).argmax()); cells[ci].append(j + 1)
+    out = []
     for i, k in enumerate(KINDS):
-        x0, x1 = round(i * W / 6), round((i + 1) * W / 6)
-        cell = fg[:, x0:x1].copy(); cell[:, :3] = False; cell[:, -3:] = False   # 칸 경계 세로선
-        lab, n = ndi.label(cell); sizes = ndi.sum(np.ones(lab.shape), lab, range(1, n + 1)); objs = ndi.find_objects(lab)
-        # 칸 구분선은 시트마다 색이 다르다(어두운 선·흰 선, v2.80.2 희귀 시트) — 칸 높이의 85% 넘게 뻗은 가는(≤24px) 세로 덩어리는 버린다
-        def bar(sl): return (sl[0].stop - sl[0].start) >= H * 0.85 and (sl[1].stop - sl[1].start) <= 24
-        keep = [j + 1 for j, s in enumerate(sizes) if s >= 150 and not bar(objs[j])]
-        m = np.isin(lab, keep); yy, xx = np.where(m)
+        m = np.isin(lab, cells[i]); yy, xx = np.where(m)
         crop = np.zeros((yy.max() - yy.min() + 1, xx.max() - xx.min() + 1, 4), np.uint8)
-        sub = A[yy.min():yy.max() + 1, x0 + xx.min():x0 + xx.max() + 1]
-        crop[..., :3] = sub; crop[..., 3] = m[yy.min():yy.max() + 1, xx.min():xx.max() + 1] * 255
+        crop[..., :3] = A[yy.min():yy.max() + 1, xx.min():xx.max() + 1]; crop[..., 3] = m[yy.min():yy.max() + 1, xx.min():xx.max() + 1] * 255
         ci = Image.fromarray(crop); s = FILL / max(ci.size)
         sm = ci.resize((max(1, round(ci.width * s)), max(1, round(ci.height * s))), Image.LANCZOS)
         al = np.array(sm); al = np.dstack([al[..., :3], (al[..., 3] >= 96) * 255]).astype(np.uint8); sm = Image.fromarray(al)
         icon = Image.new('RGBA', (96, 96), (0, 0, 0, 0)); icon.paste(sm, ((96 - sm.width) // 2, (96 - sm.height) // 2), sm)
         icon.save(f'assets/eq_{k}_{grade}.png'); out.append(icon)
-        print(f'  eq_{k}_{grade}: 원본 {ci.size} → {sm.size}, 조각 {len(keep)}')
+        print(f'  eq_{k}_{grade}: 원본 {ci.size} → {sm.size}, 덩어리 {len(cells[i])}')
     R = Image.new('RGB', (6 * 96 * 3 + 70, 96 * 3), (14, 19, 25))
     for i, ic in enumerate(out):
         big = ic.resize((288, 288), Image.NEAREST); R.paste(big, (i * 298, 0), big)
