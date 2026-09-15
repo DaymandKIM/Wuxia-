@@ -106,8 +106,8 @@ setTimeout(()=>{
      && w.eval('ATKMOVES[1].key')==='kickside' && w.eval('ATKMOVES[2].key')==='kickround' && w.eval('ATKMOVES[3].key')==='kickhigh',
      '기본공격 무브셋 = 양주먹·옆차기·돌려차기·뛰어차기 4종');
   w.eval('S.equip.weapon=null; S.rexp=0;');                // 맨손(시작 장비 검을 벗김) · 삼류 1성 — 발차기 미해금
-  ok(w.eval('atkPool().length')===1 && w.eval('atkPool()[0].key')==='punch',
-     '낮은 성급엔 양주먹만');
+  ok(w.eval('atkPool().map(m=>m.key).join()')==='punch,kickside',
+     '낮은 성급엔 양주먹·옆차기 (v2.75 — 두 판 정권+옆차기로 처음부터 3형태)');
   w.eval('S.rexp=1e12;');                                  // 높은 경지 — 전 발차기 해금
   ok(w.eval('atkPool().some(m=>m.key==="kickside")') && w.eval('atkPool().some(m=>m.key==="kickhigh")'),
      '성급이 오르면 각도별 발차기가 섞인다 ('+w.eval('atkPool().length')+'종)');
@@ -133,7 +133,7 @@ setTimeout(()=>{
   for (const wk of Object.keys(w.eval('WEAPONMOVES'))){
     const keys=w.eval('WEAPONMOVES.'+wk+'.map(m=>m.key)');
     w.eval('S.equip.weapon={k:"'+wk+'",g:0}; S.rexp=0;');
-    ok(w.eval('atkPool().length')===1 && w.eval('atkPool()[0].key')===keys[0],wk+'을 끼고 낮은 성급이면 '+keys[0]+'만');
+    ok(w.eval('atkPool().map(m=>m.key).join()')===keys.join(),wk+'을 끼면 낮은 성급부터 '+keys.length+'종 전부 (v2.75)');
     w.eval('S.rexp=1e12;');
     ok(w.eval('atkPool().map(m=>m.key).join()')===keys.join(),wk+' 성급이 오르면 '+keys.length+'종: '+keys.join('·'));
     for (const k of keys){

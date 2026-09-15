@@ -34,9 +34,9 @@ const HFX = {
   castFps: 10,                   // 시전 재생 속도 — 16은 컷이 씹혀 보였다 (4성 0.6~0.9초)
   shotT: 0.28,                   // 권기 탄 비행 시간 (구 streak과 동일)
   fadeT: 0.22,                   // 탄 소멸 연출
-  aw: { aidle: 50, katk: 70, punch: 82, swordthrust: 90, swordslash: 74, swordspin: 56, fansweep: 46, fanspin: 48, fanstrike: 48, saberslash: 60, sabersmash: 60, saberspin: 60, spearthrust: 58, spearsweep: 58, spearspin: 58, staffswing: 58, staffsweep: 56, staffspin: 56, kickside: 56, kickround: 58, kickhigh: 52, flykick: 44, firekick: 44, cresckick: 46, burstkick: 46, run: 34, punchb: 82, idle: 32, hit: 32 },   // 특수 동작 프레임 폭 (v2.73 — 주인공 시트는 hero_sheet가 그림에 맞춰 재고 review/hero_specs.json에 적는다. idle·hit도 v2.73.2부터 새 시트)
+  aw: { aidle: 50, katk: 70, punch: 82, swordthrust: 90, swordslash: 74, swordspin: 56, fansweep: 58, fanspin: 56, fanstrike: 60, saberslash: 60, sabersmash: 60, saberspin: 60, spearthrust: 58, spearsweep: 58, spearspin: 58, staffswing: 58, staffsweep: 56, staffspin: 56, kickside: 56, kickround: 58, kickhigh: 52, flykick: 44, firekick: 44, cresckick: 46, burstkick: 46, run: 34, punchb: 82, idle: 32, hit: 32 },   // 특수 동작 프레임 폭 (v2.73 — 주인공 시트는 hero_sheet가 그림에 맞춰 재고 review/hero_specs.json에 적는다. idle·hit도 v2.73.2부터 새 시트)
   // 캔버스 높이가 51을 넘는 동작 [높이, 위 여분] — 머리 위로 든 무기·큰 원 기운. 렌더는 위 여분만큼 위로 올려 땅을 맞춘다(v2.73)
-  fh: { punch: [52, 1], punchb: [55, 4], swordslash: [53, 2], swordspin: [52, 1], saberslash: [53, 2], sabersmash: [53, 2], saberspin: [54, 3], spearspin: [52, 1], staffswing: [52, 1], staffspin: [52, 1] },
+  fh: { punch: [52, 1], punchb: [55, 4], swordslash: [53, 2], swordspin: [52, 1], fansweep: [54, 3], fanspin: [53, 2], fanstrike: [54, 3], saberslash: [53, 2], sabersmash: [53, 2], saberspin: [54, 3], spearspin: [52, 1], staffswing: [52, 1], staffspin: [52, 1] },
   // 기본공격 = 양주먹(punch, 권기 정권) + 발차기 3종(kickside·kickround·kickhigh) 4프레임
   // (v2.71 — 사용자 시트 sheets/hero_kick2.png 3줄, hero_kick2.py로 추출. 머리 중심 정렬·칸 바닥 기준)
   // kickside 54·kickround 56·kickhigh 60 — 발이 옆·위로 뻗어 폭이 넓다(좌우 대칭 캔버스)
@@ -140,9 +140,9 @@ const HITFRAME = 2;              // 공격 몇 번째 프레임에서 판정하�
 //   기본공격은 지금 열린 동작들을 순서대로 돌려 쓴다(cycle).
 const ATKMOVES = [
   { key:'punch',    need:0 },   // 양주먹 — 오른손 정권 punch·왼손 기운 정권 punchb 두 판 교대 (v2.71.2 사용자 시트 hero_punch2. 옛 권기 katka/katkb는 보존)
-  { key:'kickside',  need:5 },   // 옆차기 — 이류(성급 5)부터. 무릎 접었다 수평으로 내지르며 초승달 기운 (v2.71 시트)
-  { key:'kickround', need:10 },  // 돌려차기 — 절정(성급 10)부터. 구름 자세에서 휘둘러 별 임팩트 (v2.71 신규)
-  { key:'kickhigh',  need:15 },  // 뛰어차기 — 초절정(성급 15)부터. 웅크렸다 도약해 공중에서 찬다 (v2.71, 옛 높은차기 대체)
+  { key:'kickside',  need:0 },   // 옆차기 — 처음부터(v2.75: 양주먹 두 판+옆차기 = 3형태). 무릎 접었다 수평으로 내지르며 초승달 기운
+  { key:'kickround', need:5 },   // 돌려차기 — 이류(성급 5)부터. 구름 자세에서 휘둘러 별 임팩트
+  { key:'kickhigh',  need:10 },  // 뛰어차기 — 절정(성급 10)부터. 웅크렸다 도약해 공중에서 찬다
   // 성급별 발차기 각도가 는다(사용자 시트 c0f865d3 — "발차기도 각도별로 있어").
   // 화염 발차기류(flykick·firekick)는 뺐다(v2.48). 초승달·도약(cresckick·burstkick)은
   // 추후 초식(스킬)으로 쓸 후보 — 에셋·loadImg는 남겨 둔다.
@@ -152,28 +152,28 @@ const ATKMOVES = [
 const WEAPONMOVES = {
   sword: [
     { key:'swordthrust', need:0 },   // 찌르기 — 기수식→검 내림→찌르기 별→사선 호
-    { key:'swordslash',  need:5 },   // 베기 — 치켜듦→내려베기 별→사선 호
-    { key:'swordspin',   need:15 },  // 회전베기 — 큰 세로 호→큰 원 베기→낮은 베기
+    { key:'swordslash',  need:0 },   // 베기 — 치켜듦→내려베기 별→사선 호
+    { key:'swordspin',   need:0 },  // 회전베기 — 큰 세로 호→큰 원 베기→낮은 베기
   ],
   fan: [                             // 부채 = 사용자 시트 hero_fan2 (v2.72.1)
     { key:'fansweep',  need:0 },     // 휘두르기 — 가림→내림→별 폭발→큰 호
-    { key:'fanspin',   need:5 },     // 회전 — 호 둘→큰 원→낮게 쓸기
-    { key:'fanstrike', need:15 },    // 찌르기 — 머리 위→나선 호→앞으로 뻗음
+    { key:'fanspin',   need:0 },     // 회전 — 호 둘→큰 원→낮게 쓸기
+    { key:'fanstrike', need:0 },    // 찌르기 — 머리 위→나선 호→앞으로 뻗음
   ],
   saber: [                           // 도 = 사용자 시트 hero_saber2 (v2.72.2)
     { key:'saberslash', need:0 },    // 베기 — 쥠→가로 베기 호→큰 호
-    { key:'sabersmash', need:5 },    // 내려찍기 — 뒤로 감음→머리 위→내려찍기 흙→낮게 찍기
-    { key:'saberspin',  need:15 },   // 회전베기 — 뻗음→큰 원→겹호
+    { key:'sabersmash', need:0 },    // 내려찍기 — 뒤로 감음→머리 위→내려찍기 흙→낮게 찍기
+    { key:'saberspin',  need:0 },   // 회전베기 — 뻗음→큰 원→겹호
   ],
   spear: [                           // 창 = 사용자 시트 hero_spear2 (v2.72.3)
     { key:'spearthrust', need:0 },   // 찌르기 — 낮게 겨눔→찌르기 기운→가로 찌르기
-    { key:'spearsweep',  need:5 },   // 쓸기 — 비껴 치켜듦→낮게 쓸기 호→쓸기 호
-    { key:'spearspin',   need:15 },  // 회전 — 뒤로 돌리기 호→큰 원→땅 찍기
+    { key:'spearsweep',  need:0 },   // 쓸기 — 비껴 치켜듦→낮게 쓸기 호→쓸기 호
+    { key:'spearspin',   need:0 },  // 회전 — 뒤로 돌리기 호→큰 원→땅 찍기
   ],
   staff: [                           // 봉 = 사용자 시트 hero_staff2 (v2.72.4)
     { key:'staffswing', need:0 },    // 휘두르기 — 낮게 겨눔→머리 위 휘두르기 호→연타
-    { key:'staffsweep', need:5 },    // 쓸기 — 비껴 치켜듦→낮게 쓸기 호→쓸기 호
-    { key:'staffspin',  need:15 },   // 회전 — 뒤로 돌리기 호→큰 원→땅 찍기
+    { key:'staffsweep', need:0 },    // 쓸기 — 비껴 치켜듦→낮게 쓸기 호→쓸기 호
+    { key:'staffspin',  need:0 },   // 회전 — 뒤로 돌리기 호→큰 원→땅 찍기
   ],
 };
 function heroWeaponKind(){ return (typeof S !== 'undefined' && S.equip && S.equip.weapon) ? S.equip.weapon.k : null; }

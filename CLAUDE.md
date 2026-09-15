@@ -131,7 +131,8 @@ review/            검사판 PNG (생성물)
 | `hero_sword4.py` | `sheets/hero_sword4.png` | **현행** (v2.74.5 2차 재작업 — 하늘색 검기, 다른 무기와 통일) |
 | `hero_sword3.py` | `sheets/hero_sword3.png` | 1차 재작업(흰 검기). 보관 |
 | `hero_sword2.py` | `sheets/hero_sword2.png` | 옛 시트(액자선에 잘림). 쓰지 않는다 |
-| `hero_fan2.py` | `sheets/hero_fan2.png` | 돌아간다 (v2.72.1, 부채 3종 — hero_sword2 틀) |
+| `hero_fan3.py` | `sheets/hero_fan3.png` | **현행** (v2.75 재작업 시트, gridless) |
+| `hero_fan2.py` | `sheets/hero_fan2.png` | 옛 시트(액자선에 잘림). 쓰지 않는다 |
 | `hero_saber3.py` | `sheets/hero_saber3.png` | **현행** (v2.74.2 재작업 시트, gridless) |
 | `hero_saber2.py` | `sheets/hero_saber2.png` | 옛 시트(액자선에 잘림). 쓰지 않는다 |
 | `hero_spear3.py` | `sheets/hero_spear3.png` | **현행** (v2.74.3 재작업 시트, gridless) |
@@ -456,7 +457,8 @@ cost 20만은 연마·돌파용(습득은 여전히 기연만). 태극 원반 �
   need0)·옆차기(kickside, need5)·돌려차기(kickround, need10)·뛰어차기(kickhigh, need15)** 4종.
   발차기 3종은 sheets/hero_kick2.png(3줄×6칸)에서 hero_kick2.py로 뽑는다(아래 v2.49 설명은 옛 시트 이력).
   **무기별 무브셋**(v2.72) — WEAPONMOVES[무기 종류]가 있으면 그 무브셋(검 = 찌르기·베기·회전베기 hero_sword2 · 부채 = 휘두르기·회전·찌르기 hero_fan2 · 도 = 베기·내려찍기·회전베기 hero_saber2 · 창 = 찌르기·쓸기·회전 hero_spear2 · 봉 = 휘두르기·쓸기·회전 hero_staff2 — v2.72.4로 무기 5종 완성),
-  없으면 맨손 ATKMOVES. heroWeaponKind()가 S.equip.weapon.k를 본다. 새 무기 시트가 오면 WEAPONMOVES에 얹고
+  없으면 맨손 ATKMOVES. heroWeaponKind()가 S.equip.weapon.k를 본다. **v2.75부터 무기 동작은 전부 need 0**(든 순간부터
+  3동작 순환), 맨손은 양주먹 두 판+옆차기가 처음부터·돌려차기 5·뛰어차기 10 — 사용자: "스타일마다 3가지 이상이어야 실감". 새 무기 시트가 오면 WEAPONMOVES에 얹고
   HFX.aw·loadImg만 더하면 spritetest·fxtest가 WEAPONMOVES를 돌며 자동 검사한다. atkPool()=열린
   동작, heroAttack이 P.atkMove로 돌려 쓰고 P.atkKey로 이번 타 결정(삼류=양주먹만,
   이류부터 옆차기, 초절정부터 높은차기 — 성급 오를수록 발차기 각도가 는다).
