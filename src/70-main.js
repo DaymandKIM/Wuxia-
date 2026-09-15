@@ -31,6 +31,12 @@ loadImg('pashot',    ASSET.pashot);          // 파공권 권기 탄
 loadImg('bshot',     ASSET.bshot);           // 암향지 지풍 빔
 loadImg('gshield',   ASSET.gshield);         // 건곤이형 태극 원반
 $('coinhud').src = ASSET.silver;             // HUD 은자 아이콘
+// 탭바 아이콘 (v2.63.4) — 에셋 없으면 글자만
+for (const [id, k] of [['tab-arts','tab_arts'],['tab-train','tab_train'],['tab-zone','tab_zone']]){
+  const im = $(id).querySelector('.ti'); if (!im) continue;
+  if (ASSET[k]) im.src = ASSET[k]; else im.remove();
+}
+if (ASSET.rest_card) $('oart').src = ASSET.rest_card; else $('oart').style.display = 'none';   // 복귀 카드 그림 (v2.63.4)
 loadImg('ronin_shot', ASSET.ronin_shot);     // 낭인 술병 탄
 loadImg('ronin_dust', ASSET.ronin_dust);     // 술병 명중 먼지
 loadImg('ghost_shot', ASSET.ghost_shot);     // 원혼 해골 귀화 탄

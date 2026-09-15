@@ -97,6 +97,18 @@ function check(label, file, w, h, noEdge) {
     if (xi >= 0 && xi < im.w && colCov(xi) < n * 0.55) lines.push('열' + x);
   }
   if (lines.length) { note.push('테두리 줄 잔재 ' + [...new Set(lines)].join(' ')); bad++; }
+  // 떠 있는 세로줄 (v2.63.4 — 옥갑충 사건) — 가장자리 8px 안의 한 열이 높이의 1/4
+  // 이상 채워졌는데 안쪽 이웃 열이 그 1/5도 안 되면, 몸과 이어지지 않은
+  // 칸 테두리 막대다(반투명이라도 잡힌다). 위 검사는 85% 이상만 봐서 놓쳤다.
+  const bars = [];
+  for (const x of [...Array(Math.min(8, im.w)).keys(),
+                   ...Array.from({length: Math.min(8, im.w)}, (_, i) => im.w - 1 - i)]) {
+    const n = colCov(x);
+    if (n < im.h * 0.25) continue;
+    const xi = x < im.w / 2 ? x + 1 : x - 1;
+    if (xi >= 0 && xi < im.w && colCov(xi) < n * 0.2) bars.push('열' + x);
+  }
+  if (bars.length) { note.push('떠 있는 세로줄 ' + [...new Set(bars)].join(' ')); bad++; }
   if (note.length) console.log('  ★' + label.padEnd(20) + note.join(' · '));
   return im;
 }

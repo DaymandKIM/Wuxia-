@@ -220,7 +220,12 @@ function closeZonePanel(){ $('zpanel').classList.remove('show'); }
 function buildRealmPanel(){
   const ri = realmInfo();
   const per = REALM.per, top = REALM.names.length * per;
-  let h = '';
+  // 주인공 초상 머리글 (v2.63.4) — 사다리 위에 얼굴과 지금 경지를 한 줄로
+  let h = ASSET.hero_face
+    ? '<div class="rhero"><img src="' + ASSET.hero_face + '" alt="">' +
+      '<div><div class="rhn">' + realmName(ri.k) + '</div>' +
+      '<div class="rhd">다음 승급까지 ' + Math.floor(ri.cur / ri.need * 100) + '%</div></div></div>'
+    : '';
   for (let i = 0; i < REALM.names.length; i++){
     const done = ri.k >= (i + 1) * per;
     const here = !done && ri.k >= i * per;

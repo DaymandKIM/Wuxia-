@@ -115,7 +115,7 @@ function closeTrain(){ $('trpanel').classList.remove('show'); }
 // 매 프레임 — 탭 알림점을 켜고, 패널이 열려 있으면 은자 변화만 반영한다
 let trLastSilver = -1;
 function trainHud(){
-  const dot = $('tab-train').firstElementChild;
+  const dot = $('tab-train').querySelector('.dot');   // 아이콘이 앞에 있어 firstElementChild가 아니다 (v2.63.4)
   if (dot && dot.classList) dot.classList.toggle('on', canTrain());
   if (!$('trpanel').classList.contains('show')) return;
   if (trLastSilver !== S.silver){ trLastSilver = S.silver; refreshTrain(); }

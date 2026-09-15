@@ -246,7 +246,7 @@ const deepenReady = () => (typeof skillPtsLeft === 'function') && skillPtsLeft()
 
 let artLastSilver = -1, artLastRealm = -1, artLastXp = -1;
 function artsHud(){
-  const dot = $('tab-arts').firstElementChild;
+  const dot = $('tab-arts').querySelector('.dot');     // (v2.63.4)
   // 배울/올릴 무공이 있거나 심화에 쓸 무공점이 있으면 탭에 알림점
   if (dot && dot.classList) dot.classList.toggle('on', canLearnArt() || deepenReady());
   if (!$('apanel').classList.contains('show')) return;

@@ -46,8 +46,12 @@
     padding-bottom:env(safe-area-inset-bottom);display:flex;pointer-events:auto;
     background:rgba(13,16,21,.96);border-top:1.5px solid #262e38;transition:opacity .22s;}
   #tabs button{flex:1;position:relative;background:none;border:0;color:#7f8b99;
-    font:400 15px/1 var(--fw);letter-spacing:.06em;}
+    font:400 12px/1 var(--fw);letter-spacing:.06em;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:3px;}
+  /* 탭 아이콘 (v2.63.4) — 안 켜진 탭은 흐리게, 켜지면 또렷하게 */
+  #tabs button .ti{width:26px;height:26px;object-fit:contain;opacity:.55;filter:saturate(.6);transition:opacity .15s;}
   #tabs button.on{color:#eaf3ff;}
+  #tabs button.on .ti{opacity:1;filter:none;}
   #tabs button .dot{position:absolute;top:9px;right:calc(50% - 24px);width:6px;height:6px;
     border-radius:50%;background:#e8c96a;display:none;}
   #tabs button .dot.on{display:block;}
@@ -287,6 +291,12 @@
   #ftitle{font-family:var(--fw);font-size:17px;color:#e8eef6;margin-top:9px;letter-spacing:.05em;}
   #ftext{font-size:13px;color:#aebccb;margin-top:7px;line-height:1.7;}
   #ftext b{color:#e8c96a;}
+  /* 오프라인 복귀 카드 그림 · 경지 사다리 초상 (v2.63.4) */
+  #oart{display:block;width:100%;height:150px;object-fit:cover;object-position:center 35%;border-radius:9px;border:1px solid #2b333d;margin-bottom:10px;image-rendering:pixelated;}
+  .rhero{display:flex;align-items:center;gap:12px;padding:8px 6px 12px;border-bottom:1px solid #1e242c;margin-bottom:6px;}
+  .rhero img{width:64px;height:64px;border-radius:12px;border:1.5px solid #3d5a7a;image-rendering:pixelated;background:#0a0d12;}
+  .rhn{font-family:var(--fw);font-size:17px;color:#9fd0ff;letter-spacing:.04em;}
+  .rhd{font-size:12px;color:#8b97a5;margin-top:4px;}
   .ocard{background:#12161c;border:1.5px solid #2b333d;border-radius:14px;
     padding:18px 22px 16px;min-width:232px;text-align:center;}
   .oh{font-family:var(--fw);font-size:18px;color:#f0e2b8;letter-spacing:.05em;}
@@ -316,9 +326,9 @@
   <div id="toast"></div>
   <div id="sbar"></div>
   <div id="tabs">
-    <button id="tab-arts">무공<i class="dot"></i></button>
-    <button id="tab-train">수련<i class="dot"></i></button>
-    <button id="tab-zone">사냥터</button>
+    <button id="tab-arts"><img class="ti" alt="">무공<i class="dot"></i></button>
+    <button id="tab-train"><img class="ti" alt="">수련<i class="dot"></i></button>
+    <button id="tab-zone"><img class="ti" alt="">사냥터</button>
   </div>
   <div id="apanel">
     <div class="zsheet">
@@ -381,6 +391,7 @@
   </div>
   <div id="opanel">
     <div class="ocard">
+      <img id="oart" alt="">
       <div class="oh">운기조식을 마쳤다</div>
       <div id="otime"></div>
       <div id="obody"></div>
