@@ -126,7 +126,9 @@ function step(dt){
   // 조준하면 방향이 매 프레임 뒤집혀 파닥거린다 ("이쪽 저쪽 바라봄")
   // 데드존(HERO.hold) — 붙은 뒤 이 거리 안에선 걷지 않는다. 쿨다운 중 경계에서
   // td가 stopD를 오르내리며 idle↔run이 깜빡이던 것("중간중간 걷는 현상") 제거 (v2.48)
-  if (S.sweepT <= 0 && P.atkT <= 0 && tgt && td > stopD + HERO.hold){
+  // 시전 중(castT)에도 걷지 않는다 (v2.63.6) — 초식 동작을 펼치며 미끄러져 갔다
+  // ("움직이면서 스킬을 쓰네, 미끄러지는 모션"). 다 펼친 뒤에 걷는다.
+  if (S.sweepT <= 0 && P.atkT <= 0 && P.castT <= 0 && tgt && td > stopD + HERO.hold){
     const a = Math.atan2(tgt.y-P.y, tgt.x-P.x);
     P.x += Math.cos(a) * heroSpd() * dt;
     P.y += Math.sin(a) * heroSpd() * dt;

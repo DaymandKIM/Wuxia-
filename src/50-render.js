@@ -45,27 +45,57 @@ function drawBackdrop(ox){
   const sw = Math.max(1, Math.round(sh * nw / nh));
   const y0 = hzY - sh;
   const off = -(((ox * BACKDROP.par) % sw) + sw) % sw;
+  // 시트(폭 1024)를 화면 크기(≈290)로 nearest 축소하면 안개 층의 가로 줄이 모아레
+  // 줄무늬로 떴다(v2.63.6). 표시 크기로 한 번만 부드럽게 줄인 캔버스를 쓴다.
+  const src = backdropScaled(zk, img, sw, sh);
   ctx.save();
   ctx.fillStyle = BACKDROP.sky[zk] || zone().ground;              // 그림 위 하늘
   if (y0 > 0) ctx.fillRect(0, 0, VW, y0 + 1);
-  const F = Math.min(BACKDROP.fade, sh - 2), solid = sh - F, n = BACKDROP.fadeSteps;
-  const srcSolid = nh * solid / sh;                                // 원본 좌표계 높이
+  const F = Math.min(sh - 2, Math.max(BACKDROP.fadeMin, Math.round(sh * BACKDROP.fadeR))), solid = sh - F, n = BACKDROP.fadeSteps;
   for (let x = off; x < VW; x += sw)                               // 위쪽 불투명부
-    draw(img, 0, 0, nw, srcSolid, Math.round(x), y0, sw, solid);
-  const bandH = F / n, srcBand = nh * bandH / sh;
-  for (let i = 0; i < n; i++){                                     // 아래 디졸브 계단
-    ctx.globalAlpha = Math.pow(1 - (i + 0.5) / n, BACKDROP.fadePow);   // 아래로 갈수록 빨리 빠진다
-    const dy = y0 + solid + i * bandH, sy = srcSolid + i * srcBand;
+    ctx.drawImage(src, 0, 0, sw, solid, Math.round(x), y0, sw, solid);
+  // 띠 경계는 정수로 잘라 겹치지 않게 — 겹친 반투명 띠가 알파를 쌓아 가로 줄무늬가 됐다
+  const nb = Math.min(n, F);
+  for (let i = 0; i < nb; i++){                                    // 아래 디졸브 계단
+    ctx.globalAlpha = Math.pow(1 - (i + 0.5) / nb, BACKDROP.fadePow);   // 아래로 갈수록 빨리 빠진다
+    const a0 = solid + Math.round(i * F / nb), a1 = solid + Math.round((i + 1) * F / nb);
+    if (a1 <= a0) continue;
     for (let x = off; x < VW; x += sw)
-      draw(img, 0, sy, nw, srcBand, Math.round(x), Math.round(dy), sw, Math.ceil(bandH) + 1);
+      ctx.drawImage(src, 0, a0, sw, a1 - a0, Math.round(x), y0 + a0, sw, a1 - a0);
   }
   ctx.restore();
+}
+// 원경을 표시 크기로 부드럽게 줄인 캔버스 — 구역·크기가 같으면 재사용.
+// 오프스크린 캔버스를 못 만드는 환경(jsdom)은 원본을 그대로 돌려준다.
+const bdCache = {};
+function backdropScaled(zk, img, sw, sh){
+  const key = zk + ':' + sw + 'x' + sh;
+  if (bdCache[key]) return bdCache[key];
+  let out = img;
+  try {
+    const c = document.createElement('canvas'); c.width = sw; c.height = sh;
+    const g = c.getContext('2d');
+    if (g && g.drawImage){
+      g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
+      // 2단 축소(절반 → 최종)가 한 번에 줄이는 것보다 덜 뭉개진다
+      let cur = img, cw = img.naturalWidth, ch = img.naturalHeight;
+      while (cw / 2 > sw){
+        const t = document.createElement('canvas'); t.width = Math.round(cw / 2); t.height = Math.round(ch / 2);
+        const tg = t.getContext('2d'); tg.imageSmoothingEnabled = true; tg.imageSmoothingQuality = 'high';
+        tg.drawImage(cur, 0, 0, t.width, t.height); cur = t; cw = t.width; ch = t.height;
+      }
+      g.drawImage(cur, 0, 0, sw, sh);
+      out = c;
+    }
+  } catch(e) {}
+  bdCache[key] = out;
+  return out;
 }
 // 원경이 깔린 구역의 지평선 화면 y — 이 위는 '하늘'이라 소품을 세우지 않는다
 function horizonY(){
   const img = IMG[BACKDROP.keys[zone().k]];
   if (!img || !img.complete || !img.naturalWidth) return -1e9;
-  return Math.round(VH * BACKDROP.hz) - BACKDROP.fade * BACKDROP.cull;
+  return Math.round(VH * BACKDROP.hz) - Math.round(VH * (BACKDROP.h[zone().k] || BACKDROP.hDef) * BACKDROP.fadeR) * BACKDROP.cull;
 }
 // 배경 소품 — 시트 스프라이트를 넓은 격자에 성기게. 인물 뒤 층. 가시 셀만.
 function drawProps(ox, oy){
@@ -545,17 +575,28 @@ function drawFx(ox, oy){
       ctx.restore();
     } else if (e.k === 'artname'){
       // 초식명 외치기 — 파공권! 외치는 순간 커졌다 잦아든다 (낫표는 뺐다)
-      const p = 1 - a;
+      // v2.63.6: 피해 숫자(dmgpop)와 같은 네온 결 — 굵은 글자·어두운 스트로크·등장 팝·문파색 잔광
+      const D = FXD.artname, p = 1 - a, el = e.t - e.life;
+      const pop = 1 + (D.pop - 1) * Math.max(0, 1 - el / D.popT);
       const t = e.v + '!';
       ctx.save();
-      ctx.globalAlpha = Math.min(1, a * 1.5);
-      ctx.font = (p < 0.14 ? 13 : 10.5) + "px Jua,sans-serif";
+      ctx.translate(x, Math.round(y - p * D.rise));
+      ctx.scale(pop, pop);
+      ctx.globalAlpha = Math.min(1, a * 1.6);
+      ctx.font = '900 ' + D.size + 'px Jua,sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillStyle = '#0a1420';
-      ctx.fillText(t, x + 1, y - p*9 + 1);
-      ctx.fillText(t, x - 1, y - p*9 + 1);
-      ctx.fillStyle = '#dcefff';
-      ctx.fillText(t, x, y - p*9);
+      ctx.lineJoin = 'round';
+      ctx.lineWidth = D.stroke;
+      ctx.strokeStyle = 'rgba(8,12,22,.92)';
+      ctx.strokeText(t, 0, 0);
+      ctx.fillStyle = D.c;
+      ctx.fillText(t, 0, 0);
+      if (e.col){                                  // 문파색 잔광 한 겹 (가산)
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.globalAlpha = a * D.glowA;
+        ctx.fillStyle = e.col;
+        ctx.fillText(t, 0, 0);
+      }
       ctx.restore();
     }
   }

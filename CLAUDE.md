@@ -476,6 +476,9 @@ cost 20만은 연마·돌파용(습득은 여전히 기연만). 태극 원반 �
    horizonY(50-render)·bg_extract.py·docs/프롬프트-배경.md. 아래 40px는 땅색 알파
    계단(40단, 16단은 줄무늬)으로 지평선 잇고, 지평선 위 소품은 컬링. 이미지 없으면
    안 그림. 시트 오면 `python bg_extract.py <zone> [--patch=x,y,w,h]` → 자동 로드.
+   **v2.63.6 원경 3대 사고**: 디졸브는 px 고정이 아니라 그림 높이 비율(fadeR 0.14 — 64px
+   고정은 폰에서 그림 3/4를 녹여 집이 잘렸다) · 팔레트 저장은 반드시 디더(quantize method=2
+   무디더는 18~72색으로 뭉개져 줄무늬) · 시트→화면 축소는 nearest 금지(backdropScaled 캐시).
    **바닥 텍스처**(v2.61.1, 죽림 완료): 32px 타일이 아니라 큰 무봉 그림 한 장을 카메라와
    1:1로 2D 타일링 — GROUNDTEX(00-data)·drawGround(50-render)·ground_extract.py(가장자리
    48px 크로스페이드 무봉화·--patch). 저대비 시트여야 가독성이 산다(프롬프트에 명시).

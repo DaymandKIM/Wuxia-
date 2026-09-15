@@ -109,6 +109,9 @@ const FXD = {
   // 피해 숫자 — 등장 스케일 팝(pop→1, popT초) · 크기 · 네온 외곽선 굵기
   dmgpop:   { pop:1.4, popT:0.14, size:7.5, critSize:12, stroke:2.4, critStroke:3.2,
               c:'#f0f6ff', cc:'#ffd95e', glow:'255,214,90', glowA:0.35 },
+  // 초식명 외침 (v2.63.6, "머리 위 글씨체 별로·더 크게") — 피해 숫자와 같은 네온 결:
+  // 굵은 Jua + 어두운 스트로크, 등장 팝, 문파색 잔광. size는 게임 px(화면 3배).
+  artname:  { size:13, pop:1.6, popT:0.16, stroke:3, rise:14, c:'#f4faff', glowA:0.45 },
   // 초식 시전 절차 발광 배율 — 반경·알파를 조금 키워 네온 결 (인물 가림 금지: 1.5 미만)
   castGlow: { r:1.3, a:0.62, rim:0.55 },
 };
@@ -217,7 +220,10 @@ const BACKDROP = {
   hz: 0.30,                                     // 지평선 y (VH 비율) — 원경 그림의 바닥이 여기 온다
   hDef: 0.30, h: { cave: 0.21 },                // 그림 높이(VH 비율) — 크기와 지평선을 분리. 동굴 시트는 크게 그려져 작게
   par: 0.22,                                    // 카메라 x 패럴럭스 배율
-  fade: 64, fadeSteps: 16, fadePow: 1.6,                      // 아래 fade px: 원경 알파를 빼며 바닥 텍스처 위로 디졸브 (평균색 칠하기 → 평평한 띠가 생겨 폐기)
+  // 아래 디졸브 띠 — 그림 높이의 비율(fadeR)로 잡는다. v2.63.6: 64px 고정은 폰(VH≈280,
+  // 그림 84px)에서 그림의 3/4를 녹여 집·나무 아랫도리가 다 잘려 보였다("아래쪽이 다 짤려").
+  // 이제 아래 14%만 녹인다 — 집 주춧돌만 땅에 스민다.
+  fadeR: 0.14, fadeMin: 8, fadeSteps: 8, fadePow: 1.0,
   cull: 0.5,                                    // 지평선 위(fade의 이 비율 지점부터) 소품 안 세움
   keys: { bamboo:'bg_bamboo', village:'bg_village', cave:'bg_cave', snow:'bg_snow', heaven:'bg_heaven' },
   sky:  { bamboo:'#becfbc', village:'#a78e76', cave:'#3f444b', snow:'#cddae8', heaven:'#d8dbc6' },  // 그림 위 남는 하늘(시트 윗줄 평균)

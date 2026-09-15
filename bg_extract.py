@@ -69,8 +69,21 @@ im = Image.fromarray(rgba, 'RGBA')
 MAXW = 1024
 if im.width > MAXW:
     im = im.resize((MAXW, round(im.height * MAXW / im.width)), Image.LANCZOS)
-im = im.quantize(256, method=2)
-im.save(out, optimize=True)
+# v2.63.6: quantize(256, method=2)(fastoctree, 디더 없음)는 안개 그라데이션을 18~72색으로
+# 뭉개 게임에서 가로 줄무늬가 됐다("원경 줄무늬"). 미디언컷 255색 + 플로이드 디더로 바꾸고,
+# 투명(하늘)은 전용 인덱스 255에 격리한다 — RGB 팔레트에 마젠타가 끼지 않게 투명 픽셀
+# RGB는 하늘색(첫 불투명 행 평균)으로 채운 뒤 양자화한다.
+arr = np.array(im.convert('RGBA'))
+op = arr[:, :, 3] >= 100
+rows = np.where(op.any(1))[0]
+skyc = arr[rows[0], op[rows[0]], :3].mean(0).astype(np.uint8) if len(rows) else np.array([128, 128, 128], np.uint8)
+rgb = arr[:, :, :3].copy(); rgb[~op] = skyc
+q = Image.fromarray(rgb, 'RGB').quantize(255, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.FLOYDSTEINBERG)
+idx = np.array(q); idx[~op] = 255
+pal = q.getpalette()[:255 * 3] + list(int(v) for v in skyc)
+im = Image.fromarray(idx.astype(np.uint8), 'P'); im.putpalette(pal)
+im.info['transparency'] = bytes([255] * 255 + [0])
+im.save(out, optimize=True, transparency=bytes([255] * 255 + [0]))
 print('원경 %s → %s (%dx%d, 투명 %.0f%%)' % (zone, out, W, H, 100 * (alpha == 0).mean()))
 prev = Image.new('RGB', (W, H), (0, 0, 0))
 prev.paste(Image.fromarray(rgba, 'RGBA'), (0, 0), Image.fromarray(rgba, 'RGBA'))

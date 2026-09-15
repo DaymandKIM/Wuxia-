@@ -244,7 +244,7 @@ function hurtHero(dmg){
     if (best) hurtFoe(best, ret);
     beginCast('geongon');
     fxPush({ k:'taiji', x:P.x, y:P.y - HERO.h*0.55, life:HFX.taijiT, t:HFX.taijiT });
-    fxPush({ k:'artname', x:P.x, y:P.y - HERO.h - 10, v:gg.n, life:0.8, t:0.8 });
+    fxPush({ k:'artname', x:P.x, y:P.y - HERO.h - 10, v:gg.n, life:0.8, t:0.8, col:(SCHOOLS[gg.school]||SCHOOLS.none).c });
     sfx('kill');
   }
   P.hp -= dmg;
@@ -334,7 +334,7 @@ function castArt(a){
     beginCast(a.k);
     P.hp = Math.min(P.hpMax, P.hp + P.hpMax * a.heal * artEff(a.k) * traitMul(a.k, 'power'));
     fxPush({ k:'heal', x:P.x, y:P.y, life:0.7, t:0.7 });
-    fxPush({ k:'artname', x:P.x, y:P.y - HERO.h - 10, v:a.n, life:0.8, t:0.8 });
+    fxPush({ k:'artname', x:P.x, y:P.y - HERO.h - 10, v:a.n, life:0.8, t:0.8, col:(SCHOOLS[a.school]||SCHOOLS.none).c });
     sfx('kill');
     return true;
   }
@@ -379,7 +379,7 @@ function castArt(a){
       f.kx = (f.x-P.x)/d; f.ky = (f.y-P.y)/d; f.kb = 0.4;
     }
   }
-  fxPush({ k:'artname', x:P.x, y:P.y - HERO.h - 10, v:a.n, life:0.8, t:0.8 });
+  fxPush({ k:'artname', x:P.x, y:P.y - HERO.h - 10, v:a.n, life:0.8, t:0.8, col:(SCHOOLS[a.school]||SCHOOLS.none).c });
   sfx('punch');
   return true;
 }

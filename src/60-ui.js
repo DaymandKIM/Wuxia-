@@ -87,6 +87,11 @@ function skillHud(){
       d.appendChild(g); d.appendChild(m); d.appendChild(s);
       // 수동 모드에선 눌러서 시전한다 (반격형 건곤이형은 피격 발동이라 제외)
       if (!a.ref) d.onclick = () => { if (S.skillManual) castByHand(a.k); };
+      // 툴팁 (v2.63.6, "마우스 오버하면 무슨 스킬인지") — 데스크톱은 오버, 폰은 누르는 동안
+      d.style.pointerEvents = 'auto';
+      d.onpointerenter = () => showSkillTip(a, d);
+      d.onpointerleave = hideSkillTip;
+      d.onpointerdown  = () => showSkillTip(a, d);
       bar.appendChild(d);
       sbarEls[a.k] = { d, m, s };
     }
@@ -247,3 +252,16 @@ function buildRealmPanel(){
 }
 function openRealmPanel(){ buildRealmPanel(); $('rpanel').classList.add('show'); }
 function closeRealmPanel(){ $('rpanel').classList.remove('show'); }
+
+// 스킬 툴팁 — 이름·한자·효과·쿨. 슬롯 위에 뜨고 화면 오른쪽에 붙는다.
+function showSkillTip(a, el){
+  const t = $('stip'); if (!t) return;
+  const fx = typeof artFxText === 'function' ? artFxText(a) : '';
+  const star = typeof artStar === 'function' ? artStar(a.k) : 1;
+  t.innerHTML = '<b>' + a.n + '</b> <i>' + a.h + (star > 1 ? ' · ' + star + '성' : '') + '</i>' +
+    '<div>' + a.d + '</div>' +
+    '<div class="stfx">' + (fx ? fx : (a.ref ? '피격 시 발동' : '쿨 ' + a.cd + '초')) + '</div>';   // 효과 문구에 쿨이 이미 있다
+  t.classList.add('show');
+}
+function hideSkillTip(){ const t = $('stip'); if (t) t.classList.remove('show'); }
+addEventListener('pointerup', hideSkillTip);
