@@ -123,6 +123,7 @@ review/            검사판 PNG (생성물)
 | `shaman.py` → `foesheet.py` | `sheets/shaman.png` + `shaman_b.png` | 돌아간다 (v2.64, 두 시트 합침) |
 | `panther.py` `wisp.py` → `foesheet.py` | `sheets/panther.png` `sheets/wisp.png` | 돌아간다 (v2.65 — 테두리 줄 검출 격자) |
 | `hero_kick2.py` | `sheets/hero_kick2.png` | 돌아간다 (v2.71, 주인공 발차기 3종 — 칸 바닥 기준·머리 정렬) |
+| `hero_run2.py` | `sheets/hero_run2.png` | 돌아간다 (v2.71.1, 질주 6컷 — hero_kick2의 격자·축소 재사용) |
 | `bossfx.py` | **시트 없음** | 못 돌린다 |
 | `shamanmagic.py` `shamanstaff.py` | — | 옛 주술사(추정 지팡이). v2.64에 대체돼 쓰지 않는다 |
 | `shaman.py` `demon.py` `shamanorb.py` | — | 옛 버전. 쓰지 않는다 |
@@ -238,7 +239,7 @@ v2.39부터 얼음·번개 등 모든 fly 탄이 나는 각도로 회전. 왼쪽
 파싱해 content의 `type:'image'` 블록 `source.data`(webp base64)를 base64 디코드→
 PIL로 열어 png 저장(v2.60에서 폐촌·동굴·설산·천산 4장 이렇게 복원).
 5구역 × (10단계 + 보스). 무기 없음, 맨손 정권만.
-**이동 애니 질주 10프레임**(v2.44) — v2.43 8프레임이 조깅 느낌이라 아쉽다는
+**이동 애니 질주 6프레임**(v2.71.1, sheets/hero_run2 1줄 — hero_run2.py. 아래는 옛 10프레임 이력) **← v2.44 10프레임** — v2.43 8프레임이 조깅 느낌이라 아쉽다는
 피드백 → docs/프롬프트-주인공.md 질주 프롬프트로 재작업 시트를 받아 교체
 (ANIM.run [10,15], 전방 기울임·옷자락 날림). 8컷 공통 배율(크기 안정)+몸통 무게중심
 가로 정렬(좌우 흔들림 방지). **대기=정면 전투 자세** 단일 컷(시트 14, ANIM.idle

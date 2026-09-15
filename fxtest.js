@@ -177,7 +177,7 @@ setTimeout(()=>{
 
   // 3.76) 이동 사이클 (v2.44) — 질주가 프레임마다 hero_run을 그린다
   const RUNN=w.eval('ANIM.run[0]');
-  ok(RUNN===10,'달리기는 10프레임 사이클이다');
+  ok(RUNN===6,'달리기는 6프레임 사이클이다 (v2.71.1)');
   let runFrames=new Set();
   for (let fr=0; fr<RUNN; fr++){
     w.eval('P.anim="run"; P.af='+(fr+0.1)+';'); renderNow();

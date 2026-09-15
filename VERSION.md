@@ -1,3 +1,10 @@
+# v2.71.1 — 주인공 질주 교체 (사용자 시트 sheets/hero_run2.png, 2026-09-15)
+
+- 3줄×6칸 중 **1줄(곧게 선 질주 6컷)** 을 `hero_run2.py`로 뽑아 run.png 교체. ANIM.run [6,10].
+  2줄(무릎 높이 걷기)·3줄(앞뒤 컷이 웅크림이라 사이클 불가)은 안 썼다. 발차기와 같은 배율(172→47px),
+  몸통(35~65% 행) 무게중심 가로 정렬, 칸 바닥 기준. 옛 10컷은 raw/run_old/.
+- 검증 review/hero_run2.png·blackcheck·spritetest·fxtest(6컷 전부 그려짐)·animtest.
+
 # v2.71 — 주인공 발차기 교체 (사용자 시트 sheets/hero_kick2.png, 2026-09-15)
 
 - 3줄×6칸 시트에서 `hero_kick2.py`로 추출: **옆차기(kickside)·돌려차기(kickround, 신규 need 10)·
