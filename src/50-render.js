@@ -12,6 +12,83 @@ function drawGround(ox, oy){
   ctx.stroke();
 }
 
+// 셀 좌표 정수 해시 → 0~1. 같은 셀은 항상 같은 값(무상태).
+function thash(cx, cy, s){
+  let h = (cx * 374761393 + cy * 668265263 + s * 2246822519) >>> 0;
+  h = ((h ^ (h >>> 13)) >>> 0) * 1274126177 >>> 0;
+  return (h >>> 0) / 4294967296;
+}
+// 지형 스캐터 — 월드 좌표(격자 셀)에 고정. 이동하면 뒤로 지나간다.
+// 인물 뒤·땅 층. 가시 셀만 순회한다.
+function drawScatter(ox, oy){
+  const T = TERR[zone().k]; if (!T) return;
+  const CELL = 104;
+  const cx0 = Math.floor(ox / CELL) - 1, cx1 = Math.floor((ox + VW) / CELL) + 1;
+  const cy0 = Math.floor(oy / CELL) - 1, cy1 = Math.floor((oy + VH) / CELL) + 1;
+  ctx.save();
+  for (let cx = cx0; cx <= cx1; cx++){
+    for (let cy = cy0; cy <= cy1; cy++){
+      if (thash(cx, cy, 1) > T.dens) continue;
+      const x = Math.round(cx * CELL + thash(cx, cy, 2) * CELL - ox);
+      const y = Math.round(cy * CELL + thash(cx, cy, 3) * CELL - oy);
+      const col = T.cols[Math.floor(thash(cx, cy, 4) * T.cols.length)];
+      const sz  = T.sz[0] + thash(cx, cy, 5) * (T.sz[1] - T.sz[0]);
+      drawTerr(T, x, y, sz, col, cx, cy);
+    }
+  }
+  ctx.restore();
+}
+function terrGrass(x, y, sz, col, cx, cy, blades){
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = 'rgba(0,0,0,.08)';
+  ctx.beginPath(); ctx.ellipse(x, y + 1, sz * 0.4, sz * 0.13, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = col; ctx.lineWidth = 1.6; ctx.lineCap = 'round';
+  for (let k = 0; k < blades; k++){
+    const off = (k - (blades - 1) / 2) * 2.4, lean = (thash(cx, cy, 6 + k) - 0.5) * sz * 0.7;
+    ctx.beginPath(); ctx.moveTo(x + off, y); ctx.lineTo(x + off + lean, y - sz); ctx.stroke();
+  }
+}
+function terrRock(x, y, sz, col){
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = 'rgba(0,0,0,.22)';
+  ctx.beginPath(); ctx.ellipse(x, y + sz * 0.32, sz * 0.6, sz * 0.2, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = col;
+  ctx.beginPath(); ctx.ellipse(x, y, sz * 0.55, sz * 0.42, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,.12)';
+  ctx.beginPath(); ctx.ellipse(x - sz * 0.12, y - sz * 0.13, sz * 0.28, sz * 0.15, 0, 0, Math.PI * 2); ctx.fill();
+}
+function drawTerr(T, x, y, sz, col, cx, cy){
+  switch (T.kind){
+    case 'grass': terrGrass(x, y, sz, col, cx, cy, 3); break;
+    case 'rock':  terrRock(x, y, sz, col); break;
+    case 'tuft':                                   // 천산 — 풀·자갈 섞임
+      if (thash(cx, cy, 7) > 0.5) terrGrass(x, y, sz, col, cx, cy, 2);
+      else terrRock(x, y, sz * 0.7, col);
+      break;
+    case 'leaf':                                   // 폐촌 — 낙엽 무더기
+      for (let k = 0; k < 4; k++){
+        const lx = x + (thash(cx, cy, 6 + k) - 0.5) * 15;
+        const ly = y + (thash(cx, cy, 10 + k) - 0.5) * 11;
+        ctx.globalAlpha = 0.5 + thash(cx, cy, 14 + k) * 0.35;
+        ctx.fillStyle = T.cols[Math.floor(thash(cx, cy, 18 + k) * T.cols.length)];
+        ctx.fillRect(Math.round(lx), Math.round(ly), 2, 2);
+      }
+      ctx.globalAlpha = 1;
+      break;
+    case 'drift':                                  // 설산 — 눈 두둑
+      ctx.globalAlpha = 0.5; ctx.fillStyle = col;
+      ctx.beginPath(); ctx.ellipse(x, y, sz * 0.6, sz * 0.26, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 0.7;
+      ctx.beginPath(); ctx.ellipse(x, y - sz * 0.06, sz * 0.4, sz * 0.17, 0, 0, Math.PI * 2); ctx.fill();
+      if (thash(cx, cy, 7) > 0.82){                // 가끔 바위가 눈 밖으로
+        ctx.globalAlpha = 1; ctx.fillStyle = '#5a616e';
+        ctx.beginPath(); ctx.ellipse(x + sz * 0.28, y, 3.4, 2.3, 0, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      break;
+  }
+}
+
 function shadow(x, y, w){
   ctx.save();
   ctx.globalAlpha = 0.26; ctx.fillStyle = '#000';
@@ -459,6 +536,7 @@ function render(){
   ctx.setTransform(SC,0,0,SC, Math.round(sh*SC), Math.round(sh*SC));
   const ox = S.camX - VW/2, oy = S.camY - VH/2;
   drawGround(ox, oy);
+  drawScatter(ox, oy);                        // 땅 층 — 절차 지형(풀·바위·낙엽·눈 두둑)
   drawAmbient(false);                        // 땅 위 층 — 구름 그림자·동굴 어둑함
   drawGateFade(ox, oy);                       // 보스 등장 후 문이 어둠 속으로 스러진다 (뒤에)
   // y 순서로 겹침 정리
