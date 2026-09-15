@@ -100,7 +100,7 @@ function buildEquipPanel(){
          '</div>';
   }
   h += '<div class="znote" id="eqlog"></div>';
-  h += '<div class="zst eqhd"><span>도감 <b id="eqcnt"></b></span><span class="eqhint">가진 칸을 누르면 그 장비를 낀다 · 같은 것 ' + EQUIP.mergeN + '개는 저절로 합쳐진다</span></div>';
+  h += '<div class="zst eqhd"><span>도감 <b id="eqcnt"></b></span><span class="eqhint">색 칸 = 지금 가진 것(누르면 낀다) · 점 = 얻어 본 것(보유 효과) · 같은 것 ' + EQUIP.mergeN + '개는 저절로 합쳐진다</span></div>';
   for (const sl of EQUIP.slots){
     h += '<div class="eqsec">' + sl.n + ' <i>' + EQUIP.statName[sl.stat] + '</i></div><div class="eqgrid">';
     for (const kd of sl.kinds){

@@ -128,7 +128,8 @@ function step(dt){
   // td가 stopD를 오르내리며 idle↔run이 깜빡이던 것("중간중간 걷는 현상") 제거 (v2.48)
   // 시전 중(castT)에도 걷지 않는다 (v2.63.6) — 초식 동작을 펼치며 미끄러져 갔다
   // ("움직이면서 스킬을 쓰네, 미끄러지는 모션"). 다 펼친 뒤에 걷는다.
-  if (S.sweepT <= 0 && P.atkT <= 0 && P.castT <= 0 && tgt && td > stopD + HERO.hold){
+  // 경공 착지 경직(dashHold) 중에도 걷지 않는다 (v2.68.1) — 웅크린 컷으로 미끄러졌다.
+  if (S.sweepT <= 0 && P.dashHold <= 0 && P.atkT <= 0 && P.castT <= 0 && tgt && td > stopD + HERO.hold){
     const a = Math.atan2(tgt.y-P.y, tgt.x-P.x);
     P.x += Math.cos(a) * heroSpd() * dt;
     P.y += Math.sin(a) * heroSpd() * dt;
@@ -156,7 +157,9 @@ function step(dt){
   if (P.castT > 0) P.castT -= dt;
   const na = P.dashHold > 0 ? 'dashland'          // 경공 착지 경직 (v2.41)
            : P.castT > 0 ? 'cast'
-           : P.atkT > 0 ? 'atk' : (P.hitT > 0 ? 'hit' : (moving ? 'run' : 'idle'));
+           // 걷는 중엔 피격 컷보다 질주가 먼저 (v2.68.1 — 맞을 때마다 피격 단일 컷으로 굳은 채
+           // 미끄러져 "발이 안 움직인다". 맞은 건 피격 브라이튼(hitflash)이 알린다)
+           : P.atkT > 0 ? 'atk' : (moving ? 'run' : (P.hitT > 0 ? 'hit' : 'idle'));
   if (na !== P.anim){ P.anim = na; P.af = 0; }
   P.af += dt * (P.anim === 'cast' ? HFX.castFps
               : P.anim === 'dashland' ? 8         // 단일 컷 — 값만 흐른다
