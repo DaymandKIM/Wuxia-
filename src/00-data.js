@@ -234,7 +234,11 @@ const BACKDROP = {
 // 생겨 60분에 콘텐츠가 끝났다(소모 속도 우려) — 지수여야 전선이 생기고,
 // 전선에서 벌어서(수련·무공·숙련·기연) 뚫는 게 게임이 된다.
 const DIFF = {
-  hpBase: 22,  hpGrow: 1.30,     // 적 체력 = hpBase × hpGrow^(g-1)
+  // v2.68: 1.30→1.46 (사용자 확정 "하루에 천산 초입"). 1.30은 주인공 승급 배율(1.31)과 같아
+  // 벽이 안 섰다 — 수련·무공·특성·장비가 겹치면 4시간에 천산 끝. 24h sim: 1.46 → 1440분 천산 1단계,
+  // 1.48 → 설산 9. 적 피해(dmgGrow)·처치 수련치·필요 수련치를 흔드는 건 효과가 미미했거나(X1~X4)
+  // 쓰러짐만 수백 번 늘렸다(Y1~Y4). 벽은 "체력이 안 깎여서 기다리는 것"이어야 했다.
+  hpBase: 22,  hpGrow: 1.46,     // 적 체력 = hpBase × hpGrow^(g-1)
   dmgBase: 3.0, dmgGrow: 1.19,   // 적 피해 — 밀어붙일 때만 위험하게 (sim 쓰러짐 기준)
   needBase: 24, needPer: 7,      // 처치 목표 = base + g×per (31 → 374)
 };
@@ -719,7 +723,7 @@ const REALM = {
   killGrow: 1.07,                // 처치 수련치 = killGrow^(g-1) — 필요량보다 훨씬 완만해야 벽이 선다
   bossExp: 25,                   // 보스 = 잡몹의 몇 배
   // 이 구역쯤이면 대략 이 경지 레벨 (sim 실측 근사) — 테스트 이동·도구용
-  seed: [0, 11, 17, 24, 29],
+  seed: [0, 10, 16, 21, 24],     // v2.68 24h sim(hpGrow 1.46) 구역 진입 경지: 폐촌 일류3 · 동굴 초절정1 · 설산 화경2 · 천산 현경1
 };
 const killExpAt = ()=> Math.pow(REALM.killGrow, gstage()-1);
 const realmNeed = k => Math.round(REALM.expBase * Math.pow(REALM.expGrow, k));
