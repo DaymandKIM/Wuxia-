@@ -74,17 +74,27 @@ for arg in sys.argv[2:]:
         # 집 벽이 맨 아래까지 닿아 있어 그 줄을 그대로 이으면 벽이 물에 비친 듯 줄무늬가 된다 —
         # 줄마다 중앙값에 가까운 픽셀(땅)만 골라 가로로 섞어 벽 구조 없는 땅 띠를 만든다
         rng = np.random.RandomState(7)
-        rows = []
-        for i in range(n):
-            src = band[i % 6]
-            med = np.median(src[:, :3], axis=0)
-            ground = np.abs(src[:, :3] - med).sum(1) < 40
-            pool = src[ground] if ground.sum() > 50 else src
-            pick = pool[rng.randint(0, len(pool), size=src.shape[0])]
-            pick = pick.copy(); pick[:, :3] = np.clip(pick[:, :3] + rng.randint(-2, 3, size=(src.shape[0], 1)), 0, 255)
-            rows.append(pick.astype(np.uint8))
-        rgba = np.concatenate([rgba, np.stack(rows)], 0)
+        # 땅 픽셀 풀(줄 중앙값 근처)을 2D로 무작위 배치한 뒤 3×3 상자 흐림 — 줄마다 섞으면
+        # 가로 줄무늬가 생겼다("부자연스럽다", v2.69.6). 맨 윗줄은 원본 마지막 줄과 섞어 이음새를 없앤다.
+        pool = []
+        for r in band:
+            med = np.median(r[:, :3], axis=0); g = np.abs(r[:, :3] - med).sum(1) < 40
+            pool.append(r[g] if g.sum() > 50 else r)
+        pool = np.concatenate(pool, 0)
+        Wd = rgba.shape[1]
+        pad = pool[rng.randint(0, len(pool), size=(n, Wd))].astype(float)
+        k = np.pad(pad[:, :, :3], ((1, 1), (1, 1), (0, 0)), mode='edge')
+        blur = sum(k[dy:dy + n, dx:dx + Wd] for dy in range(3) for dx in range(3)) / 9.0
+        pad[:, :, :3] = blur; pad[:, :, 3] = 255
+        # (원본 마지막 줄과 크로스페이드는 하지 않는다 — 그 줄엔 나무 밑동이 섞여 있어 어두운 가로선이 됐다)
+        rgba = np.concatenate([rgba, pad.astype(np.uint8)], 0)
         print('아래 땅 %d줄 덧댐' % n)
+for arg in sys.argv[2:]:
+    if arg.startswith('--contrast'):
+        kc = float(arg.split('=')[1]); op = rgba[:, :, 3] > 0
+        rgb = rgba[:, :, :3].astype(float); mean = rgb[op].mean()
+        rgb[op] = np.clip((rgb[op] - mean) * kc + mean, 0, 255)
+        rgba[:, :, :3] = rgb.astype(np.uint8); print('대비 ×%.2f' % kc)
 out = '%s/assets/bg_%s.png' % (R, zone)
 im = Image.fromarray(rgba, 'RGBA')
 # 용량 — 게임은 높이 ~290px로 그리니 폭 1024면 충분(2000px 시트는 2배 오버샘플).
