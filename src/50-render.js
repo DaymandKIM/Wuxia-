@@ -111,18 +111,21 @@ function drawProps(ox, oy){
       const x = Math.round(cx * G + thash(cx, cy, 32) * G - ox);
       const y = Math.round(cy * G + thash(cx, cy, 33) * G - oy);
       if (y < hy) continue;                           // 지평선 위(원경 띠)엔 소품 없음
-      propSprite(D, x, y, cx, cy);
+      propSprite(D, x, y, cx, cy, hy);
     }
   }
   ctx.restore();
 }
 // 스프라이트 소품 — 가중 랜덤으로 하나 골라 바닥 중앙에 그린다(네이티브 종횡비 유지).
-function propSprite(D, x, y, cx, cy){
+function propSprite(D, x, y, cx, cy, hy){
   let tot = 0; for (const p of D.pick) tot += p[2];
   let r = thash(cx, cy, 34) * tot, sel = D.pick[0];
   for (const p of D.pick){ r -= p[2]; if (r <= 0){ sel = p; break; } }
   const img = IMG[sel[0]]; if (!img) return;
   const gh = sel[1], nw = img.naturalWidth || 1, nh = img.naturalHeight || 1;
+  // 소품은 원경 뒤 층이다(원경이 항상 위, v2.62) — 키 큰 소나무가 지평선 바로 아래 서면
+  // 머리가 원경에 덮여 잘려 보였다("설산 나무가 잘림", v2.69.3). 꼭대기가 원경에 닿으면 안 세운다.
+  if (hy !== undefined && y - gh < hy) return;
   const gw = Math.max(1, Math.round(gh * nw / nh));
   ctx.globalAlpha = 1;
   pixShadow(x, y, Math.round(gw * 0.66));
