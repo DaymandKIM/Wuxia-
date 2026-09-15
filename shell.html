@@ -109,7 +109,7 @@
     border-radius:10px;color:#e0c8a8;font:900 13px/1 inherit;padding:11px 16px;letter-spacing:.05em;
     display:none;}
   #tbtn.on{display:block;}
-  #ui:has(#zpanel.show,#trpanel.show,#apanel.show,#dpanel.show,#rpanel.show,#epanel.show) #tbtn{opacity:0;pointer-events:none;}   /* 패널이 열리면 숨긴다 (겹침) */
+  #tbtn.hide{opacity:0;pointer-events:none;}   /* 패널이 열리면 숨긴다 (겹침) — 60-ui hud()가 토글 (:has는 구형 크로뮴에서 안 먹혔다) */
   #tbtn:active{background:#7a5238;}
   #tspd{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px;}
   /* overflow:hidden — 닫힌 시트(아래로 밀린 상태)가 컨테이너 밖 탭바 위로 삐져나오지 않게 */

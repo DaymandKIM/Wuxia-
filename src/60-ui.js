@@ -25,6 +25,9 @@ function hud(){
   trainHud();                                    // 수련 탭 알림점·열린 패널 갱신
   artsHud();                                     // 무공 탭 알림점·열린 패널 갱신
   if (typeof equipHud === 'function') equipHud();  // 장비 탭 (v2.66)
+  // [테스트 전용] 시험 버튼은 패널이 열려 있으면 숨긴다 (v2.69.8 — CSS :has가 구형 크로뮴에서 안 먹혀 JS로)
+  const tbtnEl = $('tbtn');
+  if (tbtnEl) tbtnEl.classList.toggle('hide', ['zpanel','trpanel','apanel','dpanel','rpanel','epanel'].some(id => { const e = $(id); return e && e.classList.contains('show'); }));
   if (typeof deepenHud === 'function') deepenHud();  // 스킬 심화창(트리) 갱신
   skillHud();                                    // 스킬창 — 초식 쿨다운
 
