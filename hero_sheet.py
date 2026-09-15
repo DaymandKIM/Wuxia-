@@ -94,6 +94,17 @@ class Sheet:
         for (a, b) in cl: band[:, a:b + 1] = True
         for (a, b) in rl: band[a:b + 1, :] = True
         fgA = fg0 & ~band
+        # 가로 줄 띠에 머리카락·발이 걸치면 그 부분이 같이 지워진다(v2.76.8 "뛸 때 머리 잘림" — 질주 시트 4칸은 머리끈이 위 액자선
+        # 위까지 올라간다). 띠 바로 밖 행에 그림이 있는 열은, 띠 안의 어두운 비배경 픽셀을 그 가장자리부터 이어진 만큼 되살린다.
+        # 세로 줄은 안 건드린다(무기 끝이 걸치면 줄 조각이 칼날에 붙는다) — 가로 줄엔 어두운 머리·신발만 걸친다.
+        for (a, b) in rl:
+            for edge, step in ((b + 1, -1), (a - 1, 1)):           # 띠 아래 그림(머리) / 띠 위 그림(발)
+                if not (0 <= edge < fg0.shape[0]): continue
+                cols = np.where(fg0[edge] & dark[edge])[0]
+                for x in cols:
+                    y = edge + step
+                    while max(a, 0) <= y <= min(b, fg0.shape[0] - 1) and fg0[y, x] and dark[y, x]:
+                        fgA[y, x] = True; y += step
         # 덩어리(줄 없이) → 인물(칸 안 2000px↑)과 조각으로 나눈다
         lab, n = ndi.label(fgA); objs = ndi.find_objects(lab)
         if self.gridless:

@@ -1,10 +1,11 @@
 """주인공 질주 6컷 (v2.71.1 → v2.73). 1줄 전부. 가로 정렬은 몸통 무게중심
 공용 추출기 hero_sheet.py — 시트 전체 덩어리 라벨링으로 **그림 기준** 크롭(칸 밖으로 나간 무기·기운 포함),
 캔버스 폭·높이 자동. 결과 [폭, 높이, 위 여분]을 00-data HFX.aw / HFX.fh 에 옮긴다. 검사판 review/hero_run2.png
-v2.76.6: 질주 시트도 머리 큰 비율(머리 폭 27 vs 새 시트 20~23)이라 scale_mul 0.85 — 서 있는 기준 컷이 없어 STAND_H 기준.
+v2.76.8: 배율은 **키 기준**(scale_mul 1.02 → 키 46, 다른 동작 44~47) — v2.76.6에 머리 폭 기준 0.85로 줄였더니 키 39로 작아져
+"공격 모션이랑 뛸 때랑 크기가 달라". 머리는 시트 비율대로 크지만(27px) 크기가 먼저다. 서 있는 기준 컷이 없어 STAND_H 기준.
 질주의 톤(주황빛 살·파란 허리띠·밝은 도복)이 **모든 동작의 기준**이다(v2.76.7 사용자 확정) — 질주엔 skinmatch를 돌리지 않는다.
 """
 import hero_sheet as HS
 STRIPS = {'run': [(0,0),(0,1),(0,2),(0,3),(0,4),(0,5)]}
 if __name__ == '__main__':
-    HS.extract('sheets/hero_run2.png', STRIPS, 'review/hero_run2.png', center='torso', scale_mul=0.85)
+    HS.extract('sheets/hero_run2.png', STRIPS, 'review/hero_run2.png', center='torso', scale_mul=1.02)

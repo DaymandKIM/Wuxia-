@@ -137,7 +137,7 @@ for (const ck in HFX.cast)   // 시전 스트립은 초식마다 별도
 for (const a in ANIM) {
   if (a === 'cast') continue;
   const n = ANIM[a][0];
-  check('hero ' + a, a === 'idle' ? 'idle.png' : a + '.png', (HFX.aw[a] || HERO.w) * n, HERO.h);
+  check('hero ' + a, a === 'idle' ? 'idle.png' : a + '.png', (HFX.aw[a] || HERO.w) * n, fhOf(a));   // v2.76.8 질주 캔버스 52(머리끈 위 여분)
 }
 
 for (const k in FOES) {
