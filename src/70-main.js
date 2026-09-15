@@ -132,7 +132,22 @@ if (sv){
   if (away >= OFFLINE.min) og = offlineGains(away);
 }
 enterStage(true);            // 시작은 연출한다
-if (og) showOffline(og);           // 처치 0이어도 보여준다 — 수련치는 시간으로 쌓인다
+// 타이틀 화면 (v2.65) — 배경 일러스트가 있으면 덮고, 누르면 걷힌다. 게임은 뒤에서 돈다.
+// 복귀 카드는 걷힌 뒤에 — 안 그러면 타이틀 뒤에서 6초 만에 스스로 닫혀 못 본다.
+let titleOn = false;
+function closeTitle(){
+  if (!titleOn) return; titleOn = false;
+  const t = $('title'); t.classList.add('gone');
+  setTimeout(() => { t.hidden = true; }, 520);
+  if (og) showOffline(og);           // 처치 0이어도 보여준다 — 수련치는 시간으로 쌓인다
+}
+if (ASSET.title_bg && $('title')){
+  titleOn = true;
+  $('tbg').src = ASSET.title_bg;
+  if (ASSET.hero_face) $('tface').src = ASSET.hero_face; else $('tface').hidden = true;
+  $('title').hidden = false;
+  $('title').onpointerdown = e => { e.preventDefault(); closeTitle(); };
+} else if (og) showOffline(og);
 
 saveNow();
 setInterval(saveNow, SAVE.every * 1000);

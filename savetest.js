@@ -54,6 +54,8 @@ const ok=(cond,msg)=>{ console.log((cond?'  ':'  ★실패 ')+msg); if(!cond)bad
     const {w:w2,errs:e2}=boot(past);
     setTimeout(()=>{
       const S2=w2.eval('S');
+      // 타이틀 화면(v2.65)이 복귀 카드를 걷힐 때까지 미룬다 — 누른 셈 친다
+      if (typeof w2.closeTitle === 'function') w2.closeTitle();
       ok(S2.zi===0 && S2.stage===4,'3시간 오프라인: 단계는 그대로 (죽림 '+S2.stage+'단계 유지 — 진행은 직접)');
       ok(S2.totalKills>100,'제자리 사냥 정산: 처치 100 → '+S2.totalKills);
       ok(S2.silver>0,'은자 정산: +'+S2.silver.toLocaleString()+' (예전 저장에 은자 없음 → 0에서 시작)');

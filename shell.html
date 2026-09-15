@@ -322,9 +322,40 @@
     padding:10px 20px;font-size:15px;font-weight:900;color:#f0e2b8;letter-spacing:.06em;
     opacity:0;transition:opacity .18s,transform .18s;}
   #toast.show{opacity:1;transform:translate(-50%,-50%) scale(1);}
+  /* 타이틀 화면 (v2.65) — 사용자 일러스트 배경 + 주인공 초상. 아무 데나 누르면 걷힌다.
+     게임은 뒤에서 이미 돌고 있다(방치형) — 복귀 카드·기연은 걷힌 뒤에 보여준다. */
+  #title{position:absolute;inset:0;z-index:50;pointer-events:auto;overflow:hidden;background:#0e1116;
+    display:flex;flex-direction:column;justify-content:flex-end;align-items:center;
+    transition:opacity .5s;}
+  #title.gone{opacity:0;pointer-events:none;}
+  #title[hidden]{display:none;}
+  #tbg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 30%;}
+  #tbg.pix{image-rendering:auto;}
+  .tveil{position:absolute;left:0;right:0;bottom:0;height:46%;
+    background:linear-gradient(rgba(14,17,22,0),rgba(14,17,22,.78) 55%,rgba(14,17,22,.92));}
+  .tbody{position:relative;padding:0 24px calc(env(safe-area-inset-bottom) + 44px);text-align:center;width:100%;max-width:360px;}
+  #tface{width:84px;height:84px;border-radius:50%;border:2px solid #7fb0d8;box-shadow:0 0 0 4px rgba(20,30,40,.6),0 6px 22px rgba(0,0,0,.6);
+    image-rendering:pixelated;background:#0a0d12;margin-bottom:12px;}
+  .tname{font-family:var(--fw);font-size:38px;color:#f0e2b8;letter-spacing:.12em;text-shadow:0 2px 0 #3a2a10,0 4px 18px rgba(0,0,0,.8);line-height:1.1;}
+  .tsub{font-size:13px;color:#aebccb;margin-top:8px;letter-spacing:.08em;}
+  #tstart{margin-top:22px;width:100%;background:#2f5f8c;border:1.5px solid #4a86bd;border-radius:11px;color:#eaf3ff;
+    font:900 16px/1 var(--fw);padding:14px 0;letter-spacing:.12em;box-shadow:0 6px 18px rgba(0,0,0,.5);animation:tpulse 1.6s ease-in-out infinite;}
+  #tstart:active{background:#3c6f9e;}
+  @keyframes tpulse{0%,100%{box-shadow:0 6px 18px rgba(0,0,0,.5),0 0 0 0 rgba(120,180,240,.35);}50%{box-shadow:0 6px 18px rgba(0,0,0,.5),0 0 0 9px rgba(120,180,240,0);}}
+  @media (prefers-reduced-motion: reduce){#tstart{animation:none;}}
 </style></head><body>
 <canvas id="cv"></canvas>
 <div id="ui">
+  <div id="title" hidden>
+    <img id="tbg" alt="">
+    <div class="tveil"></div>
+    <div class="tbody">
+      <img id="tface" alt="">
+      <div class="tname">무협</div>
+      <div class="tsub">죽림에서 천산까지 — 자동으로 수련하고 싸운다</div>
+      <button id="tstart">입산 入山</button>
+    </div>
+  </div>
   <div id="card">
     <div class="row1"><span id="stage">죽림 1단계</span><span id="kills">0 / 10</span></div>
     <div class="bar" id="hp"><i></i><span id="hpt"></span></div>

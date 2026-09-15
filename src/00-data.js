@@ -369,19 +369,26 @@ const FOES = {
     hp:1.0, dmg:1.0, spd:1.0, range:44,   // 기준
   },
   wisp: {
-    n:'대나무 유령불', w:32, h:37,
-    anim:{ idle:['idle','float'], walk:['float','idle'],
-           atk:['atk'], hit:['hit'], death:['death'] },
-    fps:{ idle:2.5, walk:4, atk:5, hit:6, death:4 },
+    // v2.65 재작업 — 두건 쓴 해골 귀신(사용자 시트 sheets/wisp.png 2~4행, wisp.py — 1행은
+    // 디자인이 달라 버림). 떠다님 4컷이 대기·이동, 공격은 몸을 세워 구체·파동. 옛 판
+    // (웃는 물방울) raw/wisp_old/. 몸 36×34 (sw/bh) — 꼬리 기운까지 캔버스 68.
+    n:'대나무 유령불', w:68, h:46, sw:36, bh:34,
+    anim:{ idle:['float0','float1','float2','float3'], walk:['float0','float1','float2','float3'],
+           atk:['atk0','atk1','atk2','atk3'],       // 손 들기 → 구체 → 파동 → 손끝 잔광
+           hit:['hit'], death:['death0','death1'] },   // 녹아내림 → 불꽃만 남음
+    fps:{ idle:5, walk:6, atk:7, hit:6, death:3 },
     hp:0.62, dmg:0.78, spd:1.22, range:38,   // 약해서 바짝 붙어야 한다
   },
   panther: {
-    n:'그림자 표범', w:82, h:46,
-    anim:{ idle:['walk0','walk1','walk2','walk3'],
-           walk:['walk0','walk1','walk2','walk3'],
-           atk:['atk0','atk1','atk2','atk3'],   // 웅크림 → 도약 → 할큄 → 착지
-           hit:['walk2'], death:['walk0'] },
-    fps:{ idle:5, walk:8, atk:8, hit:5, death:4 },
+    // v2.65 재작업 — 사용자 시트(sheets/panther.png 5행, panther.py). 일어서서 할퀴는
+    // 공격 컷이 몸의 두 배 높이라 캔버스가 크다 — 몸은 70×40 (sw/bh). 3행 기어가기
+    // (prowl0~3)는 뽑아만 두고 안 쓴다. 옛 판 raw/panther_old/.
+    n:'그림자 표범', w:158, h:86, sw:70, bh:40,
+    anim:{ idle:['idle0','idle1','idle2','idle3'],
+           walk:['walk0','walk1','walk2','walk3'],   // 질주
+           atk:['atk0','atk1','atk2','atk3'],   // 일어섬 → 도약 → 할큄 → 착지
+           hit:['hit'], death:['death0','death1','death2'] },   // 비틀 → 엎어짐 → 쓰러짐
+    fps:{ idle:4, walk:10, atk:8, hit:5, death:4 },
     hp:0.78, dmg:1.15, spd:1.45, range:60,   // 도약이 길다
   },
   shaman: {

@@ -13,10 +13,27 @@ from scipy import ndimage
 R = os.path.dirname(os.path.abspath(__file__))
 INSET = 10
 
-def _cell(sh, bg, cy, cx, CW, CH):
-    y0, x0 = cy * CH + INSET, cx * CW + INSET
-    sub = sh[y0:y0 + CH - 2 * INSET, x0:x0 + CW - 2 * INSET].copy()
-    m = ~bg[y0:y0 + CH - 2 * INSET, x0:x0 + CW - 2 * INSET]
+def _lines(sh):
+    """어두운 테두리 줄 검출 → 행/열 경계. 시트 칸이 균등하지 않다(표범: 3행은 172px·
+    4~5행은 255px). 고정 격자로 자르면 칸을 걸쳐 두 그림이 섞인다(v2.65)."""
+    lum = sh.sum(-1) / 3; dark = lum < 70
+    def groups(v):
+        g = []
+        for i in v:
+            if g and i - g[-1][-1] <= 2: g[-1].append(i)
+            else: g.append([i])
+        return [(x[0], x[-1]) for x in g]
+    return groups(np.where(dark.mean(1) > 0.8)[0]), groups(np.where(dark.mean(0) > 0.8)[0])
+
+def _cell(sh, bg, cy, cx, CW, CH, grid=None):
+    if grid:
+        rl, cl = grid
+        y0, y1 = rl[cy][1] + 1, rl[cy + 1][0]; x0, x1 = cl[cx][1] + 1, cl[cx + 1][0]
+        y0 += 3; y1 -= 3; x0 += 3; x1 -= 3               # 테두리 번짐만 피한다(그림이 테두리에 닿는다)
+    else:
+        y0, x0 = cy * CH + INSET, cx * CW + INSET; y1, x1 = y0 + CH - 2 * INSET, x0 + CW - 2 * INSET
+    sub = sh[y0:y1, x0:x1].copy()
+    m = ~bg[y0:y1, x0:x1]
     lab, n = ndimage.label(m); keep = np.zeros_like(m)
     for i in range(1, n + 1):
         ys, xs = np.where(lab == i)
@@ -49,14 +66,17 @@ def _shrink(rgba, scale, flip):
 
 def extract(sheet, names, body_h, flip=True, ref=None, scale=None):
     sh = np.array(Image.open(os.path.join(R, 'sheets', sheet)).convert('RGB')).astype(int)
-    H, W = sh.shape[:2]; N = len(names); CW, CH = W // N, H // N
+    H, W = sh.shape[:2]; rows = len(names); cols = max(len(r) for r in names); CW, CH = W // cols, H // rows
     r, g, b = sh[..., 0], sh[..., 1], sh[..., 2]
     bg = (r > g + 50) & (b > g + 50) & (np.abs(r - b) < 80)
+    rl, cl = _lines(sh)
+    grid = (rl, cl) if len(rl) == rows + 1 and len(cl) == cols + 1 else None
+    print('격자:', '테두리 검출 %d행 %d열' % (rows, cols) if grid else '고정 %dx%d' % (CW, CH))
     raw = {}
-    for cy in range(N):
+    for cy in range(rows):
         for cx in range(len(names[cy])):
             nm = names[cy][cx]
-            if nm: raw[nm] = _cell(sh, bg, cy, cx, CW, CH)
+            if nm: raw[nm] = _cell(sh, bg, cy, cx, CW, CH, grid)
     if scale is None:
         ys = np.where(raw[ref or list(raw)[0]][..., 3] > 0)[0]
         scale = body_h / (ys.max() + 1 - ys.min())
@@ -78,7 +98,8 @@ def pack(frames, prefix):
         ys, xs = np.where(a[..., 3] > 0); cx = _legcx(a)
         can = np.zeros((CANH, CANW, 4), np.uint8)
         dx = int(round(CANW / 2 - cx)); dy = CANH - 1 - ys.max()
-        can[ys + dy, xs + dx] = a[ys, xs]
+        ok = (xs + dx >= 0) & (xs + dx < CANW) & (ys + dy >= 0)
+        can[ys[ok] + dy, xs[ok] + dx] = a[ys[ok], xs[ok]]
         Image.fromarray(can, 'RGBA').save(os.path.join(R, 'assets', '%s_%s.png' % (prefix, k)))
     return CANW, CANH
 
