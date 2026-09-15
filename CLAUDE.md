@@ -135,7 +135,8 @@ review/            검사판 PNG (생성물)
 | `hero_saber2.py` | `sheets/hero_saber2.png` | 옛 시트(액자선에 잘림). 쓰지 않는다 |
 | `hero_spear3.py` | `sheets/hero_spear3.png` | **현행** (v2.74.3 재작업 시트, gridless) |
 | `hero_spear2.py` | `sheets/hero_spear2.png` | 옛 시트(액자선에 잘림). 쓰지 않는다 |
-| `hero_staff2.py` | `sheets/hero_staff2.png` | 돌아간다 (v2.72.4, 봉 3종 — 폭 66) |
+| `hero_staff3.py` | `sheets/hero_staff3.png` | **현행** (v2.74.4 재작업 시트, gridless) |
+| `hero_staff2.py` | `sheets/hero_staff2.png` | 옛 시트(액자선에 잘림). 쓰지 않는다 |
 | `bossfx.py` | **시트 없음** | 못 돌린다 |
 | `shamanmagic.py` `shamanstaff.py` | — | 옛 주술사(추정 지팡이). v2.64에 대체돼 쓰지 않는다 |
 | `shaman.py` `demon.py` `shamanorb.py` | — | 옛 버전. 쓰지 않는다 |
