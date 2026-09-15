@@ -129,14 +129,14 @@
   #trsilver{font-size:13px;color:#e8c96a;font-weight:900;font-variant-numeric:tabular-nums;}
   /* 무공 패널 — 문파별 타일 그리드 + 상세 칸 */
   .agrid{display:flex;flex-wrap:wrap;gap:6px;margin:4px 12px 0;}
-  .atile{position:relative;width:56px;height:50px;border-radius:10px;border:1.5px solid #2c3540;
+  .atile{position:relative;width:56px;height:60px;border-radius:10px;border:1.5px solid #2c3540;
     background:#171d25;display:flex;flex-direction:column;align-items:center;justify-content:center;
-    gap:2px;color:#9fb0c2;padding:0;overflow:hidden;}
+    gap:5px;color:#9fb0c2;padding:4px 0 2px;overflow:hidden;}   /* v2.63.5 메달과 이름 사이 띄움("위로 붙어 있네") */
   .atile .sc{position:absolute;top:0;left:9px;right:9px;height:3px;border-radius:0 0 3px 3px;}
   .atile .g{font-size:17px;font-weight:900;}
   .atile .gi{width:26px;height:26px;border-radius:50%;display:block;margin:0 auto;box-shadow:0 0 0 1px rgba(0,0,0,.5);}
   .atile .se{position:absolute;right:3px;top:3px;width:13px;height:13px;border-radius:50%;opacity:.95;box-shadow:0 0 0 1px rgba(0,0,0,.6);}
-  .atile .nm{font-size:9.5px;font-weight:800;color:#8b97a5;}
+  .atile .nm{font-size:9.5px;font-weight:800;color:#8b97a5;line-height:1.1;}
   /* 배움/안 배움을 확실히 가른다 — 익힌 건 문파색 바탕, 안 익힌 건 흑백(피드백) */
   .atile.got .nm{color:#cfe0f2;}
   .atile:not(.got) .g,.atile:not(.got) .gi{filter:grayscale(1);opacity:.55;}
