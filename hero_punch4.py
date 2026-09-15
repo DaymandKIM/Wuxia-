@@ -6,6 +6,7 @@
 임팩트는 index2·마지막 컷이 완전히 뻗은 것. 안 쓰는 칸: (0,5)잽 반복·(1,2)잔상·(2,1)잽·(2,2)뒤 초승달·(2,3)방어·(2,4)잽.
 얇은 흰 별빛·흙 곁 분홍 점(마젠타에 물든 파편)은 patch(desmall)로 원본에서 150px 미만 부유 조각을 지운다 — 크롭은 안 바꿔 정렬 유지.
 옛 권기 정권(hero_punch3, 두 판 교대)은 raw/punch3_old에 보관. gridless 모드, 검사판 review/hero_punch4.png
+**뽑은 뒤 `python skinmatch.py`** — 이 시트는 살·옷·도복 톤이 질주 시트와 달라(황갈 살·회청 옷) 질주 톤으로 맞춘다(v2.76.7).
 """
 import numpy as np
 from scipy import ndimage as ndi

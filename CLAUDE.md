@@ -53,7 +53,7 @@ node lint.js           # 정의 없는 호출·빠진 필수 함수
 node spritetest.js     # 선언 규격 vs 실제 PNG · 캔버스 가장자리 접촉
 python review.py       # 눈으로 볼 대조 PNG → review/review-<종류>.png
 python blackcheck.py [이름...]  # 검은 막대·부유 조각 눈검사판(흰 배경 확대) → review/blackcheck.png
-python skinmatch.py [키...]     # 옛 시트 스트립 살색·옷색을 새 시트 톤으로 (질주·권기·옛 발차기·경공 컷 — 다시 뽑으면 다시 돌린다)
+python skinmatch.py [키...]     # 주먹4·발차기3·부채3 계열 스트립의 살·옷·도복을 질주 톤으로 (기본 11종 — 다시 뽑으면 다시 돌린다)
 node test.js           # jsdom으로 실제 실행 (오류 0 이어야 한다)
 node sim.js            # 24시간 진행 시뮬 (소비 전략 포함, SIM_MIN=분 으로 단축)
 node animtest.js       # 공격 동작이 피격에 끊기는지
@@ -127,7 +127,7 @@ review/            검사판 PNG (생성물)
 | `hero_pose2.py` | 주먹4·발차기2 시트 | 돌아간다 (v2.76.5 — 대기·피격은 주먹4(황갈 얼굴 기준 시트), 경공은 발차기2+skinmatch. 운기조식·시전만 옛 시트) |
 | `hero_kick3.py` | `sheets/hero_kick3.png` | **현행** (v2.76.1 — 발차기 3종, gridless. 기준 컷은 곧게 선 (0,0)으로 hero_punch4와 배율 일치) |
 | `hero_kick2.py` | `sheets/hero_kick2.png` | 옛 발차기(v2.71) — **v2.76.2부터 kickside2·kickround2·kickhigh2 동작으로 되살림**(raw/kick2_old = 원본). hero_pose2 피격·경공 컷도 여기서 |
-| `hero_run2.py` | `sheets/hero_run2.png` | 돌아간다 (v2.71.1 질주 6컷 → v2.76.6 scale_mul 0.85 + skinmatch — 머리 큰 시트·파란 옷을 새 시트에 맞춤) |
+| `hero_run2.py` | `sheets/hero_run2.png` | 돌아간다 (v2.71.1 질주 6컷 → v2.76.6 scale_mul 0.85. **톤의 기준 컷** — skinmatch 안 돌린다) |
 | `hero_punch4.py` | `sheets/hero_punch4.png` | **현행** (v2.76 — 주먹 3종 정권·연환권·승룡권, gridless. 잔상 컷은 마젠타라 폐기) |
 | `hero_punch3.py` | `sheets/hero_fx.png` 2·3줄 | 권기 정권 두 판 → qipunch·qipunchb(순환 맨 끝 마무리 일격). **scale_mul 0.86** — hero_fx는 머리 큰 비율이라 머리 폭 기준으로 줄임(v2.76.3) |
 | `hero_punch2.py` | `sheets/hero_punch2.png` | 대기·피격 컷(hero_pose2)에만 쓴다. 정권으로는 안 쓴다 |
@@ -152,14 +152,13 @@ review/            검사판 PNG (생성물)
 
 - **비율이 다른 시트는 머리 폭으로 맞춘다**(v2.76.3 "머리가 왜 이리 크냐"): hero_fx는 머리 큰 치비라 몸 높이(BODY_PX 47)로
   맞추면 머리가 27px(새 시트 20~23)로 튄다. extract(scale_mul=)로 줄인다 — 몸이 조금 작아져도 머리가 먼저 보인다.
-- **시트마다 살색이 다르다**(v2.76.4~5 "피부색이 오묘하게 다르다"·"얼굴색 다시 봐봐"): hero_fx·hero_kick2 주황 (224,152,120) /
-  hero_punch2 창백한 베이지 (204,184,156) / **hero_punch4·hero_kick3 황갈 (203,138,125) ← 기준**. 옛 스트립을 쓰면
-  `python skinmatch.py`로 맞추고, 대기·피격 같은 단일 컷은 기준 시트(주먹4)에서 다시 뽑는다. **살색은 r-g>40 마스크로만
-  재라** — r-g 20 마스크는 도복 베이지(185,165,130)를 살색으로 세서 기준색이 도복색이 됐다(v2.76.4 사고).
-  얼굴 확대 대조는 `review/face_compare.png`(스크립트는 VERSION v2.76.5 참조).
-  **옷색도 다르다**(v2.76.6 "걷고 뛰는 거 봐봐"): 옛 시트 허리띠·바지 파랑 (80,92,140) vs 새 시트 회청 (88,80,112) —
-  skinmatch.py가 옷 단계까지 같이 맞춘다(기운 이펙트는 밝기·g로 제외). 옛 시트 컷을 새로 쓰면 **크기(scale_mul)·살색·
-  옷색 세 가지**를 다 맞춰야 순환 중 딴 인물이 안 된다.
+- **주인공 톤의 기준은 질주 컷이다**(v2.76.7, 사용자 확정 "걷고 뛰는 거에 톤을 다 맞춰, 모든 동작"): 살 (225,160,132) 주황빛 ·
+  허리띠·바지 파랑 (75,80,121) · 도복 (212,191,167). 질주·옛 발차기·권기·경공·무기 4종(검4·도3·창3·봉3)이 원래 이 톤이다.
+  **주먹4·발차기3·부채3 계열 시트는 딴 톤**(황갈 살·회청 옷·어두운 도복)이라 거기서 뽑은 스트립(주먹 3·발차기 3·부채 3·
+  대기·피격)은 뽑은 뒤 반드시 `python skinmatch.py`로 질주 톤에 맞춘다. 새 시트가 오면 먼저 팔레트를 재고(살 r-g>40
+  마스크로만 — r-g 20 마스크는 도복을 살색으로 센다) 질주와 다르면 skinmatch 기본 목록에 넣는다. 크기(scale_mul)·살·옷·
+  도복 네 가지가 다 맞아야 순환 중 딴 인물이 안 된다. v2.76.4~6의 반대 방향(새 시트 톤으로)은 폐기.
+  대조판: `review/tone_compare.png`(VERSION v2.76.7 스크립트).
 - **이펙트 색은 시트 프롬프트에서 못 박는다**: 자주·분홍 잔상은 마젠타 배경 판정에 먹혀 못 뽑는다(v2.76). 파랑·청록·흰·금만.
 - **짧은 무기는 같은 시트의 온전한 컷에서 잘라 붙인다**(v2.74.6, 사용자): hero_sheet.extract(patch=...) 훅으로
   원본 해상도에서 손질한다. 예: hero_sword4.graft — 기증 칼날을 자루 끝·축에 맞춰 늘려 투명한 자리와 별 위에 칠함.
