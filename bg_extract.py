@@ -62,6 +62,26 @@ while trim > int(H * 0.6):
     trim -= 1
 if trim < H:
     print('아래 평평한 띠 %dpx 제거' % (H - trim)); rgba = rgba[:trim]
+# --pad=N : 아래에 땅 N줄을 덧댄다 — 집·바위가 그림 맨 아래에 붙어 있으면 디졸브가 그걸 녹인다
+# (폐촌 "집이 잘려 보여", v2.69.1). 맨 아래 6줄을 위아래 번갈아 이어 붙이고 살짝 흔들어 줄무늬를 죽인다.
+for arg in sys.argv[2:]:
+    if arg.startswith('--pad'):
+        n = int(arg.split('=')[1]); Hh = rgba.shape[0]
+        band = rgba[Hh - 6:Hh].astype(int)
+        # 집 벽이 맨 아래까지 닿아 있어 그 줄을 그대로 이으면 벽이 물에 비친 듯 줄무늬가 된다 —
+        # 줄마다 중앙값에 가까운 픽셀(땅)만 골라 가로로 섞어 벽 구조 없는 땅 띠를 만든다
+        rng = np.random.RandomState(7)
+        rows = []
+        for i in range(n):
+            src = band[i % 6]
+            med = np.median(src[:, :3], axis=0)
+            ground = np.abs(src[:, :3] - med).sum(1) < 40
+            pool = src[ground] if ground.sum() > 50 else src
+            pick = pool[rng.randint(0, len(pool), size=src.shape[0])]
+            pick = pick.copy(); pick[:, :3] = np.clip(pick[:, :3] + rng.randint(-2, 3, size=(src.shape[0], 1)), 0, 255)
+            rows.append(pick.astype(np.uint8))
+        rgba = np.concatenate([rgba, np.stack(rows)], 0)
+        print('아래 땅 %d줄 덧댐' % n)
 out = '%s/assets/bg_%s.png' % (R, zone)
 im = Image.fromarray(rgba, 'RGBA')
 # 용량 — 게임은 높이 ~290px로 그리니 폭 1024면 충분(2000px 시트는 2배 오버샘플).
