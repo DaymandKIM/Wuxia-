@@ -32,13 +32,15 @@ setTimeout(()=>{
   const d=w.document, S=w.eval('S'), EQ=w.eval('EQUIP');
   w.closeTitle && w.closeTitle();
   // 1) 드랍
-  ok(S.equip.weapon===null && S.equip.armor && S.equip.armor.g===0 && S.equip.trinket && S.equip.trinket.g===0,'시작 장비: 방어구·장신구 일반 하나, 무기는 없음(맨손 시작 — 권갑 아이콘 대기)');
+  ok(S.equip.weapon && S.equip.weapon.k==='fist' && S.equip.weapon.g===0 && S.equip.armor && S.equip.armor.g===0 && S.equip.trinket && S.equip.trinket.g===0,
+     '시작 장비: 무기 권갑·방어구·장신구 일반 하나 (v2.79 — 권갑 아이콘 eq_fist)');
+  ok(w.eval('atkPool()[0].key')==='punch','권갑을 끼면 맨손 무브셋(주먹·발차기)');
   EQ.dropCh=1; S.inv={}; S.codex={}; S.itemLv={}; S.equip={weapon:null,armor:null,trinket:null};
-  ok(w.eqKinds(EQ.slots[0]).length===5 && !w.eqKinds(EQ.slots[0]).some(k=>k[0]==='fist'),'아이콘 없는 권갑은 화면·드랍에서 빠진다(무기 5종 보임)');
+  ok(w.eqKinds(EQ.slots[0]).length===6 && w.eqKinds(EQ.slots[0])[0][0]==='fist','무기 6종(권갑·검·도·창·봉·부채) — 권갑이 첫 자리 (v2.79)');
   S.equip={weapon:null,armor:null,trinket:null};
   for(let i=0;i<40;i++) w.rollDrop(false);
   ok(EQ.slots.every(sl=>S.equip[sl.k]),'40번 드랍에 빈 자리 셋이 첫 장비를 꼈다');
-  ok(w.codexCount()>0 && Object.keys(S.inv).length>0 && !S.inv.fist,'도감 '+w.codexCount()+'종 · 주머니에 쌓였다(숨긴 종류는 안 떨어짐)');
+  ok(w.codexCount()>0 && Object.keys(S.inv).length>0,'도감 '+w.codexCount()+'종 · 주머니에 쌓였다 (v2.79 권갑도 떨어진다)');
   // 2) 합성 수동
   S.inv={}; S.codex={}; S.itemLv={}; S.equip={weapon:null,armor:null,trinket:null};
   w.eqGain('sword',0,3);
@@ -53,7 +55,7 @@ setTimeout(()=>{
   ok(w.eqAutoEquipAll()>=1 && S.equip.weapon.k==='fan' && S.equip.weapon.g===4,'자동 장착: 장착 효과 최대(전설 부채)로');
   ok(w.eqWear('sword',3) && S.equip.weapon.k==='sword' && S.equip.weapon.g===3,'직접 장착: 영웅 검');
   ok(w.eqWear('spear',4)===false,'없는 장비는 못 낀다');
-  ok(w.eqUnwear('weapon')===true && S.equip.weapon===null,'무기 벗기 → 맨손 (v2.76.9 — 권갑 아이콘 대기 중 주먹 동작을 보려면)');
+  ok(w.eqUnwear('weapon')===true && S.equip.weapon===null,'무기 벗기 → 맨손 (v2.76.9)');
   ok(w.eqUnwear('weapon')===false,'이미 맨손이면 벗을 게 없다');
   ok(w.eqWear('sword',3),'벗은 뒤 다시 낄 수 있다');
   // 레벨 반영 자동 장착 — 영웅 검을 많이 올리면 전설 부채보다 강해진다
@@ -88,7 +90,7 @@ setTimeout(()=>{
       d3.getElementById('tab-equip').click();
       ok(d3.getElementById('epanel').classList.contains('show'),'장비 탭이 패널을 연다');
       ok(d3.querySelectorAll('#etabs .askind').length===3,'[무기][방어구][장신구] 탭');
-      ok(d3.querySelectorAll('.eqcard').length===25,'무기 탭 카드 = 아이콘 있는 5종×5등급');
+      ok(d3.querySelectorAll('.eqcard').length===30,'무기 탭 카드 = 6종×5등급 (v2.79 권갑 포함)');
       d3.querySelector('.eqcard.seen').click();
       ok(!d3.getElementById('eqdet').hidden && !!d3.getElementById('eqdlv'),'카드를 누르면 상세(장착·강화·합성)가 열린다');
       d3.querySelector('#etabs .askind[data-t="trinket"]').click();
