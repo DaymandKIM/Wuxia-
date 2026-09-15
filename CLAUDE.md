@@ -295,10 +295,8 @@ MAX만 유동(×개수 표기). 꾹 누르면 연속 구매.
 장착·강화·합성). 데이터 EQUIP(00-data)·모듈 68-equip.js(eqBonus·eqGain·eqMerge/eqMergeAll·
 eqAutoEquip/All·eqWear·levelItem·rollDrop·패널)·저장 S.equip/inv/itemLv/codex(옛 eqLv·장비 lv는
 낀 아이템 레벨로 이월)·sim spend(일괄 합성→자동 장착→낀 것 강화)·검증 equiptest. 아이콘 eq_* 16종.
-오프라인엔 드랍 없음(보수적). **무기 자리는 권(맨손 계열)이다**(v2.70.1, 사용자: "지금 무기는
-맨손 혹은 권으로, 나중에 무기를 추가") — 권갑·권포·철권·조갑·철구·완갑. kinds[3] 아이콘 키,
-없으면 eqIcon()이 train_atk 주먹으로 대체(권 아이콘 시트 대기). 옛 검·도·창·봉·철선 저장은
-철구(EQUIP.legacyWeapon)로 이월. **아이콘 없는 종류는 화면·드랍에서 빠진다**(v2.70.2, eqKinds —
+오프라인엔 드랍 없음(보수적). **무기 자리는 무림 무기 체계다**(v2.70.3, 사용자 확정) — 권갑(권)·검·도·창·봉·철구·철선. 맨주먹
+계열은 권갑(拳套) **한 종류**(권은 분류이지 여섯 종류가 아니다). 권갑 아이콘 eq_fist 대기. **아이콘 없는 종류는 화면·드랍에서 빠진다**(v2.70.2, eqKinds —
 에셋이 오면 저절로 등장, sim은 assets/ 목록으로 ASSET 스텁). **시작 장비**는 부팅 때 빈 자리에
 일반 하나(EQUIP.starter, eqStarter). 등급 줄은 일반이 위. **문구는 한 줄에 하나**(v2.70.1, "가독성이 떨어져 줄바꿈 필수") — 무공 artFxLines·
 수련 .trv·장비 .eqlab·토스트 `\n`(pre-line). 새 설명 문구도 이 규칙을 따른다.

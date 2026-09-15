@@ -983,10 +983,10 @@ const critMul   = ()=> TRAIN.critMul + (statBonus('cdmg')+tBonus('cdmg')+eBonus(
 // 장착 효과가 가장 큰 것을 낀다. 효과는 전부 %(지수 세계에서 고정치는 무의미).
 const EQUIP = {
   slots: [
-    // 무기 자리는 당분간 **권(拳) — 맨손 계열**(사용자 확정 v2.70.1: "지금 무기는 맨손 혹은 권으로,
-    // 나중에 무기를 추가"). 종류[3] = 아이콘 키(없으면 주먹 아이콘 train_atk). 검·도·창·봉·철선
-    // 아이콘(eq_*)은 무기가 들어올 때 쓴다. 옛 저장의 검류 아이템은 권갑으로 옮긴다(65-save).
-    { k:'weapon',  n:'권',     stat:'atk',  kinds:[['gauntlet','권갑','crit','eq_gauntlet'],['wraps','권포','aspd','eq_wraps'],['knuckle','철권','cdmg','eq_knuckle'],['claw','조갑','regen','eq_claw'],['ironball','철구','hp','eq_ironball'],['bracer','완갑','gold','eq_bracer']] },
+    // 무기 자리 = 무림 무기 체계(사용자 확정 v2.70.3: "권 검 도 창 봉 등 우리가 나눴던 체계"). **권은 한 종류** —
+    // 맨주먹 계열의 장비 이름은 게임 관례대로 권갑(拳套). 종류[3] = 아이콘 키(없으면 eq_<종류>). 아이콘 없는
+    // 종류는 화면·드랍에서 빠진다(eqKinds) — 권갑 아이콘이 오면 저절로 등장.
+    { k:'weapon',  n:'무기',   stat:'atk',  kinds:[['fist','권갑','spd','eq_fist'],['sword','검','crit'],['saber','도','aspd'],['spear','창','cdmg'],['staff','봉','regen'],['ironball','철구','hp'],['fan','철선','gold']] },
     { k:'armor',   n:'방어구', stat:'hp',   kinds:[['robe','무복','regen'],['vest','피갑','aspd'],['lamellar','찰갑','hp'],['cloak','도롱이','spd']] },
     { k:'trinket', n:'장신구', stat:'gold', kinds:[['pendant','옥패','crit'],['ring','반지','cdmg'],['beads','염주','regen'],['talisman','부적','atk'],['gourd','호리병','hp'],['ribbon','비단끈','spd']] },
   ],
@@ -999,10 +999,10 @@ const EQUIP = {
   bossDrop: 1,                   // 보스는 반드시
   mergeN: 3,                     // 같은 것 N개 → 한 등급 위 1개
   // 아이콘 없는 종류는 화면·드랍에서 뺀다(v2.70.2, 사용자: "이미지가 아직 없으면 넣지 말고") —
-  // eq_<종류>(또는 kinds[3]) 에셋이 들어오면 저절로 나타난다. 옛 저장의 검·도·창·봉·철선은 legacyWeapon으로.
-  legacyWeapon: 'ironball',
-  // 시작 장비(v2.70.2, 사용자: "첫 장비는 주고") — 자리마다 일반 등급 하나. 앞의 것부터 아이콘이 있는 종류를 준다.
-  starter: { weapon:['gauntlet','ironball'], armor:['robe'], trinket:['pendant'] },
+  // eq_<종류>(또는 kinds[3]) 에셋이 들어오면 저절로 나타난다.
+  // 시작 장비(v2.70.2, 사용자: "첫 장비는 주고") — 자리마다 일반 등급 하나. 앞의 것부터 아이콘이 있는 종류를 준다
+  // (주인공은 맨손이라 권갑이 먼저, 아이콘이 없는 동안은 검).
+  starter: { weapon:['fist','sword'], armor:['robe'], trinket:['pendant'] },
   subRate: 0.4,                  // 종류별 부가 효과 = 주 효과의 이 비율
   codexRate: 0.15,               // 보유 효과 = 그 아이템 장착 효과 × 이 비율 (얻어 본 것 전부, 영구)
   lvPer: 0.03,                   // 레벨 1당 효과 ×(1+0.03·lv) — 전설 100렙 = 4배
