@@ -147,14 +147,19 @@ function gotoZone(i, st){
 function buildZonePanel(){
   const b = $('zbody');
   const Z = ZONES, n = Z.length;
-  const W = 360, topY = 54, stepY = 92, r = 30, H = topY + (n-1)*stepY + 60;
-  const nx = i => (i % 2 === 0 ? 106 : 254);   // 지그재그 좌우
-  const ny = i => topY + i*stepY;
+  // 여정 지도 일러스트(v2.69, 사용자 그림) — 있으면 그림 위 지형 자리(ZONES.map)에 노드를 얹고,
+  // 없으면 옛 지그재그 노드망으로 그린다.
+  const art = !!ASSET.zone_map && Z.every(z => z.map);
+  const W = 360, topY = 54, stepY = 92, r = art ? 21 : 30, H = art ? 360 : topY + (n-1)*stepY + 60;
+  const nx = i => art ? Z[i].map[0] : (i % 2 === 0 ? 106 : 254);   // 지그재그 좌우
+  const ny = i => art ? Z[i].map[1] : topY + i*stepY;
   const FONT = "'Jua','Apple SD Gothic Neo',sans-serif";
   let svg = '<svg id="zmap" viewBox="0 0 ' + W + ' ' + H +
     '" preserveAspectRatio="xMidYMin meet" style="width:100%;height:auto;display:block">';
-  // 여정 길 — 아래로 이어지는 곡선. 다음 구역이 열렸으면 밝은 길, 아니면 흐린 길.
-  for (let i = 0; i < n-1; i++){
+  if (art) svg += '<image href="' + ASSET.zone_map + '" x="0" y="0" width="360" height="360" preserveAspectRatio="none"/>';
+  // 여정 길 — 아래로 이어지는 곡선(그림 지도엔 길이 이미 그려져 있어 생략).
+  // 다음 구역이 열렸으면 밝은 길, 아니면 흐린 길.
+  for (let i = 0; !art && i < n-1; i++){
     const x1=nx(i), y1=ny(i), x2=nx(i+1), y2=ny(i+1);
     const lit = TEST || (i+1) < S.unlocked;
     svg += '<path d="M ' + x1 + ' ' + y1 + ' C ' + x1 + ' ' + (y1+stepY*0.55) +
@@ -175,23 +180,25 @@ function buildZonePanel(){
            '" r="' + r + '" fill="' + (open?col:'#161c24') + '" stroke="' +
            (here?'#f0e2b8':(open?'#0c130e55':'#3a4756')) + '" stroke-width="' + (here?3.5:2) +
            '"' + (open?' style="cursor:pointer"':'') + '/>';
+    // 양피지 위에선 글자에 밝은 테를 둘러 읽히게 한다 (paint-order)
+    const halo = art ? ' stroke="#f3e9d2" stroke-width="3" paint-order="stroke"' : '';
     if (open){
       svg += '<text class="zn" data-z="' + i + '" x="' + x + '" y="' + (y+1) +
              '" text-anchor="middle" dominant-baseline="central" font-family="' + FONT +
-             '" font-weight="700" font-size="17" fill="#12161c" style="pointer-events:none">' + z.n + '</text>';
+             '" font-weight="700" font-size="' + (art ? 14 : 17) + '" fill="#12161c" style="pointer-events:none">' + z.n + '</text>';
     } else {
-      svg += '<text x="' + x + '" y="' + (y+1) + '" text-anchor="middle" dominant-baseline="central" font-size="20" style="pointer-events:none">🔒</text>';
+      svg += '<text x="' + x + '" y="' + (y+1) + '" text-anchor="middle" dominant-baseline="central" font-size="' + (art ? 16 : 20) + '" style="pointer-events:none">🔒</text>';
     }
     // 단계 범위 캡션
-    svg += '<text class="zd" x="' + x + '" y="' + (y+r+14) + '" text-anchor="middle" font-family="' + FONT +
-           '" font-size="11" fill="' + (open?'#c3cbd5':'#4a5462') + '" style="pointer-events:none">' +
+    svg += '<text class="zd" x="' + x + '" y="' + (y+r+13) + '" text-anchor="middle" font-family="' + FONT +
+           '" font-size="11" fill="' + (art ? (open?'#2a2418':'#6b6252') : (open?'#c3cbd5':'#4a5462')) + '"' + halo + ' style="pointer-events:none">' +
            (i*10+1) + '~' + (i*10+10) + '단계</text>';
     // 상태 — 클리어 체크 / 수련 중
     if (done)
       svg += '<text x="' + (x+r-3) + '" y="' + (y-r+9) + '" text-anchor="middle" font-size="15" fill="#7fc78f" style="pointer-events:none">✓</text>';
     if (here)
-      svg += '<text x="' + x + '" y="' + (y+r+27) + '" text-anchor="middle" font-family="' + FONT +
-             '" font-weight="700" font-size="11" fill="' + col + '" style="pointer-events:none">▶ 수련 중</text>';
+      svg += '<text x="' + x + '" y="' + (y+r+26) + '" text-anchor="middle" font-family="' + FONT +
+             '" font-weight="700" font-size="11" fill="' + (art ? '#7a2e1e' : col) + '"' + halo + ' style="pointer-events:none">▶ 수련 중</text>';
   }
   svg += '</svg>';
   // TEST 단계 이동 — 지금 구역의 단계를 바로 고른다

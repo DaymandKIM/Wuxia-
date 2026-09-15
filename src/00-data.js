@@ -154,12 +154,14 @@ const FIST = [
 ];
 
 // 구역 — 각 10단계 + 보스 1단계. mul이 클수록 어렵고 보상도 크다.
+// map: 여정 지도 일러스트(assets/zone_map, 360×360 좌표) 위 노드 자리 — 그림 속 지형에 손으로 맞춤 (v2.69).
+// 구역 6 성채 자리는 [292, 52] (그림 우상단 성). 그림이 없으면 옛 지그재그 노드망으로 그린다.
 const ZONES = [
-  { k:'bamboo',  n:'죽림',   ground:'#6a7a52', boss:'대나무 마왕' },
-  { k:'village', n:'폐촌',   ground:'#6b6350', boss:'폐촌의 원혼' },   // 등장 문구·FOES.ghost와 통일
-  { k:'cave',    n:'동굴',   ground:'#474d54', boss:'석암거인' },   // v2.35 어둑·푸른끼 (몹 대비)
-  { k:'snow',    n:'설산',   ground:'#a4b3c0', boss:'설산백호' },   // v2.35 톤다운 (흰 백호 대비)
-  { k:'heaven',  n:'천산',   ground:'#7f9a86', boss:'뇌운신장' },
+  { k:'bamboo',  n:'죽림',   ground:'#6a7a52', boss:'대나무 마왕', map:[78, 296] },
+  { k:'village', n:'폐촌',   ground:'#6b6350', boss:'폐촌의 원혼', map:[276, 242] },   // 등장 문구·FOES.ghost와 통일
+  { k:'cave',    n:'동굴',   ground:'#474d54', boss:'석암거인',   map:[100, 188] },   // v2.35 어둑·푸른끼 (몹 대비)
+  { k:'snow',    n:'설산',   ground:'#a4b3c0', boss:'설산백호',   map:[280, 142] },   // v2.35 톤다운 (흰 백호 대비)
+  { k:'heaven',  n:'천산',   ground:'#7f9a86', boss:'뇌운신장',   map:[96, 86] },
 ];
 const zone = ()=> ZONES[S.zi];
 
