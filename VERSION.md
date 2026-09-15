@@ -1,3 +1,9 @@
+# v2.72.3 — 창 공격 모션 (사용자 시트 sheets/hero_spear2.png, 2026-09-15)
+
+- WEAPONMOVES.spear = **찌르기(spearthrust, 0)·쓸기(spearsweep, 5)·회전(spearspin, 15)**. `hero_spear2.py`.
+  컷 선택은 스크립트 머리말에(창 둘 교차 컷·땅에 꽂음·가로 쥠·세워 쥠은 안 씀). 창이 길어 HFX.aw 66/66/66.
+- 검증 review/hero_spear2.png·blackcheck·전 회귀(무기별 자동 검사)·크로뮴 실기.
+
 # v2.72.2 — 도(刀) 공격 모션 (사용자 시트 sheets/hero_saber2.png, 2026-09-15)
 
 - WEAPONMOVES.saber = **베기(saberslash, 0)·내려찍기(sabersmash, 5)·회전베기(saberspin, 15)**. `hero_saber2.py`.
