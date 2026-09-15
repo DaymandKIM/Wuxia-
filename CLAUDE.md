@@ -140,6 +140,9 @@ review/            검사판 PNG (생성물)
 
 ### 겪은 사고와 원인
 
+- **v2.72 무기 시트 5장은 안쪽 액자선에서 무기가 잘려 있다**(v2.73.3, review/clipped_cells.png) — 복구 불가.
+  여백의 파편은 붙이지 않는다(hero_sheet). 재작업 프롬프트 docs/프롬프트-주인공.md "무기 공격 시트 재작업".
+  새 시트 프롬프트엔 반드시 "NO frames/borders/brackets, weapon fully inside the cell with padding"을 넣는다.
 - **칸은 그림의 경계가 아니다 — 무기가 테두리를 넘어 여백까지 그려진다**(v2.73 감사: 창 끝·큰 원 검기가
   여백에 1000px). 주인공 시트는 hero_sheet.py가 시트 전체 덩어리 라벨링 + 줄 이어붙이기로 **그림 기준**
   크롭하고 캔버스 규격을 자동으로 잰다(review/hero_specs.json → HFX.aw/fh). 칸 단위 크롭 금지.

@@ -34,9 +34,9 @@ const HFX = {
   castFps: 10,                   // 시전 재생 속도 — 16은 컷이 씹혀 보였다 (4성 0.6~0.9초)
   shotT: 0.28,                   // 권기 탄 비행 시간 (구 streak과 동일)
   fadeT: 0.22,                   // 탄 소멸 연출
-  aw: { aidle: 50, katk: 70, punch: 52, swordthrust: 78, swordslash: 52, swordspin: 56, fansweep: 58, fanspin: 48, fanstrike: 50, saberslash: 58, sabersmash: 56, saberspin: 54, spearthrust: 68, spearsweep: 52, spearspin: 50, staffswing: 48, staffsweep: 52, staffspin: 50, kickside: 56, kickround: 58, kickhigh: 52, flykick: 44, firekick: 44, cresckick: 46, burstkick: 46, run: 34, punchb: 52, idle: 32, hit: 32 },   // 특수 동작 프레임 폭 (v2.73 — 주인공 시트는 hero_sheet가 그림에 맞춰 재고 review/hero_specs.json에 적는다. idle·hit도 v2.73.2부터 새 시트)
+  aw: { aidle: 50, katk: 70, punch: 52, swordthrust: 48, swordslash: 48, swordspin: 48, fansweep: 46, fanspin: 48, fanstrike: 48, saberslash: 48, sabersmash: 48, saberspin: 52, spearthrust: 50, spearsweep: 52, spearspin: 48, staffswing: 48, staffsweep: 52, staffspin: 48, kickside: 56, kickround: 58, kickhigh: 52, flykick: 44, firekick: 44, cresckick: 46, burstkick: 46, run: 34, punchb: 52, idle: 32, hit: 32 },   // 특수 동작 프레임 폭 (v2.73 — 주인공 시트는 hero_sheet가 그림에 맞춰 재고 review/hero_specs.json에 적는다. idle·hit도 v2.73.2부터 새 시트)
   // 캔버스 높이가 51을 넘는 동작 [높이, 위 여분] — 머리 위로 든 무기·큰 원 기운. 렌더는 위 여분만큼 위로 올려 땅을 맞춘다(v2.73)
-  fh: { swordslash: [53, 2], spearspin: [54, 3], staffspin: [54, 3] },
+  fh: {  },
   // 기본공격 = 양주먹(punch, 권기 정권) + 발차기 3종(kickside·kickround·kickhigh) 4프레임
   // (v2.71 — 사용자 시트 sheets/hero_kick2.png 3줄, hero_kick2.py로 추출. 머리 중심 정렬·칸 바닥 기준)
   // kickside 54·kickround 56·kickhigh 60 — 발이 옆·위로 뻗어 폭이 넓다(좌우 대칭 캔버스)

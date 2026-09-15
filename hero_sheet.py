@@ -132,9 +132,13 @@ class Sheet:
         pairs = sorted(contacts.items(), key=lambda kv: -len(kv[1]))
         bridged = np.zeros(fg0.shape, bool)
         def root(i): return i if i in figure else attach.get(i)
-        for _ in range(4):                            # 조각 사슬(인물→여백 조각→옆칸 조각)
+        # v2.73.3: 여백에만 있는 조각은 붙이지 않는다 — 시트마다 칸 안쪽에 얇은 액자선이 있어 무기가 거기서 잘린 채
+        # 그려졌고, 액자 밖 여백의 조각은 그 무기의 이어짐이 아니라 딴 자리에 놓인 파편이라 붙이면 떠 있는 조각이 됐다
+        # (사용자: "무기 끝이 다 잘려 있어"). 원본이 잘린 것이라 복구 불가 → 시트를 액자선 없이 다시 받는다.
+        for _ in range(4):                            # 조각 사슬(인물→칸 안 조각)
             for (l, r, ax, a, b), pos in pairs:
                 if l not in mass or r not in mass: continue
+                if mass[l][0] is None or mass[r][0] is None: continue   # 여백 조각
                 if l in figure and r in figure: continue
                 rl_, rr_ = root(l), root(r)
                 if rl_ is None and rr_ is None: continue
