@@ -22,7 +22,7 @@ const R=new Function(code+`;return {S,P,step:dt=>step(dt),zone:()=>zone(),lv:()=
   TREE,treeNodes:s=>treeNodes(s),treeAvail:(s,n)=>treeAvail(s,n),
   treeAlloc:(s,id)=>treeAlloc(s,id),skillPtsLeft:()=>skillPtsLeft(),
   traitDefs:k=>traitDefs(k),hasTrait:(k,id)=>hasTrait(k,id),traitBuy:(k,id)=>traitBuy(k,id),
-  EQUIP,enhCost:k=>enhCost(k),canEnhance:k=>canEnhance(k),enhance:k=>enhance(k)};`)();
+  EQUIP,eqMergeAll:()=>eqMergeAll(),eqAutoEquipAll:()=>eqAutoEquipAll(),lvCost:(k,g)=>lvCost(k,g),canLevelItem:(k,g)=>canLevelItem(k,g),levelItem:(k,g)=>levelItem(k,g)};`)();
 const {S,P}=R;
 
 // 플레이어 흉내 — 30초마다: 가장 싼 수련 스텟 1개, 배울 수 있는 무공, 가능한 돌파
@@ -61,12 +61,14 @@ function spend(){
     if(!best)break;
     R.traitBuy(best.k,best.id);
   }
-  // 장비 자리 강화 (v2.66/67) — 틱당 최대 3회, 싼 자리부터. 드랍·합성·자동 장착은 전투 코드가 한다.
+  // 장비 (v2.70 표준형) — 일괄 합성·자동 장착 버튼을 누르는 셈, 그다음 낀 아이템부터 싼 강화 3회
+  R.eqMergeAll(); R.eqAutoEquipAll();
   for(let n=0;n<3;n++){
     let b=null,c=1e18;
-    for(const sl of R.EQUIP.slots) if(R.canEnhance(sl.k)){ const cc=R.enhCost(sl.k); if(cc<c){c=cc;b=sl.k;} }
+    for(const sl of R.EQUIP.slots){ const it=S.equip[sl.k]; if(!it) continue;
+      if(R.canLevelItem(it.k,it.g)){ const cc=R.lvCost(it.k,it.g); if(cc<c){c=cc;b=it;} } }
     if(!b)break;
-    R.enhance(b);
+    R.levelItem(b.k,b.g);
   }
 }
 

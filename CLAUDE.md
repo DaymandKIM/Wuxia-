@@ -67,7 +67,7 @@ node shamantest.js     # 주술사 원거리·마법
 node savetest.js       # 저장·오프라인 진행 (자동 저장·상한·깨진 저장 복구)
 node artstest.js       # 무공 (표 노출·습득 조건·심법 효과·초식 자동 시전·저장)
 node fatetest.js       # 기연 (인연 축적·카드·보상·조각 해금·저장)
-node equiptest.js      # 장비 (드랍·자동 장착 전승·판매·강화·저장·패널)
+node equiptest.js      # 장비 (드랍·합성·자동/직접 장착·아이템 강화·보유 효과·저장·패널)
 node fxtest.js         # 주인공 연출 구동 (시전 스트립·탄·권기 정권·경지 기운)
 node ronintest.js      # 폐촌 (낭인 베기·병 던지기, 들개, 보스 원혼 해골 귀화)
 node snowtest.js       # 설산 (설랑 물기, 빙백령 얼음 조각, 보스 백호 숨결 탄)
@@ -97,7 +97,7 @@ src/62-train.js    수련(스텟 구매) 패널·탭 알림점
 src/63-arts.js     무공 패널·습득·탭 알림점 (초식 시전은 30-combat)
 src/64-fate.js     기연 — 인연 정산 이벤트·카드 (인연 축적은 30-combat)
 src/65-save.js     저장(localStorage)·오프라인 진행·돌아온 패널
-src/68-equip.js    장비 — 드랍·자동 장착·판매·강화·패널 (v2.66)
+src/68-equip.js    장비 — 드랍·합성·장착·아이템 강화·보유 효과·패널 (v2.70 표준형)
 src/70-main.js     시작·루프
 
 assets/*.png       스프라이트. 파일명이 곧 키다 (frog_atk1.png → 'frog_atk1')
@@ -284,15 +284,17 @@ MAX만 유동(×개수 표기). 꾹 누르면 연속 구매.
 치명타는 노란 숫자로 뜬다. 8종 곡선은 sim으로 검증 — 진행 속도는 v2.0과
 동일하고 후반 은자 적체가 해소됐다(docs/QA-밸런스.md 절차).
 
-**장비가 들어갔다** (v2.66 → v2.67 **도감형**, 사용자 확정) — 세 자리(무기·방어구·장신구),
-16종×5품계 80칸 도감. 처치 드랍(EQUIP.dropCh 5%, 보스 100%, 품계는 구역별 가중 gradeW)이
-전부 주머니(S.inv)에 쌓이고 같은 것 3개는 자동 합성(한 품계 위, 연쇄). 자리엔 최고 품계 자동
-장착(같은 품계면 유지 — 도감 칸을 눌러 직접 골라 낄 수 있다). **보유 효과** = 얻어 본 칸마다
-품계 base×codexRate가 영구 가산(잡템도 버릴 게 없다). 종류별 부가 효과(kinds[2], subRate).
-강화는 자리에 붙는다(S.eqLv, 은자, 현 단계 처치 은자×costK×costGrow^lv). 효과 전부 %:
-무기 공격 / 방어구 체력 / 장신구 은자 획득 + 종류별 부가. 데이터 EQUIP(00-data)·모듈
-68-equip.js(eqBonus·eqGain·eqMerge·eqAutoEquip·eqWear·rollDrop·enhance·패널)·탭 [장비]
-(tab_equip)·저장 S.equip/eqLv/inv/codex·sim spend 강화·검증 equiptest. 아이콘 eq_* 16종.
+**장비가 들어갔다** (v2.66 → v2.67 도감형 → **v2.70 표준형**, 사용자: "흔한 방치형처럼") —
+세 자리(무기·방어구·장신구), 16종×5등급(일반·고급·희귀·영웅·전설) 80종. 처치 드랍(EQUIP.dropCh
+5%, 보스 100%, 등급은 구역별 가중 gradeW)이 주머니(S.inv[종류][등급] 개수)에 쌓인다. **합성은
+수동**(같은 것 3개 → 한 등급 위, 일괄 합성 버튼). **아이템마다 레벨**(S.itemLv, 은자, 등급별 상한
+20~100, 레벨당 +3%) — 장착 효과·보유 효과가 둘 다 레벨을 탄다. **보유 효과** = 얻어 본 아이템
+(S.codex 비트)마다 장착 효과×codexRate 영구 가산 → 안 끼는 것도 강화할 이유. 자동 장착 버튼은
+장착 효과(레벨 반영) 최대로. 종류별 부가 효과(kinds[2], subRate). 효과 전부 %.
+패널: [무기][방어구][장신구] 탭 · 낀 것 · 일괄 합성/자동 장착 · 등급별 아이템 카드(누르면 상세:
+장착·강화·합성). 데이터 EQUIP(00-data)·모듈 68-equip.js(eqBonus·eqGain·eqMerge/eqMergeAll·
+eqAutoEquip/All·eqWear·levelItem·rollDrop·패널)·저장 S.equip/inv/itemLv/codex(옛 eqLv·장비 lv는
+낀 아이템 레벨로 이월)·sim spend(일괄 합성→자동 장착→낀 것 강화)·검증 equiptest. 아이콘 eq_* 16종.
 오프라인엔 드랍 없음(보수적).
 **무공이 들어갔다** (v1.14) — 초식 5(자동 시전·절차 이펙트) + 심법 5(% 증폭)
 + 기연 전용 2(구양신결·건곤이형, 표에만 보임). 습득 = 경지 도달 + 은자.

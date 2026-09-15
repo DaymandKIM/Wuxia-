@@ -15,7 +15,7 @@ function saveNow(){
       arts: S.arts, karma: S.karma, fates: S.fates, fatebits: S.fatebits,
       artXp: S.artXp, artStar: S.artStar, artLv: S.artLv,
       skillManual: S.skillManual, tree: S.tree, traits: S.traits, equip: S.equip,
-      eqLv: S.eqLv, inv: S.inv, codex: S.codex,
+      itemLv: S.itemLv, inv: S.inv, codex: S.codex,
     }));
   }catch(e){}                    // 시크릿 모드 등 — 저장만 못 할 뿐 게임은 돈다
 }
@@ -56,23 +56,26 @@ function applySave(d){
       S.artLv[a.k] = clamp(d.artLv[a.k] | 0, 1, artLvCap(a.k));   // 성 로드 뒤라 상한이 맞다
   }
   S.skillManual = !!d.skillManual;              // 발동 모드 (예전 저장엔 없다 → 자동)
-  // 장비 (v2.67 도감형) — 자리·주머니·도감·자리 강화를 유효한 것만 되살린다.
-  // v2.66 저장(장비에 lv)은 그 lv를 자리 강화로 옮기고, 장착품은 도감에 올린다.
-  S.equip = { weapon:null, armor:null, trinket:null }; S.eqLv = { weapon:0, armor:0, trinket:0 };
-  S.inv = {}; S.codex = {};
+  // 장비 (v2.70 표준형) — 자리·주머니·아이템 레벨·도감을 유효한 것만 되살린다.
+  // v2.66/67 저장의 자리 강화(eqLv·장비 lv)는 장착품의 아이템 레벨로 옮긴다.
+  S.equip = { weapon:null, armor:null, trinket:null }; S.inv = {}; S.itemLv = {}; S.codex = {};
   const NG = EQUIP.grades.length;
   for (const sl of EQUIP.slots){
     const it = d.equip && d.equip[sl.k];
-    if (it && typeof it === 'object' && sl.kinds.some(x => x[0] === it.k)){
+    if (it && typeof it === 'object' && sl.kinds.some(x => x[0] === it.k))
       S.equip[sl.k] = { k: it.k, g: clamp(it.g|0, 0, NG-1) };
-      if (it.lv) S.eqLv[sl.k] = clamp(it.lv|0, 0, EQUIP.lvCap);   // v2.66 이월
-    }
-    if (d.eqLv && typeof d.eqLv === 'object' && d.eqLv[sl.k] != null) S.eqLv[sl.k] = clamp(d.eqLv[sl.k]|0, 0, EQUIP.lvCap);
     for (const kd of sl.kinds){
       const k = kd[0];
       if (d.inv && Array.isArray(d.inv[k])) S.inv[k] = Array.from({length:NG}, (_, i) => Math.max(0, d.inv[k][i]|0));
+      if (d.itemLv && Array.isArray(d.itemLv[k])) S.itemLv[k] = Array.from({length:NG}, (_, i) => clamp(d.itemLv[k][i]|0, 0, EQUIP.grades[i].lvCap));
       if (d.codex && typeof d.codex === 'object' && d.codex[k]) S.codex[k] = (d.codex[k]|0) & ((1<<NG)-1);
-      if (S.equip[sl.k] && S.equip[sl.k].k === k) S.codex[k] = (S.codex[k]|0) | (1 << S.equip[sl.k].g);
+    }
+    const w = S.equip[sl.k];
+    if (w){
+      S.codex[w.k] = (S.codex[w.k]|0) | (1 << w.g);
+      const old = (it && it.lv) ? it.lv|0 : (d.eqLv && d.eqLv[sl.k]) ? d.eqLv[sl.k]|0 : 0;   // 옛 자리 강화 이월
+      if (old > 0){ if (!S.itemLv[w.k]) S.itemLv[w.k] = Array.from({length:NG}, () => 0);
+        S.itemLv[w.k][w.g] = clamp(Math.max(S.itemLv[w.k][w.g], old), 0, EQUIP.grades[w.g].lvCap); }
     }
   }
   // 문파 무공도 접기(v2.55.2) — 트리 노드는 되살리지 않는다(무공점 환급).
