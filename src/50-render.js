@@ -245,15 +245,16 @@ function drawHero(ox, oy){
       ctx.globalAlpha = 1;
     }
   }
+  const FH = HFX.fh && HFX.fh[key], fh = FH ? FH[0] : HERO.h, ftop = FH ? FH[1] : 0;   // 키 큰 캔버스(머리 위 무기) — 땅은 그대로 (v2.73)
   const hurt = P.hitT > 0;
   if (hurt) ctx.globalAlpha = 0.62 + Math.sin(S.t*46)*0.22;
-  draw(im, fi*fw, 0, fw, HERO.h, -Math.round(fw/2), -HERO.h, fw, HERO.h);
+  draw(im, fi*fw, 0, fw, fh, -Math.round(fw/2), -HERO.h - ftop, fw, fh);
   // 주먹 끝 흰 점(FIST)은 v2.31에서 은퇴 — 옛 35px 스트립 전용 좌표였고,
   // 지금 쓰는 양손 판(atka·atkb·katka·katkb)은 주먹이 그림에 다 있다.
   if (hurt){                       // 붉게 번쩍여 맞은 것을 알린다
     ctx.globalCompositeOperation = 'lighter';
     ctx.globalAlpha = Math.min(0.5, P.hitT*2.4);
-    draw(im, fi*fw, 0, fw, HERO.h, -Math.round(fw/2), -HERO.h, fw, HERO.h);
+    draw(im, fi*fw, 0, fw, fh, -Math.round(fw/2), -HERO.h - ftop, fw, fh);
     ctx.globalCompositeOperation = 'source-over';
   }
   ctx.restore();

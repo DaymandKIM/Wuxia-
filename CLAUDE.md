@@ -122,6 +122,7 @@ review/            검사판 PNG (생성물)
 | `bandit.py` → `foesheet.py` | `sheets/bandit.png` | 돌아간다 (v2.64, 4×4 공용 추출기) |
 | `shaman.py` → `foesheet.py` | `sheets/shaman.png` + `shaman_b.png` | 돌아간다 (v2.64, 두 시트 합침) |
 | `panther.py` `wisp.py` → `foesheet.py` | `sheets/panther.png` `sheets/wisp.png` | 돌아간다 (v2.65 — 테두리 줄 검출 격자) |
+| `hero_sheet.py` + `hero_*2.py` | `sheets/hero_*2.png` | 돌아간다 (v2.73 — **그림 기준** 공용 추출기. 아래 8개 스크립트는 컷 선택만) |
 | `hero_kick2.py` | `sheets/hero_kick2.png` | 돌아간다 (v2.71, 주인공 발차기 3종 — 칸 바닥 기준·머리 정렬) |
 | `hero_run2.py` | `sheets/hero_run2.png` | 돌아간다 (v2.71.1, 질주 6컷 — hero_kick2의 격자·축소 재사용) |
 | `hero_punch2.py` | `sheets/hero_punch2.png` | 돌아간다 (v2.71.2, 정권 두 판 — 옅은 배경·모서리 표식 시트) |
@@ -138,6 +139,9 @@ review/            검사판 PNG (생성물)
 
 ### 겪은 사고와 원인
 
+- **칸은 그림의 경계가 아니다 — 무기가 테두리를 넘어 여백까지 그려진다**(v2.73 감사: 창 끝·큰 원 검기가
+  여백에 1000px). 주인공 시트는 hero_sheet.py가 시트 전체 덩어리 라벨링 + 줄 이어붙이기로 **그림 기준**
+  크롭하고 캔버스 규격을 자동으로 잰다(review/hero_specs.json → HFX.aw/fh). 칸 단위 크롭 금지.
 - **시트마다 배경 농도·테두리 색·모서리 표식이 다르다.** 주먹 시트(v2.71.2)는 배경이 옅어 r-g>50 판정이
   안 잡혔고, 칸 모서리 ㄱ자 표식이 조각으로 남았다. hero_kick2.grid/cell_rgba가 배경 중앙값 ±40·어두운
   얇은 줄 격자·모서리 조각 버리기로 일반화돼 있다 — 주인공 시트는 이걸 쓴다.
