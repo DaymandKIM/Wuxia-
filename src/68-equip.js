@@ -88,9 +88,12 @@ function canEquipAny(){ return EQUIP.slots.some(sl => canEnhance(sl.k)); }
 function codexCount(){ let n = 0; for (const sl of EQUIP.slots) for (const kd of sl.kinds){ let b = eqOwnedBits(kd[0]); while (b){ n += b & 1; b >>= 1; } } return n; }
 
 /* ── 패널 ── 자리 카드 3장(장착·강화) + 도감 격자(16종 × 5품계). 값만 갱신(버튼 유지). */
+let eqTab = 'wear';                // 장비 패널 탭 — 'wear'(장착·강화) · 'codex'(도감) (v2.69.8 "아래 보는 게 불편")
 function buildEquipPanel(){
   const b = $('ebody');
-  let h = '';
+  let h = '<div id="etabs"><button class="askind' + (eqTab === 'wear' ? ' on' : '') + '" data-t="wear">장착</button>' +
+          '<button class="askind' + (eqTab === 'codex' ? ' on' : '') + '" data-t="codex">도감 <b id="eqcnt"></b></button></div>';
+  h += '<div id="ewear"' + (eqTab === 'wear' ? '' : ' hidden') + '>';
   for (const sl of EQUIP.slots){
     h += '<div class="zrow eqrow" id="eq-' + sl.k + '">' +
          '<div class="eqico"><img id="eqi-' + sl.k + '" alt=""><b id="eqg-' + sl.k + '"></b></div>' +
@@ -100,7 +103,10 @@ function buildEquipPanel(){
          '</div>';
   }
   h += '<div class="znote" id="eqlog"></div>';
-  h += '<div class="zst eqhd"><span>도감 <b id="eqcnt"></b></span><span class="eqhint">색 칸 = 지금 가진 것(누르면 낀다) · 점 = 얻어 본 것(보유 효과) · 같은 것 ' + EQUIP.mergeN + '개는 저절로 합쳐진다</span></div>';
+  h += '<div class="znote">적을 잡으면 장비가 떨어져 주머니에 쌓인다. 자리엔 가진 것 중 최고 품계가 저절로 끼워지고, ' +
+       '강화는 자리에 붙어 갈아껴도 남는다. 보스는 반드시 떨어뜨린다.</div>';
+  h += '</div><div id="ecodex"' + (eqTab === 'codex' ? '' : ' hidden') + '>';
+  h += '<div class="znote eqhint">색 칸 = 지금 가진 것(누르면 낀다) · 점 = 얻어 본 것(보유 효과) · 같은 것 ' + EQUIP.mergeN + '개는 저절로 합쳐진다</div>';
   for (const sl of EQUIP.slots){
     h += '<div class="eqsec">' + sl.n + ' <i>' + EQUIP.statName[sl.stat] + '</i></div><div class="eqgrid">';
     for (const kd of sl.kinds){
@@ -110,9 +116,11 @@ function buildEquipPanel(){
     }
     h += '</div>';
   }
-  h += '<div class="znote">적을 잡으면 장비가 떨어져 주머니에 쌓인다. 얻어 본 칸마다 보유 효과가 영구히 붙고, ' +
-       '자리엔 가진 것 중 최고 품계가 저절로 끼워진다. 강화는 자리에 붙어 갈아껴도 남는다. 보스는 반드시 떨어뜨린다.</div>';
+  h += '<div class="znote">얻어 본 칸마다 보유 효과가 영구히 붙는다 — 잡템도 버릴 게 없다.</div></div>';
   b.innerHTML = h;
+  b.querySelectorAll('#etabs .askind').forEach(el => {
+    el.onclick = () => { eqTab = el.dataset.t; buildEquipPanel(); };
+  });
   b.querySelectorAll('.trbuy').forEach(el => {
     const k = el.dataset.k; let iv = 0;
     const stop = ()=>{ if (iv){ clearInterval(iv); iv = 0; } };
