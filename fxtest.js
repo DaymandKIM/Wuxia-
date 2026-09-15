@@ -73,6 +73,34 @@ setTimeout(()=>{
   ok(drew('pashot'),'권기 탄 그림이 그려진다');
   ok(drew('bshot'),'지풍 빔 그림이 그려진다');
 
+  // 2.5) 네온 타격감 (v2.61) — 평타 명중에 참격 호·피격 브라이튼, 치명타에 바닥 링·미세 경직
+  w.eval(`S.fx.length=0; hitstopT=0; P.castT=0; P.castGapT=0; P.anim="idle"; P.dir=1;
+    S.foes.length=0; spawnFoe(); const f0=S.foes[0]; f0.x=P.x+20; f0.y=P.y; f0.af=0; f0.hp=1e18; f0.hpMax=1e18;
+    S.stats.crit=0; window.__rnd=Math.random; Math.random=()=>0.5;      // 치명 확률 0 → 평타
+    P.atkT=0.3; P.atkCd=0; P.af=HITFRAME; P.hitDone=false; heroHitCheck();`);
+  ok(w.eval('S.fx.some(e=>e.k==="slash"&&e.dir===1)'),'평타 명중에 참격 호가 생긴다 (dir 방향)');
+  ok(w.eval('S.foes[0].hitT>0'),'맞은 적에 피격 브라이튼 타이머가 켜진다');
+  ok(!w.eval('S.fx.some(e=>e.k==="critring")') && w.eval('hitstopT')===0,'평타엔 치명 링·경직이 없다');
+  renderNow();
+  ok(arcs.length>0,'참격 호가 호(arc)로 렌더된다');
+  ok(draws.filter(d=>d.im===w.eval('IMG[S.foes[0].k+"_"+foeM(S.foes[0]).anim[S.foes[0].anim][0]]')).length>=1+w.eval('FXD.hitflash.n'),
+     '피격 스프라이트가 브라이튼 겹수만큼 더 그려진다');
+  w.eval(`S.fx.length=0; S.stats.crit=1; Math.random=()=>0;                   // 치명 확률 >0, 난수 0 → 항상 치명
+    P.atkT=0.3; P.atkCd=0; P.af=HITFRAME; P.hitDone=false; heroHitCheck();`);
+  ok(w.eval('S.fx.some(e=>e.k==="critring")'),'치명타에 바닥 네온 링이 생긴다');
+  ok(w.eval('S.fx.some(e=>e.k==="slash"&&e.r>FXD.slash.r)'),'치명타 참격 호는 더 크다');
+  ok(w.eval('hitstopT')>0 && w.eval('hitstopT')<=w.eval('FXD.hitstop.max'),'치명타에 미세 경직이 걸린다 (상한 안)');
+  ok(w.eval('S.fx.some(e=>e.k==="dmg"&&e.c===1)'),'치명 피해 숫자가 뜬다');
+  renderNow();
+  ok(true,'치명 연출 렌더 통과 (오류는 마지막 검사에서 확인)');
+  w.eval('Math.random=window.__rnd; S.stats.crit=0; hitstopT=0; S.fx.length=0;');
+  // 탄 잔상 — 나는 탄(fly)은 고스트 n개가 더 그려진다
+  w.eval(`S.shots.length=0; S.shots.push({x:P.x+40,y:P.y-20,vx:-1,vy:0,spd:100,dmg:0,img:'spirit_shot',fly:true,life:2,t:0.1});`);
+  renderNow();
+  ok(draws.filter(d=>d.im===w.eval('IMG.spirit_shot')).length===1+w.eval('FXD.trail.n'),'나는 탄에 잔상 고스트 '+w.eval('FXD.trail.n')+'개가 붙는다');
+  w.eval('S.shots.length=0;');
+
+
   // 3) 기본공격 (v2.49) — 양주먹=권기 정권(katka/katkb 양손 파란빛), 성급 오르면 각도별 발차기가 섞인다
   ok(w.eval('ATKMOVES.length')===3 && w.eval('ATKMOVES[0].key')==='punch'
      && w.eval('ATKMOVES[1].key')==='kickside' && w.eval('ATKMOVES[2].key')==='kickhigh',

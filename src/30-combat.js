@@ -150,7 +150,7 @@ function heroHitCheck(){
   P.hitDone = true;
   // 판정은 발 위치(바닥)에서 잰다. 위아래가 대칭이 된다.
   const cx = P.x + P.dir * 14, cy = P.y;
-  let n = 0;
+  let n = 0, cr = false;
   for (const f of S.foes){
     if (f.dead) continue;
     // 세로는 눌러서 잰다 — 바닥이 기울어 보이는 시점이라 위아래가 가깝게 느껴진다
@@ -165,17 +165,29 @@ function heroHitCheck(){
       const iy = f.y - (foeM(f).bh||foeM(f).h)*0.45;
       if (crit) fxBlast(f.x, iy, FXD.crit.r, FXD.crit.c, true);
       else fxBlast(f.x, iy, FXD.hit.r, FXD.hit.c);
+      // 참격 호 (v2.61) — 임팩트 지점에 주인공이 보는 쪽으로 볼록한 네온 초승달
+      fxPush({ k:'slash', x:f.x, y:iy, dir:P.dir, c:crit ? FXD.crit.c : FXD.hit.c,
+               r:FXD.slash.r * (crit ? FXD.slash.crit : 1), sd:(Math.random()*2-1),
+               life:FXD.slash.life, t:FXD.slash.life });
+      // 치명타 — 발밑 네온 링 + 미세 경직 (경직은 loop에서만 적용, sim 무관)
+      if (crit){
+        fxPush({ k:'critring', x:f.x, y:f.y, r:FXD.critring.r, c:FXD.crit.c,
+                 life:FXD.critring.life, t:FXD.critring.life });
+        hitstop(FXD.hitstop.crit);
+        cr = true;
+      }
       n++;
     }
   }
   if (n) {
-    shake(2.2); sfx('punch');
+    shake(cr ? FXD.shake.crit : FXD.shake.hit); sfx('punch');
   }
 }
 
 function hurtFoe(f, dmg, crit){
   f.hp -= dmg;
   f.hit = 0.26;
+  f.hitT = FXD.hitflash.life;      // 피격 브라이튼 — 아주 짧게 하얗게 번쩍 (v2.61)
   // 타격 숫자 — 매 타격 조그맣게, 회심(치명타)은 크고 노랗게
   fxPush({ k:'dmg', x:f.x + rnd(-7, 7), y:f.y - (foeM(f).bh||foeM(f).h),
               v:fmt(dmg), c:crit ? 1 : 0,
@@ -263,6 +275,10 @@ function reviveHero(){
 
 let shakeV = 0;
 function shake(v){ shakeV = Math.max(shakeV, v); }
+// 미세 경직(hitstop, v2.61) — 치명타 순간 세상을 잠깐 멈춘다. 70-main의 loop만 읽어
+// step 호출을 건너뛰고 render는 계속한다. sim.js는 step을 직접 밟으므로 영향 없음.
+let hitstopT = 0;
+function hitstop(s){ hitstopT = Math.min(FXD.hitstop.max, Math.max(hitstopT, s)); }
 
 /* ── 초식 (자동 시전) ──────────────────────────────
    쿨다운이 차고 조건이 맞으면 알아서 펼친다. 그림 없이 절차 이펙트.

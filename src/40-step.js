@@ -168,6 +168,7 @@ function step(dt){
   for (let i=S.foes.length-1; i>=0; i--){
     const f = S.foes[i];
     if (f.hit > 0) f.hit -= dt;
+    if (f.hitT > 0) f.hitT -= dt;       // 피격 브라이튼 (v2.61)
     // 넉백
     if (f.kb > 0 && !f.boss){
       f.kb -= dt;

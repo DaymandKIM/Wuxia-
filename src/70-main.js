@@ -144,8 +144,11 @@ let last = performance.now();
 function loop(now){
   try{
     const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    // 미세 경직 (v2.61) — 치명타 순간 step만 멈추고 render는 계속한다.
+    // 배속 중엔 그만큼 빨리 풀려 배속과 충돌하지 않는다.
+    if (hitstopT > 0) hitstopT -= dt * (TEST ? TESTSPEED : 1);
     // [테스트 전용] 배속 — 같은 dt로 여러 번 밟아야 물리가 안 깨진다
-    for (let i = 0; i < (TEST ? TESTSPEED : 1); i++) step(dt);
+    else for (let i = 0; i < (TEST ? TESTSPEED : 1); i++) step(dt);
     render();
     hud();
     if (toastT > 0){ toastT -= dt; if (toastT <= 0) $('toast').classList.remove('show'); }
