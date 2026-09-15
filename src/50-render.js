@@ -107,8 +107,9 @@ function drawProps(ox, oy){
   }
   ctx.restore();
 }
-// 픽셀 실루엣 — 다크 아웃라인 후 채움(스프라이트 그림체). rows=위→아래 가로 막대
-// [{w,h,c,s?,dx?}]. 먼저 line으로 1px 확장해 깔고, 그 위에 채움(=1px 테두리만 남음).
+// 픽셀 대칭 실루엣 — 다크 아웃라인 후 3톤 채움(스프라이트 그림체).
+// rows=위→아래 가로 막대 [{w,h,c,hl?,s?,dx?}]. line으로 1px 확장해 깔고 채운다
+// (=1px 테두리만 남음). hl=왼쪽 하이라이트, s=오른쪽 그림자 → 원통·입체감.
 function pixRows(cx, topY, rows, line){
   let y = topY;
   for (const r of rows){ const x = Math.round(cx - r.w/2 + (r.dx||0));
@@ -117,122 +118,168 @@ function pixRows(cx, topY, rows, line){
   y = topY;
   for (const r of rows){ const x = Math.round(cx - r.w/2 + (r.dx||0)), w = Math.round(r.w), hh = Math.round(r.h);
     ctx.fillStyle = r.c; ctx.fillRect(x, Math.round(y), w, hh);
-    if (r.s){ ctx.fillStyle = r.s; ctx.fillRect(x + Math.round(w*0.6), Math.round(y), w - Math.round(w*0.6), hh); }
+    if (r.hl){ ctx.fillStyle = r.hl; ctx.fillRect(x, Math.round(y), Math.max(1, Math.round(w*0.26)), hh); }
+    if (r.s){ const sw = Math.max(1, Math.round(w*0.3)); ctx.fillStyle = r.s; ctx.fillRect(x + w - sw, Math.round(y), sw, hh); }
     y += r.h; }
 }
-function pixShadow(x, y, w){                            // 픽셀 타원 그림자 2단
-  ctx.fillStyle = 'rgba(0,0,0,.16)';
-  ctx.fillRect(Math.round(x - w*0.35), Math.round(y),   Math.round(w*0.7), 1);
+function pixShadow(x, y, w){                            // 픽셀 타원 그림자 3단
+  ctx.fillStyle = 'rgba(0,0,0,.17)';
+  ctx.fillRect(Math.round(x - w*0.32), Math.round(y),   Math.round(w*0.64), 1);
   ctx.fillRect(Math.round(x - w*0.5),  Math.round(y)+1, Math.round(w),     1);
-  ctx.fillRect(Math.round(x - w*0.35), Math.round(y)+2, Math.round(w*0.7), 1);
+  ctx.fillRect(Math.round(x - w*0.32), Math.round(y)+2, Math.round(w*0.64), 1);
 }
-function propStalk(D, x, y, h, cx, cy){                 // 대나무 줄기 무리
-  const C = D.cols, n = 1 + Math.floor(thash(cx, cy, 35) * 3);
-  ctx.globalAlpha = 1;
-  for (let s = 0; s < n; s++){
-    const sx = Math.round(x + (s - (n-1)/2) * 8 + (thash(cx, cy, 36+s) - 0.5) * 6);
-    const hh = Math.round(h * (0.8 + thash(cx, cy, 40+s) * 0.4)), w = 4;
-    pixShadow(sx, y, 9);
-    pixRows(sx, y - hh, [{ w, h: hh, c: C.stem, s: C.shade }], C.line);
-    ctx.fillStyle = C.node;                                     // 마디 — 어두운 가로 띠
-    const seg = Math.max(2, Math.floor(hh / 14));
-    for (let k = 1; k <= seg; k++){ const ny = Math.round(y - hh*k/(seg+1));
-      ctx.fillRect(sx - Math.round(w/2), ny, w, 1); }
-    const lv = 2 + Math.floor(thash(cx, cy, 48+s) * 2);         // 꼭대기 잎 — 계단 픽셀 획
-    for (let k = 0; k < lv; k++){
-      const dir = (k % 2) ? 1 : -1, ty = y - hh + 1 + k*3;
-      ctx.fillStyle = C.line; for (let i = 0; i < 5; i++) ctx.fillRect(sx + dir*i - 1, ty - i - 1, 3, 3);
-      ctx.fillStyle = C.leaf; for (let i = 0; i < 5; i++) ctx.fillRect(sx + dir*i, ty - i, 2, 2);
+// 슬렌더 잎(대나무·관목) — bx,by에서 (dx,dy) 방향으로 뻗는 가운데 볼록 픽셀 잎.
+function pixLeaf(bx, by, dx, dy, len, line, fill){
+  for (let pass = 0; pass < 2; pass++){
+    ctx.fillStyle = pass ? fill : line;
+    for (let j = 0; j <= len; j++){
+      const t = j / len, px = Math.round(bx + dx*j), py = Math.round(by + dy*j);
+      const belly = (t > 0.22 && t < 0.72) ? 1 : 0, sz = 1 + belly;
+      if (pass) ctx.fillRect(px, py, sz, sz);
+      else      ctx.fillRect(px-1, py-1, sz+2, sz+2);
     }
   }
 }
-function propPine(D, x, y, h){                          // 눈 쌓인 침엽수 (계단 삼각 3층)
-  const C = D.cols;
-  ctx.globalAlpha = 1; pixShadow(x, y, Math.round(h*0.5));
-  pixRows(x, y - Math.round(h*0.12), [{ w: 5, h: Math.round(h*0.12), c: C.trunk, s: C.line }], C.line);
-  const tierH = Math.round(h*0.34), rpr = 5, rh = Math.ceil(tierH/rpr);
-  let base = y - Math.round(h*0.10);
-  for (let t = 0; t < 3; t++){
-    const maxW = Math.round(h*0.42 * (1 - t*0.24)), rows = [];
-    for (let r = 0; r < rpr; r++){ const f = (r+1)/rpr;
-      rows.push({ w: Math.max(3, Math.round(maxW*f)), h: rh, c: (t%2)?C.dark:C.leaf, s: (t%2)?null:C.shade }); }
-    const top = base - rh*rpr;
-    pixRows(x, top, rows, C.line);
-    ctx.fillStyle = C.snow;                                     // 위 2행 눈모자
-    for (let r = 0; r < 2; r++){ const w = Math.max(3, Math.round(maxW*((r+1)/rpr)));
-      ctx.fillRect(Math.round(x - w/2), top + r*rh, w, rh); }
-    base -= Math.round(tierH*0.72);
+function propStalk(D, x, y, h, cx, cy){                 // 대나무 줄기 무리 — 원통 마디 + 잎가지
+  const C = D.cols, n = 1 + Math.floor(thash(cx, cy, 35) * 3);
+  ctx.globalAlpha = 1;
+  for (let s = 0; s < n; s++){
+    const sx = Math.round(x + (s - (n-1)/2) * 9 + (thash(cx, cy, 36+s) - 0.5) * 6);
+    const hh = Math.round(h * (0.8 + thash(cx, cy, 40+s) * 0.4));
+    const seg = Math.max(3, Math.floor(hh / 15)), segH = hh / seg, wBase = 6, wTop = 4;
+    pixShadow(sx, y, 10);
+    const rows = [];                                            // 위로 갈수록 가늘게 (원통)
+    for (let k = 0; k < seg; k++){ const t = k / (seg - 1 || 1);
+      rows.push({ w: Math.round(wTop + (wBase - wTop) * t), h: Math.ceil(segH), c: C.stem, hl: C.hi, s: C.shade }); }
+    pixRows(sx, y - Math.ceil(segH) * seg, rows, C.line);
+    for (let k = 1; k < seg; k++){                              // 마디 링 — 홈(어둡게)+위 밝은 띠
+      const ny = Math.round(y - segH * k), w = Math.round(wTop + (wBase - wTop) * (1 - k/seg));
+      ctx.fillStyle = C.node; ctx.fillRect(sx - Math.round(w/2) - 1, ny, w + 2, 1);
+      ctx.fillStyle = C.hi;   ctx.fillRect(sx - Math.round(w/2), ny - 1, w, 1);
+    }
+    const top = y - Math.ceil(segH) * seg;                      // 잎가지 — 위쪽에서 부채꼴
+    const br = 2 + Math.floor(thash(cx, cy, 48+s) * 2);
+    for (let b = 0; b < br; b++){
+      const by = Math.round(top + 2 + b * segH * 0.8), dir = (b % 2) ? 1 : -1;
+      const nl = 3 + Math.floor(thash(cx, cy, 52 + s*3 + b) * 2);
+      for (let i = 0; i < nl; i++){
+        const spread = 0.75 - i * 0.28, len = 7 + Math.round(thash(cx, cy, 60 + b*3 + i) * 6);
+        pixLeaf(sx + dir, by, dir * spread, -0.62 - i * 0.12, len, C.line, (i % 2) ? C.leaf2 : C.leaf);
+      }
+    }
   }
 }
-function propMite(D, x, y, h, cx, cy){                  // 종유석 (계단 삼각 + 가끔 결정)
+function propPine(D, x, y, h, cx, cy){                  // 눈 쌓인 침엽수 — 들쭉날쭉 4층 + 눈 얹힘
   const C = D.cols;
   ctx.globalAlpha = 1; pixShadow(x, y, Math.round(h*0.5));
-  const rn = Math.max(4, Math.round(h/6)), maxW = Math.round(h*0.42), rh = Math.ceil(h/rn), rows = [];
-  for (let r = 0; r < rn; r++){ const f = (r+1)/rn;
-    rows.push({ w: Math.max(2, Math.round(maxW*f)), h: rh, c: C.rock, s: C.shade }); }
+  pixRows(x, y - Math.round(h*0.12), [{ w: 6, h: Math.round(h*0.12), c: C.trunk, s: C.line }], C.line);
+  const tiers = 4, tierH = Math.round(h*0.30), rpr = 5, rh = Math.max(2, Math.ceil(tierH/rpr));
+  let base = y - Math.round(h*0.10);
+  for (let t = 0; t < tiers; t++){
+    const maxW = Math.round(h*0.44 * (1 - t*0.19)), rows = [];
+    for (let r = 0; r < rpr; r++){ const f = (r+1)/rpr;
+      let w = Math.round(maxW * f) + Math.round((thash(cx, cy, 70 + t*rpr + r) - 0.5) * maxW * 0.22);  // 가지 지터
+      rows.push({ w: Math.max(3, w), h: rh, c: C.leaf, hl: C.hi, s: C.shade }); }
+    const top = base - rh*rpr;
+    pixRows(x, top, rows, C.line);
+    ctx.fillStyle = C.snow;                                     // 눈 — 윗 가지 왼쪽에 얹힘
+    for (let r = 0; r < 2; r++){ const w = rows[r].w;
+      ctx.fillRect(Math.round(x - w/2), top + r*rh, Math.max(2, Math.round(w*0.6)), rh); }
+    ctx.fillStyle = C.snow2;
+    for (let r = 2; r < rpr; r++){ if (thash(cx, cy, 84 + t*rpr + r) > 0.55){ const w = rows[r].w;
+      ctx.fillRect(Math.round(x - w/2), top + r*rh, 3, 1); } }
+    base -= Math.round(tierH*0.78);
+  }
+}
+function propMite(D, x, y, h, cx, cy){                  // 종유석 — 울퉁불퉁 + 결정 무리
+  const C = D.cols;
+  ctx.globalAlpha = 1; pixShadow(x, y, Math.round(h*0.5));
+  const rn = Math.max(5, Math.round(h/5)), maxW = Math.round(h*0.4), rh = Math.ceil(h/rn), rows = [];
+  for (let r = 0; r < rn; r++){ const f = Math.pow((r+1)/rn, 0.85);   // 아래로 볼록하게
+    let w = Math.round(maxW * f) + Math.round((thash(cx, cy, 62+r) - 0.5) * maxW * 0.24);  // 바위 지터
+    rows.push({ w: Math.max(2, w), h: rh, c: C.rock, hl: C.edge, s: C.shade }); }
   const top = y - rh*rn;
   pixRows(x, top, rows, C.line);
-  ctx.fillStyle = C.edge;                                       // 왼쪽 모서리 하이라이트
-  for (let r = 0; r < rn; r++){ const w = Math.max(2, Math.round(maxW*((r+1)/rn)));
-    ctx.fillRect(Math.round(x - w/2), top + r*rh, 1, rh); }
-  if (thash(cx, cy, 37) > 0.6){                                 // 청록 결정
-    const cyy = top - 5;
-    ctx.fillStyle = C.line;    ctx.fillRect(x-2, cyy-1, 4, 8);
-    ctx.fillStyle = C.crystal; ctx.fillRect(x-1, cyy,   2, 6);
-    ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 0.3;
-    ctx.fillStyle = C.crystal; ctx.fillRect(x-3, cyy+1, 6, 4);
+  if (thash(cx, cy, 37) > 0.55){                               // 청록 결정 무리 (2~3)
+    const cn = 2 + Math.floor(thash(cx, cy, 38) * 2);
+    for (let i = 0; i < cn; i++){
+      const dx = Math.round((thash(cx, cy, 40+i) - 0.5) * maxW * 0.8), ch = 4 + Math.round(thash(cx, cy, 44+i) * 6);
+      const cxp = x + dx, cyy = top + Math.round(thash(cx, cy, 48+i) * rh) - ch;
+      ctx.fillStyle = C.line;    ctx.fillRect(cxp-2, cyy-1, 4, ch+2);
+      ctx.fillStyle = C.crystal; ctx.fillRect(cxp-1, cyy, 2, ch);
+    }
+    ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 0.28;   // 발광
+    ctx.fillStyle = C.crystal; ctx.fillRect(x - Math.round(maxW*0.5), top - 3, maxW, 6);
     ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
   }
 }
 function propRuin(D, x, y, h, cx, cy){                  // 폐촌 잔해 — 항아리·말뚝·그루터기
   const C = D.cols, pick = thash(cx, cy, 37);
   ctx.globalAlpha = 1; pixShadow(x, y, Math.round(h));
-  if (pick < 0.4){                                             // 깨진 항아리
-    const rh = Math.max(2, Math.round(h/7)), prof = [0.5, 0.8, 1.0, 1.0, 0.86, 0.64, 0.5];
-    const rows = prof.map(p => ({ w: Math.max(3, Math.round(h*p)), h: rh, c: C.clay, s: C.shade }));
+  if (pick < 0.4){                                             // 깨진 항아리 — 도자기 광택+금
+    const rh = Math.max(2, Math.round(h/8)), prof = [0.44, 0.72, 0.94, 1.0, 0.98, 0.84, 0.62, 0.5];
+    const rows = prof.map(p => ({ w: Math.max(3, Math.round(h*p)), h: rh, c: C.clay, hl: C.hi, s: C.shade }));
     const top = y - rh*prof.length;
     pixRows(x, top, rows, C.line);
-    const tw = Math.round(h*0.5);
-    ctx.fillStyle = C.dark;   ctx.fillRect(Math.round(x - tw*0.5), top, tw, rh);       // 깨진 입
-    ctx.fillStyle = C.line;   ctx.fillRect(Math.round(x - 1), top - 2, 3, 2);
-    ctx.fillStyle = 'rgba(255,255,255,.10)'; ctx.fillRect(Math.round(x - tw*0.4), top + rh*2, 2, rh*2);
-  } else if (pick < 0.72){                                     // 기운 말뚝
+    ctx.fillStyle = C.line;                                     // 목 테두리(어두운 링)
+    ctx.fillRect(Math.round(x - h*0.24), top + rh, Math.round(h*0.48), 1);
+    const tw = Math.round(h*0.44);
+    ctx.fillStyle = C.dark; ctx.fillRect(Math.round(x - tw*0.5), top, tw, rh);          // 깨진 입(안 그림자)
+    ctx.fillStyle = C.line; ctx.fillRect(Math.round(x - 1), top - 2, 3, 2);             // 깨진 각
+    ctx.fillStyle = C.dark;                                     // 금 — 몸통 지그재그
+    let gy = top + rh*2; const gx = Math.round(x - h*0.1);
+    for (let k = 0; k < 3; k++){ ctx.fillRect(gx + (k%2?1:-1), gy, 1, rh); gy += rh; }
+  } else if (pick < 0.72){                                     // 기운 말뚝 — 나뭇결·쪼개진 윗동
     const seg = Math.max(4, Math.round(h*1.4/5)), st = Math.floor((thash(cx, cy, 38) - 0.5) * 5), rows = [];
-    for (let r = 0; r < 5; r++) rows.push({ w: 5, h: seg, c: C.wood, s: C.dark, dx: Math.round(st*(4-r)/4) });
+    for (let r = 0; r < 5; r++) rows.push({ w: 6, h: seg, c: C.wood, hl: C.woodhi, s: C.dark, dx: Math.round(st*(4-r)/4) });
     pixRows(x, y - seg*5, rows, C.line);
-    ctx.fillStyle = C.line; ctx.fillRect(Math.round(x - 3 + st), y - seg*5 - 1, 3, 2);  // 부러진 각
-  } else {                                                     // 그루터기
+    ctx.fillStyle = C.dark;                                     // 세로 나뭇결
+    ctx.fillRect(Math.round(x + st) , y - seg*5 + 1, 1, seg*5 - 2);
+    ctx.fillStyle = C.line;                                     // 쪼개진 윗동 (사선)
+    ctx.fillRect(Math.round(x - 3 + st), y - seg*5 - 1, 2, 2);
+    ctx.fillRect(Math.round(x + 1 + st), y - seg*5 - 2, 2, 2);
+  } else {                                                     // 그루터기 — 나이테·뿌리
     const rh = Math.max(2, Math.round(h/4)), top = y - rh*3;
-    pixRows(x, top, [{ w: Math.round(h*0.9), h: rh, c: C.wood, s: C.dark },
-                     { w: Math.round(h*0.86), h: rh, c: C.wood, s: C.dark },
-                     { w: Math.round(h*0.8),  h: rh, c: C.wood, s: C.dark }], C.line);
-    ctx.fillStyle = C.dark; ctx.fillRect(Math.round(x - h*0.42), top, Math.round(h*0.84), rh);   // 윗면 나이테
-    ctx.fillStyle = C.wood; ctx.fillRect(Math.round(x - h*0.2), top + 1, Math.round(h*0.4), Math.max(1, rh-2));
+    pixRows(x, top, [{ w: Math.round(h*0.9), h: rh, c: C.wood, hl: C.woodhi, s: C.dark },
+                     { w: Math.round(h*0.86), h: rh, c: C.wood, hl: C.woodhi, s: C.dark },
+                     { w: Math.round(h*0.82), h: rh, c: C.wood, hl: C.woodhi, s: C.dark }], C.line);
+    ctx.fillStyle = C.dark; ctx.fillRect(Math.round(x - h*0.42), top, Math.round(h*0.84), rh);   // 윗면(어두운 단면)
+    ctx.fillStyle = C.woodhi; ctx.fillRect(Math.round(x - h*0.3), top + 1, Math.round(h*0.6), 1);// 나이테 바깥
+    ctx.fillStyle = C.woodhi; ctx.fillRect(Math.round(x - h*0.14), top, Math.round(h*0.28), 1);  // 나이테 안
+    ctx.fillStyle = C.line;                                     // 뿌리 두 갈래
+    ctx.fillRect(Math.round(x - h*0.5), y - 1, 4, 2);
+    ctx.fillRect(Math.round(x + h*0.34), y - 1, 4, 2);
   }
 }
 function propCairn(D, x, y, h, cx, cy){                 // 천산 — 돌탑 또는 관목
   const C = D.cols;
   ctx.globalAlpha = 1; pixShadow(x, y, Math.round(h));
-  if (thash(cx, cy, 37) > 0.45){                              // 돌탑 — 납작 돌 3~4단
-    const n = 3 + Math.floor(thash(cx, cy, 38) * 2), rh = Math.max(3, Math.round(h*0.22));
+  if (thash(cx, cy, 37) > 0.45){                              // 돌탑 — 둥근 돌 3~4단(윗면 밝게)
+    const n = 3 + Math.floor(thash(cx, cy, 38) * 2), rh = Math.max(4, Math.round(h*0.24));
     let yy = y;
-    for (let i = 0; i < n; i++){ const w = Math.max(4, Math.round(h*(0.55 - i*0.09)));
-      const jx = Math.round((thash(cx, cy, 40+i) - 0.5) * h*0.1);
-      pixRows(x + jx, yy - rh, [{ w, h: rh, c: (i%2)?C.dark:C.stone, s: C.dark }], C.line);
-      yy -= rh + 1; }
-  } else {                                                    // 바람 맞은 관목 — 계단 픽셀 획
-    const n = 5 + Math.floor(thash(cx, cy, 39) * 4);
     for (let i = 0; i < n; i++){
-      const dir = (thash(cx, cy, 42+i) < 0.5) ? -1 : 1, ll = Math.round(h*(0.4 + thash(cx, cy, 50+i) * 0.5));
-      ctx.fillStyle = C.line;  for (let j = 0; j < ll; j++) ctx.fillRect(x + Math.round(dir*j*0.4) - 1, y - j - 1, 3, 2);
-      ctx.fillStyle = C.shrub; for (let j = 0; j < ll; j++) ctx.fillRect(x + Math.round(dir*j*0.4),     y - j,     2, 1);
+      const w = Math.max(5, Math.round(h*(0.56 - i*0.09))), jx = Math.round((thash(cx, cy, 40+i) - 0.5) * h*0.12);
+      const sub = Math.max(2, Math.round(rh/2));               // 돌 하나 = 위(밝음)+아래(그늘) 2단
+      pixRows(x + jx, yy - rh, [{ w, h: sub, c: C.hi, s: C.stone },
+                                { w, h: rh - sub, c: C.stone, s: C.dark }], C.line);
+      yy -= rh + 1;
+    }
+  } else {                                                    // 관목 — 잎 클러스터
+    const stem = Math.max(3, Math.round(h*0.3));               // 나무 밑동
+    pixRows(x, y - stem, [{ w: 4, h: stem, c: C.dark, s: C.line }], C.line);
+    const n = 6 + Math.floor(thash(cx, cy, 39) * 4);           // 잎 갈래
+    for (let i = 0; i < n; i++){
+      const dir = (thash(cx, cy, 42+i) < 0.5) ? -1 : 1;
+      const len = Math.round(h*(0.4 + thash(cx, cy, 50+i) * 0.5));
+      const spread = 0.28 + thash(cx, cy, 56+i) * 0.3;
+      pixLeaf(x, y - stem + 1, dir*spread, -0.9, len, C.line, (i%2) ? C.shrub2 : C.shrub);
     }
   }
 }
 function drawProp(D, x, y, h, cx, cy){
   switch (D.kind){
     case 'stalk': propStalk(D, x, y, h, cx, cy); break;
-    case 'pine':  propPine(D, x, y, h); break;
+    case 'pine':  propPine(D, x, y, h, cx, cy); break;
     case 'mite':  propMite(D, x, y, h, cx, cy); break;
     case 'ruin':  propRuin(D, x, y, h, cx, cy); break;
     case 'cairn': propCairn(D, x, y, h, cx, cy); break;

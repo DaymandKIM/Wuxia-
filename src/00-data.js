@@ -171,17 +171,24 @@ const TERR = {
 // dens=셀 채움 확률, grid=배치 간격, h=[최소,최대] 높이. cols=팔레트.
 // 그림체는 스프라이트와 맞춘다 — 픽셀 블록(정수 정렬 fillRect)·다크 아웃라인
 // (line)·플랫 셀 음영(shade). 곡선·안티앨리어싱 없음. (렌더는 50-render.)
+// 그림체는 스프라이트와 맞춘다 — 픽셀 블록·다크 아웃라인(line). 입체는 3톤:
+// hi(하이라이트 왼쪽)·본색·shade(그림자 오른쪽). (렌더는 50-render.)
 const PROPS = {
   bamboo:  { kind:'stalk', dens:0.50, grid:200, h:[58,112],
-             cols:{ stem:'#7aa04e', shade:'#5f8038', node:'#48602f', leaf:'#95c25e', line:'#26301a' } },
+             cols:{ stem:'#7aa04e', hi:'#9ac267', shade:'#54742f', node:'#3f5528',
+                    leaf:'#8fbb57', leaf2:'#a7d06e', line:'#232d18' } },
   village: { kind:'ruin',  dens:0.42, grid:210, h:[18,32],
-             cols:{ clay:'#8a6a48', shade:'#6d5236', dark:'#3f301f', wood:'#6e5537', line:'#2c2116' } },
+             cols:{ clay:'#8a6a48', hi:'#a6875f', shade:'#674c31', dark:'#38291a',
+                    wood:'#6e5537', woodhi:'#8a6b42', line:'#281e13' } },
   cave:    { kind:'mite',  dens:0.46, grid:190, h:[28,66],
-             cols:{ rock:'#4a4f59', shade:'#363b44', edge:'#6b7280', crystal:'#6fe0ea', line:'#1b1f26' } },
+             cols:{ rock:'#4a4f59', hi:'#646b7a', shade:'#2f343c', edge:'#7e8698',
+                    crystal:'#6fe0ea', line:'#171b21' } },
   snow:    { kind:'pine',  dens:0.42, grid:205, h:[70,120],
-             cols:{ leaf:'#3f6048', shade:'#2f4b39', snow:'#f0f5fb', trunk:'#5a4632', line:'#1e2a22' } },
+             cols:{ leaf:'#3f6048', hi:'#517858', shade:'#284031', snow:'#f2f6fc',
+                    snow2:'#cfdcec', trunk:'#5a4632', line:'#1a251e' } },
   heaven:  { kind:'cairn', dens:0.40, grid:200, h:[20,42],
-             cols:{ stone:'#94907c', shade:'#726d5c', dark:'#5f5a4a', shrub:'#52704a', line:'#25281d' } },
+             cols:{ stone:'#94907c', hi:'#aca890', shade:'#6b6656', dark:'#514c3b',
+                    shrub:'#52704a', shrub2:'#688a5a', line:'#22261b' } },
 };
 
 // 난이도 — 전역 단계 g(1~50)가 축이다. 구역은 배경·계보·서사의 단위.
