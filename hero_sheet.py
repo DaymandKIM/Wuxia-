@@ -244,7 +244,7 @@ def shrink(rgba, scale):
         if m.sum() <= 2: out[m] = 0          # 축소 뒤 떨어진 점
     return out
 
-def extract(sheet_path, strips, review_path, center='hair', share_width=False, stand_cell=None, rows=3, cols=6):
+def extract(sheet_path, strips, review_path, center='hair', share_width=False, stand_cell=None, rows=3, cols=6, patch=None):
     """strips = {키: [(줄, 칸), ...]} → assets/<키>.png. 캔버스는 그림에 맞춰 자동. 반환 {키: (폭, 높이, 위 여분)}"""
     S = Sheet(sheet_path, rows=rows, cols=cols); scale = BODY_PX / (S.stand_h(*stand_cell) if stand_cell else STAND_H)
     if stand_cell: print(f'  기준 컷 r{stand_cell[0]}c{stand_cell[1]} 높이 {S.stand_h(*stand_cell)} → 배율 {scale:.3f}')
@@ -253,6 +253,7 @@ def extract(sheet_path, strips, review_path, center='hair', share_width=False, s
         frames = []
         for (ri, ci) in picks:
             rgba, gap, hx = S.cell(ri, ci)
+            if patch: rgba = patch(S, key, (ri, ci), rgba)      # 원본 해상도 손질(칼날 이어 붙이기 등) — 축소 전에
             sm = shrink(rgba, scale); sh, sw = sm.shape[:2]
             if center == 'torso':                                   # 질주 — 몸통 무게중심
                 a = sm[..., 3] > 0; yy, xx = np.where(a); mid = (yy > sh * 0.35) & (yy < sh * 0.65); cx = xx[mid].mean()
