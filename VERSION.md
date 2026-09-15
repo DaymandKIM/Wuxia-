@@ -1,3 +1,9 @@
+# v2.72.2 — 도(刀) 공격 모션 (사용자 시트 sheets/hero_saber2.png, 2026-09-15)
+
+- WEAPONMOVES.saber = **베기(saberslash, 0)·내려찍기(sabersmash, 5)·회전베기(saberspin, 15)**. `hero_saber2.py`.
+  컷 선택은 스크립트 머리말에(땅에 꽂음·쥐고 섬·올려베기 호 컷은 안 씀). HFX.aw 62/62/64.
+- 검증 review/hero_saber2.png·blackcheck·전 회귀(무기별 자동 검사)·크로뮴 실기.
+
 # v2.72.1 — 부채 공격 모션 (사용자 시트 sheets/hero_fan2.png, 2026-09-15)
 
 - WEAPONMOVES.fan = **휘두르기(fansweep, 0)·회전(fanspin, 5)·찌르기(fanstrike, 15)**. `hero_fan2.py`(hero_sword2 틀).

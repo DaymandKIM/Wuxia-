@@ -34,7 +34,7 @@ const HFX = {
   castFps: 10,                   // 시전 재생 속도 — 16은 컷이 씹혀 보였다 (4성 0.6~0.9초)
   shotT: 0.28,                   // 권기 탄 비행 시간 (구 streak과 동일)
   fadeT: 0.22,                   // 탄 소멸 연출
-  aw: { aidle: 50, katk: 70, punch: 48, swordthrust: 60, swordslash: 60, swordspin: 64, fansweep: 62, fanspin: 64, fanstrike: 62, kickside: 54, kickround: 56, kickhigh: 60, flykick: 44, firekick: 44, cresckick: 46, burstkick: 46, run: 46 },   // 특수 동작 프레임 폭
+  aw: { aidle: 50, katk: 70, punch: 48, swordthrust: 60, swordslash: 60, swordspin: 64, fansweep: 62, fanspin: 64, fanstrike: 62, saberslash: 62, sabersmash: 62, saberspin: 64, kickside: 54, kickround: 56, kickhigh: 60, flykick: 44, firekick: 44, cresckick: 46, burstkick: 46, run: 46 },   // 특수 동작 프레임 폭
   // 기본공격 = 양주먹(punch, 권기 정권) + 발차기 3종(kickside·kickround·kickhigh) 4프레임
   // (v2.71 — 사용자 시트 sheets/hero_kick2.png 3줄, hero_kick2.py로 추출. 머리 중심 정렬·칸 바닥 기준)
   // kickside 54·kickround 56·kickhigh 60 — 발이 옆·위로 뻗어 폭이 넓다(좌우 대칭 캔버스)
@@ -146,7 +146,7 @@ const ATKMOVES = [
   // 추후 초식(스킬)으로 쓸 후보 — 에셋·loadImg는 남겨 둔다.
 ];
 // 무기별 무브셋 (v2.72, 사용자: "검 공격 모션 — 검 장착하면 사용") — 무기 자리에 낀 종류로 기본공격 동작이 바뀐다.
-// 검(sword) = 사용자 시트 hero_sword2 3종. 없는 무기(권갑·도·창·봉)는 맨손 ATKMOVES — 시트가 오면 여기 얹는다.
+// 검(sword) = 사용자 시트 hero_sword2 3종. 없는 무기(권갑·창·봉)는 맨손 ATKMOVES — 시트가 오면 여기 얹는다.
 const WEAPONMOVES = {
   sword: [
     { key:'swordthrust', need:0 },   // 찌르기 — 기수식→검 내림→찌르기 별→사선 호
@@ -157,6 +157,11 @@ const WEAPONMOVES = {
     { key:'fansweep',  need:0 },     // 휘두르기 — 가림→내림→별 폭발→큰 호
     { key:'fanspin',   need:5 },     // 회전 — 호 둘→큰 원→낮게 쓸기
     { key:'fanstrike', need:15 },    // 찌르기 — 머리 위→나선 호→앞으로 뻗음
+  ],
+  saber: [                           // 도 = 사용자 시트 hero_saber2 (v2.72.2)
+    { key:'saberslash', need:0 },    // 베기 — 쥠→가로 베기 호→큰 호
+    { key:'sabersmash', need:5 },    // 내려찍기 — 뒤로 감음→머리 위→내려찍기 흙→낮게 찍기
+    { key:'saberspin',  need:15 },   // 회전베기 — 뻗음→큰 원→겹호
   ],
 };
 function heroWeaponKind(){ return (typeof S !== 'undefined' && S.equip && S.equip.weapon) ? S.equip.weapon.k : null; }
