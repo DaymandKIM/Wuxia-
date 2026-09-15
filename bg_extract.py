@@ -50,7 +50,14 @@ for i in range(k):
     rgba[both, ri, :3] = mixR[both]
 
 out = '%s/assets/bg_%s.png' % (R, zone)
-Image.fromarray(rgba, 'RGBA').save(out)
+im = Image.fromarray(rgba, 'RGBA')
+# 용량 — 게임은 높이 ~290px로 그리니 폭 1024면 충분(2000px 시트는 2배 오버샘플).
+# 팔레트 PNG-8(알파 유지)로 저장: 빌드 16MB 한도(v2.61.6, 15MB에서 급제동).
+MAXW = 1024
+if im.width > MAXW:
+    im = im.resize((MAXW, round(im.height * MAXW / im.width)), Image.LANCZOS)
+im = im.quantize(256, method=2)
+im.save(out, optimize=True)
 print('원경 %s → %s (%dx%d, 투명 %.0f%%)' % (zone, out, W, H, 100 * (alpha == 0).mean()))
 prev = Image.new('RGB', (W, H), (0, 0, 0))
 prev.paste(Image.fromarray(rgba, 'RGBA'), (0, 0), Image.fromarray(rgba, 'RGBA'))

@@ -40,7 +40,15 @@ def blend_axis(img, axis):
 a = blend_axis(a, 1)
 a = blend_axis(a, 0)
 out = np.clip(a, 0, 255).astype(np.uint8)
-Image.fromarray(out, 'RGB').save('%s/assets/ground_%s.png' % (R, zone))
+im = Image.fromarray(out, 'RGB')
+# 용량 — 폭 1024로 줄이고(2000px 시트는 2배 오버샘플) 팔레트 PNG-8로 저장.
+# 저대비 텍스처라 256색이면 티 안 난다. 빌드 16MB 한도(v2.61.6).
+MAXW = 1024
+if im.width > MAXW:
+    im = im.resize((MAXW, round(im.height * MAXW / im.width)), Image.LANCZOS)
+im.quantize(256, method=2).save('%s/assets/ground_%s.png' % (R, zone), optimize=True)
+out = np.array(im.convert('RGB'))
+W, H = im.size
 mean = out.reshape(-1, 3).mean(0).astype(int)
 print('바닥 %s → assets/ground_%s.png (%dx%d, 평균색 #%02x%02x%02x)' % (zone, zone, W, H, *mean))
 # 검사판 — 2×2 타일링해 이음새가 보이는지

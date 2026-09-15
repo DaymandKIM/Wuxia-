@@ -8,7 +8,7 @@ function drawGround(ox, oy){
     const tw = Math.max(1, Math.round(tex.naturalWidth * GROUNDTEX.scale));
     const th = Math.max(1, Math.round(tex.naturalHeight * GROUNDTEX.scale));
     const sx = -(((ox % tw) + tw) % tw), sy = -(((oy % th) + th) % th);
-    ctx.save(); ctx.globalAlpha = GROUNDTEX.a;
+    ctx.save(); ctx.globalAlpha = GROUNDTEX.aZone[zone().k] || GROUNDTEX.a;
     for (let y = sy; y < VH; y += th)
       for (let x = sx; x < VW; x += tw) draw(tex, Math.round(x), Math.round(y), tw, th);
     ctx.restore();
@@ -42,7 +42,10 @@ function drawBackdrop(ox){
   const sw = Math.max(1, Math.round(sh * img.naturalWidth / img.naturalHeight));
   const off = -(((ox * BACKDROP.par) % sw) + sw) % sw;
   for (let x = off; x < VW; x += sw) draw(img, Math.round(x), 0, sw, sh);
-  const g = zone().ground, n = BACKDROP.fadeSteps, band = BACKDROP.fade / n;
+  // 녹일 색 — 바닥 텍스처가 있으면 그 평균색(땅색과 밝기가 다르면 띠가 생긴다)
+  const tex = IMG[GROUNDTEX.keys[zone().k]];
+  const g = (tex && tex.complete && tex.naturalWidth && GROUNDTEX.avg[zone().k]) || zone().ground;
+  const n = BACKDROP.fadeSteps, band = BACKDROP.fade / n;
   ctx.save();
   ctx.fillStyle = g;
   for (let i = 0; i < n; i++){                         // 아래로 갈수록 땅색이 짙어진다

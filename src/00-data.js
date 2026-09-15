@@ -207,6 +207,10 @@ const PROPS = {
 const GROUNDTEX = {
   a: 0.9, scale: 1,
   keys: { bamboo:'ground_bamboo', village:'ground_village', cave:'ground_cave', snow:'ground_snow', heaven:'ground_heaven' },
+  // 텍스처 평균색(ground_extract 출력) — 원경 페이드가 이 색으로 녹아야 지평선 띠가 안 생긴다
+  // (설산은 땅색 #a4b3c0보다 눈 텍스처가 훨씬 밝아 회색 띠가 보였다, v2.61.6)
+  avg:  { bamboo:'#616e47', village:'#665f4c', cave:'#42474b', snow:'#dbe6f0', heaven:'#9ba994' },
+  aZone: { heaven: 0.7 },                     // 밝은 얼룩이 강한 텍스처는 더 옅게(가독성)
 };
 
 const BACKDROP = {
