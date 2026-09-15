@@ -102,8 +102,8 @@ setTimeout(()=>{
 
 
   // 3) 기본공격 (v2.49) — 양주먹=권기 정권(katka/katkb 양손 파란빛), 성급 오르면 각도별 발차기가 섞인다
-  ok(w.eval('ATKMOVES.map(m=>m.key).join()')==='punch,kickside,punchdbl,kickside2,punchup,qipunch,qipunchb,kickround,kickround2,kickhigh,kickhigh2',
-     '기본공격 무브셋 = 새 6종 + 옛 5종(권기 정권 두 판·옛 발차기 3종) 11종 (v2.76.2 "기존 것들도 살려서")');
+  ok(w.eval('ATKMOVES.map(m=>m.key).join()')==='punch,kickside,punchdbl,kickside2,punchup,kickround,kickround2,kickhigh,kickhigh2,qipunch,qipunchb',
+     '기본공격 무브셋 11종 — 권기 정권 두 판이 맨 끝(마무리 일격, v2.76.3)');
   w.eval('S.equip.weapon=null; S.rexp=0;');                // 맨손(시작 장비 검을 벗김) · 삼류 1성 — 돌려·뛰어차기 미해금
   ok(w.eval('atkPool().map(m=>m.key).join()')==='punch,kickside,punchdbl,kickside2,punchup,qipunch,qipunchb',
      '낮은 성급엔 주먹 5종+옆차기 2종 (v2.76.2)');
@@ -134,6 +134,8 @@ setTimeout(()=>{
     window.__keys={}; for(let i=0;i<14;i++){ P.atkCd=0; P.atkT=0; heroAttack(); window.__keys[P.atkKey]=1; }`);
   ok(w.eval('ATKMOVES.every(m=>window.__keys[m.key])'),
      '연속 공격이 11종(새 주먹·발차기 + 옛 권기·발차기)을 전부 돌려 쓴다');
+  w.eval('P.atkMove=0; window.__seq=[]; for(let i=0;i<11;i++){ P.atkCd=0; P.atkT=0; heroAttack(); window.__seq.push(P.atkKey); }');
+  ok(w.eval('window.__seq[9]')==='qipunch' && w.eval('window.__seq[10]')==='qipunchb','권기 정권 두 판이 한 바퀴의 마지막 두 타로 온다(마무리 일격)');
   // 3.5) 무기 장착 → 무기별 무브셋 (v2.72 검 · v2.72.1 부채) — 무기 자리의 종류가 기본공격 동작을 정한다
   for (const wk of Object.keys(w.eval('WEAPONMOVES'))){
     const keys=w.eval('WEAPONMOVES.'+wk+'.map(m=>m.key)');

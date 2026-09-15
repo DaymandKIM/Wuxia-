@@ -244,9 +244,10 @@ def shrink(rgba, scale):
         if m.sum() <= 2: out[m] = 0          # 축소 뒤 떨어진 점
     return out
 
-def extract(sheet_path, strips, review_path, center='hair', share_width=False, stand_cell=None, rows=3, cols=6, patch=None):
+def extract(sheet_path, strips, review_path, center='hair', share_width=False, stand_cell=None, rows=3, cols=6, patch=None, scale_mul=1.0):
     """strips = {키: [(줄, 칸), ...]} → assets/<키>.png. 캔버스는 그림에 맞춰 자동. 반환 {키: (폭, 높이, 위 여분)}"""
-    S = Sheet(sheet_path, rows=rows, cols=cols); scale = BODY_PX / (S.stand_h(*stand_cell) if stand_cell else STAND_H)
+    S = Sheet(sheet_path, rows=rows, cols=cols); scale = BODY_PX / (S.stand_h(*stand_cell) if stand_cell else STAND_H) * scale_mul
+    # scale_mul: 비율이 다른 시트(hero_fx는 머리가 큰 치비)를 머리 폭 기준으로 다른 시트에 맞출 때 (v2.76.3 권기 정권 0.86)
     if stand_cell: print(f'  기준 컷 r{stand_cell[0]}c{stand_cell[1]} 높이 {S.stand_h(*stand_cell)} → 배율 {scale:.3f}')
     specs, review, all_frames, dims = {}, [], {}, {}
     for key, picks in strips.items():

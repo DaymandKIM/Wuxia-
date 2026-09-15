@@ -128,7 +128,7 @@ review/            검사판 PNG (생성물)
 | `hero_kick2.py` | `sheets/hero_kick2.png` | 옛 발차기(v2.71) — **v2.76.2부터 kickside2·kickround2·kickhigh2 동작으로 되살림**(raw/kick2_old = 원본). hero_pose2 피격·경공 컷도 여기서 |
 | `hero_run2.py` | `sheets/hero_run2.png` | 돌아간다 (v2.71.1, 질주 6컷 — hero_kick2의 격자·축소 재사용) |
 | `hero_punch4.py` | `sheets/hero_punch4.png` | **현행** (v2.76 — 주먹 3종 정권·연환권·승룡권, gridless. 잔상 컷은 마젠타라 폐기) |
-| `hero_punch3.py` | `sheets/hero_fx.png` 2·3줄 | 권기 정권 두 판(v2.74.1) — **v2.76.2부터 qipunch·qipunchb 동작으로 되살림**(raw/punch3_old = 원본) |
+| `hero_punch3.py` | `sheets/hero_fx.png` 2·3줄 | 권기 정권 두 판 → qipunch·qipunchb(순환 맨 끝 마무리 일격). **scale_mul 0.86** — hero_fx는 머리 큰 비율이라 머리 폭 기준으로 줄임(v2.76.3) |
 | `hero_punch2.py` | `sheets/hero_punch2.png` | 대기·피격 컷(hero_pose2)에만 쓴다. 정권으로는 안 쓴다 |
 | `hero_sword4.py` | `sheets/hero_sword4.png` | **현행** (v2.74.5 2차 재작업 — 하늘색 검기, 다른 무기와 통일) |
 | `hero_sword3.py` | `sheets/hero_sword3.png` | 1차 재작업(흰 검기). 보관 |
@@ -149,6 +149,9 @@ review/            검사판 PNG (생성물)
 
 ### 겪은 사고와 원인
 
+- **비율이 다른 시트는 머리 폭으로 맞춘다**(v2.76.3 "머리가 왜 이리 크냐"): hero_fx는 머리 큰 치비라 몸 높이(BODY_PX 47)로
+  맞추면 머리가 27px(새 시트 20~23)로 튄다. extract(scale_mul=)로 줄인다 — 몸이 조금 작아져도 머리가 먼저 보인다.
+- **이펙트 색은 시트 프롬프트에서 못 박는다**: 자주·분홍 잔상은 마젠타 배경 판정에 먹혀 못 뽑는다(v2.76). 파랑·청록·흰·금만.
 - **짧은 무기는 같은 시트의 온전한 컷에서 잘라 붙인다**(v2.74.6, 사용자): hero_sheet.extract(patch=...) 훅으로
   원본 해상도에서 손질한다. 예: hero_sword4.graft — 기증 칼날을 자루 끝·축에 맞춰 늘려 투명한 자리와 별 위에 칠함.
 - **재작업 시트(순마젠타·선 없음)는 gridless 모드**(v2.74): 균등 분할 칸 + 인물 발끝 땅 + 기준 컷 배율(stand_cell).
