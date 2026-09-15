@@ -77,12 +77,35 @@ function glowBall(x, y, g, r, alpha){
   ctx.restore();
 }
 // 시전 중 손끝(또는 발밑) 발광 — 작은 스프라이트 점이 안 보인다는 피드백
+// v2.61: FXD.castGlow 배율로 반경·알파를 키우고 바깥에 얇은 네온 테를 두른다
 function drawCastGlow(ox, oy){
   const g = HFX.glow[P.castK];
   if (!g || P.anim !== 'cast') return;
   const pul = 0.8 + 0.2 * Math.sin(S.t * 16);
-  glowBall(Math.round(P.x + P.dir * g.dx - ox), Math.round(P.y - g.dy - oy),
-           g, g.r * pul, 0.5);
+  const gx = Math.round(P.x + P.dir * g.dx - ox), gy = Math.round(P.y - g.dy - oy);
+  const r = g.r * pul * FXD.castGlow.r;
+  glowBall(gx, gy, g, r, FXD.castGlow.a);
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  ctx.strokeStyle = 'rgb(' + g.c + ')';
+  ctx.lineWidth = 1.2;
+  ctx.globalAlpha = FXD.castGlow.rim * pul;
+  ctx.beginPath(); ctx.arc(gx, gy, r * 1.15, 0, Math.PI * 2); ctx.stroke();
+  ctx.restore();
+}
+// 탄 잔상 (v2.61) — 현재 변환(진행 방향 = +x)에서 -x 쪽으로 고스트 n개를 lighter로.
+// 스프라이트 원본 칸(sx,sy,sw,sh)을 그대로 쓰므로 drawImage 2~3회면 끝난다.
+function drawTrail(im, sx, sy, sw, sh, base){
+  const T = FXD.trail;
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  for (let i = 1; i <= T.n; i++){
+    const k = 1 - (i - 1) / T.n, s = 1 - T.shrink * i;
+    ctx.globalAlpha = base * T.a * k;
+    const w = sw * s, h = sh * s;
+    draw(im, sx, sy, sw, sh, -Math.round(w/2) - T.gap * i, -Math.round(h/2), w, h);
+  }
+  ctx.restore();
 }
 
 function drawHero(ox, oy){
@@ -220,6 +243,16 @@ function drawFoe(f, ox, oy){
     draw(im, -Math.round(dw/2)+off, -dh, dw, dh);
     ctx.globalCompositeOperation = 'source-over';
   }
+  // 피격 브라이튼 (v2.61) — 같은 스프라이트를 lighter로 n겹 더 얹어 실루엣 그대로
+  // 하얗게 번쩍인다. 스크래치 캔버스·source-atop 없이(사각 자국 방지) 알파만으로.
+  if (f.hitT > 0 && !f.dead){
+    const k = FXD.hitflash.a * Math.min(1, f.hitT / FXD.hitflash.life);
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.globalAlpha = k;
+    for (let i = 0; i < FXD.hitflash.n; i++) draw(im, -Math.round(dw/2)+off, -dh, dw, dh);
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.globalAlpha = 1;
+  }
   ctx.restore();
   // 체력바 — 보스는 화면 상단에 따로 그린다
   if (!f.dead && f.hp < f.hpMax && !f.boss){
@@ -312,25 +345,63 @@ function drawFx(ox, oy){
         ctx.beginPath(); ctx.ellipse(x, y, rr, rr*0.7, 0, 0, Math.PI*2); ctx.fill();
       }
       ctx.restore();
-    } else if (e.k === 'dmg'){
-      // 타격 숫자 — 평타는 조그맣게 희끗, 회심은 크고 노랗게 튄다
-      const p = 1 - a;
+    } else if (e.k === 'slash'){
+      // 참격 호 (v2.61) — 임팩트 지점에 dir 쪽으로 볼록한 네온 초승달. 확장+페이드.
+      // 그라디언트 없이 동심 호 세 겹(넓은 여운·중간·흰 심)으로 발광을 낸다.
+      const D = FXD.slash, p = 1 - a;
+      const r = e.r * (0.55 + 0.45 * Math.sqrt(p));
+      const base = (e.dir < 0 ? Math.PI : 0) + (e.sd || 0) * D.tilt;
       ctx.save();
+      ctx.translate(x, y);
+      ctx.scale(1, 0.82);                          // 옆에서 본 시점 — 살짝 납작하게
+      ctx.rotate(base);
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.lineCap = 'round';
+      const layers = [[3.2, 0.22, 'rgb(' + e.c + ')'], [1.7, 0.55, 'rgb(' + e.c + ')'], [0.8, 0.95, '#ffffff']];
+      for (const [wk, ak, col] of layers){
+        ctx.strokeStyle = col;
+        ctx.lineWidth = D.w * wk * (0.6 + a * 0.6);
+        ctx.globalAlpha = a * ak;
+        ctx.beginPath(); ctx.arc(-r * 0.35, 0, r, -D.span, D.span); ctx.stroke();
+      }
+      ctx.restore();
+    } else if (e.k === 'critring'){
+      // 치명타 바닥 네온 링 (v2.61) — 발밑에서 타원이 퍼지며 짧게 스러진다
+      const D = FXD.critring, p = 1 - a;
+      const r = e.r * (0.3 + 0.7 * Math.sqrt(p));
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.strokeStyle = 'rgb(' + e.c + ')';
+      ctx.globalAlpha = a * 0.9;
+      ctx.lineWidth = D.w;
+      ctx.beginPath(); ctx.ellipse(x, y, r, r / HERO.atkFlat / 1.4, 0, 0, Math.PI*2); ctx.stroke();
+      ctx.globalAlpha = a * 0.3;
+      ctx.lineWidth = D.w * 2.8;
+      ctx.beginPath(); ctx.ellipse(x, y, r * 0.9, r * 0.9 / HERO.atkFlat / 1.4, 0, 0, Math.PI*2); ctx.stroke();
+      ctx.restore();
+    } else if (e.k === 'dmg'){
+      // 타격 숫자 — 평타는 조그맣게 희끗, 회심은 크고 노랗게 튄다.
+      // v2.61: 등장 스케일 팝(pop→1) + 어두운 스트로크·밝은 채움의 네온 외곽선.
+      const D = FXD.dmgpop, p = 1 - a, el = e.t - e.life;
+      const pop = 1 + (D.pop - 1) * Math.max(0, 1 - el / D.popT);
+      const size = e.c ? D.critSize : D.size, rise = e.c ? 15 : 10;
+      ctx.save();
+      ctx.translate(x, Math.round(y - p * rise));
+      ctx.scale(pop, pop);
       ctx.globalAlpha = Math.min(1, a * 1.6);
-      if (e.c){
-        ctx.font = '900 ' + (p < 0.15 ? 11 : 9) + 'px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillStyle = '#1a1206';
-        ctx.fillText(e.v, x, y - p*15 + 1);
-        ctx.fillStyle = '#ffd95e';
-        ctx.fillText(e.v, x, y - p*15);
-      } else {
-        ctx.font = '800 6.5px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillStyle = 'rgba(10,14,20,.8)';
-        ctx.fillText(e.v, x, y - p*10 + 1);
-        ctx.fillStyle = 'rgba(232,238,246,.92)';
-        ctx.fillText(e.v, x, y - p*10);
+      ctx.font = '900 ' + size + 'px Jua,sans-serif';
+      ctx.textAlign = 'center';
+      ctx.lineJoin = 'round';
+      ctx.lineWidth = e.c ? D.critStroke : D.stroke;
+      ctx.strokeStyle = e.c ? '#3a2400' : 'rgba(8,12,22,.9)';
+      ctx.strokeText(e.v, 0, 0);
+      ctx.fillStyle = e.c ? D.cc : D.c;
+      ctx.fillText(e.v, 0, 0);
+      if (e.c){                                    // 치명타 — 금빛 잔광을 가산으로 한 겹
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.globalAlpha = a * D.glowA;
+        ctx.fillStyle = 'rgb(' + D.glow + ')';
+        ctx.fillText(e.v, 0, 0);
       }
       ctx.restore();
     } else if (e.k === 'pashot' || e.k === 'bshot'){
@@ -350,7 +421,10 @@ function drawFx(ox, oy){
       const dx = e.tx - e.x, dy = e.ty - e.y;
       if (dx < 0){ ctx.scale(-1, 1); ctx.rotate(Math.atan2(dy, -dx)); }
       else ctx.rotate(Math.atan2(dy, dx));
-      ctx.globalAlpha = el < HFX.shotT ? 1 : Math.min(1, a * 2);
+      const sa = el < HFX.shotT ? 1 : Math.min(1, a * 2);
+      // 탄 잔상 (v2.61) — 비행 중 진행 반대쪽(회전 뒤 -x)에 고스트를 lighter로 깔아 속도감
+      if (el < HFX.shotT) drawTrail(IMG[e.k], fi*bw, 0, bw, bh, sa);
+      ctx.globalAlpha = sa;
       draw(IMG[e.k], fi*bw, 0, bw, bh, -Math.round(bw/2), -Math.round(bh/2), bw, bh);
       // 무공 색 빛무리 — 파공권은 몸통, 지풍은 촉끝. 어두운 탄이 배경에 묻히지 않게
       const gk = HFX.glow[pa ? 'pagong' : 'baekbo'];
@@ -1004,6 +1078,8 @@ function drawShots(ox, oy){
       if (b.fly){
         if (b.vx < 0){ ctx.scale(-1, 1); ctx.rotate(Math.atan2(b.vy, -b.vx)); }
         else ctx.rotate(Math.atan2(b.vy, b.vx));
+        // 탄 잔상 (v2.61) — 나는 탄(얼음·번개·해골 등)은 뒤로 고스트를 끈다
+        drawTrail(im, 0, 0, im.naturalWidth, im.naturalHeight, 1);
       }
       else ctx.rotate(b.t * 9 * (b.vx < 0 ? -1 : 1));
       draw(im, -Math.round(im.naturalWidth/2), -Math.round(im.naturalHeight/2),

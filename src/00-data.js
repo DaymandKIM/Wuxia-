@@ -93,6 +93,24 @@ const FXD = {
   hit:   { r:10, life:0.22, c:'206,230,255' },
   crit:  { r:26, life:0.36, c:'255,214,90' },    // 치명타 — 금빛 파열
   boss:  { r:130, c:'255,120,80' },              // 보스 등장·스킬 색
+  // ── 네온 핵앤슬래시 타격감 (v2.61, "픽셀헌터 키우기" 결) — 순수 연출, 밸런스 무관 ──
+  // 참격 호 — 근접 평타 임팩트 지점에 P.dir 쪽으로 볼록한 초승달이 확장+페이드.
+  // r 반경 · w 심 굵기 · span 호 각(라디안, 양쪽) · tilt 무작위 기울기 · crit 치명 배율
+  slash:    { life:0.18, r:22, w:3, span:1.2, tilt:0.5, crit:1.5 },
+  // 피격 브라이튼 — 맞은 적 스프라이트를 lighter로 겹쳐 그려 아주 짧게 하얗게 번쩍
+  // (source-atop은 메인 캔버스에 사각 자국을 남긴다 — 절대 쓰지 않는다). n 겹 수
+  hitflash: { life:0.08, a:0.8, n:2 },
+  // 치명타 — 바닥 네온 링(타원, 짧게) · 흔들림 · 미세 경직(초, loop에서만 step을 멈춘다)
+  critring: { life:0.26, r:34, w:2.4 },
+  shake:    { hit:2.2, crit:4.6 },
+  hitstop:  { crit:0.04, max:0.08 },
+  // 탄 잔상 — 진행 반대쪽에 고스트 n개(lighter·감소 알파). gap 간격(px) · a 첫 고스트 알파 · shrink 고스트당 축소
+  trail:    { n:3, gap:7, a:0.34, shrink:0.1 },
+  // 피해 숫자 — 등장 스케일 팝(pop→1, popT초) · 크기 · 네온 외곽선 굵기
+  dmgpop:   { pop:1.4, popT:0.14, size:7.5, critSize:12, stroke:2.4, critStroke:3.2,
+              c:'#f0f6ff', cc:'#ffd95e', glow:'255,214,90', glowA:0.35 },
+  // 초식 시전 절차 발광 배율 — 반경·알파를 조금 키워 네온 결 (인물 가림 금지: 1.5 미만)
+  castGlow: { r:1.3, a:0.62, rim:0.55 },
 };
 function auraKey(){
   const k = realmLv();
