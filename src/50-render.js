@@ -590,6 +590,17 @@ function drawAmbient(front){
       ctx.ellipse(VW/2, VH/2, VW*0.86 - inset, VH*0.78 - inset, 0, 0, Math.PI*2);
       ctx.fill('evenodd');
     }
+  } else if (front && A.kind === 'wind'){
+    // 바람 줄기 — 옅은 흰 가로 줄이 빠르게 흐르며 살짝 출렁인다 (천산)
+    for (let i = 0; i < A.n; i++){
+      const h1 = ambHash(i, 4), h2 = ambHash(i, 5), h3 = ambHash(i, 6);
+      const len = 10 + h3 * 16;
+      const x = ((h1 * (VW + 60) + S.t * A.spd * (0.7 + h2 * 0.6)) % (VW + 60)) - 30;
+      const y = h2 * VH + Math.sin(S.t * 1.1 + i * 1.7) * 6;
+      ctx.globalAlpha = 0.16 + h3 * 0.16;
+      ctx.fillStyle = 'rgb(' + A.c + ')';
+      ctx.fillRect(Math.round(x), Math.round(y), Math.round(len), 1);
+    }
   } else if (front && (A.kind === 'leaf' || A.kind === 'snow' || A.kind === 'fire')){
     for (let i = 0; i < A.n; i++){
       const h1 = ambHash(i, 4), h2 = ambHash(i, 5), h3 = ambHash(i, 6);
