@@ -96,6 +96,21 @@ class Sheet:
         fgA = fg0 & ~band
         # 덩어리(줄 없이) → 인물(칸 안 2000px↑)과 조각으로 나눈다
         lab, n = ndi.label(fgA); objs = ndi.find_objects(lab)
+        if self.gridless:
+            # 선 없는 시트는 옆 칸 검기가 옆 인물과 붙어 한 덩어리가 된다(도 시트 3줄 1·2칸). 두 칸에 각각 2000px 넘게
+            # 걸친 덩어리는 칸 경계(균등 분할선)에서 잘라 다시 라벨링한다 — 한쪽이 작은 조각(넘친 검기)이면 그대로 둔다.
+            cutx = [x1 for (x0, x1) in self.xs[:-1]]; cuty = [y1 for (y0, y1) in self.ys[:-1]]
+            for i in range(1, n + 1):
+                sl = objs[i - 1]; m = lab[sl] == i
+                yy, xx = np.where(m); yy = yy + sl[0].start; xx = xx + sl[1].start
+                big = 0
+                for (y0, y1) in self.ys:
+                    for (x0, x1) in self.xs:
+                        if int(((yy >= y0) & (yy <= y1) & (xx >= x0) & (xx <= x1)).sum()) >= 2000: big += 1
+                if big >= 2:
+                    for cx in cutx: fgA[:, cx:cx + 2][lab[:, cx:cx + 2] == i] = False
+                    for cy in cuty: fgA[cy:cy + 2, :][lab[cy:cy + 2, :] == i] = False
+            lab, n = ndi.label(fgA); objs = ndi.find_objects(lab)
         owner = {}; figure = set(); mass = {}
         for i in range(1, n + 1):
             sl = objs[i - 1]; m = lab[sl] == i; s = int(m.sum())

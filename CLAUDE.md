@@ -131,7 +131,8 @@ review/            검사판 PNG (생성물)
 | `hero_sword3.py` | `sheets/hero_sword3.png` | **현행** (v2.74 재작업 시트 — 액자선 없음, gridless 모드·기준 컷 배율) |
 | `hero_sword2.py` | `sheets/hero_sword2.png` | 옛 시트(액자선에 잘림). 쓰지 않는다 |
 | `hero_fan2.py` | `sheets/hero_fan2.png` | 돌아간다 (v2.72.1, 부채 3종 — hero_sword2 틀) |
-| `hero_saber2.py` | `sheets/hero_saber2.png` | 돌아간다 (v2.72.2, 도 3종 — hero_sword2 틀) |
+| `hero_saber3.py` | `sheets/hero_saber3.png` | **현행** (v2.74.2 재작업 시트, gridless) |
+| `hero_saber2.py` | `sheets/hero_saber2.png` | 옛 시트(액자선에 잘림). 쓰지 않는다 |
 | `hero_spear2.py` | `sheets/hero_spear2.png` | 돌아간다 (v2.72.3, 창 3종 — 폭 66) |
 | `hero_staff2.py` | `sheets/hero_staff2.png` | 돌아간다 (v2.72.4, 봉 3종 — 폭 66) |
 | `bossfx.py` | **시트 없음** | 못 돌린다 |
