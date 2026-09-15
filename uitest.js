@@ -23,20 +23,24 @@ setTimeout(()=>{
   const w=dom.window, d=w.document;
   try{
     d.getElementById('tab-zone').onclick();
-    const rows=d.querySelectorAll('.zrow');
-    console.log('사냥터 패널: '+rows.length+'개 구역');
-    rows.forEach(r=>{
-      const nm=r.querySelector('.zn').textContent.trim();
-      const de=r.querySelector('.zd').textContent.trim();
-      console.log('  '+(r.className.includes('lock')?'🔒':'  ')+' '+nm.padEnd(14)+' '+de);
+    // 여정 지도 — 구역 노드(원)로 그린다 (v2.56)
+    const nodes=d.querySelectorAll('#zmap .znode');
+    console.log('사냥터 지도: '+nodes.length+'개 구역');
+    nodes.forEach(nd=>{
+      const zi=nd.dataset.z;
+      const de=[...d.querySelectorAll('.zd')][+zi].textContent.trim();
+      console.log('  '+(nd.classList.contains('lock')?'🔒':'  ')+' 구역'+zi+' '+de);
     });
     // 해금 늘려서 이동 테스트
     w.eval('S.unlocked=5');
     d.getElementById('tab-zone').onclick();
-    const rows2=d.querySelectorAll('.zrow[data-z]');
-    console.log('해금 후 이동 가능: '+rows2.length+'개');
-    const sbs=d.querySelectorAll('.sb');
-    console.log('단계 버튼: '+sbs.length+'개 (5구역 x 10단계)');
+    const open=d.querySelectorAll('#zmap .znode[data-z]:not(.lock)');
+    console.log('해금 후 이동 가능: '+open.length+'개');
+    // 천산(z=4) 노드로 이동 → 그 구역 단계 스트립이 뜬다
+    const t4=[...d.querySelectorAll('#zmap .znode[data-z]')].find(nd=>nd.dataset.z==='4');
+    t4.onclick();
+    const sbs=d.querySelectorAll('.sb[data-z]');
+    console.log('천산 이동 후 단계 버튼: '+sbs.length+'개 (10단계+보스)');
     // 천산 7단계로 이동
     const t=[...sbs].find(b=>b.dataset.z==='4'&&b.dataset.s==='7');
     t.onclick({stopPropagation(){},target:t});

@@ -250,6 +250,19 @@
   .sb.bs{min-width:38px;background:#2e1c1a;border-color:#5a3330;color:#e0a094;}
   .sb.bs.on{background:#8c3f2f;border-color:#bd6a4a;color:#ffeee8;}
   .znote{margin:6px 14px 4px;font-size:11.5px;color:#6b7683;line-height:1.55;}
+  /* 사냥터 여정 지도 (v2.56) */
+  #zmap{margin:4px auto 2px;max-width:360px;}
+  #zmap .znode{transition:opacity .15s;}
+  #zmap .znode.lock{opacity:.85;}
+  .zpulse{pointer-events:none;transform-box:fill-box;transform-origin:center;
+    animation:zpul 1.6s ease-in-out infinite;}
+  @keyframes zpul{0%,100%{opacity:.3;}50%{opacity:.9;}}
+  @media (prefers-reduced-motion: reduce){.zpulse{animation:none;opacity:.6;}}
+  #zstage{margin:6px 14px 2px;padding:10px 12px;background:#171d25;
+    border:1px solid #2b333d;border-radius:11px;}
+  #zstage .zsttl{font-family:var(--fw);font-size:13px;color:#cdd6e0;margin-bottom:7px;}
+  #zstage .zsttl small{color:#6b7683;font-size:11px;}
+  #zstage .zst{margin-top:0;}
 
   #opanel{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
     pointer-events:none;opacity:0;background:rgba(6,8,11,.66);transition:opacity .2s;}

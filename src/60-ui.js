@@ -132,41 +132,78 @@ function gotoZone(i, st){
   enterStage(true);            // 구역 이동은 연출한다
 }
 
+// 사냥터 = 여정 지도 (v2.56) — 5구역을 지그재그 길로 잇고 구역색 원형 노드에
+// 진행 상태(잠김·수련 중·클리어)를 얹는다. 목록보다 "어디쯤 왔나"가 한눈에.
 function buildZonePanel(){
   const b = $('zbody');
-  let h = '';
-  for (let i = 0; i < ZONES.length; i++){
-    const z = ZONES[i];
+  const Z = ZONES, n = Z.length;
+  const W = 360, topY = 54, stepY = 92, r = 30, H = topY + (n-1)*stepY + 60;
+  const nx = i => (i % 2 === 0 ? 106 : 254);   // 지그재그 좌우
+  const ny = i => topY + i*stepY;
+  const FONT = "'Jua','Apple SD Gothic Neo',sans-serif";
+  let svg = '<svg id="zmap" viewBox="0 0 ' + W + ' ' + H +
+    '" preserveAspectRatio="xMidYMin meet" style="width:100%;height:auto;display:block">';
+  // 여정 길 — 아래로 이어지는 곡선. 다음 구역이 열렸으면 밝은 길, 아니면 흐린 길.
+  for (let i = 0; i < n-1; i++){
+    const x1=nx(i), y1=ny(i), x2=nx(i+1), y2=ny(i+1);
+    const lit = TEST || (i+1) < S.unlocked;
+    svg += '<path d="M ' + x1 + ' ' + y1 + ' C ' + x1 + ' ' + (y1+stepY*0.55) +
+           ', ' + x2 + ' ' + (y2-stepY*0.55) + ', ' + x2 + ' ' + y2 + '" fill="none" stroke="' +
+           (lit ? '#c9b98a' : '#39424e') + '" stroke-width="' + (lit?4:3) +
+           '" stroke-dasharray="2 8" stroke-linecap="round" opacity="' + (lit?0.9:0.55) + '"/>';
+  }
+  // 구역 노드
+  for (let i = 0; i < n; i++){
+    const z=Z[i], x=nx(i), y=ny(i), col=z.ground;
     const open = TEST || i < S.unlocked;
     const here = i === S.zi;
-    h += '<div class="zrow' + (here ? ' on' : '') + (open ? '' : ' lock') + '"' +
-         (open ? ' data-z="' + i + '"' : '') + '>' +
-         '<div class="zn">' + z.n + (here ? ' <em>수련 중</em>' : '') + '</div>' +
-         '<div class="zd">' + (i*10+1) + '~' + (i*10+10) + '단계</div>';
-    if (open && TEST){
-      // 테스트 모드 — 단계까지 바로 고른다
-      h += '<div class="zst">';
-      for (let k = 1; k <= STAGES.length; k++)
-        h += '<button class="sb' + (here && S.stage===k ? ' on' : '') +
-             '" data-z="' + i + '" data-s="' + k + '">' + k + '</button>';
-      h += '<button class="sb bs' + (here && S.stage===BOSS_STAGE ? ' on' : '') +
-           '" data-z="' + i + '" data-s="' + BOSS_STAGE + '">보스</button>';
-      h += '</div>';
+    const done = !!(S.bossDone && S.bossDone[i]);
+    if (here)   // 수련 중 — 맥동 고리
+      svg += '<circle class="zpulse" cx="' + x + '" cy="' + y + '" r="' + (r+6) +
+             '" fill="none" stroke="' + col + '" stroke-width="2.5"/>';
+    svg += '<circle class="znode' + (open?'':' lock') + '" data-z="' + i + '" cx="' + x + '" cy="' + y +
+           '" r="' + r + '" fill="' + (open?col:'#161c24') + '" stroke="' +
+           (here?'#f0e2b8':(open?'#0c130e55':'#3a4756')) + '" stroke-width="' + (here?3.5:2) +
+           '"' + (open?' style="cursor:pointer"':'') + '/>';
+    if (open){
+      svg += '<text class="zn" data-z="' + i + '" x="' + x + '" y="' + (y+1) +
+             '" text-anchor="middle" dominant-baseline="central" font-family="' + FONT +
+             '" font-weight="700" font-size="17" fill="#12161c" style="pointer-events:none">' + z.n + '</text>';
+    } else {
+      svg += '<text x="' + x + '" y="' + (y+1) + '" text-anchor="middle" dominant-baseline="central" font-size="20" style="pointer-events:none">🔒</text>';
     }
-    h += '</div>';
+    // 단계 범위 캡션
+    svg += '<text class="zd" x="' + x + '" y="' + (y+r+14) + '" text-anchor="middle" font-family="' + FONT +
+           '" font-size="11" fill="' + (open?'#c3cbd5':'#4a5462') + '" style="pointer-events:none">' +
+           (i*10+1) + '~' + (i*10+10) + '단계</text>';
+    // 상태 — 클리어 체크 / 수련 중
+    if (done)
+      svg += '<text x="' + (x+r-3) + '" y="' + (y-r+9) + '" text-anchor="middle" font-size="15" fill="#7fc78f" style="pointer-events:none">✓</text>';
+    if (here)
+      svg += '<text x="' + x + '" y="' + (y+r+27) + '" text-anchor="middle" font-family="' + FONT +
+             '" font-weight="700" font-size="11" fill="' + col + '" style="pointer-events:none">▶ 수련 중</text>';
   }
-  h += '<div class="znote">' + (TEST
-      ? '테스트 모드 — 모든 구역으로 이동할 수 있다.'
-      : (ZONES.length > S.unlocked ? '구역을 끝까지 깨면 다음 구역이 열린다.' : '모든 구역을 열었다.')) + '</div>';
-  b.innerHTML = h;
-  b.querySelectorAll('.zrow[data-z]').forEach(el => {
-    el.onclick = e => { if (e.target.classList.contains('sb')) return;
-      gotoZone(parseInt(el.dataset.z, 10)); };
+  svg += '</svg>';
+  // TEST 단계 이동 — 지금 구역의 단계를 바로 고른다
+  let strip = '';
+  if (TEST){
+    const zi = S.zi;
+    strip = '<div id="zstage"><div class="zsttl">' + ZONES[zi].n + ' 단계 이동 <small>(테스트)</small></div><div class="zst">';
+    for (let k = 1; k <= STAGES.length; k++)
+      strip += '<button class="sb' + (S.stage===k?' on':'') + '" data-z="' + zi + '" data-s="' + k + '">' + k + '</button>';
+    strip += '<button class="sb bs' + (S.stage===BOSS_STAGE?' on':'') + '" data-z="' + zi + '" data-s="' + BOSS_STAGE + '">보스</button>';
+    strip += '</div></div>';
+  }
+  const note = '<div class="znote">' + (TEST
+      ? '테스트 모드 — 아무 구역이나 눌러 이동하고, 아래에서 단계를 고른다.'
+      : (ZONES.length > S.unlocked ? '구역을 끝까지 깨면 다음 길이 열린다.' : '모든 구역을 열었다.')) + '</div>';
+  b.innerHTML = svg + strip + note;
+  b.querySelectorAll('.znode[data-z], .zn[data-z]').forEach(el => {
+    el.onclick = () => { gotoZone(parseInt(el.dataset.z, 10)); buildZonePanel(); };
   });
-  // data-z 있는 것만 — 저장 초기화 버튼도 .sb 라 전체에 걸면 덮어써진다
   b.querySelectorAll('.sb[data-z]').forEach(el => {
     el.onclick = e => { e.stopPropagation();
-      gotoZone(parseInt(el.dataset.z, 10), parseInt(el.dataset.s, 10)); };
+      gotoZone(parseInt(el.dataset.z, 10), parseInt(el.dataset.s, 10)); buildZonePanel(); };
   });
 }
 
