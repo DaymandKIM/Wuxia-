@@ -127,7 +127,8 @@ review/            검사판 PNG (생성물)
 | `hero_kick2.py` | `sheets/hero_kick2.png` | 돌아간다 (v2.71, 주인공 발차기 3종 — 칸 바닥 기준·머리 정렬) |
 | `hero_run2.py` | `sheets/hero_run2.png` | 돌아간다 (v2.71.1, 질주 6컷 — hero_kick2의 격자·축소 재사용) |
 | `hero_punch2.py` | `sheets/hero_punch2.png` | 돌아간다 (v2.71.2, 정권 두 판 — 옅은 배경·모서리 표식 시트) |
-| `hero_sword2.py` | `sheets/hero_sword2.png` | 돌아간다 (v2.72, 검 3종 — 검기 호가 줄을 가로질러 문턱 0.7) |
+| `hero_sword3.py` | `sheets/hero_sword3.png` | **현행** (v2.74 재작업 시트 — 액자선 없음, gridless 모드·기준 컷 배율) |
+| `hero_sword2.py` | `sheets/hero_sword2.png` | 옛 시트(액자선에 잘림). 쓰지 않는다 |
 | `hero_fan2.py` | `sheets/hero_fan2.png` | 돌아간다 (v2.72.1, 부채 3종 — hero_sword2 틀) |
 | `hero_saber2.py` | `sheets/hero_saber2.png` | 돌아간다 (v2.72.2, 도 3종 — hero_sword2 틀) |
 | `hero_spear2.py` | `sheets/hero_spear2.png` | 돌아간다 (v2.72.3, 창 3종 — 폭 66) |
@@ -140,6 +141,8 @@ review/            검사판 PNG (생성물)
 
 ### 겪은 사고와 원인
 
+- **재작업 시트(순마젠타·선 없음)는 gridless 모드**(v2.74): 균등 분할 칸 + 인물 발끝 땅 + 기준 컷 배율(stand_cell).
+  시트마다 배율이 달라(165 vs 172px) STAND_H 고정값을 쓰면 크기가 어긋난다 — 재작업 시트는 꼭 stand_cell을 준다.
 - **v2.72 무기 시트 5장은 안쪽 액자선에서 무기가 잘려 있다**(v2.73.3, review/clipped_cells.png) — 복구 불가.
   여백의 파편은 붙이지 않는다(hero_sheet). 재작업 프롬프트 docs/프롬프트-주인공.md "무기 공격 시트 재작업".
   새 시트 프롬프트엔 반드시 "NO frames/borders/brackets, weapon fully inside the cell with padding"을 넣는다.

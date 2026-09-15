@@ -63,7 +63,7 @@ class Sheet:
         # 칸 폭 검증 — 부채 시트는 4번째 칸 오른쪽 줄이 행마다 1~2px 어긋나 한 열로는 70%를 못 넘어 빠졌고, 그 칸이
         # 여백까지 합쳐진 170px로 잡혀 줄(1px 어두운 선)이 그림으로 남았다(v2.73.1). 중앙값보다 15% 넘게 넓은 칸은
         # '앞 칸 폭만큼 간 자리' ±6px에서 어두운 비율이 가장 높은 열을 줄로 삼아 쪼갠다.
-        med = int(np.median([b - a for (a, b) in xs]))
+        med = int(np.median([b - a for (a, b) in xs])) if xs else 0
         fixed = []
         for (a, b) in xs:
             if b - a > med * 1.15:
@@ -72,6 +72,14 @@ class Sheet:
                 if fr.max() > 0.35: fixed.append((a, x - 3)); cl.append((x - 2, x + 2)); continue
             fixed.append((a, b))
         cl.sort(); self.xs = fixed
+        # 격자선이 없는 시트(v2.74 재작업 시트 — 순마젠타 배경, 액자선 없음)는 균등 분할로 칸을 잡는다.
+        # 칸은 '어느 그림이 어느 칸 것인가'만 정하고, 땅은 칸 바닥이 아니라 **인물 발끝**으로 잡는다(gridless).
+        self.gridless = len(self.xs) != cols or len(self.ys) != rows
+        if self.gridless:
+            Hh, Ww = A.shape[:2]
+            self.xs = [(round(i * Ww / cols), round((i + 1) * Ww / cols) - 1) for i in range(cols)]
+            self.ys = [(round(i * Hh / rows), round((i + 1) * Hh / rows) - 1) for i in range(rows)]
+            cl, rl = [], []
         assert len(self.xs) == cols and len(self.ys) == rows, (self.xs, self.ys)
         # 테두리 줄 띠(안티에일리어스 포함)
         # 줄 띠는 양옆 2px 더 — 줄 곁 안티에일리어스 열(119,94,124)은 '어두운 줄' 판정 밖이라 여백에 세로 띠로
@@ -180,6 +188,8 @@ class Sheet:
         rgba = np.zeros((bot - top + 1, rgt - l + 1, 4), np.uint8)
         rgba[..., :3] = self.rgb[top:bot + 1, l:rgt + 1]; rgba[..., 3] = m[top:bot + 1, l:rgt + 1] * 255
         y0, y1 = self.ys[ri]; x0, x1 = self.xs[ci]
+        if self.gridless:                                # 땅 = 인물 덩어리(가장 큰 것) 발끝
+            big = max(labs, key=lambda L: int((self.lab == L).sum())); by = np.where(self.lab == big)[0]; y1 = by.max()
         # 머리 중심 = 칸 안에 든 그림 중 위 30% 행의 어두운(머리카락) 픽셀 무게중심 — 무기·기운에 안 끌린다
         inc = m & (self.dark) ; sub = inc[max(top, y0):y1 + 1, max(l, x0):x1 + 1]
         syy, sxx = np.where(sub)
@@ -188,6 +198,11 @@ class Sheet:
             hx = sxx[hy].mean() + max(l, x0) - l
         else: hx = (rgt - l) / 2
         return rgba, (y1 - bot), hx
+
+    def stand_h(self, ri, ci):
+        """기준 칸(서 있는 컷)의 인물 덩어리 높이 — 시트마다 배율이 달라 이걸로 47px에 맞춘다"""
+        labs = self.cells[(ri, ci)]; big = max(labs, key=lambda L: int((self.lab == L).sum()))
+        yy = np.where(self.lab == big)[0]; return int(yy.max() - yy.min() + 1)
 
 def edge_expand(rgba):
     a = rgba[..., 3] > 0
@@ -209,9 +224,10 @@ def shrink(rgba, scale):
         if m.sum() <= 2: out[m] = 0          # 축소 뒤 떨어진 점
     return out
 
-def extract(sheet_path, strips, review_path, center='hair', share_width=False):
+def extract(sheet_path, strips, review_path, center='hair', share_width=False, stand_cell=None):
     """strips = {키: [(줄, 칸), ...]} → assets/<키>.png. 캔버스는 그림에 맞춰 자동. 반환 {키: (폭, 높이, 위 여분)}"""
-    S = Sheet(sheet_path); scale = BODY_PX / STAND_H
+    S = Sheet(sheet_path); scale = BODY_PX / (S.stand_h(*stand_cell) if stand_cell else STAND_H)
+    if stand_cell: print(f'  기준 컷 r{stand_cell[0]}c{stand_cell[1]} 높이 {S.stand_h(*stand_cell)} → 배율 {scale:.3f}')
     specs, review, all_frames, dims = {}, [], {}, {}
     for key, picks in strips.items():
         frames = []
