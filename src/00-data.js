@@ -225,7 +225,7 @@ const BACKDROP = {
   // 아래 디졸브 띠 — 그림 높이의 비율(fadeR)로 잡는다. v2.63.6: 64px 고정은 폰(VH≈280,
   // 그림 84px)에서 그림의 3/4를 녹여 집·나무 아랫도리가 다 잘려 보였다("아래쪽이 다 짤려").
   // 이제 아래 14%만 녹인다 — 집 주춧돌만 땅에 스민다.
-  fadeR: 0.14, fadeMin: 8, fadeSteps: 16, fadePow: 1.0,   // 계단 16 — 폐촌 덧댄 땅 띠(48px)에서 8단은 6px 띠가 보였다
+  fadeR: 0.14, fadeMin: 8, fadeSteps: 48, fadePow: 1.0,   // 계단 48(≈1px) — 설산 넓은 눈밭 띠(120px)에서 16단은 줄무늬가 보였다
   cull: 0.5,                                    // 지평선 위(fade의 이 비율 지점부터) 소품 안 세움
   keys: { bamboo:'bg_bamboo', village:'bg_village', cave:'bg_cave', snow:'bg_snow', heaven:'bg_heaven' },
   sky:  { bamboo:'#becfbc', village:'#a78e76', cave:'#3f444b', snow:'#cddae8', heaven:'#d8dbc6' },  // 그림 위 남는 하늘(시트 윗줄 평균)
