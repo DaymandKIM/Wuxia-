@@ -216,7 +216,7 @@ function drawHero(ox, oy){
   // 시트에 권기가 구워져 있어 맨손 합성이 무리였다. 성장 표현은 경지 기운이 담당.
   if (P.anim === 'atk'){
     // 기본공격 (v2.48) — 양주먹은 권기 정권(katka/katkb, 양손 파란빛) 교대, 그 외(발차기)는 제 스트립.
-    if (!P.atkKey || P.atkKey === 'punch'){ key = P.atkAlt ? 'katkb' : 'katka'; fw = HFX.aw.katk; }
+    if (!P.atkKey || P.atkKey === 'punch'){ key = P.atkAlt ? 'punchb' : 'punch'; fw = HFX.aw.punch; }   // v2.71.2 — 사용자 주먹 시트 두 판 교대(옛 katka/katkb 권기 판 대체)
     else { key = P.atkKey; fw = HFX.aw[key] || HERO.w; }
   }
   else if (P.anim === 'cast'){

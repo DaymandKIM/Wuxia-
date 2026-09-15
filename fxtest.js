@@ -114,9 +114,9 @@ setTimeout(()=>{
   // 양주먹 = 권기 정권 katka/katkb 교대
   w.eval('S.fx.length=0; P.castT=0; P.atkT=0.3; P.anim="atk"; P.af=1; P.atkKey="punch"; P.atkAlt=0;');
   renderNow();
-  ok(drew('hero_katka',w.eval('HFX.aw.katk')),'양주먹 = 권기 정권 오른손(katka)');
+  ok(drew('hero_punch',w.eval('HFX.aw.punch')),'양주먹 = 오른손 정권 판(punch, v2.71.2)');
   w.eval('P.atkAlt=1;'); renderNow();
-  ok(drew('hero_katkb',w.eval('HFX.aw.katk')),'왼손(katkb)으로 교대된다');
+  ok(drew('hero_punchb',w.eval('HFX.aw.punch')),'왼손 판(punchb)으로 교대된다');
   w.eval('P.atkKey="kickside";'); renderNow();
   ok(drew('hero_kickside',w.eval('HFX.aw.kickside')),'옆차기 스트립이 제 폭(54)으로 그려진다');
   w.eval('P.atkKey="kickround";'); renderNow();

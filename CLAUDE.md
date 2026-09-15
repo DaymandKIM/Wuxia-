@@ -124,6 +124,7 @@ review/            검사판 PNG (생성물)
 | `panther.py` `wisp.py` → `foesheet.py` | `sheets/panther.png` `sheets/wisp.png` | 돌아간다 (v2.65 — 테두리 줄 검출 격자) |
 | `hero_kick2.py` | `sheets/hero_kick2.png` | 돌아간다 (v2.71, 주인공 발차기 3종 — 칸 바닥 기준·머리 정렬) |
 | `hero_run2.py` | `sheets/hero_run2.png` | 돌아간다 (v2.71.1, 질주 6컷 — hero_kick2의 격자·축소 재사용) |
+| `hero_punch2.py` | `sheets/hero_punch2.png` | 돌아간다 (v2.71.2, 정권 두 판 — 옅은 배경·모서리 표식 시트) |
 | `bossfx.py` | **시트 없음** | 못 돌린다 |
 | `shamanmagic.py` `shamanstaff.py` | — | 옛 주술사(추정 지팡이). v2.64에 대체돼 쓰지 않는다 |
 | `shaman.py` `demon.py` `shamanorb.py` | — | 옛 버전. 쓰지 않는다 |
@@ -132,6 +133,9 @@ review/            검사판 PNG (생성물)
 
 ### 겪은 사고와 원인
 
+- **시트마다 배경 농도·테두리 색·모서리 표식이 다르다.** 주먹 시트(v2.71.2)는 배경이 옅어 r-g>50 판정이
+  안 잡혔고, 칸 모서리 ㄱ자 표식이 조각으로 남았다. hero_kick2.grid/cell_rgba가 배경 중앙값 ±40·어두운
+  얇은 줄 격자·모서리 조각 버리기로 일반화돼 있다 — 주인공 시트는 이걸 쓴다.
 - **AI 시트의 칸은 균등하지 않다.** 표범 시트는 3행이 172px, 4~5행이 255px였다. 고정
   격자(H/행수)로 자르면 칸을 걸쳐 두 그림이 섞인다. `foesheet._lines`가 어두운 테두리 줄을
   검출해 격자를 잡는다 — 검출 개수가 행·열과 안 맞을 때만 고정 격자로 떨어진다.
@@ -421,8 +425,8 @@ cost 20만은 연마·돌파용(습득은 여전히 기연만). 태극 원반 �
   발차기 3종은 sheets/hero_kick2.png(3줄×6칸)에서 hero_kick2.py로 뽑는다(아래 v2.49 설명은 옛 시트 이력). atkPool()=열린
   동작, heroAttack이 P.atkMove로 돌려 쓰고 P.atkKey로 이번 타 결정(삼류=양주먹만,
   이류부터 옆차기, 초절정부터 높은차기 — 성급 오를수록 발차기 각도가 는다).
-  **양주먹은 권기 정권**(katka/katkb, 양손 파란빛) — drawHero atk가 punch 무브를
-  katka/katkb 교대로 그린다(사용자 고정). 발차기는 각기 hero_kickside(폭 54)·
+  **양주먹은 사용자 주먹 시트 두 판**(punch/punchb, v2.71.2 — hero_punch2.py) — drawHero atk가 punch 무브를
+  두 판 교대로 그린다. (v2.48~71.1은 권기 정권 katka/katkb 교대였고 에셋은 보존.) 발차기는 각기 hero_kickside(폭 54)·
   hero_kickhigh(폭 60), 전 공격 4컷·임팩트 index2(HITFRAME 2 유지 위해 4컷 리샘플,
   마지막 컷=완전히 뻗음). 높은차기는 든 다리가 높아 캔버스(51) 위 여백 3px 남게
   배율을 가장 큰 프레임 기준으로 줄였다. spritetest에 발차기 2종 명시 검사 추가

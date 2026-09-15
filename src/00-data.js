@@ -34,7 +34,7 @@ const HFX = {
   castFps: 10,                   // 시전 재생 속도 — 16은 컷이 씹혀 보였다 (4성 0.6~0.9초)
   shotT: 0.28,                   // 권기 탄 비행 시간 (구 streak과 동일)
   fadeT: 0.22,                   // 탄 소멸 연출
-  aw: { aidle: 50, katk: 70, punch: 43, kickside: 54, kickround: 56, kickhigh: 60, flykick: 44, firekick: 44, cresckick: 46, burstkick: 46, run: 46 },   // 특수 동작 프레임 폭
+  aw: { aidle: 50, katk: 70, punch: 48, kickside: 54, kickround: 56, kickhigh: 60, flykick: 44, firekick: 44, cresckick: 46, burstkick: 46, run: 46 },   // 특수 동작 프레임 폭
   // 기본공격 = 양주먹(punch, 권기 정권) + 발차기 3종(kickside·kickround·kickhigh) 4프레임
   // (v2.71 — 사용자 시트 sheets/hero_kick2.png 3줄, hero_kick2.py로 추출. 머리 중심 정렬·칸 바닥 기준)
   // kickside 54·kickround 56·kickhigh 60 — 발이 옆·위로 뻗어 폭이 넓다(좌우 대칭 캔버스)
@@ -137,7 +137,7 @@ const HITFRAME = 2;              // 공격 몇 번째 프레임에서 판정하�
 //   처음엔 양주먹만, 발차기는 need 성급부터 해금. 앞으로 성급대로 더 얹는다.
 //   기본공격은 지금 열린 동작들을 순서대로 돌려 쓴다(cycle).
 const ATKMOVES = [
-  { key:'punch',    need:0 },   // 양주먹 = 권기 정권(katka/katkb, 양손 파란빛) — 사용자 고정 (v2.48)
+  { key:'punch',    need:0 },   // 양주먹 — 오른손 정권 punch·왼손 기운 정권 punchb 두 판 교대 (v2.71.2 사용자 시트 hero_punch2. 옛 권기 katka/katkb는 보존)
   { key:'kickside',  need:5 },   // 옆차기 — 이류(성급 5)부터. 무릎 접었다 수평으로 내지르며 초승달 기운 (v2.71 시트)
   { key:'kickround', need:10 },  // 돌려차기 — 절정(성급 10)부터. 구름 자세에서 휘둘러 별 임팩트 (v2.71 신규)
   { key:'kickhigh',  need:15 },  // 뛰어차기 — 초절정(성급 15)부터. 웅크렸다 도약해 공중에서 찬다 (v2.71, 옛 높은차기 대체)

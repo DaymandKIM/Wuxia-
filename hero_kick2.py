@@ -4,10 +4,10 @@
 
 규칙(CLAUDE.md 스프라이트 파이프라인):
   - 격자는 어두운 테두리 줄을 검출해 잡는다(고정 격자 금지).
-  - 배경 판정은 '초록이 적·청 둘보다 훨씬 낮음'(r-g>50 & b-g>50) — 테두리의 어두운 자주까지 걷고,
-    머리카락의 어두운 자주갈색(r-g 작음)은 남는다.
-  - 칸마다 덩어리 라벨링으로 그림을 고르고(초승달 기운은 발에서 떨어진 조각이라 25px 이상은 다 살림),
-    얇은 줄(높이·폭 2px 이하)은 테두리 잔재로 버린다.
+  - 배경 판정은 '진한 마젠타(r-g>50 & b-g>50)' 또는 '시트 배경 중앙값 ±40'(옅은 시트) — 테두리의 어두운
+    자주까지 걷고, 머리카락의 어두운 자주갈색(r-g 작음·배경과 멂)은 남는다. 격자는 얇은 줄만(인물 덩어리 제외).
+  - 칸마다 덩어리 라벨링으로 그림을 고르고(초승달 기운은 발에서 떨어진 조각이라 60px 이상은 살림),
+    얇은 줄(높이·폭 2px 이하)·칸 모서리의 400px 미만 조각(ㄱ자 표식)은 테두리 잔재로 버린다.
   - 공통 배율(서 있는 컷 170px → 대기 컷 몸높이 47px)로 전 프레임 같은 크기.
   - 바닥 정렬은 **칸 바닥 기준** — 뛰는 컷은 칸 바닥에서 뜬 만큼 공중에 둔다.
   - 가로는 머리(윗 22% 행) 무게중심을 캔버스 중앙에 — 발이 뻗어도 몸이 안 흔들린다.
@@ -36,11 +36,23 @@ def groups(v):
     if s is not None: out.append((s, p))
     return out
 
+BG = None   # 시트 배경 중앙값 (grid가 채운다) — 시트마다 마젠타 농도가 달라 고정색으로 판정하지 않는다
 def grid(A):
-    r, g, b = A[..., 0], A[..., 1], A[..., 2]
-    dark = (r < 140) & (g < 60) & (b < 140) & (r > 40)
-    cols = [c for c in groups(np.where(dark.mean(0) > 0.6)[0])]
-    rows = [c for c in groups(np.where(dark.mean(1) > 0.6)[0])]
+    """테두리 줄 검출 격자 — 배경보다 훨씬 어두운 픽셀이 85% 넘게 이어진 **얇은**(≤4px) 열·행이 줄.
+    (85% 넘게 이어진 얇은 줄만 — 인물이 나란한 행도 60%는 넘는다). 줄 곁의 반쯤 물든 열(30%↑)도 줄에 붙인다."""
+    global BG
+    BG = np.median(A.reshape(-1, 3), 0)
+    diff = A.sum(2) < BG.sum() - 150      # 테두리 줄은 배경보다 훨씬 어둡다(색과 무관) — 인물 열은 어두운 픽셀이 이어지지 않는다
+    def lines(frac):
+        # 줄은 폭 거의 전부(85%↑)를 가로지른다 — 인물 6명이 나란한 행도 60%는 넘으니 0.6은 안 된다
+        out = []
+        for (a, b) in groups(np.where(frac > 0.85)[0]):
+            if b - a + 1 > 4: continue
+            while a > 0 and frac[a - 1] > 0.3 and b - a < 5: a -= 1       # 안티에일리어스 열을 줄에 붙인다
+            while b + 1 < len(frac) and frac[b + 1] > 0.3 and b - a < 5: b += 1
+            out.append((a, b))
+        return out
+    cols, rows = lines(diff.mean(0)), lines(diff.mean(1))
     xs = [(cols[i][1] + 1, cols[i + 1][0] - 1) for i in range(len(cols) - 1) if cols[i + 1][0] - cols[i][1] > 40]
     ys = [(rows[i][1] + 1, rows[i + 1][0] - 1) for i in range(len(rows) - 1) if rows[i + 1][0] - rows[i][1] > 40]
     return xs, ys
@@ -49,14 +61,18 @@ def cell_rgba(A, x0, x1, y0, y1):
     """칸 안 그림 → RGBA(원본 배율) + 칸 바닥까지 간격 + 머리 무게중심 x"""
     C = A[y0:y1 + 1, x0:x1 + 1]
     r, g, b = C[..., 0], C[..., 1], C[..., 2]
-    fg = ~(((r - g) > 50) & ((b - g) > 50))
+    near = (np.abs(C - BG) < 40).all(2)                       # 배경 중앙값 ±40 (옅은 시트)
+    fg = ~((((r - g) > 50) & ((b - g) > 50)) | near)           # 진한 마젠타 | 배경 근처
     lab, n = ndi.label(fg)
     keep = np.zeros_like(fg)
     for i in range(1, n + 1):
         m = lab == i; s = int(m.sum())
-        if s < 25: continue
+        if s < 40: continue                                                # 점 잡티(옅은 시트의 테두리 잔재). 임팩트 파편(55px~)은 남긴다
         yy, xx = np.where(m)
         if yy.max() - yy.min() < 2 or xx.max() - xx.min() < 2: continue   # 테두리 잔재 줄
+        Hc, Wc = C.shape[:2]
+        corner = (xx.min() <= 8 or xx.max() >= Wc - 9) and (yy.min() <= 8 or yy.max() >= Hc - 9)
+        if corner and s < 400: continue                                    # 칸 모서리의 ㄱ자 표식(주먹 시트) — 초승달 기운(가장자리 중간)은 남는다
         keep |= m
     yy, xx = np.where(keep)
     top, bot, l, rgt = yy.min(), yy.max(), xx.min(), xx.max()
@@ -87,6 +103,11 @@ def shrink(rgba, scale):
     rgb = Image.fromarray(e[..., :3]).resize((w, h), Image.LANCZOS)
     al = Image.fromarray(e[..., 3]).resize((w, h), Image.LANCZOS)
     out = np.dstack([np.array(rgb), (np.array(al) >= 128) * 255]).astype(np.uint8)
+    # 축소 뒤 떨어져 나온 1~2px 점(머리카락 끝·발밑 그늘이 끊긴 것)은 지운다 — 임팩트 파편(3px↑)은 남긴다
+    lab, n = ndi.label(out[..., 3] > 0)
+    for i in range(1, n + 1):
+        m = lab == i
+        if m.sum() <= 2: out[m] = 0
     return out
 
 def main():
