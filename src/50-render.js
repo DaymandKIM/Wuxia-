@@ -625,8 +625,9 @@ function render(){
   ctx.setTransform(SC,0,0,SC, Math.round(sh*SC), Math.round(sh*SC));
   const ox = S.camX - VW/2, oy = S.camY - VH/2;
   drawGround(ox, oy);
-  drawBackdrop(ox);                           // 맨 뒤 — 상단 원경(패럴럭스, 시트 있을 때만)
   drawProps(ox, oy);                          // 뒤 층 — 배경 소품 스프라이트(시트 추출)
+  drawBackdrop(ox);                           // 원경은 항상 소품 위 (v2.62.2 — 키 큰 소품이 원경으로 삐져나왔다).
+                                              // 디졸브 구간에선 소품이 안개에 잠기듯 가려진다. 인물·몹은 이 띠에 안 온다.
   drawAmbient(false);                        // 땅 위 층 — 구름 그림자·동굴 어둑함
   drawGateFade(ox, oy);                       // 보스 등장 후 문이 어둠 속으로 스러진다 (뒤에)
   // y 순서로 겹침 정리
