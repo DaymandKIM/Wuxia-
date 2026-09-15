@@ -102,9 +102,9 @@ setTimeout(()=>{
 
 
   // 3) 기본공격 (v2.49) — 양주먹=권기 정권(katka/katkb 양손 파란빛), 성급 오르면 각도별 발차기가 섞인다
-  ok(w.eval('ATKMOVES.length')===3 && w.eval('ATKMOVES[0].key')==='punch'
-     && w.eval('ATKMOVES[1].key')==='kickside' && w.eval('ATKMOVES[2].key')==='kickhigh',
-     '기본공격 무브셋 = 양주먹·옆차기·높은차기 3종');
+  ok(w.eval('ATKMOVES.length')===4 && w.eval('ATKMOVES[0].key')==='punch'
+     && w.eval('ATKMOVES[1].key')==='kickside' && w.eval('ATKMOVES[2].key')==='kickround' && w.eval('ATKMOVES[3].key')==='kickhigh',
+     '기본공격 무브셋 = 양주먹·옆차기·돌려차기·뛰어차기 4종');
   w.eval('S.rexp=0;');                                     // 삼류 1성 — 발차기 미해금
   ok(w.eval('atkPool().length')===1 && w.eval('atkPool()[0].key')==='punch',
      '낮은 성급엔 양주먹만');
@@ -119,14 +119,16 @@ setTimeout(()=>{
   ok(drew('hero_katkb',w.eval('HFX.aw.katk')),'왼손(katkb)으로 교대된다');
   w.eval('P.atkKey="kickside";'); renderNow();
   ok(drew('hero_kickside',w.eval('HFX.aw.kickside')),'옆차기 스트립이 제 폭(54)으로 그려진다');
+  w.eval('P.atkKey="kickround";'); renderNow();
+  ok(drew('hero_kickround',w.eval('HFX.aw.kickround')),'돌려차기 스트립이 제 폭(56)으로 그려진다');
   w.eval('P.atkKey="kickhigh";'); renderNow();
-  ok(drew('hero_kickhigh',w.eval('HFX.aw.kickhigh')),'높은차기 스트립이 제 폭(60)으로 그려진다');
+  ok(drew('hero_kickhigh',w.eval('HFX.aw.kickhigh')),'뛰어차기 스트립이 제 폭(60)으로 그려진다');
   // 공격을 여러 번 하면 열린 동작을 돌려 쓴다
   w.eval(`S.rexp=1e12; P.atkMove=0; P.atkCd=0; P.atkT=0; S.foes.length=0; spawnFoe();
     S.foes[0].x=P.x+20; S.foes[0].y=P.y; S.foes[0].hp=1e12; S.foes[0].hpMax=1e12;
     window.__keys={}; for(let i=0;i<9;i++){ P.atkCd=0; P.atkT=0; heroAttack(); window.__keys[P.atkKey]=1; }`);
-  ok(w.eval('window.__keys.punch && window.__keys.kickside && window.__keys.kickhigh'),
-     '연속 공격이 양주먹·옆차기·높은차기를 돌려 쓴다');
+  ok(w.eval('window.__keys.punch && window.__keys.kickside && window.__keys.kickround && window.__keys.kickhigh'),
+     '연속 공격이 양주먹·옆차기·돌려차기·뛰어차기를 돌려 쓴다');
 
   // 3.5) 제패 연출 중 방향 고정 — 사방으로 밀려나는 적을 쫓아 파닥이지 않는다
   w.eval(`S.rexp=1e12; P.dir=1; P.atkT=0; P.atkCd=0; S.foes.length=0;

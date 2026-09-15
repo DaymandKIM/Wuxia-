@@ -1,3 +1,14 @@
+# v2.71 — 주인공 발차기 교체 (사용자 시트 sheets/hero_kick2.png, 2026-09-15)
+
+- 3줄×6칸 시트에서 `hero_kick2.py`로 추출: **옆차기(kickside)·돌려차기(kickround, 신규 need 10)·
+  뛰어차기(kickhigh — 옛 높은차기 대체)** 각 4컷(임팩트 index2·마지막 컷 뻗음). 어두운 자주 테두리 줄로
+  격자 검출, 배경은 r-g>50&b-g>50, 칸마다 덩어리 라벨링(초승달 기운은 떨어진 조각이라 살림), 공통 배율
+  (서 있는 컷 172px→47px), **칸 바닥 기준**(도약 컷은 뜬 만큼 공중), 머리 무게중심 가로 정렬, 가장자리
+  색 확장 뒤 LANCZOS·알파 128 문턱. 초승달의 분홍 물듦은 g 쪽으로 걷었다.
+- 돌려차기 2칸(3칸과 같음)·뛰어차기 5칸(다리가 뒤로 뻗음)은 뺐다. 옛 kickside/kickhigh는 raw/kick_old/.
+- ATKMOVES 4종(punch 0·kickside 5·kickround 10·kickhigh 15), HFX.aw.kickround 56, loadImg hero_kickround.
+- 검증 review/hero_kick2.png·blackcheck·spritetest(돌려차기 추가)·fxtest(4종·제 폭·cycle)·animtest·크로뮴 실기.
+
 # v2.70.6 — 지도 구역은 선택, 이동은 단계 줄에서 (사용자: "누르면 바로 가는 게 아니라 아래서 골라야지", 2026-09-15)
 
 - 구역 노드를 누르면 금 고리로 **선택**만 되고 아래 단계 줄이 그 구역으로 바뀐다(zoneSel). 단계 버튼을

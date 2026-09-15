@@ -122,6 +122,7 @@ review/            검사판 PNG (생성물)
 | `bandit.py` → `foesheet.py` | `sheets/bandit.png` | 돌아간다 (v2.64, 4×4 공용 추출기) |
 | `shaman.py` → `foesheet.py` | `sheets/shaman.png` + `shaman_b.png` | 돌아간다 (v2.64, 두 시트 합침) |
 | `panther.py` `wisp.py` → `foesheet.py` | `sheets/panther.png` `sheets/wisp.png` | 돌아간다 (v2.65 — 테두리 줄 검출 격자) |
+| `hero_kick2.py` | `sheets/hero_kick2.png` | 돌아간다 (v2.71, 주인공 발차기 3종 — 칸 바닥 기준·머리 정렬) |
 | `bossfx.py` | **시트 없음** | 못 돌린다 |
 | `shamanmagic.py` `shamanstaff.py` | — | 옛 주술사(추정 지팡이). v2.64에 대체돼 쓰지 않는다 |
 | `shaman.py` `demon.py` `shamanorb.py` | — | 옛 버전. 쓰지 않는다 |
@@ -414,8 +415,9 @@ cost 20만은 연마·돌파용(습득은 여전히 기연만). 태극 원반 �
   → 생사경 청 → 신화경 자주 (assets/aidle_w·g·b·p, 심법 시트의 안개만
   분리해 4색으로 구움). 심법별 기운은 안 쓴다 — 여러 개 겹치면 난장판
   (사용자 동의). 색은 경지 하나가 말한다.
-- **기본공격**(v2.49 각도별 발차기) — ATKMOVES `[{key,need}]` = **양주먹(punch,
-  need0)·옆차기(kickside, need5)·높은차기(kickhigh, need15)** 3종. atkPool()=열린
+- **기본공격**(v2.49 각도별 발차기 → v2.71 시트 교체) — ATKMOVES `[{key,need}]` = **양주먹(punch,
+  need0)·옆차기(kickside, need5)·돌려차기(kickround, need10)·뛰어차기(kickhigh, need15)** 4종.
+  발차기 3종은 sheets/hero_kick2.png(3줄×6칸)에서 hero_kick2.py로 뽑는다(아래 v2.49 설명은 옛 시트 이력). atkPool()=열린
   동작, heroAttack이 P.atkMove로 돌려 쓰고 P.atkKey로 이번 타 결정(삼류=양주먹만,
   이류부터 옆차기, 초절정부터 높은차기 — 성급 오를수록 발차기 각도가 는다).
   **양주먹은 권기 정권**(katka/katkb, 양손 파란빛) — drawHero atk가 punch 무브를
