@@ -27,12 +27,16 @@ def main(grade, path, slot='weapon', flood=False):
         for x in range(W):
             for y in (0, H - 1):
                 if bright[y, x] and not seen[y, x]: seen[y, x] = True; q.append((y, x))
+        # 순마젠타 테두리 + 연분홍 칸(v2.87.2 전설 장신구): 테두리→칸은 채널 차 138이라 번짐이 테두리에서 멈춘다.
+        # 색 규칙(bg)이 잡은 마젠타에 닿아 있는 밝은 픽셀도 씨앗으로 넣어 칸 안쪽 연분홍부터 번지게 한다.
+        touch = ndi.binary_dilation(bg, iterations=2) & ~bg & bright & ~seen
+        for y, x in zip(*np.where(touch)): seen[y, x] = True; q.append((y, x))
         while q:
             y, x = q.popleft(); c = A[y, x]
             for ny, nx in ((y - 1, x), (y + 1, x), (y, x - 1), (y, x + 1)):
                 if 0 <= ny < H and 0 <= nx < W and not seen[ny, nx] and bright[ny, nx] and (np.abs(A[ny, nx] - c) <= TOL).all():
                     seen[ny, nx] = True; q.append((ny, nx))
-        bg = seen
+        bg = seen | bg
     fg = ~bg
     # 칸 구분선은 시트마다 색이 다르다(어두운 선·흰 선) — 칸 높이의 85% 넘게 뻗은 가는(≤24px) 세로 덩어리는 버린다
     lab, n = ndi.label(fg); objs = ndi.find_objects(lab); sizes = ndi.sum(np.ones(lab.shape), lab, range(1, n + 1))

@@ -375,7 +375,9 @@
   #zstage .zst .sb{min-width:0;padding-left:0;padding-right:0;text-align:center;}
   #zstage .zst .sb.lock{opacity:.35;cursor:default;}
 
-  #opanel{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  /* 복귀 카드와 기연 카드는 **같은 자리·같은 높이**(v2.87.2, 사용자: "수련 계속과 기연이 뜨는 위치를 같게 해서 바로바로 클릭") —
+     둘 다 바 아래 84px에서 시작, 카드 높이 고정(.ocard min-height)에 버튼은 맨 아래(margin-top:auto)라 두 버튼이 같은 자리에 온다. */
+  #opanel{position:absolute;inset:0;display:flex;align-items:flex-start;justify-content:center;padding-top:calc(env(safe-area-inset-top) + 84px);
     pointer-events:none;opacity:0;background:rgba(6,8,11,.66);transition:opacity .2s;}
   #opanel.show{pointer-events:auto;opacity:1;}
   /* 기연은 자동 수락이라 화면 가운데를 막지 않는다 (v2.33) — 위에서 내려오는
@@ -401,14 +403,17 @@
   .rhn{font-family:var(--fw);font-size:17px;color:#9fd0ff;letter-spacing:.04em;}
   .rhd{font-size:12px;color:#8b97a5;margin-top:4px;}
   .ocard{background:#12161c;border:1.5px solid #2b333d;border-radius:14px;
-    padding:18px 22px 16px;min-width:232px;text-align:center;}
+    padding:18px 22px 16px;width:min(300px, calc(100% - 32px));min-height:404px;text-align:center;
+    display:flex;flex-direction:column;}
+  .ocard > *{flex:none;}
+  #obtn,#fbtn{margin-top:auto !important;padding:11px 0 !important;font-size:13px !important;}   /* 버튼은 카드 바닥, 같은 높이 — 두 카드에서 같은 자리 */
   .oh{font-family:var(--fw);font-size:18px;color:#f0e2b8;letter-spacing:.05em;}
   #otime{font-size:11px;color:#8b97a5;margin-top:6px;}
   .orow{display:flex;justify-content:space-between;gap:22px;margin-top:9px;
     font-size:12px;color:#9fb0c2;}
   .orow b{color:#e8eef6;font-weight:900;}
   #obody{margin-top:5px;border-top:1px solid #1e242c;padding-top:4px;}
-  #obtn{margin-top:15px;width:100%;background:#2f5f8c;border:1.5px solid #4a86bd;
+  #obtn{margin-top:15px;width:100%;flex:none;background:#2f5f8c;border:1.5px solid #4a86bd;
     border-radius:9px;color:#eaf3ff;font:900 13px/1 inherit;padding:11px 0;letter-spacing:.06em;}
   #obtn:active{background:#3c6f9e;}
 
