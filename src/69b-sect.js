@@ -46,7 +46,7 @@ function hallCard(h){
   const lv = hallLv(h.k), cap = hallCap(), full = lv >= cap, can = canBuildHall(h.k);
   const next = full ? '' : ' → ' + hallEffText(h, lv + 1);
   return '<div class="acard hcard' + (can ? ' can' : '') + '" data-k="' + h.k + '">' +
-    '<div class="hico">' + (ASSET['hall_' + h.k] ? '<img src="' + ASSET['hall_' + h.k] + '" alt="">' : '<b>' + h.h[0] + '</b>') + '</div>' +
+    '<div class="hico' + (ASSET['hall_' + h.k] ? '' : ' seal') + '">' + (ASSET['hall_' + h.k] ? '<img src="' + ASSET['hall_' + h.k] + '" alt="">' : '<b>' + h.h[0] + '</b>') + '</div>' +
     '<div class="atxt"><div class="zn">' + h.n + ' <small>' + h.h + '</small> <em>Lv ' + lv + ' / ' + cap + '</em></div>' +
     '<div class="zd">' + h.d + '<br><i>' + (lv ? hallEffText(h, lv) : '아직 효과 없음') + '</i>' + next + '</div></div>' +
     (full ? '<div class="adone">' + (fameTier() >= SECT.fame.tiers.length - 1 ? '최고' : fameTierDef(fameTier() + 1).n + '에 열림') + '</div>'

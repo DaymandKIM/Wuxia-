@@ -57,7 +57,8 @@ $('coinhud').src = ASSET.silver;             // HUD 은자 아이콘
 // 탭바 아이콘 (v2.63.4) — 에셋 없으면 글자만
 for (const [id, k] of [['tab-arts','tab_arts'],['tab-train','tab_train'],['tab-equip','tab_equip'],['tab-sect','tab_sect'],['tab-zone','tab_zone']]){
   const im = $(id).querySelector('.ti'); if (!im) continue;
-  if (ASSET[k]) im.src = ASSET[k]; else im.remove();
+  const src = ASSET[k] || (k === 'tab_sect' ? ASSET.sch_bamboo : null);   // 문파 탭은 시트가 올 때까지 청죽문 엠블럼 (v2.91.1)
+  if (src) im.src = src; else im.remove();
 }
 if (ASSET.rest_card) $('oart').src = ASSET.rest_card; else $('oart').style.display = 'none';   // 복귀 카드 그림 (v2.63.4)
 loadImg('ronin_shot', ASSET.ronin_shot);     // 낭인 술병 탄
