@@ -249,6 +249,18 @@ function auraGlow(im, sx, fw, fh, ck, col){
   auraCache[k] = out;
   return out;
 }
+// 기운 얹기 — 어느 동작이든 (v2.88.1 사용자: "오라가 모든 모션에 들어가야지"). 보스 등장 연출 중엔 끈다(v2.42 흐림 제보).
+function drawAuraGlow(im, sx, fw, fh, ck, dx, dy){
+  const ak = auraKey();
+  P.auraCol = ak ? ak.col : null;                 // 검증용(fxtest) — 저장 안 함
+  if (!ak || (S.summonT > 0) || (S.gateT > 0) || !im || !im.complete || !im.naturalWidth) return;
+  const glow = auraGlow(im, sx, fw, fh, ck, ak.col), PAD = HFX.auraGrade.pad;
+  if (!glow) return;
+  ctx.globalCompositeOperation = 'lighter';
+  ctx.globalAlpha = ak.a * (1 - HFX.auraGrade.pulse + HFX.auraGrade.pulse * Math.sin(S.t * 3));   // 숨 쉬듯 맥동
+  ctx.drawImage(glow, dx - PAD, dy - PAD);        // draw() 헬퍼는 캔버스(complete 없음)를 거른다 — 직접 그린다
+  ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+}
 function drawHero(ox, oy){
   const x = Math.round(P.x - ox), y = Math.round(P.y - oy);
   // 경공 (v2.41) — 날기는 공중에 떠서, 착지는 바닥에. 단일 컷.
@@ -261,6 +273,7 @@ function drawHero(ox, oy){
     ctx.save();
     ctx.translate(x, y - lift);
     if (P.dir < 0) ctx.scale(-1, 1);
+    drawAuraGlow(im, 0, im && im.naturalWidth || w, im && im.naturalHeight || h, P.anim, -Math.round(w/2), -h);
     draw(im, -Math.round(w/2), -h, w, h);
     ctx.restore();
     return;
@@ -292,24 +305,9 @@ function drawHero(ox, oy){
   ctx.save();
   ctx.translate(x, y);
   if (P.dir < 0) ctx.scale(-1, 1);
-  // 경지 기운 — 서 있거나 걸을 때 몸 뒤에 은은히 돈다. 색이 경지를 말해준다
-  // (사냥 중엔 거의 늘 걷고 있어서 idle 한정이면 보이지 않는다)
-  // 보스 등장 연출 동안엔 기운을 끈다 — 3.6초간 가만히 서면 안개가 짙게 깔려
-  // 캐릭터가 흐릿해 보인다는 제보(v2.42 "등장 때 캐릭터가 흐려짐").
+  // 기운(장비 등급색 발광, v2.88) — 모든 동작에 붙는다. 보스 등장 연출 중만 끈다(v2.42 흐림 제보)
   const FH = HFX.fh && HFX.fh[key], fh = FH ? FH[0] : HERO.h, ftop = FH ? FH[1] : 0;   // 키 큰 캔버스(머리 위 무기) — 땅은 그대로 (v2.73)
-  if ((P.anim === 'idle' || P.anim === 'run') && !(S.summonT > 0) && !(S.gateT > 0)){
-    const ak = auraKey();
-    P.auraCol = ak ? ak.col : null;                 // 검증용(fxtest) — 저장 안 함
-    if (ak && im && im.complete && im.naturalWidth){
-      const glow = auraGlow(im, fi * fw, fw, fh, key + ':' + fi, ak.col), PAD = HFX.auraGrade.pad;
-      if (glow){
-        ctx.globalCompositeOperation = 'lighter';
-        ctx.globalAlpha = ak.a * (1 - HFX.auraGrade.pulse + HFX.auraGrade.pulse * Math.sin(S.t * 3));   // 숨 쉬듯 맥동
-        ctx.drawImage(glow, -Math.round(fw/2) - PAD, -HERO.h - ftop - PAD);   // draw() 헬퍼는 캔버스(complete 없음)를 거른다 — 직접 그린다
-        ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
-      }
-    }
-  }
+  drawAuraGlow(im, fi * fw, fw, fh, key + ':' + fi, -Math.round(fw/2), -HERO.h - ftop);
   const hurt = P.hitT > 0;
   if (hurt) ctx.globalAlpha = 0.62 + Math.sin(S.t*46)*0.22;
   draw(im, fi*fw, 0, fw, fh, -Math.round(fw/2), -HERO.h - ftop, fw, fh);

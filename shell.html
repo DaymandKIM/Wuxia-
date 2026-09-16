@@ -43,11 +43,12 @@
   .bar{position:relative;height:7px;margin-bottom:3px;border-radius:4px;overflow:hidden;
     background:rgba(8,10,14,.55);border:0;box-shadow:0 0 0 1px rgba(0,0,0,.45);}
   .bar>i{display:block;height:100%;width:0%;transition:width .12s linear;}
+  #hp{height:11px;}   /* 7px엔 8.5px 글자가 잘렸다 (v2.88.1 "글씨 짤림") — 11px 바 + 9px 글자 */
   #hp>i{background:linear-gradient(90deg,#c8453c,#e0655a);}
   #kn{height:3px;margin-bottom:0;}
   #kn>i{background:linear-gradient(90deg,#3f7fb8,#69a8dd);}
   .bar>span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-    font-size:8.5px;line-height:1;font-weight:900;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.95);letter-spacing:.04em;}
+    font-size:9px;line-height:1;font-weight:900;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.95);letter-spacing:.04em;}
   /* ≡ 버튼 — 세 줄. 열리면 ✕ 로 */
   #menubtn{pointer-events:auto;flex:none;width:40px;height:40px;border-radius:10px;border:1.5px solid #2b333d;
     background:#0e1319;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;}
