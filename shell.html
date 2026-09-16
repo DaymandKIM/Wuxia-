@@ -509,6 +509,7 @@
     background:rgba(12,15,20,.92);border:1.5px solid #3a4553;border-radius:10px;
     padding:10px 20px;font-size:15px;font-weight:900;color:#f0e2b8;letter-spacing:.06em;
     white-space:pre-line;text-align:center;line-height:1.45;   /* 줄바꿈 허용 (v2.70.1) */
+    width:max-content;max-width:calc(100% - 28px);word-break:keep-all;   /* v2.93.1 "보상 텍스트 끝이 잘림": left:50% 절대 배치는 쓸 수 있는 폭이 화면 절반이라 긴 줄이 "5단|계"로 접혔다 */
     opacity:0;transition:opacity .18s,transform .18s;}
   #toast.show{opacity:1;transform:translate(-50%,-50%) scale(1);}
   /* 그림 토스트 (v2.86) — 장비 획득·합성: 왼쪽 아이콘 액자 + 글자. 테두리·빛은 등급색(60-ui toast opt) */

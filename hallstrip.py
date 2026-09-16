@@ -18,23 +18,40 @@ GROUND = (106, 122, 82)             # 게임 바닥색 — 흰 배경은 도복�
 BG_SHEET = 'sheets/sect_bg.png'
 DIFF_JSON = 'review/hall_diff.json'
 YARD_RECT = None                    # 검사판(b)에 덧그릴 배경 터 직사각 (x0,y0,x1,y1) — main 에서 종류별로 채운다
-TERRAIN = {'yard': (64, 213, 192, 308), 'clinic': (381, 213, 511, 309), 'guest': (353, 642, 480, 748)}   # sect_bg 맨땅 터 자리(sectbg.py 가 잰 것). 다른 종류는 잰 뒤 더한다
+TERRAIN = {'yard': (64, 213, 192, 308), 'clinic': (381, 213, 511, 309), 'guest': (353, 642, 480, 748), 'library': (96, 641, 222, 749), 'gate': (224, 256, 350, 350)}
+ANCHOR = {'gate': {'cx': 0.502, 'by': 0.340}}   # hall_diff.json 에 차분이 없는 전각(산문)의 되얹기 앵커 — 폭은 --ref-w 로 준다   # sect_bg 맨땅 터 자리(sectbg.py 가 잰 것). 다른 종류는 잰 뒤 더한다
 
 def font(sz=11, bold=True):
     try: return ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans%s.ttf' % ('-Bold' if bold else ''), sz)
     except Exception: return ImageFont.load_default()
 
 # ── 1. 칸 나누기 ─────────────────────────────────────────────────────────────
+def dark_px(im):
+    """줄 픽셀 판정 — 순검정이 아니다: 장경각 시트의 둘째 가로 줄은 (116,0,108)·세로 줄 (96,0,86)으로 합 182~223 이라 <180 에 빠졌다(마왕 시트 사고와 같은 어두운 자주).
+    합<180 이거나, 어두운 자주(합<270·g<45·r·b 가 g 보다 30 넘게 큼)면 줄 후보. 건물의 어두운 붉은 픽셀은 b 가 g 보다 안 크고, 어차피 줄은 전폭 60% 를 넘어야 한다"""
+    r, g, b = im[..., 0], im[..., 1], im[..., 2]
+    s = r + g + b
+    return (s < 180) | ((s < 270) & (g < 45) & (r > g + 30) & (b > g + 30))
+
 def dark_bands(im, axis):
-    """어두운(r+g+b<180) 픽셀 비율 60% 넘는 줄들을 띠로 묶는다. axis=1 → 가로 줄(행), axis=0 → 세로 줄(열)"""
-    dark = im.sum(2) < 180
-    ratio = dark.mean(axis)
+    """어두운(dark_px) 픽셀 비율 60% 넘는 줄들을 띠로 묶는다. axis=1 → 가로 줄(행), axis=0 → 세로 줄(열).
+    **줄은 양옆이 배경(마젠타)이어야 한다** — 장경각 큰 탑의 어두운 붉은 가장자리 열(x 442)이 띠 높이 60%를 넘어 줄로 오판돼 탑을 자르고 종을 갈랐다.
+    띠 양옆 3px 의 배경 비율이 50% 넘는 쪽이 둘 다(그림 가장자리에 붙은 띠는 안쪽 한쪽만) 돼야 줄"""
+    dark = dark_px(im); bg = bg_mask(im)
+    if axis == 0: dark, bg = dark.T, bg.T          # 열 검사는 전치해 행처럼
+    ratio = dark.mean(1); L = dark.shape[0]
     idx = [i for i, v in enumerate(ratio) if v > 0.6]
     bands = []
     for i in idx:
         if bands and i - bands[-1][1] <= 2: bands[-1][1] = i
         else: bands.append([i, i])
-    return [tuple(b) for b in bands]
+    out = []
+    for a0, a1 in bands:
+        before = bg[max(0, a0 - 3):a0].mean() if a0 > 0 else None
+        after = bg[a1 + 1:a1 + 4].mean() if a1 < L - 1 else None
+        sides = [s for s in (before, after) if s is not None]
+        if sides and all(s > 0.5 for s in sides): out.append((a0, a1))
+    return out
 
 def gaps(bands, L, minlen=20):
     """띠 사이의 빈 구간 [(a0, a1), ...] — 가장자리 테두리 띠는 구간을 만들지 않는다(20px 미만 버림)"""
@@ -49,37 +66,28 @@ def find_lines(im):
     반환 (줄 마스크, 띠 구간 목록[(a0,a1)], 띠 방향 axis: 1=가로 띠(y 구간), 0=세로 띠(x 구간), 띠별 칸 구간 목록)
     v2.93 약방 스트립: 첫 가로 띠만 가운데 세로 줄로 두 칸 — 불규칙 격자라 고정 격자를 쓰지 않는다"""
     H, W = im.shape[:2]
-    dark = im.sum(2) < 180
     line = np.zeros((H, W), bool)
     hb = dark_bands(im, 1)
     axis = 1
-    if not gaps(hb, H) or len(gaps(hb, H)) < 2:
+    if len(gaps(hb, H)) < 2:
         vb = dark_bands(im, 0)
         if len(gaps(vb, W)) >= 2: axis = 0
     if axis == 1:
         for a0, a1 in hb: line[a0:a1 + 1, :] = True
         strips = gaps(hb, H)
         cells = []
-        for a0, a1 in strips:                       # 띠 안에서만 세로 줄을 찾는다(전체 높이 비율로는 안 잡힌다)
-            sub = dark[a0:a1]; idx = [i for i, v in enumerate(sub.mean(0)) if v > 0.6]
-            vb = []
-            for i in idx:
-                if vb and i - vb[-1][1] <= 2: vb[-1][1] = i
-                else: vb.append([i, i])
+        for a0, a1 in strips:                       # 띠 안에서만 세로 줄을 찾는다(전체 높이 비율로는 안 잡힌다) — 양옆 배경 검사 포함
+            vb = dark_bands(im[a0:a1], 0)
             for x0, x1 in vb: line[a0:a1, x0:x1 + 1] = True
-            cells.append(gaps([tuple(b) for b in vb], W))
+            cells.append(gaps(vb, W))
     else:
         for a0, a1 in vb: line[:, a0:a1 + 1] = True
         strips = gaps(vb, W)
         cells = []
         for a0, a1 in strips:
-            sub = dark[:, a0:a1]; idx = [i for i, v in enumerate(sub.mean(1)) if v > 0.6]
-            hb2 = []
-            for i in idx:
-                if hb2 and i - hb2[-1][1] <= 2: hb2[-1][1] = i
-                else: hb2.append([i, i])
+            hb2 = dark_bands(im[:, a0:a1], 1)
             for y0, y1 in hb2: line[y0:y1 + 1, a0:a1] = True
-            cells.append(gaps([tuple(b) for b in hb2], H))
+            cells.append(gaps(hb2, H))
     return line, strips, axis, cells
 
 def find_cells(im, n_default, near_ratio=0.4):
@@ -116,12 +124,14 @@ def find_cells(im, n_default, near_ratio=0.4):
         groups = []
         for b in bs:
             v = b['cx'] if axis == 1 else b['cy']
+            lo, hi = (b['x0'], b['x1']) if axis == 1 else (b['y0'], b['y1'])
             if groups:
                 g = groups[-1]
-                # 같은 줄 칸 구간이고 무게중심(면적 가중)이 칸 폭 40% 안이면 부속 조각(깃발·울타리) — 말뚝·초가(간격 70)는 무게중심 290 차이라 갈린다
-                if seg_of(v) == g['seg'] and abs(v - g['c']) < cellw * near_ratio:
-                    g['ids'].append(b['id']); g['c'] = (g['c'] * g['a'] + v * b['area']) / (g['a'] + b['area']); g['a'] += b['area']; continue
-            groups.append({'ids': [b['id']], 'seg': seg_of(v), 'c': v, 'a': b['area']})
+                # 같은 줄 칸 구간이고 (무게중심(면적 가중)이 칸 폭 40% 안 이거나 bbox 가 겹치거나 12px 안) 이면 부속 조각(깃발·울타리·종) —
+                # 말뚝·초가(간격 70, 무게중심 290 차이)는 갈리고, 장경각 종(무게중심 120 차이, bbox 겹침)은 붙는다
+                if seg_of(v) == g['seg'] and (abs(v - g['c']) < cellw * near_ratio or lo - g['hi'] < 12):
+                    g['ids'].append(b['id']); g['c'] = (g['c'] * g['a'] + v * b['area']) / (g['a'] + b['area']); g['a'] += b['area']; g['hi'] = max(g['hi'], hi); continue
+            groups.append({'ids': [b['id']], 'seg': seg_of(v), 'c': v, 'a': b['area'], 'hi': hi})
         for g in groups: cells.append({'strip': si, 'ids': g['ids']})
     return cells, lab, sizes, strips, axis, line
 
@@ -269,10 +279,11 @@ def review_sheet(k, base, sheet, cells_rgba, dims, scale, out_path, ref, maxh=72
         crop = (x0, y0, x0 + 300, y0 + 320)
         for i, r in enumerate(cells_rgba):
             panels.append(overlay_panel(bg, r, ref['cx'], ref['by'], crop, Z, 'strip cell %d on sect_bg' % i))
-        old = 'assets/hall_%s_3.png' % base
-        if os.path.exists(old):
+        # 기존 차분 전각(정면 3/4) — 이름이 _0 으로 바뀐 것(장경각)이 있으면 그걸, 없으면 _3
+        old = next((p for p in ('assets/hall_%s_0.png' % base, 'assets/hall_%s_3.png' % base) if os.path.exists(p)), None)
+        if old:
             o = np.array(Image.open(old).convert('RGBA'))
-            panels.append(overlay_panel(bg, o, ref['cx'], ref['by'], crop, Z, 'current assets/hall_%s_3 (front 3/4)' % base))
+            panels.append(overlay_panel(bg, o, ref['cx'], ref['by'], crop, Z, 'current %s (front 3/4)' % old[7:-4]))
     # (c) 스트립 원본 축소판 — 높이는 (b) 판에 맞춘다(가로 시트가 너무 커지지 않게)
     thumb = Image.fromarray(sheet.astype(np.uint8)).convert('RGBA')
     th = panels[0].height if panels else ah; tw = round(thumb.width * th / thumb.height)
@@ -318,9 +329,12 @@ def main():
         print('  칸 밖 덩어리 버림: 면적 %d bbox (%d,%d,%d,%d)' % (sizes[i - 1], xs.min(), ys.min(), xs.max(), ys.max()))
     ref = None
     if os.path.exists(DIFF_JSON):
-        ref = json.load(open(DIFF_JSON)).get(base, {}).get('3')
+        d = json.load(open(DIFF_JSON)).get(base, {})
+        ref = d.get('3') or (d[max(d, key=int)] if d else None)      # 단계 키가 바뀌어도(4→3→…) 가장 높은 단계의 차분 폭을 쓴다
+    if ref is None and base in ANCHOR: ref = dict(ANCHOR[base], w=None)   # 차분 없는 전각(산문) — 앵커만, 폭은 --ref-w
     ref_w = A.ref_w or (ref and ref['w'])
     if not ref_w: sys.exit('--ref-w 를 주거나 review/hall_diff.json 에 %s.3.w 가 있어야 한다' % base)
+    if ref: ref = dict(ref, w=ref_w)                                  # 검사판 제목에 실제 기준 폭(--ref-w 우선)을 찍는다
     s = ref_w / raws[-1].shape[1]
     print('배율 s = %d / %d = %.4f (모든 칸 공통)' % (ref_w, raws[-1].shape[1], s))
     os.makedirs(A.out, exist_ok=True)
