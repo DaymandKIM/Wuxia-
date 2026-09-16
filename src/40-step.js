@@ -147,6 +147,7 @@ function step(dt){
 
   // 팝업 자동 진행 — sim 등 부분 조립 도구엔 64·65가 없어 가드가 필요하다
   if (typeof stepFate === 'function') stepFate(dt);
+  if (typeof sectStep === 'function') sectStep(dt);   // 문파 제자 수익·터 화면 제자 걸음 (v2.92)
   if (typeof stepOffline === 'function') stepOffline(dt);
 
   if (P.hitT > 0) P.hitT -= dt;

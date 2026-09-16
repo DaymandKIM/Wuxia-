@@ -977,8 +977,9 @@ const artLv     = k => Math.max(1, S.artLv[k] | 0);
 const artLvCap  = k => artStar(k) * MASTERY.lvCapPer;
 const artLvCost = k => Math.round(artDef(k).cost * MASTERY.lvMul *
                                   Math.pow(MASTERY.lvGrow, artLv(k) - 1) / (1 + sBonus('artcost') / 100));   // 장경각이 깎는다 (v2.91)
+const lBonus = sch => (typeof lineageBonus === 'function') ? lineageBonus(sch) : 0;   // 제자 계보 보너스 (v2.92)
 const artEff    = k => (1 + MASTERY.lvPer * (artLv(k) - 1))
-                     * (1 + MASTERY.effPer * (artStar(k) - 1));
+                     * (1 + MASTERY.effPer * (artStar(k) - 1)) * (1 + lBonus(artDef(k).school) / 100);
 const artXpNeed = k => Math.round(MASTERY.useBase * Math.pow(MASTERY.useGrow, artStar(k) - 1));
 const artBreakCost = k => Math.round(artDef(k).cost * Math.pow(MASTERY.costMul, artStar(k)));
 // ── 스킬 심화 특성 (v2.55) ─────────────────────────
@@ -1125,7 +1126,7 @@ const SECT = {
     { k:'yard',    n:'연무장', h:'演武場', d:'권각을 겨루는 마당 — 손이 매워지고 빨라진다',   eff:{ atk:1.5, aspd:0.5 },            cb:120, cg:1.32 },
     { k:'library', n:'장경각', h:'藏經閣', d:'비급을 모은 서고 — 무공이 손에 빨리 익는다',     eff:{ artxp:4, artcost:1.5 },         cb:150, cg:1.32 },
     { k:'clinic',  n:'약방',   h:'藥房',   d:'상처를 다스리는 곳 — 몸이 단단해지고 빨리 깬다', eff:{ hp:1.5, regen:2, downcut:2 },   cb:120, cg:1.32 },
-    { k:'guest',   n:'객당',   h:'客堂',   d:'손님과 제자를 맞는 큰 방 — 제자가 머문다(곧)',    eff:{ gold:0.6 },                     cb:200, cg:1.34 },
+    { k:'guest',   n:'객당',   h:'客堂',   d:'손님과 제자를 맞는 큰 방 — 제자 자리가 늘고 벌이가 는다', eff:{ yield:3, gold:0.4 },        cb:200, cg:1.34 },
     { k:'gate',    n:'산문',   h:'山門',   d:'문파의 얼굴 — 이름이 멀리 퍼진다',              eff:{ gold:0.8, fame:3 },             cb:100, cg:1.30 },
   ],
   // 명성 — 단계마다 전각 상한(cap)이 열린다. need는 누적 명성
@@ -1137,7 +1138,31 @@ const SECT = {
     boss: 60, bossFirst: 240,     // 보스 처치 · 첫 격파 추가
     achv: 30,                     // 업적 한 단계 받기
   },
-  effName: { atk:'공격력', aspd:'공격 속도', hp:'체력', regen:'회복', gold:'은자 획득', artxp:'숙련 획득', artcost:'연마 비용', downcut:'회복 시간', fame:'명성 획득' },
+  effName: { atk:'공격력', aspd:'공격 속도', hp:'체력', regen:'회복', gold:'은자 획득', artxp:'숙련 획득', artcost:'연마 비용', downcut:'회복 시간', fame:'명성 획득', yield:'문파 수익' },
+  // 2층 제자 (v2.92) — 합류는 인연(기연 '입문 청'·명성 단계·(v2.93) 본진 비무), 육성 없음. 자질이 곧 값:
+  // 수익 = 지금 사냥터 초당 전투 수입(killSilver/offKillTime) × yieldRate × 자질 yield, 계보 보너스 = 그 계보 무공 효과 +bonus%
+  disciple: {
+    talents: [ { n:'하', h:'下', yield:0.6, bonus:2 }, { n:'중', h:'中', yield:1.0, bonus:4 }, { n:'상', h:'上', yield:1.6, bonus:7 }, { n:'천', h:'天', yield:2.6, bonus:12 } ],
+    talentW: [ [70,26,4,0], [50,36,12,2], [30,42,22,6], [15,40,33,12], [5,30,40,25] ],   // 명성 단계별 자질 가중치(하·중·상·천)
+    slotsByFame: [1, 2, 3, 4, 6],   // 명성 단계별 기본 자리
+    guestPer: 10,                   // 객당 10레벨당 자리 +1
+    yieldRate: 0.07,                // 제자 하나(자질 중)의 초당 수익 = 전투 수입의 7% — 셋이면 약 20% (설계 목표)
+    offRate: 0.7,                   // 오프라인 효율(다른 정산과 같다)
+    lineages: ['sorim','mudang','hwasan','ami','gaebang','dangmun','magyo','bamboo'],
+    surnames: ['장','왕','이','진','조','유','곽','백','남궁','모용','사마','당','소','한','임','위'],
+    givens:   ['소천','무연','청하','운학','서린','도현','명월','자강','현우','설아','태산','비연','문성','가람','휘','연화','철심','수연','백호','단비','지훈','미르','하늘','도경'],
+    say: ['사부님, 오늘도 한 수 가르쳐 주십시오', '마당을 쓸어 두었습니다', '오늘은 목검을 백 번 휘둘렀습니다', '사부님의 등을 보고 배웁니다', '언젠가 강호에 나가 문파 이름을 떨치겠습니다', '수련이 끝나면 차를 올리겠습니다'],
+    bubbleSec: 2.6,                 // 말풍선 표시 시간
+  },
+  // 문파 터 화면 (v2.92) — 문파 탭을 열면 전투 대신 그린다. 위치는 화면 비율(VW·VH)
+  scene: {
+    halls: { library:[0.18,0.355], gate:[0.50,0.335], clinic:[0.82,0.355], yard:[0.30,0.455], guest:[0.70,0.455] },
+    hero: [0.50, 0.50],
+    yardX: [0.08, 0.92], yardY: [0.40, 0.50],   // 제자가 거니는 띠
+    walkSpd: 22, discScale: 0.86,                // 제자 걸음(px/s)·배율(주인공보다 조금 작게)
+    stageLv: [1, 6, 20],                         // 전각 단계 문턱(Lv) — 터·초가·기와 (시트가 오면 hall_<k>_<0|1|2>)
+    sheetH: 0.50,                                // 아래 시트 높이(패널 영역 비율)
+  },
 };
 const ACHV = {
   list: [
@@ -1189,6 +1214,7 @@ const FATE = {
     { k:'elixir', n:'천년 영약',   d:'달빛 아래 향긋한 열매가 익어 있었다' },
     { k:'master', n:'은거기인',    d:'지나가던 노인이 걸음을 멈추고 웃었다' },
     { k:'frag',   n:'실전 비급 조각', d:'찢어진 책장이 바람에 날아와 붙었다' },
+    { k:'disciple', n:'입문 청', d:'젊은이가 길에 무릎을 꿇고 제자로 받아 달라 청했다' },   // 문파 제자 (v2.92) — 자리가 있을 때만 섞인다
   ],
 };
 const karmaNeed  = ()=> Math.round(FATE.needBase * Math.pow(FATE.needGrow, S.fates));

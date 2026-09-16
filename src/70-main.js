@@ -114,6 +114,11 @@ $('tab-sect').onclick = () => {                 // 문파 (v2.91)
   if (!open) openSect();
 };
 $('sclose').onclick = closeSect;
+cv.addEventListener('pointerdown', e => {                 // 문파 터 화면 탭 — 전각·제자 (v2.92)
+  if (typeof sectView === 'undefined' || !sectView) return;
+  const r = cv.getBoundingClientRect(); if (!r.width) return;
+  sectTap((e.clientX - r.left) / r.width * VW, (e.clientY - r.top) / r.height * VH);
+});
 $('sedit').onclick  = () => { const r = $('snamerow'); if (!r) return; r.hidden = !r.hidden; if (!r.hidden){ const i = $('snamein'); i.value = S.sectName || ''; i.focus(); } };   // 이름 바꾸기 (v2.91.2)
 $('spanel').onclick = e => { if (e.target.id === 'spanel') closeSect(); };
 $('eclose').onclick = closeEquip;

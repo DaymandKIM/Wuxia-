@@ -472,8 +472,12 @@ cost 20만은 연마·돌파용(습득은 여전히 기연만). 태극 원반 �
 같은 자리로 합산(artLvCost·DOWN_TIME·artXpGain은 나눔/곱). **명성**(S.fame)이 처치(killFame = kill×killGrow^(g−1))·보스·첫 격파·
 업적 받기·오프라인 처치로 쌓여 단계(무명→향리→일방→명문→천하제일)마다 전각 상한(5→15→30→50→80)을 연다. 데이터 SECT(00-data),
 모듈 69b-sect.js(hallLv/hallCost/hallCap/buildHall/sectBonus/fameAdd/fameTier/패널), 저장 S.halls·S.fame, sim spend(싼 전각 틱당 3회),
-검증 secttest. 탭 아이콘 tab_sect·전각 아이콘 hall_<k>는 에셋이 오면 저절로(없으면 글자·한자). **다음**: v2.92 제자(합류·방치 수익·계보 보너스),
-v2.93 문파 본진 비무(사용자 아이디어 — 소림부터 파일럿, 시트 필요).
+검증 secttest. 탭 아이콘 tab_sect·전각 아이콘 hall_<k>는 에셋이 오면 저절로(없으면 글자·한자).
+**2층 제자 + 문파 터 화면**(v2.92): 문파 탭 = **화면이 마당으로 바뀐다**(50-render render() 분기 sectView, 원경·바닥은 rzone()=죽림, 전투는 뒤에서 계속).
+전각 팻말(시트 전) / hall_<k>_<0|1|2>(터·초가·기와, SECT.scene.stageLv), 제자 = 주인공 스트립 도복 계보색 tint(tintedStrip) → disciple_walk/train 시트 오면 교체.
+탭: cv pointerdown → sectTap(전각=카드 스크롤·강조, 제자=말풍선). 제자 합류는 인연만(명성 단계·기연 '입문 청'·(v2.93) 비무), 육성 없음, 자질이 값:
+수익 sectYieldPerSec(전투 수입 × 7% × 자질 × 객당, sectStep이 초당 입금·오프라인 70%), 계보 보너스 lineageBonus → artEff. 시트 프롬프트 docs/프롬프트-문파.md.
+**다음**: v2.93 문파 본진 비무(사용자 아이디어 — 소림부터 파일럿, 시트 필요) · 전수(제자 계보 보너스 은자 sink) · 비무 동행.
 
 **경지가 들어갔다** (v1.12, 표기 v1.13) — 처치로 쌓이는 수련치(S.rexp)로 오르고
 무한하다. 삼류→이류→일류→절정→초절정→화경→현경→생사경→자연경 (각 1~4성),

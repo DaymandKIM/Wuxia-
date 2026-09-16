@@ -42,11 +42,11 @@ setTimeout(()=>{
     d.getElementById('ftitle').textContent+'" — '+d.getElementById('ftext').textContent.slice(0,40));
   // 3) 받아들이면 보상 + 인연 소모
   const before={sv:w.eval('S.silver'),xp:w.eval('S.rexp'),arts:w.eval('Object.keys(S.arts).length'),
-    frag:w.eval('(S.fatebits.guyang|0)+(S.fatebits.geongon|0)')};
+    frag:w.eval('(S.fatebits.guyang|0)+(S.fatebits.geongon|0)'),disc:w.eval('(S.disciples||[]).length')};
   d.getElementById('fbtn').click();
   const after={sv:w.eval('S.silver'),xp:w.eval('S.rexp'),arts:w.eval('Object.keys(S.arts).length'),
-    frag:w.eval('(S.fatebits.guyang|0)+(S.fatebits.geongon|0)')};
-  const rewarded=after.sv>before.sv||after.xp>before.xp||after.arts>before.arts||after.frag>before.frag;
+    frag:w.eval('(S.fatebits.guyang|0)+(S.fatebits.geongon|0)'),disc:w.eval('(S.disciples||[]).length')};
+  const rewarded=after.sv>before.sv||after.xp>before.xp||after.arts>before.arts||after.frag>before.frag||after.disc>before.disc;   // 입문 청(제자, v2.92)도 보상
   ok(rewarded,'보상이 적용됐다 (은자 '+before.sv+'→'+after.sv+' · 수련치 +'+
     Math.round(after.xp-before.xp)+' · 무공 '+before.arts+'→'+after.arts+' · 조각 '+after.frag+')');
   ok(!d.getElementById('fpanel').classList.contains('show'),'카드가 닫혔다');

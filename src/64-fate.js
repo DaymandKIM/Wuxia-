@@ -11,6 +11,7 @@ function rollFate(){
   const frags = ['guyang', 'geongon'].filter(k => !S.arts[k]);
   let pool = ['scroll', 'elixir'];
   if (cand.length) pool.push('master');
+  if (typeof discipleSlotsFree === 'function' && discipleSlotsFree() > 0) pool.push('disciple');   // 제자 자리가 있으면 입문 청 (v2.92)
   if (S.fates + 1 >= FATE.fragFrom && frags.length && Math.random() < FATE.fragW)
     pool = ['frag'];
   const k = pool[Math.floor(Math.random() * pool.length)];
@@ -25,6 +26,9 @@ function rollFate(){
   } else if (k === 'master'){
     ev.art = cand[Math.floor(Math.random() * cand.length)].k;
     ev.r = artDef(ev.art).n + '을(를) 무료로 전수받는다';
+  } else if (k === 'disciple'){
+    ev.disc = rollDisciple();
+    ev.r = ev.disc.n + ' · ' + SCHOOLS[ev.disc.l].n + ' 출신 · 자질 ' + SECT.disciple.talents[ev.disc.t].n + ' — 제자로 받아들인다';
   } else {
     ev.art = frags[Math.floor(Math.random() * frags.length)];
     const have = (S.fatebits[ev.art] | 0) + 1;
@@ -40,7 +44,7 @@ function maybeFate(){
   if (!S.fatePending || fateEv) return;
   fateEv = rollFate();
   fateAutoT = FATE.autoSec;
-  $('fart').src = ASSET['fate_' + FATE.art[fateEv.k]] || '';   // 카드 일러스트 (v2.62)
+  const fa = ASSET['fate_' + FATE.art[fateEv.k]]; $('fart').src = fa || ''; $('fart').style.display = fa ? '' : 'none';   // 카드 일러스트 (v2.62) — 없으면 숨김
   $('ftitle').textContent = fateEv.n;
   $('ftext').innerHTML = fateEv.d + '<br><b>' + fateEv.r + '</b>';
   $('fpanel').classList.add('show');
@@ -74,6 +78,8 @@ function applyFate(){
   } else if (ev.k === 'master'){
     S.arts[ev.art] = 1;
     toast(artDef(ev.art).n + '을(를) 전수받았다');
+  } else if (ev.k === 'disciple'){
+    discipleAdd(ev.disc, 'fate');
   } else {
     S.fatebits[ev.art] = (S.fatebits[ev.art] | 0) + 1;
     if (S.fatebits[ev.art] >= FATE.fragNeed){

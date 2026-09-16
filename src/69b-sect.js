@@ -42,8 +42,214 @@ function fameAdd(n){
   const t0 = fameTier();
   S.fame = (S.fame || 0) + n * (1 + sectBonus('fame') / 100);
   const t1 = fameTier();
-  if (t1 > t0 && typeof toast === 'function') toast('명성이 올랐다 · ' + fameTierDef(t1).n + '\n전각 상한 ' + fameTierDef(t1).cap);
+  if (t1 > t0){
+    const joined = [];                                                                                    // 이름이 알려지면 제자가 찾아온다 (v2.92)
+    for (let t = t0 + 1; t <= t1; t++) if (discipleSlotsFree() > 0){ const d = rollDisciple(); if (discipleAdd(d, 'fame', true)) joined.push(d.n); }
+    if (typeof toast === 'function') toast('명성이 올랐다 · ' + fameTierDef(t1).n + '\n전각 상한 ' + fameTierDef(t1).cap + (joined.length ? '\n' + joined.join('·') + '이(가) 제자로 찾아왔다' : ''));
+  }
   return t1 > t0;
+}
+
+/* ── 2층 제자 (v2.92) — 육성 없음, 자질이 곧 값. 수익은 자동 입금, 계보 보너스는 artEff에 곱 ── */
+function discipleSlots(){ const D = SECT.disciple; return (D.slotsByFame[Math.min(fameTier(), D.slotsByFame.length - 1)] | 0) + Math.floor(hallLv('guest') / D.guestPer); }
+function discipleSlotsFree(){ return Math.max(0, discipleSlots() - (S.disciples || []).length); }
+function discipleClean(arr){
+  const D = SECT.disciple, out = [];
+  if (!Array.isArray(arr)) return out;
+  for (const d of arr){
+    if (!d || typeof d !== 'object') continue;
+    const l = D.lineages.includes(d.l) ? d.l : D.lineages[0], t = clamp(d.t | 0, 0, D.talents.length - 1);
+    const n = String(d.n || '').slice(0, 8) || discipleName();
+    out.push({ n, l, t });
+  }
+  return out;
+}
+function discipleName(){
+  const D = SECT.disciple, used = new Set((S.disciples || []).map(d => d.n));
+  for (let i = 0; i < 40; i++){
+    const n = D.surnames[Math.floor(Math.random() * D.surnames.length)] + D.givens[Math.floor(Math.random() * D.givens.length)];
+    if (!used.has(n)) return n;
+  }
+  return D.surnames[0] + D.givens[0];
+}
+function rollTalent(){                                       // 명성 단계별 가중치로 자질을 뽑는다
+  const W = SECT.disciple.talentW[Math.min(fameTier(), SECT.disciple.talentW.length - 1)];
+  let r = Math.random() * W.reduce((a, b) => a + b, 0);
+  for (let i = 0; i < W.length; i++){ r -= W[i]; if (r < 0) return i; }
+  return 0;
+}
+function rollDisciple(lineage){
+  const D = SECT.disciple;
+  return { n: discipleName(), l: D.lineages.includes(lineage) ? lineage : D.lineages[Math.floor(Math.random() * D.lineages.length)], t: rollTalent() };
+}
+// 합류 — 자리가 없으면 false. src: 'fame' | 'fate' | 'duel'
+function discipleAdd(d, src, quiet){
+  if (!d || discipleSlotsFree() <= 0) return false;
+  if (!S.disciples) S.disciples = [];
+  S.disciples.push({ n: d.n, l: d.l, t: d.t });
+  sceneDisc.push(newSceneDisc(S.disciples.length - 1));
+  if (!quiet && typeof toast === 'function') toast(d.n + '이(가) 제자로 들어왔다\n' + SCHOOLS[d.l].n + ' 출신 · 자질 ' + SECT.disciple.talents[d.t].n, { icon: ASSET['sch_' + d.l], color: SCHOOLS[d.l].c, sec: 2.6 });
+  return true;
+}
+// 계보 보너스 — 그 계보 제자들의 자질 bonus 합(%)
+function lineageBonus(sch){ let v = 0; for (const d of (S.disciples || [])) if (d.l === sch) v += SECT.disciple.talents[d.t].bonus; return v; }
+// 초당 수익 — 지금 사냥터 전투 수입(처치 은자 / 한 마리 잡는 시간) × 비율 × 자질 합 × 객당
+function sectYieldPerSec(){
+  const ds = S.disciples || []; if (!ds.length) return 0;
+  let tal = 0; for (const d of ds) tal += SECT.disciple.talents[d.t].yield;
+  const per = (typeof offKillTime === 'function') ? killSilver() / Math.max(0.2, offKillTime()) : 0;
+  return per * SECT.disciple.yieldRate * tal * (1 + sectBonus('yield') / 100);
+}
+let sectAcc = 0, sectEarned = 0;                                // 소수 누적 · 이번 접속 벌이(표시용)
+function sectStep(dt){
+  const r = sectYieldPerSec();
+  if (r > 0){ sectAcc += r * dt; const n = Math.floor(sectAcc); if (n > 0){ sectAcc -= n; S.silver += n; sectEarned += n; } }
+  if (sectView) sceneStep(dt);
+}
+
+/* ── 문파 터 화면 (v2.92) — 문파 탭이 열려 있는 동안 전투 대신 그린다. 전투는 뒤에서 계속 돈다 ── */
+let sectView = false;
+let sceneDisc = [];                                              // 화면용 제자 [{i, x, y, dir, st:'walk'|'train'|'stand', t, af}]
+let sceneBubble = null;                                          // { i, text, t }
+let sceneFlash = null;                                           // 전각 탭 강조 { k, t }
+const tintCache = {};
+function newSceneDisc(i){
+  const C = SECT.scene, x = lerp(C.yardX[0], C.yardX[1], Math.random()), y = lerp(C.yardY[0], C.yardY[1], Math.random());
+  return { i, x, y, dir: Math.random() < 0.5 ? 1 : -1, st: 'stand', t: 1 + Math.random() * 2, af: 0 };
+}
+function lerp(a, b, t){ return a + (b - a) * t; }
+function sceneSync(){ const n = (S.disciples || []).length; while (sceneDisc.length < n) sceneDisc.push(newSceneDisc(sceneDisc.length)); sceneDisc.length = n; }
+function sceneStep(dt){
+  sceneSync();
+  const C = SECT.scene;
+  for (const d of sceneDisc){
+    d.t -= dt; d.af += dt * (d.st === 'walk' ? ANIM.run[1] : d.st === 'train' ? 8 : ANIM.idle[1]);
+    if (d.st === 'walk'){
+      d.x += d.dir * C.walkSpd * dt / VW;
+      if (d.x < C.yardX[0]){ d.x = C.yardX[0]; d.dir = 1; } if (d.x > C.yardX[1]){ d.x = C.yardX[1]; d.dir = -1; }
+    }
+    if (d.t <= 0){
+      const r = Math.random();
+      d.st = r < 0.4 ? 'walk' : r < 0.75 ? 'train' : 'stand';
+      d.t = d.st === 'walk' ? 1.5 + Math.random() * 3 : 1.2 + Math.random() * 2.5;
+      if (d.st === 'walk') d.dir = Math.random() < 0.5 ? 1 : -1;
+      if (d.st !== 'walk') d.af = 0;
+    }
+  }
+  if (sceneBubble && (sceneBubble.t -= dt) <= 0) sceneBubble = null;
+  if (sceneFlash && (sceneFlash.t -= dt) <= 0) sceneFlash = null;
+}
+// 도복만 계보색으로 — 주인공 스트립을 임시 제자로 쓴다(제자 시트가 오면 disciple_walk/train로 교체). 살·머리는 그대로
+function tintedStrip(key, col){
+  const ck = key + ':' + col; if (tintCache[ck]) return tintCache[ck];
+  const im = IMG[key]; if (!im || !im.complete || !im.naturalWidth) return null;
+  const c = document.createElement('canvas'); c.width = im.naturalWidth; c.height = im.naturalHeight;
+  const g = c.getContext('2d'); if (!g) return null;
+  try{
+    g.drawImage(im, 0, 0);
+    const id = g.getImageData(0, 0, c.width, c.height), p = id.data;
+    const cr = parseInt(col.slice(1, 3), 16), cg = parseInt(col.slice(3, 5), 16), cb = parseInt(col.slice(5, 7), 16);
+    for (let i = 0; i < p.length; i += 4){
+      if (!p[i + 3]) continue;
+      const r = p[i], gg = p[i + 1], b = p[i + 2], mx = Math.max(r, gg, b), mn = Math.min(r, gg, b), lum = (r * 299 + gg * 587 + b * 114) / 1000;
+      if (mx - mn < 52 && lum > 110 && lum < 236 && r >= b){          // 도복 베이지·그 그늘(따뜻한 회색) — 살(채도 93)·바지(푸른)·머리(어두움)는 제외
+        const k = lum / 255 * 1.25;
+        p[i] = Math.min(255, cr * k); p[i + 1] = Math.min(255, cg * k); p[i + 2] = Math.min(255, cb * k);
+      }
+    }
+    g.putImageData(id, 0, 0);
+  }catch(e){ return null; }
+  tintCache[ck] = c; return c;
+}
+function hallStage(k){ const lv = hallLv(k), T = SECT.scene.stageLv; let s = -1; for (let i = 0; i < T.length; i++) if (lv >= T[i]) s = i; return s; }   // -1 = 아직 없음
+function sceneHallBox(k){ const [fx, fy] = SECT.scene.halls[k]; return { x: Math.round(fx * VW), y: Math.round(fy * VH), w: 64, h: 60 }; }
+function drawSectHall(h){
+  const b = sceneHallBox(h.k), st = hallStage(h.k), lv = hallLv(h.k);
+  const im = st >= 0 ? IMG['hall_' + h.k + '_' + st] : null;
+  shadow(b.x, b.y, 48);
+  if (im && im.complete && im.naturalWidth){ draw(im, b.x - Math.round(im.naturalWidth / 2), b.y - im.naturalHeight); }
+  else {
+    // 시트 전엔 팻말 — 나무 기둥 + 낙관 도장 (Lv 0은 말뚝만)
+    ctx.save();
+    ctx.fillStyle = '#5a3d28'; ctx.fillRect(b.x - 2, b.y - 30, 4, 30);
+    ctx.fillStyle = '#7a5538'; ctx.fillRect(b.x - 1, b.y - 30, 1, 30);
+    if (lv > 0){
+      const sz = st >= 2 ? 24 : st >= 1 ? 21 : 18;
+      ctx.translate(b.x, b.y - 30 - sz / 2); ctx.rotate(-0.06);
+      ctx.fillStyle = '#8a2a22'; ctx.fillRect(-sz / 2 - 1, -sz / 2 - 1, sz + 2, sz + 2);
+      ctx.fillStyle = '#b3392e'; ctx.fillRect(-sz / 2, -sz / 2, sz, sz);
+      ctx.fillStyle = '#fff1dc'; ctx.font = '700 ' + Math.round(sz * 0.72) + 'px "Nanum Myeongjo",serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(h.h[0], 0, 1);
+    } else {
+      ctx.fillStyle = '#8a7a5a'; ctx.fillRect(b.x - 12, b.y - 2, 24, 2); ctx.fillRect(b.x - 12, b.y - 10, 2, 10); ctx.fillRect(b.x + 10, b.y - 10, 2, 10);
+    }
+    ctx.restore();
+  }
+  // 이름표
+  ctx.save(); ctx.font = '900 9px Jua,sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.fillText(h.n + (lv ? ' ' + lv : ''), b.x + 1, b.y + 4);
+  ctx.fillStyle = sceneFlash && sceneFlash.k === h.k ? '#ffe08a' : '#e8eef6'; ctx.fillText(h.n + (lv ? ' ' + lv : ''), b.x, b.y + 3);
+  ctx.restore();
+}
+function drawSectDisc(d){
+  const dd = (S.disciples || [])[d.i]; if (!dd) return;
+  const col = SCHOOLS[dd.l].c, sc = SECT.scene.discScale;
+  const x = Math.round(d.x * VW), y = Math.round(d.y * VH);
+  const walk = d.st === 'walk', key = walk ? 'hero_run' : 'hero_idle';
+  const n = walk ? ANIM.run[0] : ANIM.idle[0], fw = HFX.aw[walk ? 'run' : 'idle'] || HERO.w;
+  const src = tintedStrip(key, col) || IMG[key];
+  const fi = walk ? Math.floor(d.af) % n : 0;
+  shadow(x, y, HERO.w * sc);
+  ctx.save(); ctx.translate(x, y); ctx.scale(d.dir * sc, sc);
+  if (d.st === 'train'){ ctx.rotate(Math.sin(d.af * 1.2) * 0.12); }   // 목검 휘두르기 — 시트 전엔 몸을 흔든다
+  if (src) try{ ctx.drawImage(src, fi * fw, 0, fw, HERO.h, -Math.round(fw / 2), -HERO.h, fw, HERO.h); }catch(e){}
+  ctx.restore();
+  // 이름·계보 점
+  ctx.save(); ctx.font = '900 8px Jua,sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.fillText(dd.n, x + 1, y + 4); ctx.fillStyle = col; ctx.fillText(dd.n, x, y + 3);
+  ctx.restore();
+  if (sceneBubble && sceneBubble.i === d.i){
+    ctx.save(); ctx.font = '11px Jua,sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    const tw = ctx.measureText(sceneBubble.text).width + 14, bx = clamp(x, tw / 2 + 4, VW - tw / 2 - 4), by = y - HERO.h * sc - 16;
+    ctx.fillStyle = 'rgba(18,22,28,.94)'; ctx.strokeStyle = col; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.roundRect(bx - tw / 2, by - 10, tw, 20, 6); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#eaf3ff'; ctx.fillText(sceneBubble.text, bx, by + 1);
+    ctx.restore();
+  }
+}
+function drawSectHero(){
+  const [fx, fy] = SECT.scene.hero, x = Math.round(fx * VW), y = Math.round(fy * VH);
+  const im = IMG['hero_idle'], fw = HFX.aw.idle || HERO.w;
+  shadow(x, y, HERO.w);
+  ctx.save(); ctx.translate(x, y);
+  if (typeof drawAuraGlow === 'function') drawAuraGlow(im, 0, fw, HERO.h, 'idle:0', -Math.round(fw / 2), -HERO.h);
+  draw(im, 0, 0, fw, HERO.h, -Math.round(fw / 2), -HERO.h, fw, HERO.h);
+  ctx.restore();
+}
+function drawSectScene(){
+  sceneSync();
+  const ents = SECT.halls.map(h => ({ y: sceneHallBox(h.k).y, hall: h }));
+  for (const d of sceneDisc) ents.push({ y: Math.round(d.y * VH), disc: d });
+  ents.push({ y: Math.round(SECT.scene.hero[1] * VH), hero: true });
+  ents.sort((a, b) => a.y - b.y);
+  for (const e of ents){ if (e.hall) drawSectHall(e.hall); else if (e.disc) drawSectDisc(e.disc); else drawSectHero(); }
+  // 문파 이름 현판
+  ctx.save(); ctx.font = '900 15px Jua,sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  const ty = (typeof uiTopUnits === 'function' ? uiTopUnits() : 0) + 8;
+  ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillText(sectName() + (sectHan() ? ' ' + sectHan() : ''), VW / 2 + 1, ty + 1);
+  ctx.fillStyle = '#f0e2b8'; ctx.fillText(sectName() + (sectHan() ? ' ' + sectHan() : ''), VW / 2, ty);
+  ctx.restore();
+}
+// 터 화면 탭 — 전각이면 카드로 스크롤·강조, 제자면 말풍선. x·y는 캔버스 단위
+function sectTap(x, y){
+  for (const h of SECT.halls){ const b = sceneHallBox(h.k); if (Math.abs(x - b.x) <= b.w / 2 && y >= b.y - b.h && y <= b.y + 14){
+    sceneFlash = { k: h.k, t: 1.2 };
+    const card = document.querySelector('#sbody .hcard[data-k="' + h.k + '"]'); if (card){ card.scrollIntoView({ block: 'center', behavior: 'smooth' }); card.classList.add('flash'); setTimeout(() => card.classList.remove('flash'), 1200); }
+    return h.k; } }
+  let best = null, bd = 1e9;
+  for (const d of sceneDisc){ const dx = x - d.x * VW, dy = y - (d.y * VH - HERO.h * 0.45); const dist = Math.hypot(dx, dy * 0.7); if (dist < 26 && dist < bd){ bd = dist; best = d; } }
+  if (best){ const S2 = SECT.disciple; sceneBubble = { i: best.i, text: S2.say[Math.floor(Math.random() * S2.say.length)], t: S2.bubbleSec }; return 'disc'; }
+  return null;
 }
 function killFame(){ return SECT.fame.kill * Math.pow(SECT.fame.killGrow, gstage() - 1); }
 
@@ -68,6 +274,16 @@ function fameBand(){
                               : '천하에 이름이 닿았다 · 전각 상한 ' + cur.cap) + '</div>' +
     '<div class="abar"><i style="width:' + Math.round(prog * 100) + '%"></i></div></div>';
 }
+function discipleBand(){
+  const ds = S.disciples || [], D = SECT.disciple, per = sectYieldPerSec();
+  let h = '<div class="zrow drow"><div class="zn">제자 <em>' + ds.length + ' / ' + discipleSlots() + '</em></div>';
+  if (!ds.length) h += '<div class="zd">아직 없다 — 명성이 오르거나 기연이 닿으면 찾아온다. 자리는 명성 단계와 객당이 늘린다.</div>';
+  else {
+    h += '<div class="dlist">' + ds.map(d => '<div class="dline"><i class="dsch" style="background:' + SCHOOLS[d.l].c + '"></i><b>' + d.n + '</b><span>' + SCHOOLS[d.l].n + ' 출신 · 자질 ' + D.talents[d.t].n + ' ' + D.talents[d.t].h + '</span><em>' + SCHOOLS[d.l].n + ' 무공 +' + D.talents[d.t].bonus + '%</em></div>').join('') + '</div>';
+    h += '<div class="zd">문파 수익 초당 <i>' + coin() + ' ' + fmt(Math.round(per * 10) / 10) + '</i> · 자리를 비워도 쌓인다' + (sectEarned ? ' · 이번 접속 +' + fmt(sectEarned) : '') + '</div>';
+  }
+  return h + '</div>';
+}
 function buildSectPanel(){
   const b = $('sbody'); if (!b) return;
   sectHeader();
@@ -76,8 +292,8 @@ function buildSectPanel(){
     '<div class="zd">이름 없는 문파에서 시작해 천하에 이름을 알린다. 나중에 ✎로 바꿀 수 있다.</div>' +
     '<div class="snamein"><input id="snamein" maxlength="' + SECT.nameMax + '" placeholder="' + SECT.name + '" value="' + (S.sectName || '') + '" autocomplete="off">' +
     '<button class="trbuy" id="snameok"><span>정한다</span></button></div></div>';
-  b.innerHTML = '<div class="znote">이름 없는 문파를 세운다. 전각을 올리면 힘이 영구히 붙고, 명성이 오르면 전각을 더 높이 올릴 수 있다.</div>' + naming +
-    fameBand() + SECT.halls.map(hallCard).join('') +
+  b.innerHTML = '<div class="znote">이름 없는 문파를 세운다. 전각을 올리면 힘이 영구히 붙고, 명성이 오르면 전각을 더 높이 올릴 수 있다. 위 마당의 전각·제자를 눌러 본다.</div>' + naming +
+    fameBand() + discipleBand() + SECT.halls.map(hallCard).join('') +
     '<div class="znote">명성은 적을 잡고, 보스를 꺾고, 업적을 받을 때 쌓인다. 제자와 문파 비무는 곧 들어온다.</div>';
   const okb = $('snameok'); if (okb) okb.onclick = () => { setSectName($('snamein').value); $('snamerow').hidden = true; toast(sectName() + ' — 이름을 세웠다'); };
   const inp = $('snamein'); if (inp) inp.onkeydown = e => { if (e.key === 'Enter') okb.onclick(); };
@@ -96,7 +312,7 @@ let sectSig = '';
 function refreshSect(){
   const b = $('sbody'); if (!b) return;
   $('ssilver').innerHTML = coin() + ' ' + fmt(S.silver);
-  const sig = fameTier() + ':' + SECT.halls.map(h => hallLv(h.k) >= hallCap() ? 1 : 0).join('');
+  const sig = fameTier() + ':' + (S.disciples || []).length + ':' + SECT.halls.map(h => hallLv(h.k) >= hallCap() ? 1 : 0).join('');
   if (sig !== sectSig){ sectSig = sig; buildSectPanel(); return; }
   for (const h of SECT.halls){
     const card = b.querySelector('.hcard[data-k="' + h.k + '"]'); if (!card) continue;
@@ -110,8 +326,8 @@ function refreshSect(){
     if (nxt){ fb.querySelector('.zd').textContent = '다음 ' + nxt.n + ' — 명성 ' + fmt(Math.floor(S.fame || 0)) + ' / ' + fmt(nxt.need) + ' · 전각 상한 ' + cur.cap + ' → ' + nxt.cap;
       fb.querySelector('.abar i').style.width = Math.round(Math.max(0, Math.min(1, ((S.fame || 0) - cur.need) / (nxt.need - cur.need))) * 100) + '%'; } }
 }
-function openSect(){ sectSig = ''; buildSectPanel(); $('spanel').classList.add('show'); }
-function closeSect(){ const p = $('spanel'); if (p) p.classList.remove('show'); }
+function openSect(){ sectSig = ''; sectView = true; sceneSync(); buildSectPanel(); $('spanel').classList.add('show'); }
+function closeSect(){ const p = $('spanel'); if (p) p.classList.remove('show'); sectView = false; sceneBubble = null; }
 // 매 프레임 — 탭 알림점(세울 수 있는 전각), 열려 있으면 은자·명성 변화만 반영
 let sectLastSilver = -1, sectLastFame = -1;
 function sectHud(){

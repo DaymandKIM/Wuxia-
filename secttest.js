@@ -50,6 +50,18 @@ setTimeout(()=>{
   ok(g===SECT.halls[4].eff.fame*5 && Math.abs(S.fame-100*(1+g/100))<1e-9,'산문 Lv 5: 명성 획득 +'+g+'% → 100이 '+S.fame);
   // 업적 받기 — 명성
   S.totalKills=200; S.fame=0; w.achvClaim('kills'); ok(Math.abs(S.fame-SECT.fame.achv*(1+g/100))<1e-9,'업적 받기 → 명성 +'+S.fame.toFixed(1));
+  // ── 2b) 제자 (v2.92)
+  const D=SECT.disciple;
+  ok(w.discipleSlots()===D.slotsByFame[w.fameTier()]+Math.floor(w.hallLv('guest')/D.guestPer),'제자 자리 = 명성 단계 '+D.slotsByFame[w.fameTier()]+' + 객당');
+  const n0=S.disciples.length; ok(n0>=1,'명성이 올랐을 때 제자가 찾아왔다 ('+n0+'명: '+S.disciples.map(d=>d.n+'/'+d.l).join(', ')+')');
+  const rd=w.rollDisciple('sorim'); ok(rd.l==='sorim' && rd.t>=0 && rd.t<D.talents.length && rd.n.length>=2,'rollDisciple: 계보 지정·자질 범위·이름 "'+rd.n+'"');
+  S.fame=SECT.fame.tiers[3].need;   // 명문 — 자리 4
+  while(w.discipleSlotsFree()>0) w.discipleAdd(w.rollDisciple('sorim'),'duel',true);
+  ok(w.discipleSlotsFree()===0 && w.discipleAdd(w.rollDisciple(),'duel',true)===false,'자리가 차면 더 못 온다 ('+S.disciples.length+'명)');
+  const lb=w.lineageBonus('sorim'); ok(lb>0 && lb===S.disciples.filter(d=>d.l==='sorim').reduce((a,d)=>a+D.talents[d.t].bonus,0),'소림 계보 보너스 +'+lb+'%');
+  S.arts.pagong=1; S.artLv.pagong=1; S.artStar.pagong=1; const ae=w.eval('artEff("pagong")'); ok(Math.abs(ae-(1+lb/100))<1e-9,'소림 무공(파공권) artEff ×'+ae.toFixed(3));
+  const yps=w.sectYieldPerSec(); ok(yps>0,'초당 수익 '+yps.toFixed(2)+' (전투 수입 '+(w.eval('killSilver()/offKillTime()')).toFixed(2)+'/s의 '+(yps/w.eval('killSilver()/offKillTime()')*100).toFixed(0)+'%)');
+  const sv0=S.silver; w.eval('for(let i=0;i<300;i++) sectStep(1/30)'); ok(S.silver>sv0 && Math.abs((S.silver-sv0)-yps*10)<=yps*10*0.05+2,'10초 → 은자 +'+(S.silver-sv0)+' (≈'+Math.round(yps*10)+')');
   // ── 3) 장경각·약방
   const lvc0=w.eval('artLvCost("pagong")'); S.silver=1e9; for(let i=0;i<4;i++) w.buildHall('library');
   const lvc1=w.eval('artLvCost("pagong")'), xg=w.eval('artXpGain()');
@@ -82,8 +94,9 @@ setTimeout(()=>{
   const d2=JSON.parse(w.localStorage.getItem('wuxia1'));   // 이름까지 저장된 최신본
   const {w:w2,errs:e2}=boot(JSON.stringify(Object.assign(d2,{at:Date.now()-3*3600*1000})));
   setTimeout(()=>{
-    const S2=w2.eval('S');
-    ok(w2.hallLv('gate')===5 && w2.hallLv('library')===4 && S2.fame>d.fame && w2.sectName()==='벽력문','복원: 산문 5·장경각 4·이름 '+w2.sectName()+' · 3시간 오프라인 명성 '+Math.round(d.fame)+' → '+Math.round(S2.fame));
+    const S2=w2.eval('S'); w2.closeTitle();
+    ok(w2.hallLv('gate')===5 && w2.hallLv('library')===4 && S2.fame>d.fame && w2.sectName()==='벽력문' && S2.disciples.length>=d2.disciples.length && S2.disciples[0].n===d2.disciples[0].n,'복원: 산문 5·장경각 4·이름 '+w2.sectName()+'·제자 '+S2.disciples.length+'명 · 3시간 오프라인 명성 '+Math.round(d.fame)+' → '+Math.round(S2.fame));
+    ok(S2.silver>d2.silver && w2.document.getElementById('obody').innerHTML.includes('제자 수익'),'오프라인 제자 수익이 정산에 붙는다 (복귀 카드에 줄)');
     ok(e2.length===0,'런타임 오류 0 (복원)'+(e2.length?': '+e2[0]:''));
     console.log(bad?('\n★ 실패 '+bad+'건'):'\n문제 없음'); process.exit(bad?1:0);
   },900);

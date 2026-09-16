@@ -19,7 +19,7 @@ function saveData(){
     skillManual: S.skillManual, mute: S.mute, tree: S.tree, traits: S.traits, equip: S.equip,
     itemLv: S.itemLv, inv: S.inv, codex: S.codex,
     merges: S.merges, levels: S.levels, achv: S.achv,   // 업적 (v2.90)
-    halls: S.halls, fame: S.fame, sectName: S.sectName,  // 문파 (v2.91)
+    halls: S.halls, fame: S.fame, sectName: S.sectName, disciples: S.disciples,   // 문파 (v2.91~92)
   };
 }
 function saveNow(){
@@ -99,6 +99,7 @@ function applySave(d){
   S.halls = {}; if (d.halls && typeof d.halls === 'object') for (const h of SECT.halls){ const lv = Math.max(0, d.halls[h.k] | 0); if (lv) S.halls[h.k] = lv; }   // 문파 (v2.91)
   S.fame = Math.max(0, +d.fame || 0);
   S.sectName = sectCleanName(d.sectName);
+  S.disciples = discipleClean(d.disciples);   // 제자 (v2.92)
   S.achv = {}; S.achvNote = {};
   if (d.achv && typeof d.achv === 'object') for (const a of ACHV.list){ const t = clamp(d.achv[a.k] | 0, 0, a.tiers.length); if (t) S.achv[a.k] = t; S.achvNote[a.k] = t; }
   // 장비 (v2.70 표준형) — 자리·주머니·아이템 레벨·도감을 유효한 것만 되살린다.
@@ -198,8 +199,10 @@ function offlineGains(awaySec){
   S.totalKills += kills;
   S.silver += silver;
   if (typeof fameAdd === 'function') fameAdd(kills * killFame());   // 명성도 쌓인다 (v2.91)
+  const sect = (typeof sectYieldPerSec === 'function') ? Math.round(sectYieldPerSec() * sec * SECT.disciple.offRate) : 0;   // 제자 수익 (v2.92)
+  S.silver += sect;
   if (S.karma >= karmaNeed()) S.fatePending = 1;
-  return { sec, kills, silver, exp: Math.round(S.rexp - rexp0), fate: S.fatePending };
+  return { sec, kills, silver, sect, exp: Math.round(S.rexp - rexp0), fate: S.fatePending };
 }
 
 /* ── 돌아온 화면 ──────────────────────────────────── */
@@ -216,6 +219,7 @@ function showOffline(g){
   $('otime').textContent = fmtDur(g.sec) + ' 동안 수련했다';
   let h = '<div class="orow"><span>처치</span><b>' + fmt(g.kills) + '</b></div>';
   if (g.silver) h += '<div class="orow"><span>' + coin() + ' 은자</span><b>+' + fmt(g.silver) + '</b></div>';
+  if (g.sect)   h += '<div class="orow"><span>제자 수익</span><b>+' + fmt(g.sect) + '</b></div>';   // v2.92
   if (g.exp)    h += '<div class="orow"><span>수련치</span><b>+' + fmt(g.exp) + '</b></div>';
   if (g.fate)   h += '<div class="orow"><span>✦ 기연</span><b>기다리고 있다</b></div>';
   $('obody').innerHTML = h;

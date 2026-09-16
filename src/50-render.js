@@ -1,14 +1,16 @@
 /* ── 그리기 ───────────────────────────────────────── */
+// 그리는 구역 — 문파 터 화면(v2.92)은 어느 구역에 있든 죽림 원경·바닥으로 그린다
+function rzone(){ return (typeof sectView !== 'undefined' && sectView) ? ZONES[0] : zone(); }
 function drawGround(ox, oy){
-  ctx.fillStyle = zone().ground;
+  ctx.fillStyle = rzone().ground;
   ctx.fillRect(0, 0, VW, VH);
   // 바닥 텍스처(시트) — 카메라와 1:1로 2D 타일링. 있으면 격자는 생략.
-  const tex = IMG[GROUNDTEX.keys[zone().k]];
+  const tex = IMG[GROUNDTEX.keys[rzone().k]];
   if (tex && tex.complete && tex.naturalWidth){
     const tw = Math.max(1, Math.round(tex.naturalWidth * GROUNDTEX.scale));
     const th = Math.max(1, Math.round(tex.naturalHeight * GROUNDTEX.scale));
     const sx = -(((ox % tw) + tw) % tw), sy = -(((oy % th) + th) % th);
-    ctx.save(); ctx.globalAlpha = GROUNDTEX.aZone[zone().k] || GROUNDTEX.a;
+    ctx.save(); ctx.globalAlpha = GROUNDTEX.aZone[rzone().k] || GROUNDTEX.a;
     for (let y = sy; y < VH; y += th)
       for (let x = sx; x < VW; x += tw) draw(tex, Math.round(x), Math.round(y), tw, th);
     ctx.restore();
@@ -54,7 +56,7 @@ function backdropFade(zk, sw, sh){
 }
 function backdropTop(zk, sw, sh){ return Math.max(uiTopUnits() - backdropClear(zk, sw, sh), Math.round(VH * BACKDROP.hz) - sh); }
 function drawBackdrop(ox){
-  const zk = zone().k, img = IMG[BACKDROP.keys[zk]];
+  const zk = rzone().k, img = IMG[BACKDROP.keys[zk]];
   if (!img || !img.complete || !img.naturalWidth) return;
   const nw = img.naturalWidth, nh = img.naturalHeight;
   const sh = Math.round(VH * (BACKDROP.h[zk] || BACKDROP.hDef));
@@ -65,7 +67,7 @@ function drawBackdrop(ox){
   const y0 = backdropTop(zk, sw, sh);
   const off = -(((ox * BACKDROP.par) % sw) + sw) % sw;
   ctx.save();
-  ctx.fillStyle = BACKDROP.sky[zk] || zone().ground;              // 그림 위 하늘 — 투명 윗줄까지 덮는다(바닥 타일이 비치지 않게)
+  ctx.fillStyle = BACKDROP.sky[zk] || rzone().ground;              // 그림 위 하늘 — 투명 윗줄까지 덮는다(바닥 타일이 비치지 않게)
   const skyTo = y0 + backdropClear(zk, sw, sh);
   if (skyTo > 0) ctx.fillRect(0, 0, VW, skyTo + 1);
   const F = backdropFade(zk, sw, sh), solid = sh - F, n = BACKDROP.fadeSteps;
@@ -125,15 +127,15 @@ function backdropScaled(zk, img, sw, sh){
 }
 // 원경이 깔린 구역의 지평선 화면 y — 이 위는 '하늘'이라 소품을 세우지 않는다
 function horizonY(){
-  const img = IMG[BACKDROP.keys[zone().k]];
+  const img = IMG[BACKDROP.keys[rzone().k]];
   if (!img || !img.complete || !img.naturalWidth) return -1e9;
-  const sh = Math.round(VH * (BACKDROP.h[zone().k] || BACKDROP.hDef));
+  const sh = Math.round(VH * (BACKDROP.h[rzone().k] || BACKDROP.hDef));
   const sw = Math.max(1, Math.round(sh * img.naturalWidth / img.naturalHeight));
-  return backdropTop(zone().k, sw, sh) + sh - backdropFade(zone().k, sw, sh) * BACKDROP.cull;
+  return backdropTop(rzone().k, sw, sh) + sh - backdropFade(rzone().k, sw, sh) * BACKDROP.cull;
 }
 // 배경 소품 — 시트 스프라이트를 넓은 격자에 성기게. 인물 뒤 층. 가시 셀만.
 function drawProps(ox, oy){
-  const D = PROPS[zone().k]; if (!D) return;
+  const D = PROPS[rzone().k]; if (!D) return;
   const G = D.grid;
   const cx0 = Math.floor(ox / G) - 1, cx1 = Math.floor((ox + VW) / G) + 1;
   const cy0 = Math.floor(oy / G) - 1, cy1 = Math.floor((oy + VH) / G) + 1;
@@ -787,6 +789,13 @@ function render(){
   const sh = shakeV>0 ? (Math.random()-0.5)*shakeV : 0;
   ctx.setTransform(SC,0,0,SC, Math.round(sh*SC), Math.round(sh*SC));
   const ox = S.camX - VW/2, oy = S.camY - VH/2;
+  // 문파 터 화면 (v2.92) — 문파 탭이 열려 있으면 전투 대신 마당을 그린다(전투는 뒤에서 계속). 카메라 고정
+  if (typeof sectView !== 'undefined' && sectView){
+    drawGround(0, 0);
+    drawBackdrop(0);
+    drawSectScene();
+    return;
+  }
   drawGround(ox, oy);
   drawProps(ox, oy);                          // 뒤 층 — 배경 소품 스프라이트(시트 추출)
   drawBackdrop(ox);                           // 원경은 항상 소품 위 (v2.62.2 — 키 큰 소품이 원경으로 삐져나왔다).
