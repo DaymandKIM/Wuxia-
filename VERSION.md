@@ -1,3 +1,7 @@
+# v2.82.7 — 방어구 아이콘 전설(등급 4) 4종 반영 (사용자 시트 sheets/eq_armor_4.png, 2026-09-16)
+
+- `python eqicons.py 4 --slot=armor`. 흰금 오라·반짝임은 배경으로 걷힘. 검사판 review/eq_armor_4.png. 신화·초월 2장 대기.
+
 # v2.82.6 — 방어구 아이콘 영웅(등급 3) 4종 반영 (사용자 시트 sheets/eq_armor_3.png, 2026-09-16)
 
 - `python eqicons.py 3 --slot=armor`. 검사판 review/eq_armor_3.png. 전설·신화·초월 3장 대기.
