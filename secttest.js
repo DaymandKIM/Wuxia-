@@ -75,7 +75,12 @@ setTimeout(()=>{
   ok(d.halls && d.halls.yard===w.hallLv('yard') && d.halls.gate===5 && typeof d.fame==='number','저장에 전각·명성이 든다');
   w.document.getElementById('tab-sect').click();
   const sp=w.document.getElementById('spanel');
-  ok(sp.classList.contains('show') && w.document.querySelector('#sbody .fame') && w.document.querySelector('#sbody .drow') && !w.document.querySelector('#sbody .hcard'),'문파 탭 → 시트: 명성 띠 + 제자 줄 (전각 카드는 없다 — 마당 팝업으로)');
+  ok(!sp.classList.contains('show') && !w.document.getElementById('sover').hidden && w.eval('sectView')===true,'문파 탭 → 시트 없이 마당 + 오버레이(현판·배지) (v2.92.4)');
+  ok(w.document.getElementById('sname2').textContent==='무명문' && w.document.getElementById('sfamet').textContent.includes(SECT.fame.tiers[w.fameTier()].n) && w.document.getElementById('sdiscn').textContent.startsWith(S.disciples.length+' /'),'현판 이름·명성 배지·제자 배지');
+  w.document.getElementById('sdisc').click();
+  ok(sp.classList.contains('show') && w.document.querySelector('#sbody .fame') && w.document.querySelector('#sbody .drow') && !w.document.querySelector('#sbody .hcard'),'제자 배지 → 시트: 명성 띠 + 제자 줄 (전각 카드는 없다 — 마당 팝업으로)');
+  w.document.getElementById('sclose').click(); ok(!sp.classList.contains('show') && w.eval('sectView')===true,'시트 ✕ → 시트만 닫히고 마당은 그대로');
+  w.document.getElementById('sfame').click(); ok(sp.classList.contains('show'),'명성 배지 → 시트');
   // 마당 탭 → 전각 팝업 (v2.92.1)
   const hb=w.sceneHallBox('guest'); ok(w.sectTap(hb.x,hb.y-10)==='guest','마당의 객당을 누르면 객당');
   const hp=w.document.getElementById('hpop'); ok(!hp.hidden && hp.querySelector('.zn').textContent.includes('객당') && hp.style.left!=='','전각 팝업이 뜬다 (객당, 자리 잡힘)');
@@ -92,7 +97,7 @@ setTimeout(()=>{
   w.setSectName(''); ok(w.sectName()==='무명문' && S.sectName==='','빈 이름이면 기본으로');
   w.setSectName('무명문'); ok(S.sectName==='','기본 이름을 그대로 치면 저장값은 빈 값');
   w.setSectName('벽력문');
-  w.document.getElementById('sclose').click(); ok(!sp.classList.contains('show'),'닫힘');
+  w.document.getElementById('sclose2').click(); ok(!sp.classList.contains('show') && w.document.getElementById('sover').hidden && w.eval('sectView')===false,'현판 ✕ → 마당 닫힘');
   ok(errs.length===0,'런타임 오류 0'+(errs.length?': '+errs[0]:''));
   // 복원 + 오프라인 명성
   const d2=JSON.parse(w.localStorage.getItem('wuxia1'));   // 이름까지 저장된 최신본

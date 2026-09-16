@@ -32,7 +32,7 @@ function hud(){
   // 칸을 가린다는 피드백(v2.33). 어느 시트든 열려 있으면 숨긴다.
   const panelOpen = ['zpanel','trpanel','apanel','dpanel','rpanel','tpanel','opanel','fpanel','epanel','mpanel','vpanel','cpanel','spanel']   // epanel 누락 → 장비 탭 위로 스킬창 쿨이 비쳤다(v2.70.4)
     .some(id => $(id) && $(id).classList.contains('show'));
-  const bars = showing && !panelOpen;
+  const bars = showing && !panelOpen && !(typeof sectView !== 'undefined' && sectView);   // 문파 마당에서도 스킬창·시험 버튼은 숨긴다 (v2.92.4)
   const sb = $('sbar'); sb.style.opacity = bars ? '1' : '0'; sb.style.pointerEvents = bars ? '' : 'none';
   const tb = $('tbtn'); if (tb){ tb.style.opacity = bars ? '1' : '0'; tb.style.pointerEvents = bars ? '' : 'none'; }   // [테스트 전용]
   if (!showing) return;

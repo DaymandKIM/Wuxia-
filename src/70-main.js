@@ -109,12 +109,15 @@ $('tab-equip').onclick = () => {
   closeSheets();
   if (!open) openEquip();
 };
-$('tab-sect').onclick = () => {                 // 문파 (v2.91)
-  const open = $('spanel').classList.contains('show');
+$('tab-sect').onclick = () => {                 // 문파 (v2.91) — 같은 탭 재클릭이면 마당을 닫는다 (v2.92.4 시트가 아니라 sectView로)
+  const open = sectView;
   closeSheets();
   if (!open) openSect();
 };
-$('sclose').onclick = closeSect;
+$('sclose').onclick = closeSectSheet;                         // 시트 ✕ = 시트만 닫고 마당은 그대로 (v2.92.4)
+$('sclose2').onclick = closeSect;                             // 현판 ✕ = 마당 닫기
+$('sfame').onclick = openSectSheet; $('sdisc').onclick = openSectSheet;
+$('sedit2').onclick = () => { openSectSheet(); const r = $('snamerow'); if (r){ r.hidden = false; const i = $('snamein'); i.value = S.sectName || ''; i.focus(); } };
 // 전각 팝업 버튼 — 꾹 누르면 연속 (v2.92.1)
 { const el = $('hpbuy'); const stop = () => { if (hallPopIv){ clearInterval(hallPopIv); hallPopIv = 0; } };
   el.onpointerdown = e => { e.preventDefault(); e.stopPropagation(); if (hallPopK && buildHall(hallPopK)){ refreshHallPop(); refreshSect(); } stop();
@@ -128,7 +131,7 @@ cv.addEventListener('pointerdown', e => {                 // 문파 터 화면 �
   sectTap((e.clientX - r.left) / r.width * VW, (e.clientY - r.top) / r.height * VH);
 });
 $('sedit').onclick  = () => { const r = $('snamerow'); if (!r) return; r.hidden = !r.hidden; if (!r.hidden){ const i = $('snamein'); i.value = S.sectName || ''; i.focus(); } };   // 이름 바꾸기 (v2.91.2)
-$('spanel').onclick = e => { if (e.target.id === 'spanel') closeSect(); };
+$('spanel').onclick = e => { if (e.target.id === 'spanel') closeSectSheet(); };
 $('eclose').onclick = closeEquip;
 $('epanel').onclick = e => { if (e.target.id === 'epanel') closeEquip(); };
 $('aclose').onclick = closeArts;

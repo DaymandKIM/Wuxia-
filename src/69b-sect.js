@@ -10,7 +10,7 @@
 function sectCleanName(v){ v = String(v == null ? '' : v).replace(/\s+/g, ' ').trim().slice(0, SECT.nameMax); return v === SECT.name ? '' : v; }
 function sectName(){ return S.sectName || SECT.name; }
 function sectHan(){ return S.sectName ? '' : SECT.han; }
-function setSectName(v){ S.sectName = sectCleanName(v); sectHeader(); if (typeof saveNow === 'function') saveNow(); return sectName(); }
+function setSectName(v){ S.sectName = sectCleanName(v); sectHeader(); if (typeof refreshOverlay === 'function') refreshOverlay(); if (typeof saveNow === 'function') saveNow(); return sectName(); }
 function sectHeader(){ const n = $('sname'), h = $('shan'); if (n) n.textContent = sectName(); if (h) h.textContent = sectHan(); }
 function hallDef(k){ return SECT.halls.find(h => h.k === k); }
 function hallLv(k){ return (S.halls && S.halls[k]) | 0; }
@@ -211,10 +211,12 @@ function drawSectDisc(d){
   ctx.restore();
   if (sceneBubble && sceneBubble.i === d.i){
     ctx.save(); ctx.font = '11px Jua,sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    const tw = ctx.measureText(sceneBubble.text).width + 14, bx = clamp(x, tw / 2 + 4, VW - tw / 2 - 4), by = y - HERO.h * sc - 16;
+    const sub = sceneBubble.sub || '', tw = Math.max(ctx.measureText(sceneBubble.text).width, sub ? ctx.measureText(sub).width * 0.85 : 0) + 14, bh = sub ? 32 : 20;
+    const bx = clamp(x, tw / 2 + 4, VW - tw / 2 - 4), by = y - HERO.h * sc - 16 - (sub ? 6 : 0);
     ctx.fillStyle = 'rgba(18,22,28,.94)'; ctx.strokeStyle = col; ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.roundRect(bx - tw / 2, by - 10, tw, 20, 6); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = '#eaf3ff'; ctx.fillText(sceneBubble.text, bx, by + 1);
+    ctx.beginPath(); ctx.roundRect(bx - tw / 2, by - bh / 2, tw, bh, 6); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#eaf3ff'; ctx.fillText(sceneBubble.text, bx, by + (sub ? -5 : 1));
+    if (sub){ ctx.font = '9px Jua,sans-serif'; ctx.fillStyle = col; ctx.fillText(sub, bx, by + 8); }
     ctx.restore();
   }
 }
@@ -234,12 +236,7 @@ function drawSectScene(){
   ents.push({ y: Math.round(SECT.scene.hero[1] * VH), hero: true });
   ents.sort((a, b) => a.y - b.y);
   for (const e of ents){ if (e.hall) drawSectHall(e.hall); else if (e.disc) drawSectDisc(e.disc); else drawSectHero(); }
-  // 문파 이름 현판
-  ctx.save(); ctx.font = '900 15px Jua,sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-  const ty = (typeof uiTopUnits === 'function' ? uiTopUnits() : 0) + 8;
-  ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillText(sectName() + (sectHan() ? ' ' + sectHan() : ''), VW / 2 + 1, ty + 1);
-  ctx.fillStyle = '#f0e2b8'; ctx.fillText(sectName() + (sectHan() ? ' ' + sectHan() : ''), VW / 2, ty);
-  ctx.restore();
+  // 문파 이름 현판은 HTML 오버레이(#splaque, v2.92.4)
 }
 // 터 화면 탭 — 전각이면 카드로 스크롤·강조, 제자면 말풍선. x·y는 캔버스 단위
 function sectTap(x, y){
@@ -250,7 +247,8 @@ function sectTap(x, y){
   closeHallPop();
   let best = null, bd = 1e9;
   for (const d of sceneDisc){ const dx = x - d.x * VW, dy = y - (d.y * VH - HERO.h * 0.45); const dist = Math.hypot(dx, dy * 0.7); if (dist < 26 && dist < bd){ bd = dist; best = d; } }
-  if (best){ const S2 = SECT.disciple; sceneBubble = { i: best.i, text: S2.say[Math.floor(Math.random() * S2.say.length)], t: S2.bubbleSec }; return 'disc'; }
+  if (best){ const S2 = SECT.disciple, dd = (S.disciples || [])[best.i];
+    sceneBubble = { i: best.i, text: S2.say[Math.floor(Math.random() * S2.say.length)], sub: dd ? SCHOOLS[dd.l].n + ' 출신 · 자질 ' + S2.talents[dd.t].n + ' · ' + SCHOOLS[dd.l].n + ' 무공 +' + S2.talents[dd.t].bonus + '%' : '', t: S2.bubbleSec }; return 'disc'; }
   return null;
 }
 function killFame(){ return SECT.fame.kill * Math.pow(SECT.fame.killGrow, gstage() - 1); }
@@ -327,8 +325,22 @@ function refreshSect(){
     if (nxt){ fb.querySelector('.zd').textContent = '다음 ' + nxt.n + ' — 명성 ' + fmt(Math.floor(S.fame || 0)) + ' / ' + fmt(nxt.need) + ' · 전각 상한 ' + cur.cap + ' → ' + nxt.cap;
       fb.querySelector('.abar i').style.width = Math.round(Math.max(0, Math.min(1, ((S.fame || 0) - cur.need) / (nxt.need - cur.need))) * 100) + '%'; } }
 }
-function openSect(){ sectSig = ''; sectView = true; sceneSync(); buildSectPanel(); $('spanel').classList.add('show'); }
-function closeSect(){ const p = $('spanel'); if (p) p.classList.remove('show'); sectView = false; sceneBubble = null; closeHallPop(); }
+// 문파 탭 = 마당만 (v2.92.4). 시트는 배지·✎를 누를 때만
+function openSect(){ sectSig = ''; sectView = true; sceneSync(); const o = $('sover'); if (o) o.hidden = false; refreshOverlay(); }
+function openSectSheet(){ buildSectPanel(); $('spanel').classList.add('show'); }
+function closeSectSheet(){ const p = $('spanel'); if (p) p.classList.remove('show'); }
+function closeSect(){ closeSectSheet(); const o = $('sover'); if (o) o.hidden = true; sectView = false; sceneBubble = null; closeHallPop(); }
+function refreshOverlay(){
+  const o = $('sover'); if (!o || o.hidden) return;
+  const n = $('sname2'), h = $('shan2'); if (n) n.textContent = sectName(); if (h) h.textContent = sectHan();
+  const t = fameTier(), cur = fameTierDef(t), nxt = t < SECT.fame.tiers.length - 1 ? fameTierDef(t + 1) : null;
+  $('sfamet').textContent = cur.n + ' ' + cur.h;
+  $('sfamen').textContent = nxt ? fmt(Math.floor(S.fame || 0)) + ' / ' + fmt(nxt.need) : '천하에 닿았다';
+  $('sfameb').style.width = (nxt ? Math.round(Math.max(0, Math.min(1, ((S.fame || 0) - cur.need) / (nxt.need - cur.need))) * 100) : 100) + '%';
+  const ds = S.disciples || [];
+  $('sdiscn').textContent = ds.length + ' / ' + discipleSlots();
+  $('sdisci').textContent = ds.length ? '초당 +' + fmt(Math.round(sectYieldPerSec() * 10) / 10) : '아직 없다';
+}
 /* ── 전각 팝업 (v2.92.1) — 마당의 전각을 누르면 그 위에 뜬다: 이름·레벨·효과 지금→다음·[올리기]. 꾹 누르면 연속 ── */
 let hallPopK = null, hallPopIv = 0;
 function openHallPop(k){
@@ -358,6 +370,6 @@ let sectLastSilver = -1, sectLastFame = -1;
 function sectHud(){
   const tab = $('tab-sect'); if (!tab) return;
   const dot = tab.querySelector('.dot'); if (dot && dot.classList) dot.classList.toggle('on', canBuildAny());
-  if (!$('spanel').classList.contains('show')) return;
-  if (sectLastSilver !== S.silver || sectLastFame !== S.fame){ sectLastSilver = S.silver; sectLastFame = S.fame; refreshSect(); refreshHallPop(); }
+  if (!sectView) return;
+  if (sectLastSilver !== S.silver || sectLastFame !== S.fame){ sectLastSilver = S.silver; sectLastFame = S.fame; refreshOverlay(); refreshHallPop(); if ($('spanel').classList.contains('show')) refreshSect(); }
 }
