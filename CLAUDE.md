@@ -155,6 +155,7 @@ review/            검사판 PNG (생성물)
 | `eqicons.py <등급>` | `sheets/eq_weapons_<등급>.png` | 돌아간다 (v2.80 — 무기 아이콘 등급별 1줄 6칸 → eq_<종류>_<등급>. 무기·방어구 **7등급 전부** 반영(--slot=armor). 옅은 그라데이션+흰 후광 시트는 `--flood`(가장자리 영역 채우기 — v2.87.2부터 마젠타 테두리에 닿은 밝은 픽셀도 씨앗). **옅은 얼음색 아이템+흰 후광**(초월 장신구)은 `--pale`(자주 계열·순백만 지나는 번짐 — flood는 아이템까지 먹는다). 장신구 7등급 반영(v2.87.3, --slot=trinket) → **112종 완성**. 시트 전체 덩어리 라벨링(칸을 넘는 칼끝 보존)·구분선은 '칸 높이 85% 세로 막대'·최대 덩어리 50% 미만 조각은 버림·**팔레트 PNG 저장**(빌드 16MB 한도)) |
 | `halls.py` | `sheets/halls.png` | 돌아간다 (v2.92.2 — 문파 전각 5줄×3칸(터·초가·기와) → hall_<k>_<s>·아이콘 hall_<k>. 테두리 줄 격자, 땅에 닿은 덩어리만(워터마크 버림), 자주끼 걷기, **배율은 최대 폭 165로**(화면 390에 5채)) |
 | `sectbg.py` | `sheets/sect_bg.png` | 돌아간다 (v2.92.6 — 문파 터 배경 한 장(3/4 시점, 건물 없음). **추출 없이 통째로** 팔레트 PNG(디더)로 → assets/sect_bg. 맨땅 덩어리 라벨링으로 빈 터 5칸 위치를 재서 찍는다 → SECT.scene.halls [x, 아랫변 y, 폭] **그림 비율**) |
+| `sectdiff.py <단계> <그림>` | `sheets/sect_stage2_v1.png` 등 | **현행** (v2.92.7 — 배경 위에 건물을 얹어 받은 그림을 `sect_bg`와 **차분**해 전각을 뽑는다(thr 45·opening/closing·면적<300 노이즈 버림·터 배정·조각 합침·워터마크 버림). 결과 hall_<k>_<단계>는 **원본 배율 그대로**(게임이 배경 배율로 그린다)·팔레트+투명 인덱스. 자리 review/hall_diff.json → SECT.scene.bgHalls. 검사판 review/halls_diff.png(마스크·나열·되얹기). 옛 옆모습 에셋은 raw/halls_side/) |
 | `bg_fix.py [zone] [--crop-top=N]` | `assets/bg_<zone>.png` 제자리 | 돌아간다 (v2.87.5 — 원경 시트 손질: 위 테두리 줄 투명화·띠 위 1px 이상줄 메움·띠 경계 ±5줄 블렌드. **시트당 한 번만**(블렌드 누적). bg_extract 뒤에 돌린다) |
 | `bossfx.py` | **시트 없음** | 못 돌린다 |
 | `shamanmagic.py` `shamanstaff.py` | — | 옛 주술사(추정 지팡이). v2.64에 대체돼 쓰지 않는다 |
@@ -481,7 +482,10 @@ cost 20만은 연마·돌파용(습득은 여전히 기연만). 태극 원반 �
 검증 secttest. 탭 아이콘 tab_sect·전각 아이콘 hall_<k>는 에셋이 오면 저절로(없으면 글자·한자).
 **2층 제자 + 문파 터 화면**(v2.92): 문파 탭 = **화면이 마당으로 바뀐다**(50-render render() 분기 sectView, 전투는 뒤에서 계속).
 **배경은 사용자 3/4 시점 마당 그림 한 장**(v2.92.6, assets/sect_bg — sectbg.py, 사용자 "건물만 아이소메트릭으로, 배경도 따로"): drawSectBg가 화면에 cover(가로·세로 중앙)로 깔고,
-전각·주인공·제자 띠 자리는 전부 **그림 비율**(SECT.scene, sectBgRect→scenePt). 전각은 터 폭×hallFit 에 맞춰 줄여 그린다(sceneHallBox.sc) — 옆모습 전각 시트는 3/4 시트가 오면 교체.
+전각·주인공·제자 띠 자리는 전부 **그림 비율**(SECT.scene, sectBgRect→scenePt). **전각은 배경 위에 얹어 받은 그림에서 차분으로 뽑는다**(v2.92.7,
+sectdiff.py — 사용자 "이런 느낌이고 싶은데": 제미나이가 배경을 픽셀 그대로 두고 건물만 얹어 줘서 톤·시점·배율이 저절로 맞는다. SECT.scene.bgHalls[k][단계]에
+자리가 있으면 배경 배율(sectBgRect.s)로 제자리에, 그림자 없이 그린다(sceneHallBox.native). 기와 4채 반영, 산문·터·초가는 docs/프롬프트-문파 §1d
+건물별 3단계 진화 시트로 받는다). 항목 없는 전각만 옛 옆모습 시트를 터 폭×hallFit 로 줄여 그린다.
 그림이 없으면 옛 방식(rzone()=죽림 바닥+원경, 자리 비율은 화면 비율)으로 떨어진다. 검증 fxtest(sect_bg 그리기·전각 화면 안)·secttest(폴백).
 전각 팻말(시트 전) / hall_<k>_<0|1|2>(터·초가·기와, SECT.scene.stageLv), 제자 = 주인공 스트립 도복 계보색 tint(tintedStrip) → disciple_walk/train 시트 오면 교체.
 탭: cv pointerdown → sectTap(전각=카드 스크롤·강조, 제자=말풍선). 제자 합류는 인연만(명성 단계·기연 '입문 청'·(v2.93) 비무), 육성 없음, 자질이 값:
