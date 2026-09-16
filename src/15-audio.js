@@ -12,6 +12,7 @@ addEventListener('touchstart',  audioOn, { once:true });
 
 function sfx(kind){
   if (!AC || AC.state === 'suspended') return;
+  if (typeof S !== 'undefined' && S.mute) return;   // ≡ 메뉴 '효과음 끔' (v2.85)
   const t = AC.currentTime;
   try {
     if (kind === 'swoosh'){

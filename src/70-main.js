@@ -84,7 +84,7 @@ for (const z in BOSSFACE){ const k = BOSSFACE[z]; if (ASSET[k]) loadImg(k, ASSET
 for (const z in GROUNDTEX.keys){ const k = GROUNDTEX.keys[z]; if (ASSET[k]) loadImg(k, ASSET[k]); }
 
 // 하단 탭 — 같은 탭 재클릭이면 닫고, 다른 패널은 접는다
-function closeSheets(){ closeZonePanel(); closeTrain(); closeArts(); closeRealmPanel(); closeEquip();
+function closeSheets(){ closeZonePanel(); closeTrain(); closeArts(); closeRealmPanel(); closeEquip(); closeMenu();
   if (typeof closeDeepen === 'function') closeDeepen();
   const tp = $('tpanel'); if (tp) tp.classList.remove('show'); }   // [테스트 전용] 시험 패널이 DOM 뒤라 열린 채면 다른 패널을 덮어 못 눌렀다(v2.70.4)
 $('tab-zone').onclick = () => {
@@ -118,6 +118,12 @@ $('trclose').onclick = closeTrain;
 $('trpanel').onclick = e => { if (e.target.id === 'trpanel') closeTrain(); };
 // HUD의 경지 표시를 누르면 전체 사다리를 보여준다
 $('realm').onclick  = () => { closeSheets(); openRealmPanel(); };
+// ≡ 메뉴 (v2.85) — 같은 버튼 재클릭이면 닫고, 다른 시트는 접는다
+$('menubtn').onclick = () => { const open = $('mpanel').classList.contains('show'); closeSheets(); if (!open) openMenu(); };
+$('mpanel').onclick  = e => { if (e.target.id === 'mpanel') closeMenu(); };
+$('msound').onclick  = () => { S.mute = !S.mute; menuHud(); saveNow(); toast(S.mute ? '효과음을 껐다' : '효과음을 켰다'); };
+$('msave').onclick   = () => { saveNow(); closeMenu(); toast('저장했다'); };
+$('mstat').onclick   = () => { toast('처치 ' + fmt(S.totalKills) + '\n쓰러짐 ' + S.downs + '\n기연 ' + (S.fates|0)); };
 $('rclose').onclick = closeRealmPanel;
 $('rpanel').onclick = e => { if (e.target.id === 'rpanel') closeRealmPanel(); };
 // [테스트 전용] 시험 패널 — 배속·강제 쓰러짐·저장 초기화를 한곳에 모았다.

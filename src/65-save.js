@@ -14,7 +14,7 @@ function saveNow(){
       silver: S.silver, bossDone: S.bossDone, reach: S.reach, stats: S.stats, rexp: S.rexp,
       arts: S.arts, karma: S.karma, fates: S.fates, fatebits: S.fatebits,
       artXp: S.artXp, artStar: S.artStar, artLv: S.artLv,
-      skillManual: S.skillManual, tree: S.tree, traits: S.traits, equip: S.equip,
+      skillManual: S.skillManual, mute: S.mute, tree: S.tree, traits: S.traits, equip: S.equip,
       itemLv: S.itemLv, inv: S.inv, codex: S.codex,
     }));
   }catch(e){}                    // 시크릿 모드 등 — 저장만 못 할 뿐 게임은 돈다
@@ -58,6 +58,7 @@ function applySave(d){
       S.artLv[a.k] = clamp(d.artLv[a.k] | 0, 1, artLvCap(a.k));   // 성 로드 뒤라 상한이 맞다
   }
   S.skillManual = !!d.skillManual;              // 발동 모드 (예전 저장엔 없다 → 자동)
+  S.mute        = !!d.mute;                     // 효과음 끔 (v2.85, 예전 저장엔 없다 → 켬)
   // 장비 (v2.70 표준형) — 자리·주머니·아이템 레벨·도감을 유효한 것만 되살린다.
   // v2.66/67 저장의 자리 강화(eqLv·장비 lv)는 장착품의 아이템 레벨로 옮긴다.
   S.equip = { weapon:null, armor:null, trinket:null }; S.inv = {}; S.itemLv = {}; S.codex = {};

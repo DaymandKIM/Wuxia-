@@ -20,10 +20,15 @@
   #cv{position:fixed;display:block;image-rendering:pixelated;background:#0e1116;}
   #ui{position:fixed;pointer-events:none;overflow:hidden;}
 
-  /* 상단 HUD (v2.84, 사용자: "위에 체력바 등이 배경을 좀 가리네") — 불투명 상자를 없애고 얇고 투명한 띠로.
-     제목 한 줄 · 가는 체력바(7px) · 더 가는 수련 바(3px) · 작은 경지·은자 줄. 높이 ~105 → ~62px. 글자는 그림자로 읽힌다. */
-  #card{position:absolute;left:12px;right:12px;top:calc(env(safe-area-inset-top) + 6px);
-    transition:opacity .22s;background:none;border:0;padding:0;
+  /* 상단 바 (v2.85, 사용자: "원경 위쪽에 안 쓰는 부분이 있네 거기 가리고 UI바 만들어" → "원경 가리지 말고") — 원경 그림 **위**
+     빈자리를 불투명 띠로 덮고 HUD를 그 안에 넣는다. 그림은 50-render backdropTop이 바 아래로 내려 그린다(안 가림).
+     오른쪽 ≡ 버튼이 메뉴(설정·업적)를 접었다 편다.
+     v2.84의 얇은 HUD(제목 · 체력바 7px · 수련 바 3px · 경지·은자 줄)는 그대로 띠 안으로. */
+  #topbar{position:absolute;left:0;right:0;top:0;padding:calc(env(safe-area-inset-top) + 6px) 10px 6px 12px;
+    display:flex;align-items:center;gap:8px;pointer-events:none;transition:opacity .22s;
+    background:linear-gradient(#1a2028,#10141a);border-bottom:1.5px solid #2b333d;
+    box-shadow:0 2px 8px rgba(0,0,0,.45);}
+  #card{flex:1;min-width:0;background:none;border:0;padding:0;
     text-shadow:0 1px 2px rgba(0,0,0,.95),0 0 6px rgba(0,0,0,.6);}
   .row1{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;
     font-family:var(--fw);font-size:15px;color:#f2f6fb;letter-spacing:.03em;}
@@ -43,6 +48,32 @@
   #kn>i{background:linear-gradient(90deg,#3f7fb8,#69a8dd);}
   .bar>span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
     font-size:8.5px;line-height:1;font-weight:900;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.95);letter-spacing:.04em;}
+  /* ≡ 버튼 — 세 줄. 열리면 ✕ 로 */
+  #menubtn{pointer-events:auto;flex:none;width:40px;height:40px;border-radius:10px;border:1.5px solid #2b333d;
+    background:#0e1319;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;}
+  #menubtn i{display:block;width:18px;height:2px;border-radius:1px;background:#cfe0f2;transition:transform .18s,opacity .18s;}
+  #menubtn:active{background:#1c2430;}
+  #menubtn.on i:nth-child(1){transform:translateY(6px) rotate(45deg);}
+  #menubtn.on i:nth-child(2){opacity:0;}
+  #menubtn.on i:nth-child(3){transform:translateY(-6px) rotate(-45deg);}
+  /* 메뉴 — 바 아래 오른쪽에서 접혔다 펴진다. 바깥을 누르면 닫힘 */
+  #mpanel{position:absolute;inset:0 0 var(--tabh) 0;pointer-events:none;overflow:hidden;z-index:30;
+    background:rgba(6,8,11,0);transition:background .2s;}
+  #mpanel.show{pointer-events:auto;background:rgba(6,8,11,.55);}
+  .msheet{position:absolute;right:10px;top:calc(env(safe-area-inset-top) + 70px);width:210px;
+    background:#12161c;border:1.5px solid #2b333d;border-radius:12px;padding:6px;
+    transform:translateY(-10px) scale(.96);transform-origin:top right;opacity:0;
+    transition:transform .18s cubic-bezier(.2,.8,.3,1),opacity .18s;box-shadow:0 8px 24px rgba(0,0,0,.55);}
+  #mpanel.show .msheet{transform:none;opacity:1;}
+  .mhd{font-size:10.5px;color:#7f8b99;letter-spacing:.08em;padding:6px 10px 3px;}
+  .mi{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;
+    background:none;border:0;color:#e6eef8;font:inherit;font-size:13.5px;font-weight:900;
+    padding:9px 10px;border-radius:8px;text-align:left;cursor:pointer;}
+  .mi:active{background:#1c2430;}
+  .mi .mv{color:#8b97a5;font-size:12px;font-weight:700;}
+  .mi.on .mv{color:#8fe3a1;}
+  .mi:disabled{opacity:.5;cursor:default;}
+  .msep{height:1px;background:#1e242c;margin:4px 6px;}
 
   /* 하단 탭바 — 기능이 들어올 때마다 탭이 하나씩 는다 */
   #ui{--tabh:calc(env(safe-area-inset-bottom) + 52px);}
@@ -81,8 +112,14 @@
     box-shadow:0 2px 6px rgba(0,0,0,.42);transition:color .15s,border-color .15s,box-shadow .15s;}
   #sbar .smode::before{content:'';width:7px;height:7px;border-radius:50%;
     background:currentColor;box-shadow:0 0 5px currentColor;opacity:.9;}
-  #sbar .smode.man{border-color:#e0b25a;color:#f2d38c;background:linear-gradient(#2b2416,#1b1710);
-    box-shadow:0 0 9px rgba(224,178,90,.28),0 2px 6px rgba(0,0,0,.42);}
+  /* v2.85 (사용자: "자동일 때 불이 들어오게") — 자동 = 초록 발광(켜짐), 수동 = 회색 + 꺼진 점. 옛 호박색 수동은 폐기 */
+  #sbar .smode.auto{border-color:#5fcf7f;color:#b4f2c4;background:linear-gradient(#17301f,#0f1b14);
+    box-shadow:0 0 10px rgba(95,207,127,.38),0 2px 6px rgba(0,0,0,.42);}
+  #sbar .smode.auto::before{background:#8fe89f;box-shadow:0 0 6px 1px #8fe89f;opacity:1;animation:smpulse 1.8s ease-in-out infinite;}
+  @keyframes smpulse{0%,100%{box-shadow:0 0 6px 1px #8fe89f;}50%{box-shadow:0 0 10px 3px #8fe89f;}}
+  @media (prefers-reduced-motion: reduce){#sbar .smode.auto::before{animation:none;}}
+  #sbar .smode.man{color:#8b97a5;}
+  #sbar .smode.man::before{background:#4a5563;box-shadow:none;opacity:.8;}
   /* 초식 슬롯 — 입체 원판. 쿨은 시계 방향 원형 스윕, 준비되면 문파색 발광 */
   .sk{position:relative;width:40px;height:40px;border-radius:50%;overflow:hidden;
     color:#e6edf5;font:900 17px/1 inherit;display:flex;align-items:center;justify-content:center;
@@ -341,7 +378,7 @@
   #opanel.show{pointer-events:auto;opacity:1;}
   /* 기연은 자동 수락이라 화면 가운데를 막지 않는다 (v2.33) — 위에서 내려오는
      띠로 흘려보낸다. 배경 어둠 없음, 전투가 계속 보인다. */
-  #fpanel{position:absolute;left:0;right:0;top:calc(env(safe-area-inset-top) + 78px);z-index:40;   /* 패널·스킬창 위 (v2.83 "기연 버튼이 동작 안 함") */
+  #fpanel{position:absolute;left:0;right:0;top:calc(env(safe-area-inset-top) + 84px);z-index:40;   /* 패널·스킬창 위 (v2.83 "기연 버튼이 동작 안 함") */
     display:flex;justify-content:center;pointer-events:none;opacity:0;
     transform:translateY(-12px);transition:opacity .25s,transform .25s;}
   #fpanel.show{opacity:1;transform:translateY(0);}
@@ -413,11 +450,27 @@
       <button id="tstart">입산 入山</button>
     </div>
   </div>
-  <div id="card">
-    <div class="row1"><span id="stage">죽림 1단계</span><span id="kills">0 / 10</span></div>
-    <div class="bar" id="hp"><i></i><span id="hpt"></span></div>
-    <div class="bar" id="kn"><i></i></div>
-    <div class="row2"><span id="realm"></span><span id="silver"><img class="coin" id="coinhud"><b id="silvern">0</b></span></div>
+  <div id="topbar">
+    <div id="card">
+      <div class="row1"><span id="stage">죽림 1단계</span><span id="kills">0 / 10</span></div>
+      <div class="bar" id="hp"><i></i><span id="hpt"></span></div>
+      <div class="bar" id="kn"><i></i></div>
+      <div class="row2"><span id="realm"></span><span id="silver"><img class="coin" id="coinhud"><b id="silvern">0</b></span></div>
+    </div>
+    <button id="menubtn" aria-label="메뉴"><i></i><i></i><i></i></button>
+  </div>
+  <div id="mpanel">
+    <div class="msheet">
+      <div class="mhd">설정</div>
+      <button class="mi" id="msound"><span>효과음</span><span class="mv">켬</span></button>
+      <button class="mi" id="msave"><span>지금 저장</span><span class="mv">›</span></button>
+      <div class="msep"></div>
+      <div class="mhd">기록</div>
+      <button class="mi" id="mach" disabled><span>업적</span><span class="mv">준비 중</span></button>
+      <button class="mi" id="mstat"><span>여정</span><span class="mv" id="mstatv"></span></button>
+      <div class="msep"></div>
+      <div class="mi" id="mver"><span>판</span><span class="mv" id="mverv"></span></div>
+    </div>
   </div>
   <div id="toast"></div>
   <div id="stip"></div>

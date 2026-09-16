@@ -12,6 +12,10 @@ for p in sorted(glob.glob(R + '/assets/*.png')):
 import json
 js_assets = 'const ASSET=' + json.dumps(assets) + ';'
 code = '\n'.join(open(R+'/src/'+f, encoding='utf-8').read() for f in ORDER)
+# 판번 — VERSION.md 첫 제목("# v2.85 — …")에서 읽어 GAME_VER로 넣는다 (≡ 메뉴 정보 줄, v2.85). 손으로 안 맞춘다.
+import re
+m = re.search(r'^#\s*(v[\d.]+)', open(R+'/VERSION.md', encoding='utf-8').read(), re.M)
+code = "const GAME_VER = '" + (m.group(1) if m else 'dev') + "';\n" + code
 html = open(R+'/shell.html', encoding='utf-8').read()
 html = html.replace('/*ASSETS*/', js_assets).replace('/*CODE*/', code)
 # 기본은 저장소 안 dist/. WUXIA_OUT 으로 바꿀 수 있다.

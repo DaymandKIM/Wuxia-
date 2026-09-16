@@ -36,21 +36,33 @@ function thash(cx, cy, s){
 // 상단 원경 — 지평선(hz)에 그림 바닥을 맞추고, 그림 위 남는 하늘은 시트 윗줄 색으로.
 // 가로 타일링, 카메라 x에 par 배로 느리게 흐른다. 아래 fade px는 그림 알파를 계단으로
 // 빼서 **바닥 텍스처 위로 디졸브**한다 — 평균색을 칠하면 평평한 띠가 생겼다(v2.61.7).
+// 상단 바 높이(캔버스 단위) — v2.85 사용자: "원경 위쪽 반복 텍스처 쓰는 곳 가리고 거기 둬라, 원경 가리지 말고".
+// 원경 시트는 윗줄이 투명하다(죽림 32·폐촌 83·설산 32·천산 63줄, 동굴은 알파 경사) — 거기로 바닥 타일이 비쳤다.
+// 바가 그 투명 띠를 덮고, 그림의 **불투명한 첫 줄**이 바 바로 아래 오게 y0를 잡는다(y0 = max(바 − 투명 띠, 지평선 − 높이)).
+// 투명 띠 높이(clearTop)는 backdropScaled가 축소 캔버스에서 한 번 재서 bdClear에 둔다. jsdom은 둘 다 0.
+const bdClear = {};
+function uiTopUnits(){
+  const tb = document.getElementById('topbar');
+  if (!tb || !tb.offsetHeight || !VIEW.h) return 0;
+  return Math.ceil(tb.offsetHeight * VH / VIEW.h);
+}
+function backdropClear(zk, sw, sh){ return bdClear[zk + ':' + sw + 'x' + sh] || 0; }
+function backdropTop(zk, sw, sh){ return Math.max(uiTopUnits() - backdropClear(zk, sw, sh), Math.round(VH * BACKDROP.hz) - sh); }
 function drawBackdrop(ox){
   const zk = zone().k, img = IMG[BACKDROP.keys[zk]];
   if (!img || !img.complete || !img.naturalWidth) return;
   const nw = img.naturalWidth, nh = img.naturalHeight;
-  const hzY = Math.round(VH * BACKDROP.hz);
   const sh = Math.round(VH * (BACKDROP.h[zk] || BACKDROP.hDef));
   const sw = Math.max(1, Math.round(sh * nw / nh));
-  const y0 = hzY - sh;
-  const off = -(((ox * BACKDROP.par) % sw) + sw) % sw;
   // 시트(폭 1024)를 화면 크기(≈290)로 nearest 축소하면 안개 층의 가로 줄이 모아레
   // 줄무늬로 떴다(v2.63.6). 표시 크기로 한 번만 부드럽게 줄인 캔버스를 쓴다.
   const src = backdropScaled(zk, img, sw, sh);
+  const y0 = backdropTop(zk, sw, sh);
+  const off = -(((ox * BACKDROP.par) % sw) + sw) % sw;
   ctx.save();
-  ctx.fillStyle = BACKDROP.sky[zk] || zone().ground;              // 그림 위 하늘
-  if (y0 > 0) ctx.fillRect(0, 0, VW, y0 + 1);
+  ctx.fillStyle = BACKDROP.sky[zk] || zone().ground;              // 그림 위 하늘 — 투명 윗줄까지 덮는다(바닥 타일이 비치지 않게)
+  const skyTo = y0 + backdropClear(zk, sw, sh);
+  if (skyTo > 0) ctx.fillRect(0, 0, VW, skyTo + 1);
   const F = Math.min(sh - 2, Math.max(BACKDROP.fadeMin, Math.round(sh * BACKDROP.fadeR))), solid = sh - F, n = BACKDROP.fadeSteps;
   for (let x = off; x < VW; x += sw)                               // 위쪽 불투명부
     ctx.drawImage(src, 0, 0, sw, solid, Math.round(x), y0, sw, solid);
@@ -86,6 +98,16 @@ function backdropScaled(zk, img, sw, sh){
       }
       g.drawImage(cur, 0, 0, sw, sh);
       out = c;
+      // 윗쪽 투명 띠 — 줄 평균 알파가 200을 넘는 첫 줄까지 (v2.85, 상단 바가 이 띠를 덮는다)
+      try {
+        const d = g.getImageData(0, 0, sw, sh).data;
+        let top = 0;
+        for (let y = 0; y < sh; y++){
+          let a = 0; for (let x = 0; x < sw; x++) a += d[(y * sw + x) * 4 + 3];
+          if (a / sw > 200){ top = y; break; }
+        }
+        bdClear[key] = top;
+      } catch(e) {}
     }
   } catch(e) {}
   bdCache[key] = out;
@@ -95,7 +117,9 @@ function backdropScaled(zk, img, sw, sh){
 function horizonY(){
   const img = IMG[BACKDROP.keys[zone().k]];
   if (!img || !img.complete || !img.naturalWidth) return -1e9;
-  return Math.round(VH * BACKDROP.hz) - Math.round(VH * (BACKDROP.h[zone().k] || BACKDROP.hDef) * BACKDROP.fadeR) * BACKDROP.cull;
+  const sh = Math.round(VH * (BACKDROP.h[zone().k] || BACKDROP.hDef));
+  const sw = Math.max(1, Math.round(sh * img.naturalWidth / img.naturalHeight));
+  return backdropTop(zone().k, sw, sh) + sh - Math.round(sh * BACKDROP.fadeR) * BACKDROP.cull;
 }
 // 배경 소품 — 시트 스프라이트를 넓은 격자에 성기게. 인물 뒤 층. 가시 셀만.
 function drawProps(ox, oy){
