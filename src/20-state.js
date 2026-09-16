@@ -47,6 +47,7 @@ const S = {
   achv: {},                      // 업적 { k: 받은 단계 수 } (v2.90)
   halls: {},                     // 문파 전각 { k: 레벨 } (v2.91)
   fame: 0,                       // 문파 명성 누적 (v2.91)
+  sectName: '',                  // 문파 이름 — 빈 값이면 SECT.name(무명문) (v2.91.2)
   achvNote: {},                  // 업적 { k: 알린 단계 수 } — 달성 토스트 중복 방지 (저장 안 함)
   fatePending: 0,                // >0 이면 기연이 기다린다
   fatebits: {},                  // 실전 비급 조각 { guyang: 0~3, geongon: 0~3 }

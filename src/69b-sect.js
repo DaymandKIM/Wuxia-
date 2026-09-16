@@ -1,10 +1,17 @@
-/* ── 문파 — 청죽문 재건 (v2.91) ────────────────────
+/* ── 문파 — 내 문파 세우기 (v2.91) ────────────────────
+   이름: 기본 무명문(無名門), 플레이어가 패널 머리글 ✎로 짓는다(S.sectName, v2.91.2). 실존 문파(소림 등)는 본진 비무 상대.
    숫자는 전부 00-data.js의 SECT. 설계는 docs/설계-문파.md.
    1층: 전각 5채 — 은자로 레벨을 올리면 영구 % 효과(sectBonus가 heroDmg 등 전투 수식에 합산).
         상한은 명성 단계(fameTier)로 열린다.
    명성: 처치·보스·업적 받기로 쌓인다(fameAdd). 산문이 획득을 키운다.
    제자·본진 비무는 v2.92~ (객당은 자리만 잡아 둠).
 */
+// 이름 — 앞뒤 공백 제거·글자 수 상한·빈 값이면 기본. 한자는 기본 이름에만 붙는다
+function sectCleanName(v){ v = String(v == null ? '' : v).replace(/\s+/g, ' ').trim().slice(0, SECT.nameMax); return v === SECT.name ? '' : v; }
+function sectName(){ return S.sectName || SECT.name; }
+function sectHan(){ return S.sectName ? '' : SECT.han; }
+function setSectName(v){ S.sectName = sectCleanName(v); sectHeader(); if (typeof saveNow === 'function') saveNow(); return sectName(); }
+function sectHeader(){ const n = $('sname'), h = $('shan'); if (n) n.textContent = sectName(); if (h) h.textContent = sectHan(); }
 function hallDef(k){ return SECT.halls.find(h => h.k === k); }
 function hallLv(k){ return (S.halls && S.halls[k]) | 0; }
 function hallCost(k, lv){ const h = hallDef(k); return Math.round(h.cb * Math.pow(h.cg, lv == null ? hallLv(k) : lv)); }
@@ -63,9 +70,17 @@ function fameBand(){
 }
 function buildSectPanel(){
   const b = $('sbody'); if (!b) return;
-  b.innerHTML = '<div class="znote">죽림에 뿌리내린 청죽문을 다시 세운다. 전각을 올리면 힘이 영구히 붙고, 명성이 오르면 전각을 더 높이 올릴 수 있다.</div>' +
+  sectHeader();
+  // 이름 짓기 줄 — 처음(아직 안 지음)엔 펼쳐 두고, 지은 뒤엔 머리글 ✎로 연다
+  const naming = '<div class="zrow snamerow" id="snamerow"' + (S.sectName ? ' hidden' : '') + '><div class="zn">문파 이름을 정한다</div>' +
+    '<div class="zd">이름 없는 문파에서 시작해 천하에 이름을 알린다. 나중에 ✎로 바꿀 수 있다.</div>' +
+    '<div class="snamein"><input id="snamein" maxlength="' + SECT.nameMax + '" placeholder="' + SECT.name + '" value="' + (S.sectName || '') + '" autocomplete="off">' +
+    '<button class="trbuy" id="snameok"><span>정한다</span></button></div></div>';
+  b.innerHTML = '<div class="znote">이름 없는 문파를 세운다. 전각을 올리면 힘이 영구히 붙고, 명성이 오르면 전각을 더 높이 올릴 수 있다.</div>' + naming +
     fameBand() + SECT.halls.map(hallCard).join('') +
     '<div class="znote">명성은 적을 잡고, 보스를 꺾고, 업적을 받을 때 쌓인다. 제자와 문파 비무는 곧 들어온다.</div>';
+  const okb = $('snameok'); if (okb) okb.onclick = () => { setSectName($('snamein').value); $('snamerow').hidden = true; toast(sectName() + ' — 이름을 세웠다'); };
+  const inp = $('snamein'); if (inp) inp.onkeydown = e => { if (e.key === 'Enter') okb.onclick(); };
   // 꾹 누르면 연속 (수련과 같은 규칙)
   b.querySelectorAll('.abtn').forEach(el => {
     const k = el.closest('.hcard').dataset.k;

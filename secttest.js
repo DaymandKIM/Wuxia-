@@ -68,13 +68,22 @@ setTimeout(()=>{
   ok(btn && !btn.disabled && card.classList.contains('can'),'객당 카드: 세우기 버튼 활성');
   const lv0=w.hallLv('guest'); btn.dispatchEvent(new w.PointerEvent('pointerdown',{bubbles:true})); btn.dispatchEvent(new w.PointerEvent('pointerup',{bubbles:true}));
   ok(w.hallLv('guest')===lv0+1 && card.querySelector('.zn em').textContent.includes('Lv '+(lv0+1)),'버튼으로 세우기 → Lv '+w.hallLv('guest'));
+  // 이름 (v2.91.2) — 기본 무명문·짓기·상한·저장
+  ok(w.sectName()==='무명문' && w.document.getElementById('sname').textContent==='무명문' && w.document.getElementById('shan').textContent==='無名門' && !w.document.getElementById('snamerow').hidden,'기본 이름 무명문 無名門 · 처음엔 이름 줄이 펼쳐져 있다');
+  w.document.getElementById('snamein').value='  천하  제일문 너무길다  '; w.document.getElementById('snameok').click();
+  ok(w.sectName()==='천하 제일문 너'.slice(0,SECT.nameMax) && w.document.getElementById('sname').textContent===w.sectName() && w.document.getElementById('shan').textContent==='' && w.document.getElementById('snamerow').hidden,'짓기: 공백 정리·'+SECT.nameMax+'자 상한 → "'+w.sectName()+'", 한자 없음, 줄 접힘');
+  w.document.getElementById('sedit').click(); ok(!w.document.getElementById('snamerow').hidden,'✎로 다시 연다');
+  w.setSectName(''); ok(w.sectName()==='무명문' && S.sectName==='','빈 이름이면 기본으로');
+  w.setSectName('무명문'); ok(S.sectName==='','기본 이름을 그대로 치면 저장값은 빈 값');
+  w.setSectName('벽력문');
   w.document.getElementById('sclose').click(); ok(!sp.classList.contains('show'),'닫힘');
   ok(errs.length===0,'런타임 오류 0'+(errs.length?': '+errs[0]:''));
   // 복원 + 오프라인 명성
-  const {w:w2,errs:e2}=boot(JSON.stringify(Object.assign(d,{at:Date.now()-3*3600*1000})));
+  const d2=JSON.parse(w.localStorage.getItem('wuxia1'));   // 이름까지 저장된 최신본
+  const {w:w2,errs:e2}=boot(JSON.stringify(Object.assign(d2,{at:Date.now()-3*3600*1000})));
   setTimeout(()=>{
     const S2=w2.eval('S');
-    ok(w2.hallLv('gate')===5 && w2.hallLv('library')===4 && S2.fame>d.fame,'복원: 산문 5·장경각 4 · 3시간 오프라인 명성 '+Math.round(d.fame)+' → '+Math.round(S2.fame));
+    ok(w2.hallLv('gate')===5 && w2.hallLv('library')===4 && S2.fame>d.fame && w2.sectName()==='벽력문','복원: 산문 5·장경각 4·이름 '+w2.sectName()+' · 3시간 오프라인 명성 '+Math.round(d.fame)+' → '+Math.round(S2.fame));
     ok(e2.length===0,'런타임 오류 0 (복원)'+(e2.length?': '+e2[0]:''));
     console.log(bad?('\n★ 실패 '+bad+'건'):'\n문제 없음'); process.exit(bad?1:0);
   },900);

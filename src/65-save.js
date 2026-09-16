@@ -19,7 +19,7 @@ function saveData(){
     skillManual: S.skillManual, mute: S.mute, tree: S.tree, traits: S.traits, equip: S.equip,
     itemLv: S.itemLv, inv: S.inv, codex: S.codex,
     merges: S.merges, levels: S.levels, achv: S.achv,   // 업적 (v2.90)
-    halls: S.halls, fame: S.fame,                        // 문파 (v2.91)
+    halls: S.halls, fame: S.fame, sectName: S.sectName,  // 문파 (v2.91)
   };
 }
 function saveNow(){
@@ -98,6 +98,7 @@ function applySave(d){
   S.merges = Math.max(0, d.merges | 0); S.levels = Math.max(0, d.levels | 0);   // 업적 누계 (v2.90)
   S.halls = {}; if (d.halls && typeof d.halls === 'object') for (const h of SECT.halls){ const lv = Math.max(0, d.halls[h.k] | 0); if (lv) S.halls[h.k] = lv; }   // 문파 (v2.91)
   S.fame = Math.max(0, +d.fame || 0);
+  S.sectName = sectCleanName(d.sectName);
   S.achv = {}; S.achvNote = {};
   if (d.achv && typeof d.achv === 'object') for (const a of ACHV.list){ const t = clamp(d.achv[a.k] | 0, 0, a.tiers.length); if (t) S.achv[a.k] = t; S.achvNote[a.k] = t; }
   // 장비 (v2.70 표준형) — 자리·주머니·아이템 레벨·도감을 유효한 것만 되살린다.

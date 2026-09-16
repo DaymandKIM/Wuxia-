@@ -114,6 +114,7 @@ $('tab-sect').onclick = () => {                 // 문파 (v2.91)
   if (!open) openSect();
 };
 $('sclose').onclick = closeSect;
+$('sedit').onclick  = () => { const r = $('snamerow'); if (!r) return; r.hidden = !r.hidden; if (!r.hidden){ const i = $('snamein'); i.value = S.sectName || ''; i.focus(); } };   // 이름 바꾸기 (v2.91.2)
 $('spanel').onclick = e => { if (e.target.id === 'spanel') closeSect(); };
 $('eclose').onclick = closeEquip;
 $('epanel').onclick = e => { if (e.target.id === 'epanel') closeEquip(); };
