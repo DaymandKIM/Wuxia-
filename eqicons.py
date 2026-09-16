@@ -11,7 +11,7 @@ SLOTS = { 'weapon': ['fist', 'sword', 'saber', 'spear', 'staff', 'fan'], 'armor'
           'trinket': ['pendant', 'ring', 'beads', 'talisman', 'gourd', 'ribbon'] }   # 자리별 종류 순서 = 게임 순서 (v2.82 방어구·장신구)
 KINDS = SLOTS['weapon']
 FILL = 92
-def main(grade, path, slot='weapon', flood=False):
+def main(grade, path, slot='weapon', flood=False, pale=False):
     global KINDS; KINDS = SLOTS[slot]; N = len(KINDS)
     im = Image.open(path).convert('RGB'); A = np.array(im).astype(int); H, W = A.shape[:2]
     r, g, b = A[..., 0], A[..., 1], A[..., 2]; BG = np.median(A.reshape(-1, 3), 0)
@@ -36,6 +36,16 @@ def main(grade, path, slot='weapon', flood=False):
             for ny, nx in ((y - 1, x), (y + 1, x), (y, x - 1), (y, x + 1)):
                 if 0 <= ny < H and 0 <= nx < W and not seen[ny, nx] and bright[ny, nx] and (np.abs(A[ny, nx] - c) <= TOL).all():
                     seen[ny, nx] = True; q.append((ny, nx))
+        bg = seen | bg
+    if pale:
+        # 옅은 얼음색 아이템 + 흰 후광 고리 시트(v2.87.3 초월 장신구): 이웃 차 번짐(--flood)은 후광에서 아이템 몸통(백청)으로
+        # 매끄럽게 이어져 안까지 먹었다. 대신 **분홍(배경) 또는 순백(후광)** 픽셀만 지나는 번짐 — 아이템은 청색기가 있어
+        # (b가 r보다 16 이상 큼) 순백 판정에서 빠지고, 안쪽 흰 하이라이트는 외곽선에 갇혀 못 닿는다.
+        pink = ((r - g) > 20) & ((b - g) > 20)          # 분홍·연보라(후광 고리 가장자리)까지 — 아이템 얼음색은 g가 r보다 커서 안 걸린다
+        white = (A.min(2) > 225) & (np.abs(r - b) < 16)
+        allow = pink | white
+        seen = np.zeros((H, W), bool); seen[0, :] = allow[0, :]; seen[-1, :] = allow[-1, :]; seen[:, 0] |= allow[:, 0]; seen[:, -1] |= allow[:, -1]
+        seen = ndi.binary_propagation(seen, mask=allow)
         bg = seen | bg
     fg = ~bg
     # 칸 구분선은 시트마다 색이 다르다(어두운 선·흰 선) — 칸 높이의 85% 넘게 뻗은 가는(≤24px) 세로 덩어리는 버린다
@@ -75,7 +85,7 @@ def main(grade, path, slot='weapon', flood=False):
         big = ic.resize((288, 288), Image.NEAREST); R.paste(big, (i * 298, 0), big)
     R.save(f'review/eq_{slot}_{grade}.png'); print('검사판', f'review/eq_{slot}_{grade}.png')
 if __name__ == '__main__':
-    args = [a for a in sys.argv[1:] if not a.startswith('--')]; slot = 'weapon'; flood = '--flood' in sys.argv
+    args = [a for a in sys.argv[1:] if not a.startswith('--')]; slot = 'weapon'; flood = '--flood' in sys.argv; pale = '--pale' in sys.argv
     for a in sys.argv[1:]:
         if a.startswith('--slot='): slot = a.split('=', 1)[1]
-    grade = int(args[0]); path = args[1] if len(args) > 1 else f'sheets/eq_{"weapons" if slot == "weapon" else slot}_{grade}.png'; main(grade, path, slot, flood)
+    grade = int(args[0]); path = args[1] if len(args) > 1 else f'sheets/eq_{"weapons" if slot == "weapon" else slot}_{grade}.png'; main(grade, path, slot, flood, pale)
