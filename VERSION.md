@@ -1,3 +1,7 @@
+# v2.82.5 — 방어구 아이콘 희귀(등급 2) 4종 반영 (사용자 시트 sheets/eq_armor_2.png, 2026-09-15)
+
+- `python eqicons.py 2 --slot=armor`. 도롱이 옆 반짝임은 배경으로 걷힘. 검사판 review/eq_armor_2.png. 영웅~초월 4장 대기.
+
 # v2.82.4 — 등급 아이콘을 팔레트 PNG로 (빌드 15.0MB → 14.6MB, 2026-09-15)
 
 - 등급 아이콘 50장이 RGBA 7~9KB였고 빌드가 16MB 한도에 근접했다(방어구·장신구 62장이 더 올 예정). eqicons.py가 quantize(127색,
