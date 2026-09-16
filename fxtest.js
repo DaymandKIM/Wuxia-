@@ -164,14 +164,14 @@ setTimeout(()=>{
     for(let i=0;i<60;i++){ step(1/60); if(P.dir!==d0){ window.__flip++; d0=P.dir; } }
     S.sweepT=0; S.foes.length=0;`);
   ok(w.eval('window.__flip')===0,'제패 연출 중 방향이 안 뒤집힌다 ('+w.eval('window.__flip')+'회 뒤집힘)');
-  // 3.6) 시전 컷 수 = 숙련 성 비례
+  // 3.6) 시전 컷 수 — v2.90.1부터 성과 무관하게 전 컷(castStar 전부 1.0). 붕산장 구체 컷이 1성에서 빠지던 것을 없앴다
   w.eval('S.artStar.pagong=1;');
   const n1=w.eval('castN("pagong")');
   w.eval('S.artStar.pagong=4;');
   const n4=w.eval('castN("pagong")');
-  ok(n1<n4 && n4===w.eval('HFX.cast.pagong[2]'),'시전 컷: 1성 '+n1+' < 4성 '+n4+' (성이 오르면 신컷)');
+  ok(n1===n4 && n4===w.eval('HFX.cast.pagong[2]'),'시전 컷: 1성 '+n1+' = 4성 '+n4+' = 전 컷 (성으로 안 덜어냄)');
   ok(w.eval('castFrame("pagong",0)')===0 && w.eval('S.artStar.pagong=1, castFrame("pagong",'+(n1-1)+')')===w.eval('HFX.cast.pagong[2]')-1,
-    '성긴 판도 처음·끝 컷은 지킨다');
+    '처음·끝 컷은 처음·끝 그대로');
   w.eval('S.artStar.pagong=0; S.rexp=0;');   // 다음 검사(기운 없음)를 위해 삼류로
 
   // 3.7) 건곤이형 태극 원반 연출이 그려진다
@@ -249,6 +249,12 @@ setTimeout(()=>{
   }
   w.eval('S.equip.weapon={k:"sword",g:0}; eqGain("robe",3,1); S.equip.armor={k:"robe",g:3};'); renderNow();
   ok(w.eval('P.auraCol')===w.eval('EQUIP.grades[3].c'),'세 자리 중 최고 등급(방어구 영웅)이 색을 정한다');
+  // 무기 든 대기 자세 (v2.90.1)
+  w.eval('S.equip.weapon={k:"sword",g:0}; P.anim="idle"; P.af=0; P.atkT=0;'); renderNow();
+  ok(drew('hero_swordthrust',w.eval('HFX.aw.swordthrust')),'검을 끼면 대기 컷 = 검 찌르기 1컷(무기 든 자세)');
+  w.eval('S.equip.weapon={k:"fist",g:0};'); renderNow();
+  ok(drew('hero_idle',w.eval('HFX.aw.idle')),'권갑(맨손)이면 대기 컷 그대로');
+  ok(w.eval('castN("bungsan")')===w.eval('HFX.cast.bungsan[2]'),'시전은 성과 무관하게 전 컷 (붕산장 6컷)');
   ok(drew('aidle_w',w.eval('HFX.aw.aidle'))||w.eval('typeof auraCache==="object"'),'기운은 흰 안개(aidle_w)를 물들여 그린다');
 
   ok(errs.length===0,'런타임 오류 0'+(errs.length?': '+errs[0]:''));

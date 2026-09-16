@@ -542,9 +542,13 @@ cost 20만은 연마·돌파용(습득은 여전히 기연만). 태극 원반 �
   pierce·spin·blunt·petal), heroImpactFx가 파열 위에 하나 얹는다. 새 동작 키는 이 표에 결을 정해 준다(없으면 옛 참격 호).
   공격 시작에 발밑 흙먼지(stepdust). 운기조식은 drawMeditAura(후광·광륜·호흡 고리)+drawQi 빛알, 수치 FXD.meditFx. 검증 fxtest.
 - **초식 시전 동작**: 액티브 5종 전용 cast 스트립 6~9프레임(HFX.cast,
-  [에셋·폭·수]), castFps 16. **컷 수는 숙련 성에 비례**(v2.4, castStar):
-  1성은 절반쯤(뼈대), 4성이 전체 — 처음·끝 컷은 지키고 중간을 덜어낸다
-  (castN/castFrame). 파공권 권기 탄(pashot)·암향지 지풍 빔(bshot)은
+  [에셋·폭·수]), castFps 10. **전 컷을 항상 튼다**(v2.90.1 — 사용자 "붕산장
+  구체가 안 보이게 빠르던데": v2.4의 성별 덜어내기(castStar 0.55~1.0)는 1성 붕산장이
+  6컷 중 0·3·5만 써 구체 컷이 빠졌다. castStar 전부 1.0, castN/castFrame은 남겨 둠).
+  **cast 스트립 5종은 이미 같은 계열·같은 톤이라 새 시트 불필요**(review/cast_now.png).
+  **무기 든 대기 자세**(v2.90.1): 무기를 끼면 대기(idle)는 그 무기 무브셋 첫 스트립의
+  0번 컷(든 자세)이다 — drawHero의 WEAPONMOVES 분기, 폭은 HFX.aw[그 키]. 새 시트 불필요.
+  질주·피격은 맨손 컷 그대로(요청 시). 파공권 권기 탄(pashot)·암향지 지풍 빔(bshot)은
   **날아가는 방향으로 기울어** 난다(왼쪽은 거울 뒤 반전각 — 뒤집힘 방지).
   P.castT·P.castK(40-step·30-combat). **절차 발광**(v2.5, HFX.glow):
   무공 색 동심원 빛무리를 시전 손끝과 탄(파공권 몸통·지풍 촉끝)에 가산

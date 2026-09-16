@@ -296,6 +296,10 @@ function drawHero(ox, oy){
     const ck = HFX.cast[P.castK] || HFX.cast.pagong;
     key = ck[0]; fw = ck[1]; n = castN(P.castK);   // 성이 낮으면 컷을 덜어낸 판
   }
+  else if (P.anim === 'idle' && WEAPONMOVES[heroWeaponKind()]){
+    // 무기를 끼면 대기 = 그 무기 첫 동작의 1컷(무기 든 자세) (v2.90.1, 사용자: "무기는 어차피 우리 이미지 있는데") — 시트 없이 손에 무기가 보인다
+    key = WEAPONMOVES[heroWeaponKind()][0].key; fw = HFX.aw[key] || HERO.w; n = 1;
+  }
   else if (HFX.aw[key]) fw = HFX.aw[key];
   const im = IMG['hero_' + key];
   let fi = Math.floor(P.af);
