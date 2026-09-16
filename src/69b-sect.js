@@ -162,11 +162,12 @@ function tintedStrip(key, col){
   tintCache[ck] = c; return c;
 }
 function hallStage(k){ const lv = hallLv(k), T = SECT.scene.stageLv; let s = -1; for (let i = 0; i < T.length; i++) if (lv >= T[i]) s = i; return s; }   // -1 = 아직 없음
-function sceneHallBox(k){ const [fx, fy] = SECT.scene.halls[k]; return { x: Math.round(fx * VW), y: Math.round(fy * VH), w: 64, h: 60 }; }
+function sceneHallBox(k){ const [fx, fy] = SECT.scene.halls[k], st = hallStage(k), im = st >= 0 ? IMG['hall_' + k + '_' + st] : null, ok = im && im.complete && im.naturalWidth;
+  return { x: Math.round(fx * VW), y: Math.round(fy * VH), w: ok ? im.naturalWidth : 64, h: ok ? im.naturalHeight : 60 }; }   // 그림이 있으면 그 크기로 탭 판정
 function drawSectHall(h){
   const b = sceneHallBox(h.k), st = hallStage(h.k), lv = hallLv(h.k);
   const im = st >= 0 ? IMG['hall_' + h.k + '_' + st] : null;
-  shadow(b.x, b.y, 48);
+  shadow(b.x, b.y, Math.round(b.w * 0.8));
   if (im && im.complete && im.naturalWidth){ draw(im, b.x - Math.round(im.naturalWidth / 2), b.y - im.naturalHeight); }
   else {
     // 시트 전엔 팻말 — 나무 기둥 + 낙관 도장 (Lv 0은 말뚝만)
