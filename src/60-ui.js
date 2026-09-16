@@ -19,10 +19,14 @@ function toast(msg, opt){
   toastT = (opt && opt.sec) || 1.6;
 }
 
+let topH = -1;   // 상단 바 높이(px) — 시트 윗변 CSS 변수 --toph (v2.90.3)
 function hud(){
   // 진입 연출 중엔 HUD를 감춘다
   const showing = S.intro <= 0;
-  $('topbar').style.opacity = showing ? '1' : '0';   // v2.85 상단 바(HUD·≡ 포함)
+  const tbEl = $('topbar'); tbEl.style.opacity = showing ? '1' : '0';   // v2.85 상단 바(HUD·≡ 포함)
+  // 시트 윗변 = 상단 바 아래 (v2.90.3 "창을 꽉 채우자") — 바 높이가 바뀔 때만 CSS 변수를 다시 쓴다
+  const th = tbEl.offsetHeight | 0;
+  if (th !== topH){ topH = th; document.documentElement.style.setProperty('--toph', th + 'px'); }
   $('tabs').style.opacity = showing ? '1' : '0';
   // 스킬창·시험 버튼은 패널이 열리면 감춘다 — 패널 위로 떠서 스탯 줄·무공
   // 칸을 가린다는 피드백(v2.33). 어느 시트든 열려 있으면 숨긴다.

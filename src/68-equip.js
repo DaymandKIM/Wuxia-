@@ -154,12 +154,12 @@ function eqCard(k, g, worn){
 }
 function buildEquipPanel(){
   const b = $('ebody'), sl = eqSlot(eqTab);
-  let h = '<div id="etabs">';
+  let h = '<div id="eqhead"><div id="etabs">';   // 탭·상세·버튼 덩어리는 스크롤해도 머리글 아래에 붙어 있다 (v2.90.3)
   for (const s2 of EQUIP.slots) h += '<button class="askind' + (s2.k === eqTab ? ' on' : '') + '" data-t="' + s2.k + '">' + s2.n + '</button>';
   h += '<span id="eqcnt"></span></div>';
   // 낀 것 + 버튼
   h += '<div class="zrow eqtop" id="eqtop"></div>';
-  h += '<div class="eqbtns"><button class="sb" id="eqmerge"></button><button class="sb" id="eqauto">자동 장착</button></div>';
+  h += '<div class="eqbtns"><button class="sb" id="eqmerge"></button><button class="sb" id="eqauto">자동 장착</button></div></div>';
   // 아이템 카드 — 등급 줄
   for (let g = 0; g < EQUIP.grades.length; g++){                    // 일반이 위(v2.70.2, 사용자: "등급 낮은 게 위에서부터")
     const G = EQUIP.grades[g];

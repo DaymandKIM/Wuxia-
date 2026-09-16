@@ -87,7 +87,6 @@
   #menudot{position:absolute;top:-3px;right:-3px;width:9px;height:9px;border-radius:50%;background:#e8c96a;box-shadow:0 0 6px #e8c96a;display:none;}
   #menudot.on{display:block;}
   /* 업적 패널 (v2.90) — 카드: 이름·별(받음 ★ / 달성 ☆ / 남음 ·)·진행 바·받기 버튼. 받을 것은 금색 테두리 */
-  #vpanel.show .zsheet{max-height:92%;}
   .acard{display:flex;align-items:center;gap:10px;margin:8px 12px;padding:10px 12px;background:#171d25;border:1.5px solid #232b35;border-radius:11px;}
   .acard.can{border-color:#e8c96a;box-shadow:0 0 10px #e8c96a33;}
   .acard.done{opacity:.6;}
@@ -179,13 +178,13 @@
   #tbtn:active{background:#7a5238;}
   #tspd{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px;}
   /* overflow:hidden — 닫힌 시트(아래로 밀린 상태)가 컨테이너 밖 탭바 위로 삐져나오지 않게 */
-  #zpanel,#tpanel,#trpanel,#rpanel,#apanel,#dpanel,#epanel,#vpanel,#cpanel{position:absolute;inset:0 0 var(--tabh) 0;pointer-events:none;
+  #zpanel,#tpanel,#trpanel,#rpanel,#apanel,#dpanel,#epanel,#vpanel,#cpanel{position:absolute;inset:var(--toph,0px) 0 var(--tabh) 0;pointer-events:none;   /* 위는 상단 바(--toph, 60-ui가 잰다) 아래부터 — 시트가 화면을 꽉 채운다 (v2.90.3) */
     overflow:hidden;background:rgba(6,8,11,0);transition:background .2s;display:flex;align-items:flex-end;}
   #zpanel.show,#tpanel.show,#trpanel.show,#rpanel.show,#apanel.show,#dpanel.show,#epanel.show,#vpanel.show,#cpanel.show{pointer-events:auto;background:rgba(6,8,11,.72);}
   .zsheet{width:100%;background:#12161c;border-top:1.5px solid #2b333d;
     border-radius:16px 16px 0 0;padding:0 0 calc(env(safe-area-inset-bottom) + 14px);
     transform:translateY(100%);transition:transform .24s cubic-bezier(.2,.8,.3,1);
-    max-height:76%;overflow:auto;}
+    height:100%;overflow:auto;}   /* v2.90.3 전 시트 꽉 채움(내용이 짧아도 같은 높이) (옛 76%·92% 개별값 폐지) — 사용자: "장비 상태창이 아래로 내리니 안 보여서 불편" */
   #zpanel.show .zsheet,#tpanel.show .zsheet,#trpanel.show .zsheet,#rpanel.show .zsheet,#apanel.show .zsheet,#dpanel.show .zsheet,#epanel.show .zsheet,#vpanel.show .zsheet,#cpanel.show .zsheet{transform:translateY(0);}
   /* 장비 패널 (v2.70 표준형) — 탭 · 낀 것 · 일괄 합성/자동 장착 · 등급별 아이템 카드 · 상세 */
   .eqrow{display:flex;align-items:center;gap:10px;}
@@ -194,10 +193,10 @@
   .eqico img{width:36px;height:36px;object-fit:contain;image-rendering:pixelated;}
   .eqico b{position:absolute;right:-5px;bottom:-6px;font-size:9.5px;background:#12161c;border:1px solid #2b333d;border-radius:6px;padding:1px 4px;color:#cfe0f2;}
   .eqsl{color:#8b97a5;font-size:12px;}
-  #etabs{position:sticky;top:0;z-index:3;display:flex;gap:6px;align-items:center;background:#12161c;padding:9px 12px 8px;border-bottom:1px solid #1e242c;}
+  /* v2.90.3 — 탭·상세 창·버튼을 한 덩어리(#eqhead)로 머리글(44px) 아래에 붙인다. 카드 줄을 내려도 누른 장비의 상세·장착·강화가 보인다 */
+  #eqhead{position:sticky;top:44px;z-index:3;background:#12161c;border-bottom:1px solid #1e242c;box-shadow:0 6px 10px -6px rgba(0,0,0,.6);}
+  #etabs{display:flex;gap:6px;align-items:center;background:#12161c;padding:9px 12px 8px;border-bottom:1px solid #1e242c;}
   #eqcnt{margin-left:auto;font-size:11.5px;color:#8b97a5;}
-  #epanel.show .zsheet{max-height:92%;}
-  #zpanel.show .zsheet{max-height:92%;}   /* 지도 아래 단계 줄까지 다 보이게 (v2.70.4, 사용자) */
   .eqtop{margin-bottom:6px;}
   .eqbtns{display:flex;gap:6px;margin:0 12px 4px;}
   .eqbtns .sb{flex:1;padding:9px 0;font-size:12.5px;}
@@ -290,7 +289,6 @@
     background:#e8c96a;display:none;box-shadow:0 0 5px #e8c96a;}
   #adeepen .dot.on{display:block;}
   /* ── 스킬 심화 패널 (v2.47 트리 → v2.54 심화창 → v2.55 [스킬 특성]/[문파 무공도] 두 갈래) ── */
-  #dpanel.show .zsheet{max-height:92%;}
   /* 상단 고정 모드 바 — 토글 + 남은 무공점 */
   #dmode{position:sticky;top:0;z-index:4;height:44px;display:flex;align-items:center;gap:10px;
     background:#12161c;padding:0 14px;border-bottom:1px solid #1e242c;}
