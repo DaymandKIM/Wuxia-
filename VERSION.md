@@ -1,3 +1,10 @@
+# v2.86 — 장비 획득 팝업에 그림 · 스킬 심화 카드에 무공 메달 (사용자, 2026-09-16)
+
+- **그림 토스트**(60-ui toast(msg, {icon, color, sec})): 아이콘이 있으면 왼쪽 액자(44px, 픽셀) + 글자, 테두리·빛은 등급색.
+  장비 드랍(rollDrop)·상세 합성(eqdmerge)이 eqIcon(k,g)·EQUIP.grades[g].c로 띄운다(2.2초). 옛 글자 토스트는 그대로.
+- **스킬 심화 카드 머리**(67-treepanel renderTraits): 한자 대신 무공 메달 art_*(문파색 테두리), 오른쪽 끝에 문파 엠블럼 sch_*.
+  메달 없는 무공은 옛 한자. 스크린샷 scratch pic_both.png. lint·test·equiptest·artstest 통과.
+
 # v2.85 — 상단 UI바 + ≡ 메뉴 · 자동 알약 불 켜짐 (사용자, 2026-09-16)
 
 - **상단 바 #topbar**("원경 위쪽에 안 쓰는 부분이 있네 거기 가리고 UI바 만들어"): 원경 그림 윗부분(빈 안개·하늘)을 불투명 띠

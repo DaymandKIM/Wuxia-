@@ -125,7 +125,7 @@ function rollDrop(boss){
   const first = !eqSeen(it.k, it.g);
   eqGain(it.k, it.g, 1);
   eqLogPush(itemLabel(it.k, it.g) + ' 획득');
-  if (first || it.g >= 2) toast(itemLabel(it.k, it.g) + ' 획득');
+  if (first || it.g >= 2) toast(itemLabel(it.k, it.g) + ' 획득', { icon: eqIcon(it.k, it.g), color: EQUIP.grades[it.g].c, sec: 2.2 });   // 그림 팝업 (v2.86)
   return 'bag';
 }
 
@@ -202,7 +202,7 @@ function refreshEquip(){
     const wb = $('eqdwear'); if (wb) wb.onclick = () => {
       if (worn){ if (eqUnwear(sl.k)){ toast('무기를 벗었다\n맨손 주먹·발차기'); buildEquipPanel(); } }
       else if (eqWear(k, g)) buildEquipPanel(); };
-    $('eqdmerge').onclick = () => { if (eqMerge(k, g)) buildEquipPanel(); };
+    $('eqdmerge').onclick = () => { if (eqMerge(k, g)){ toast(itemLabel(k, g + 1) + ' 합성', { icon: eqIcon(k, g + 1), color: EQUIP.grades[g + 1].c, sec: 2.2 }); buildEquipPanel(); } };
     const lb = $('eqdlv'); let iv = 0; const stop = ()=>{ if (iv){ clearInterval(iv); iv = 0; } };
     lb.onpointerdown = e => { e.preventDefault(); if (levelItem(k, g)) refreshEquip(); stop();
       iv = setInterval(()=>{ if (levelItem(k, g)) refreshEquip(); else stop(); }, 140); };

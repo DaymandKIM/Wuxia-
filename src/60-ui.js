@@ -2,11 +2,18 @@
 // 은자 아이콘 — "글자 말고 아이콘으로" (사용자). 은원보 그림을 인라인으로 쓴다
 const coin = () => '<img class="coin" src="' + ASSET.silver + '" alt="은자">';
 let toastT = 0;
-function toast(msg){
+// opt {icon, color, sec} — 아이콘이 있으면 그림 + 글자(v2.86, 사용자: "장비 얻을 때 팝업에 이미지를 넣자"), 테두리는 color
+function toast(msg, opt){
   const el = $('toast');
-  el.textContent = msg;
+  if (opt && opt.icon){
+    el.innerHTML = '<img class="tico" src="' + opt.icon + '" alt=""><span></span>';
+    el.lastChild.textContent = msg;
+    el.classList.add('pic');
+  } else { el.textContent = msg; el.classList.remove('pic'); }
+  el.style.borderColor = (opt && opt.color) || '';
+  el.style.boxShadow = (opt && opt.color) ? '0 0 14px ' + opt.color + '66' : '';
   el.classList.add('show');
-  toastT = 1.6;
+  toastT = (opt && opt.sec) || 1.6;
 }
 
 function hud(){

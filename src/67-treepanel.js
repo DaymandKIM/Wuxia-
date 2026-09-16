@@ -108,9 +108,14 @@ function renderTraits(){
     h += '<div class="dsec">' + sec[0] + '</div>';
     for (const a of list){
       const sc = SCHOOLS[a.school] || SCHOOLS.none;
+      // 무공 메달(art_*)이 있으면 한자 대신 그림, 문파 엠블럼(sch_*)은 오른쪽 끝 (v2.86, 사용자: "스킬 심화도 이미지")
       h += '<div class="tcard" style="border-color:' + sc.c + '55">' +
-        '<div class="tchead"><span class="tcg" style="color:' + sc.c + '">' + a.h[0] + '</span>' +
-        '<b>' + a.n + '</b><small>' + a.h + '</small></div><div class="tchips">';
+        '<div class="tchead">' +
+        (ASSET['art_' + a.k] ? '<img class="tgi" src="' + ASSET['art_' + a.k] + '" alt="" style="box-shadow:0 0 0 1.5px ' + sc.c + ',0 0 8px ' + sc.c + '66">'
+                             : '<span class="tcg" style="color:' + sc.c + '">' + a.h[0] + '</span>') +
+        '<b>' + a.n + '</b><small>' + a.h + '</small>' +
+        (ASSET['sch_' + a.school] ? '<img class="tse" src="' + ASSET['sch_' + a.school] + '" alt="">' : '') +
+        '</div><div class="tchips">';
       for (const t of traitDefs(a.k)){
         const own = hasTrait(a.k, t.id), pay = skillPtsLeft() >= (t.c || 0);
         h += '<button class="tchip' + (own ? ' own' : (pay ? '' : ' poor')) + '"' +
