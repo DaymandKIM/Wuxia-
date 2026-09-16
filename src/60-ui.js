@@ -30,7 +30,7 @@ function hud(){
   $('tabs').style.opacity = showing ? '1' : '0';
   // 스킬창·시험 버튼은 패널이 열리면 감춘다 — 패널 위로 떠서 스탯 줄·무공
   // 칸을 가린다는 피드백(v2.33). 어느 시트든 열려 있으면 숨긴다.
-  const panelOpen = ['zpanel','trpanel','apanel','dpanel','rpanel','tpanel','opanel','fpanel','epanel','mpanel','vpanel','cpanel']   // epanel 누락 → 장비 탭 위로 스킬창 쿨이 비쳤다(v2.70.4)
+  const panelOpen = ['zpanel','trpanel','apanel','dpanel','rpanel','tpanel','opanel','fpanel','epanel','mpanel','vpanel','cpanel','spanel']   // epanel 누락 → 장비 탭 위로 스킬창 쿨이 비쳤다(v2.70.4)
     .some(id => $(id) && $(id).classList.contains('show'));
   const bars = showing && !panelOpen;
   const sb = $('sbar'); sb.style.opacity = bars ? '1' : '0'; sb.style.pointerEvents = bars ? '' : 'none';
@@ -41,10 +41,11 @@ function hud(){
   if (typeof equipHud === 'function') equipHud();  // 장비 탭 (v2.66)
   // [테스트 전용] 시험 버튼은 패널이 열려 있으면 숨긴다 (v2.69.8 — CSS :has가 구형 크로뮴에서 안 먹혀 JS로)
   const tbtnEl = $('tbtn');
-  if (tbtnEl) tbtnEl.classList.toggle('hide', ['zpanel','trpanel','apanel','dpanel','rpanel','epanel','mpanel','vpanel','cpanel'].some(id => { const e = $(id); return e && e.classList.contains('show'); }));
+  if (tbtnEl) tbtnEl.classList.toggle('hide', ['zpanel','trpanel','apanel','dpanel','rpanel','epanel','mpanel','vpanel','cpanel','spanel'].some(id => { const e = $(id); return e && e.classList.contains('show'); }));
   if (typeof deepenHud === 'function') deepenHud();  // 스킬 심화창(트리) 갱신
   menuHud();                                     // ≡ 메뉴 (v2.85)
   if (typeof achvHud === 'function') achvHud(1/60);   // 업적 달성 알림 (v2.90)
+  if (typeof sectHud === 'function') sectHud();        // 문파 탭 (v2.91)
   skillHud();                                    // 스킬창 — 초식 쿨다운
 
   const st = stage();

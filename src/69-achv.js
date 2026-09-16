@@ -34,6 +34,7 @@ function achvClaim(k){
   const a = ACHV.list.find(x => x.k === k); if (!a || achvClaimable(a) <= 0) return false;
   const t = achvClaimed(a), r = achvReward(t);
   S.silver += r; S.achv[a.k] = t + 1; S.achvNote[a.k] = Math.max(S.achvNote[a.k] | 0, t + 1);
+  if (typeof fameAdd === 'function') fameAdd(SECT.fame.achv);   // 업적도 이름을 알린다 (v2.91)
   return r;
 }
 function achvClaimAll(){ let sum = 0, n = 0; for (const a of ACHV.list) while (achvClaimable(a) > 0){ sum += achvClaim(a.k); n++; } return { n, sum }; }

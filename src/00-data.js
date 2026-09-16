@@ -976,7 +976,7 @@ const artStar   = k => Math.max(1, S.artStar[k] | 0);
 const artLv     = k => Math.max(1, S.artLv[k] | 0);
 const artLvCap  = k => artStar(k) * MASTERY.lvCapPer;
 const artLvCost = k => Math.round(artDef(k).cost * MASTERY.lvMul *
-                                  Math.pow(MASTERY.lvGrow, artLv(k) - 1));
+                                  Math.pow(MASTERY.lvGrow, artLv(k) - 1) / (1 + sBonus('artcost') / 100));   // 장경각이 깎는다 (v2.91)
 const artEff    = k => (1 + MASTERY.lvPer * (artLv(k) - 1))
                      * (1 + MASTERY.effPer * (artStar(k) - 1));
 const artXpNeed = k => Math.round(MASTERY.useBase * Math.pow(MASTERY.useGrow, artStar(k) - 1));
@@ -1040,16 +1040,19 @@ function artMul(kind){
 
 // 장비 보너스 합 — 68-equip.js. 장비 없이 조립되는 도구 대비 가드.
 const eBonus = k => (typeof eqBonus === 'function') ? eqBonus(k) : 0;
+// 문파 전각 보너스 합 — 69b-sect.js. 문파 없이 조립되는 도구 대비 가드 (v2.91)
+const sBonus = k => (typeof sectBonus === 'function') ? sectBonus(k) : 0;
+const artXpGain = () => 1 + sBonus('artxp') / 100;   // 숙련 한 번에 쌓이는 양 — 장경각 (v2.91)
 const heroDmg   = ()=> HERO.atkDmg * Math.pow(GROW.dmg, realmLv())
-                        * (1 + (statBonus('atk')+tBonus('atk')+eBonus('atk'))/100) * artMul('dmg');
+                        * (1 + (statBonus('atk')+tBonus('atk')+eBonus('atk')+sBonus('atk'))/100) * artMul('dmg');
 const heroHpMax = ()=> Math.round(HERO.hp * Math.pow(GROW.hp, realmLv())
-                        * (1 + (statBonus('hp')+tBonus('hp')+eBonus('hp'))/100) * artMul('hp'));
+                        * (1 + (statBonus('hp')+tBonus('hp')+eBonus('hp')+sBonus('hp'))/100) * artMul('hp'));
 const heroRegen = ()=> HERO.regen * Math.pow(GROW.regen, realmLv())
-                        * (1 + (statBonus('regen')+tBonus('regen')+eBonus('regen'))/100) * artMul('regen');
-const heroSpd   = ()=> HERO.spd * (1 + (statBonus('spd')+tBonus('spd')+eBonus('spd'))/100) * artMul('spd');
-const heroAtkSpd= ()=> 1 + (statBonus('aspd')+tBonus('aspd')+eBonus('aspd')) / 100 + (artMul('aspd')-1);   // 공격 동작·간격 (심법 매향심결 등)
-const critCh    = ()=> (statBonus('crit')+tBonus('crit')+eBonus('crit')) / 100 + (artMul('crit')-1);
-const critMul   = ()=> TRAIN.critMul + (statBonus('cdmg')+tBonus('cdmg')+eBonus('cdmg')) / 100;
+                        * (1 + (statBonus('regen')+tBonus('regen')+eBonus('regen')+sBonus('regen'))/100) * artMul('regen');
+const heroSpd   = ()=> HERO.spd * (1 + (statBonus('spd')+tBonus('spd')+eBonus('spd')+sBonus('spd'))/100) * artMul('spd');
+const heroAtkSpd= ()=> 1 + (statBonus('aspd')+tBonus('aspd')+eBonus('aspd')+sBonus('aspd')) / 100 + (artMul('aspd')-1);   // 공격 동작·간격 (심법 매향심결 등)
+const critCh    = ()=> (statBonus('crit')+tBonus('crit')+eBonus('crit')+sBonus('crit')) / 100 + (artMul('crit')-1);
+const critMul   = ()=> TRAIN.critMul + (statBonus('cdmg')+tBonus('cdmg')+eBonus('cdmg')+sBonus('cdmg')) / 100;
 
 // 장비 (v2.70 표준형 — 사용자: "기존 방치형 시스템과 다르게 생겼어" → 흔한 틀로).
 // 세 자리(무기·방어구·장신구), 16종 × 5등급 = 80종 아이템. 처치 드랍이 주머니(S.inv[종류][등급]
@@ -1111,6 +1114,30 @@ const EQUIP = {
 
 // 업적 (v2.90, 사용자: "업적 메뉴 채우기") — 누적형 11종, 단계(tiers)마다 은자 보상. 보상은 현 단계 처치 은자 × rewardMul[단계]
 // (늦게 받을수록 커진다 — 받는 재미가 남는 쪽). src 값: 69-achv achvValue()가 읽는 상태 이름. fmt: 값 표기 방식.
+// 문파 — 청죽문 재건 (v2.91, 사용자 "문파 슬슬 만들어봐" · docs/설계-문파.md). 주인공은 어느 문파에도 안 든다(장무기형) —
+// 죽림 뿌리인 청죽문을 다시 세운다. 1층 **전각 5채**(은자 sink, 레벨당 영구 %) + **명성**(처치·보스·업적으로 쌓여 전각 상한을 연다).
+// 제자(방치 수익·계보 보너스)·문파 본진 비무는 v2.92~. 효과 키: atk/hp/regen/aspd/gold는 수련과 같은 자리에 합산(sBonus),
+// artxp=숙련 획득 +%, artcost=연마 비용 나눔(1/(1+lv·x%)), downcut=쓰러짐 회복 시간 나눔, fame=명성 획득 +%.
+const SECT = {
+  name: '청죽문', han: '靑竹門',
+  halls: [
+    { k:'yard',    n:'연무장', h:'演武場', d:'권각을 겨루는 마당 — 손이 매워지고 빨라진다',   eff:{ atk:1.5, aspd:0.5 },            cb:120, cg:1.32 },
+    { k:'library', n:'장경각', h:'藏經閣', d:'비급을 모은 서고 — 무공이 손에 빨리 익는다',     eff:{ artxp:4, artcost:1.5 },         cb:150, cg:1.32 },
+    { k:'clinic',  n:'약방',   h:'藥房',   d:'상처를 다스리는 곳 — 몸이 단단해지고 빨리 깬다', eff:{ hp:1.5, regen:2, downcut:2 },   cb:120, cg:1.32 },
+    { k:'guest',   n:'객당',   h:'客堂',   d:'손님과 제자를 맞는 큰 방 — 제자가 머문다(곧)',    eff:{ gold:0.6 },                     cb:200, cg:1.34 },
+    { k:'gate',    n:'산문',   h:'山門',   d:'문파의 얼굴 — 이름이 멀리 퍼진다',              eff:{ gold:0.8, fame:3 },             cb:100, cg:1.30 },
+  ],
+  // 명성 — 단계마다 전각 상한(cap)이 열린다. need는 누적 명성
+  fame: {
+    tiers: [ { n:'무명', h:'無名', need:0,     cap:5  }, { n:'향리', h:'鄕里', need:500,   cap:15 }, { n:'일방', h:'一方', need:4000,  cap:30 },
+             { n:'명문', h:'名門', need:25000, cap:50 }, { n:'천하제일', h:'天下第一', need:150000, cap:80 } ],   // 첫 안 400/2500/12000/60000은 8h sim에 2시간 만에 명문 — 명문은 반나절, 천하제일은 며칠 걸리게
+    kill: 1,                      // 처치 1마리
+    killGrow: 1.06,               // 전역 단계마다 × (깊이 갈수록 이름이 더 퍼진다 — 은자 1.22보다 완만)
+    boss: 60, bossFirst: 240,     // 보스 처치 · 첫 격파 추가
+    achv: 30,                     // 업적 한 단계 받기
+  },
+  effName: { atk:'공격력', aspd:'공격 속도', hp:'체력', regen:'회복', gold:'은자 획득', artxp:'숙련 획득', artcost:'연마 비용', downcut:'회복 시간', fame:'명성 획득' },
+};
 const ACHV = {
   list: [
     { k:'kills',  n:'백인참',   d:'적을 쓰러뜨린다',            src:'totalKills', tiers:[100, 1000, 10000, 100000, 1000000] },
@@ -1139,7 +1166,7 @@ const SILVER = {
   firstMul: 50,                  // 보스 첫 격파 보너스 = 처치 드랍 × 이 값
 };
 const killSilver = ()=> Math.round(SILVER.base * Math.pow(SILVER.grow, gstage()-1)
-                                   * (1 + (statBonus('gold')+tBonus('gold')+eBonus('gold'))/100));
+                                   * (1 + (statBonus('gold')+tBonus('gold')+eBonus('gold')+sBonus('gold'))/100));
 
 // 기연 — 공짜 랜덤이 아니라 누적의 정산 (조사 결론·장무기 공식).
 // 인연(緣)이 쌓이면 단계 제패 순간 기연이 나타난다. 고난(쓰러짐)이 크게 쌓인다.

@@ -98,6 +98,16 @@
   .abtn{flex:none;min-width:96px;padding:7px 8px;font-size:12px;}
   .abtn:disabled{opacity:.42;}
   .adone{flex:none;font-size:12px;color:#8fe3a1;font-weight:900;padding:0 8px;}
+  /* 문파 패널 (v2.91) — 전각 카드(업적 카드 재사용) + 전각 그림 액자(없으면 한자) + 명성 띠 */
+  .hcard .hico{flex:none;width:46px;height:46px;border-radius:10px;background:#0e1319;border:1.5px solid #2b333d;display:flex;align-items:center;justify-content:center;}
+  .hcard .hico img{width:38px;height:38px;object-fit:contain;image-rendering:pixelated;}
+  .hcard .hico b{font-family:'Nanum Myeongjo',serif;font-size:22px;color:#7fc78f;}
+  .hcard .zn em{font-style:normal;font-size:11px;color:#69a8dd;margin-left:4px;}
+  .hcard .zd i{font-style:normal;color:#7fc78f;}
+  .hcard.can{border-color:#7fc78f;box-shadow:0 0 10px #7fc78f33;}
+  .zrow.fame{border-color:#3d5a3f;} .zrow.fame .zn em{font-style:normal;color:#7fc78f;font-size:14px;margin-left:6px;}
+  .zhd small{font-family:'Nanum Myeongjo',serif;font-size:11px;color:#7f8b99;margin-left:6px;font-weight:400;}
+  #ssilver{margin-left:auto;margin-right:8px;font-size:13px;color:#e8c96a;}
 
   /* 하단 탭바 — 기능이 들어올 때마다 탭이 하나씩 는다 */
   #ui{--tabh:calc(env(safe-area-inset-bottom) + 52px);}
@@ -178,14 +188,14 @@
   #tbtn:active{background:#7a5238;}
   #tspd{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px;}
   /* overflow:hidden — 닫힌 시트(아래로 밀린 상태)가 컨테이너 밖 탭바 위로 삐져나오지 않게 */
-  #zpanel,#tpanel,#trpanel,#rpanel,#apanel,#dpanel,#epanel,#vpanel,#cpanel{position:absolute;inset:var(--toph,0px) 0 var(--tabh) 0;pointer-events:none;   /* 위는 상단 바(--toph, 60-ui가 잰다) 아래부터 — 시트가 화면을 꽉 채운다 (v2.90.3) */
+  #zpanel,#tpanel,#trpanel,#rpanel,#apanel,#dpanel,#epanel,#vpanel,#cpanel,#spanel{position:absolute;inset:var(--toph,0px) 0 var(--tabh) 0;pointer-events:none;   /* 위는 상단 바(--toph, 60-ui가 잰다) 아래부터 — 시트가 화면을 꽉 채운다 (v2.90.3) */
     overflow:hidden;background:rgba(6,8,11,0);transition:background .2s;display:flex;align-items:flex-end;}
-  #zpanel.show,#tpanel.show,#trpanel.show,#rpanel.show,#apanel.show,#dpanel.show,#epanel.show,#vpanel.show,#cpanel.show{pointer-events:auto;background:rgba(6,8,11,.72);}
+  #zpanel.show,#tpanel.show,#trpanel.show,#rpanel.show,#apanel.show,#dpanel.show,#epanel.show,#vpanel.show,#cpanel.show,#spanel.show{pointer-events:auto;background:rgba(6,8,11,.72);}
   .zsheet{width:100%;background:#12161c;border-top:1.5px solid #2b333d;
     border-radius:16px 16px 0 0;padding:0 0 calc(env(safe-area-inset-bottom) + 14px);
     transform:translateY(100%);transition:transform .24s cubic-bezier(.2,.8,.3,1);
     height:100%;overflow:auto;}   /* v2.90.3 전 시트 꽉 채움(내용이 짧아도 같은 높이) (옛 76%·92% 개별값 폐지) — 사용자: "장비 상태창이 아래로 내리니 안 보여서 불편" */
-  #zpanel.show .zsheet,#tpanel.show .zsheet,#trpanel.show .zsheet,#rpanel.show .zsheet,#apanel.show .zsheet,#dpanel.show .zsheet,#epanel.show .zsheet,#vpanel.show .zsheet,#cpanel.show .zsheet{transform:translateY(0);}
+  #zpanel.show .zsheet,#tpanel.show .zsheet,#trpanel.show .zsheet,#rpanel.show .zsheet,#apanel.show .zsheet,#dpanel.show .zsheet,#epanel.show .zsheet,#vpanel.show .zsheet,#cpanel.show .zsheet,#spanel.show .zsheet{transform:translateY(0);}
   /* 장비 패널 (v2.70 표준형) — 탭 · 낀 것 · 일괄 합성/자동 장착 · 등급별 아이템 카드 · 상세 */
   .eqrow{display:flex;align-items:center;gap:10px;}
   .eqrow #equnwear{margin-left:auto;flex:0 0 auto;}   /* 무기 벗기 · 맨손 (v2.76.9) */
@@ -516,6 +526,7 @@
     <button id="tab-arts"><img class="ti" alt="">무공<i class="dot"></i></button>
     <button id="tab-train"><img class="ti" alt="">수련<i class="dot"></i></button>
     <button id="tab-equip"><img class="ti" alt="">장비<i class="dot"></i></button>
+    <button id="tab-sect"><img class="ti" alt="">문파<i class="dot"></i></button>
     <button id="tab-zone"><img class="ti" alt="">사냥터</button>
   </div>
   <div id="apanel">
@@ -528,6 +539,12 @@
     <div class="zsheet">
       <div class="zhd">장비<span id="esilver"></span><button id="eclose">✕</button></div>
       <div id="ebody"></div>
+    </div>
+  </div>
+  <div id="spanel">
+    <div class="zsheet">
+      <div class="zhd">청죽문 <small>靑竹門</small><span id="ssilver"></span><button id="sclose">✕</button></div>
+      <div id="sbody"></div>
     </div>
   </div>
   <div id="dpanel">

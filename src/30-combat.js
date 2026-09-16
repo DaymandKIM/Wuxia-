@@ -243,7 +243,9 @@ function hurtFoe(f, dmg, crit){
     }
     // 심법 숙련 — 지닌 채 싸우면 몸에 스민다 (처치 수)
     for (const a of ARTS.list)
-      if (a.type === 'passive' && S.arts[a.k]) S.artXp[a.k] = (S.artXp[a.k] | 0) + 1;
+      if (a.type === 'passive' && S.arts[a.k]) S.artXp[a.k] = (S.artXp[a.k] || 0) + artXpGain();
+    // 명성 — 처치·보스·첫 격파 (문파 v2.91)
+    if (typeof fameAdd === 'function') fameAdd(f.boss ? SECT.fame.boss + (!S.bossDone[S.zi] ? SECT.fame.bossFirst : 0) : killFame());
     // 은자 드랍 — 보스는 크게, 구역 첫 격파면 보너스까지
     let sv = killSilver() * (f.boss ? SILVER.bossKill : 1);
     if (f.boss && !S.bossDone[S.zi]){
@@ -288,7 +290,7 @@ function hurtHero(dmg){
 
 function downHero(){
   P.dead = true;
-  S.downT = DOWN_TIME;
+  S.downT = DOWN_TIME / (1 + sBonus('downcut') / 100);   // 약방이 줄인다 (v2.91)
   S.downs++;
   S.karma += FATE.downKarma;      // 고난이 기연의 씨앗이 된다 (장무기 공식)
   if (S.karma >= karmaNeed()) S.fatePending = 1;
@@ -334,7 +336,7 @@ function stepArts(dt){
     if (castArt(a)){
       P.artCd[a.k] = a.cd * (1 - tBonus('cdr')/100) * (1 - traitCdcut(a.k));   // 트리 재사용 + 심화 쿨감
       P.castGapT = P.castT + CASTQ.gap;        // 동작이 끝난 뒤 gap 만큼 쉬고 다음 초식
-      S.artXp[a.k] = (S.artXp[a.k] | 0) + 1;   // 초식 숙련 — 시전 횟수
+      S.artXp[a.k] = (S.artXp[a.k] || 0) + artXpGain();   // 초식 숙련 — 시전 횟수 (장경각이 키운다 v2.91)
     }
   }
 }
@@ -349,7 +351,7 @@ function castByHand(k){
   if (!castArt(a)) return false;                                        // 대상이 없으면 아낀다
   P.artCd[k] = a.cd * (1 - tBonus('cdr')/100) * (1 - traitCdcut(k));
   P.castGapT = P.castT + CASTQ.gap;
-  S.artXp[k] = (S.artXp[k] | 0) + 1;
+  S.artXp[k] = (S.artXp[k] || 0) + artXpGain();
   return true;
 }
 

@@ -55,7 +55,7 @@ loadImg('bshot',     ASSET.bshot);           // 암향지 지풍 빔
 loadImg('gshield',   ASSET.gshield);         // 건곤이형 태극 원반
 $('coinhud').src = ASSET.silver;             // HUD 은자 아이콘
 // 탭바 아이콘 (v2.63.4) — 에셋 없으면 글자만
-for (const [id, k] of [['tab-arts','tab_arts'],['tab-train','tab_train'],['tab-equip','tab_equip'],['tab-zone','tab_zone']]){
+for (const [id, k] of [['tab-arts','tab_arts'],['tab-train','tab_train'],['tab-equip','tab_equip'],['tab-sect','tab_sect'],['tab-zone','tab_zone']]){
   const im = $(id).querySelector('.ti'); if (!im) continue;
   if (ASSET[k]) im.src = ASSET[k]; else im.remove();
 }
@@ -84,7 +84,7 @@ for (const z in BOSSFACE){ const k = BOSSFACE[z]; if (ASSET[k]) loadImg(k, ASSET
 for (const z in GROUNDTEX.keys){ const k = GROUNDTEX.keys[z]; if (ASSET[k]) loadImg(k, ASSET[k]); }
 
 // 하단 탭 — 같은 탭 재클릭이면 닫고, 다른 패널은 접는다
-function closeSheets(){ closeZonePanel(); closeTrain(); closeArts(); closeRealmPanel(); closeEquip(); closeMenu(); closeAchv(); closeCode();
+function closeSheets(){ closeZonePanel(); closeTrain(); closeArts(); closeRealmPanel(); closeEquip(); closeMenu(); closeAchv(); closeCode(); closeSect();
   if (typeof closeDeepen === 'function') closeDeepen();
   const tp = $('tpanel'); if (tp) tp.classList.remove('show'); }   // [테스트 전용] 시험 패널이 DOM 뒤라 열린 채면 다른 패널을 덮어 못 눌렀다(v2.70.4)
 $('tab-zone').onclick = () => {
@@ -107,6 +107,13 @@ $('tab-equip').onclick = () => {
   closeSheets();
   if (!open) openEquip();
 };
+$('tab-sect').onclick = () => {                 // 문파 (v2.91)
+  const open = $('spanel').classList.contains('show');
+  closeSheets();
+  if (!open) openSect();
+};
+$('sclose').onclick = closeSect;
+$('spanel').onclick = e => { if (e.target.id === 'spanel') closeSect(); };
 $('eclose').onclick = closeEquip;
 $('epanel').onclick = e => { if (e.target.id === 'epanel') closeEquip(); };
 $('aclose').onclick = closeArts;
