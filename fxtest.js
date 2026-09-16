@@ -258,16 +258,18 @@ setTimeout(()=>{
   ok(drew('aidle_w',w.eval('HFX.aw.aidle'))||w.eval('typeof auraCache==="object"'),'기운은 흰 안개(aidle_w)를 물들여 그린다');
 
   // 5) 문파 터 배경 (v2.92.6 사용자 3/4 시점 마당 한 장) — 마당을 열면 sect_bg 가 화면을 덮게(cover) 그려지고, 전각·주인공 자리는 그 그림 비율로 화면 안에 선다
-  w.eval('S.halls={yard:1,library:6,clinic:20,guest:1,gate:6}; openSect();'); renderNow();
+  w.eval('S.halls={yard:50,library:50,clinic:50,guest:50,gate:50}; openSect();'); renderNow();
   const R=w.eval('sectBgRect()');
   ok(R.ok && R.w>=w.eval('VW') && R.h>=w.eval('VH') && R.x<=0 && R.y<=0,'마당 배경이 화면을 다 덮는다(cover) '+R.w+'×'+R.h+' @'+R.x+','+R.y);
   ok(draws.some(d=>d.im===w.eval('IMG.sect_bg')),'render(마당)가 sect_bg 를 그린다');
   // 배경에서 뽑은 전각(bgHalls, v2.92.7)은 배경 배율(R.s) 그대로·그 자리(스텁 이미지는 35×51이라 배율이 커서 폭 검사는 못 한다), 옆모습 전각은 터 폭에 맞춘 배율 ≤ 1
   ok(w.eval('SECT.halls.every(h=>{const b=sceneHallBox(h.k), R=sectBgRect(); return b.native ? (Math.abs(b.sc-R.s)<1e-9 && b.x>=0 && b.x<=VW && b.y>=0 && b.y<=VH) : (b.x-b.w/2>=0 && b.x+b.w/2<=VW && b.y-b.h>=0 && b.y<=VH && b.sc>0 && b.sc<=1);})'),'전각 5채가 화면 안 제 터에 선다(배경에서 뽑은 것은 배경 배율, 옆모습은 터 폭 배율 ≤ 1)');
   ok(w.eval('const [hx,hy]=scenePt(SECT.scene.hero[0],SECT.scene.hero[1]); hx>0&&hx<VW&&hy>0&&hy<VH'),'주인공이 가운데 수련장에 선다');
-  ok(['yard','library','clinic'].every(k=>draws.some(d=>d.im===w.eval('IMG["hall_'+k+'_'+w.hallImgStage(k,w.hallStage(k))+'"]'))),'전각 그림이 단계에 맞는 그림(없는 단계는 바로 아래 단계 그림)으로 그려진다');
-  ok(w.eval('["yard","clinic","library","guest"].every(k=>{S.halls[k]=50; return sceneHallBox(k).native===true;})'),'기와 대(5단계, Lv50) 4채는 배경에서 뽑은 그림을 제자리에 그린다');
-  renderNow(); ok(['yard','clinic','library','guest'].every(k=>draws.some(d=>d.im===w.eval('IMG["hall_'+k+'_4"]'))),'기와 4채가 실제로 그려진다');
+  ok(['yard','library','clinic'].every(k=>draws.some(d=>d.im===w.eval('IMG["hall_'+k+'_'+w.hallImgStage(k,w.hallStage(k))+'"]'))),'전각 그림이 단계에 맞는 그림(없는 단계는 바로 아래 단계 그림)으로 그려진다 (Lv50 = 기와 대)');
+  ok(w.eval('["yard","clinic","library","guest"].every(k=>{S.halls[k]=50; return sceneHallBox(k).native===true;})'),'기와 대(4단계째, Lv50) 4채는 배경에서 뽑은 그림을 제자리에 그린다');
+  renderNow(); ok(['yard','clinic','library','guest'].every(k=>draws.some(d=>d.im===w.eval('IMG["hall_'+k+'_3"]'))),'기와 4채가 실제로 그려진다');
+  w.eval('S.halls={yard:0,library:0,clinic:0,guest:0,gate:0};'); renderNow();
+  ok(!['yard','clinic','library','guest'].some(k=>[0,1,2,3].some(s=>draws.some(d=>d.im===w.eval('IMG["hall_'+k+'_'+s+'"]')))),'Lv 0 은 빈 터 그대로 — 전각 그림을 안 얹는다 (v2.92.9)');
   w.eval('closeSect();');
 
   ok(errs.length===0,'런타임 오류 0'+(errs.length?': '+errs[0]:''));

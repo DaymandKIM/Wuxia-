@@ -193,24 +193,24 @@ function sceneHallBox(k){
 function drawSectHall(h){
   const b = sceneHallBox(h.k), st = hallStage(h.k), lv = hallLv(h.k);
   const ist = hallImgStage(h.k, st), im = ist >= 0 ? IMG['hall_' + h.k + '_' + ist] : null;
-  if (!b.native) shadow(b.x, b.y, Math.round(b.w * 0.8));            // 배경에서 뽑은 전각은 제 그림자·땅을 갖고 있다
-  if (im && im.complete && im.naturalWidth){ draw(im, 0, 0, im.naturalWidth, im.naturalHeight, b.x - Math.round(b.w / 2), b.y - b.h, b.w, b.h); }
-  else {
-    // 시트 전엔 팻말 — 나무 기둥 + 낙관 도장 (Lv 0은 말뚝만)
-    ctx.save();
-    ctx.fillStyle = '#5a3d28'; ctx.fillRect(b.x - 2, b.y - 30, 4, 30);
-    ctx.fillStyle = '#7a5538'; ctx.fillRect(b.x - 1, b.y - 30, 1, 30);
-    if (lv > 0){
+  // Lv 0 = 빈 터 — 배경에 맨땅이 이미 그려져 있으니 아무것도 안 얹고 이름표만 (v2.92.9 사용자 "터는 빼고 바로 짓자")
+  if (lv > 0){
+    if (im && im.complete && im.naturalWidth){
+      if (!b.native) shadow(b.x, b.y, Math.round(b.w * 0.8));          // 배경에서 뽑은 전각은 제 그림자·땅을 갖고 있다
+      draw(im, 0, 0, im.naturalWidth, im.naturalHeight, b.x - Math.round(b.w / 2), b.y - b.h, b.w, b.h);
+    } else {
+      // 그림이 아직 없는 전각(산문 등) — 팻말: 나무 기둥 + 낙관 도장
+      ctx.save();
+      ctx.fillStyle = '#5a3d28'; ctx.fillRect(b.x - 2, b.y - 30, 4, 30);
+      ctx.fillStyle = '#7a5538'; ctx.fillRect(b.x - 1, b.y - 30, 1, 30);
       const sz = st >= 2 ? 24 : st >= 1 ? 21 : 18;
       ctx.translate(b.x, b.y - 30 - sz / 2); ctx.rotate(-0.06);
       ctx.fillStyle = '#8a2a22'; ctx.fillRect(-sz / 2 - 1, -sz / 2 - 1, sz + 2, sz + 2);
       ctx.fillStyle = '#b3392e'; ctx.fillRect(-sz / 2, -sz / 2, sz, sz);
       ctx.fillStyle = '#fff1dc'; ctx.font = '700 ' + Math.round(sz * 0.72) + 'px "Nanum Myeongjo",serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.fillText(h.h[0], 0, 1);
-    } else {
-      ctx.fillStyle = '#8a7a5a'; ctx.fillRect(b.x - 12, b.y - 2, 24, 2); ctx.fillRect(b.x - 12, b.y - 10, 2, 10); ctx.fillRect(b.x + 10, b.y - 10, 2, 10);
+      ctx.restore();
     }
-    ctx.restore();
   }
   // 이름표
   ctx.save(); ctx.font = '900 9px Jua,sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
