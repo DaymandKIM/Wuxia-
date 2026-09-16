@@ -68,7 +68,7 @@ function buildAchvPanel(){
   b.innerHTML = '<div class="znote">쌓아 온 것을 돌아본다. 단계마다 은자를 준다 — 보상은 받는 순간의 사냥터 기준이라 늦게 받아도 손해가 없다.</div>' +
     list.map(achvCard).join('');
   b.querySelectorAll('.abtn').forEach(el => { el.onclick = () => { const k = el.closest('.acard').dataset.k, r = achvClaim(k);
-    if (r){ toast('업적 보상 ' + fmt(r), { icon: ASSET.silver, color: '#e8c96a', sec: 1.8 }); saveNow(); buildAchvPanel(); } }; });
+    if (r){ toast('업적 보상 ' + fmt(r), { icon: ASSET.silver, color: '#e8c96a', sec: ACHV.toastSec }); saveNow(); buildAchvPanel(); } }; });
   const c = $('vcnt'); if (c) c.textContent = ACHV.list.reduce((s, a) => s + achvClaimed(a), 0) + ' / ' + ACHV.list.reduce((s, a) => s + a.tiers.length, 0);
 }
 function openAchv(){ buildAchvPanel(); $('vpanel').classList.add('show'); }

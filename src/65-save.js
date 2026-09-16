@@ -3,22 +3,33 @@
    근사 모델로 수련을 이어 준다. 숫자는 전부 00-data.js의 SAVE·OFFLINE.
 */
 let resetting = false;           // 초기화 중엔 저장하지 않는다 (v2.66 — "저장 초기화가 안 됨")
+// 저장소 상태 (v2.90.2, "저장이 안 됨") — localStorage가 막힌 환경(앱 안 iframe·사파리 서드파티 저장소 차단·
+// 시크릿·샌드박스)에선 setItem이 조용히 던져 저장이 되는 척했다. 이제 결과를 돌려주고(saveOk) ≡ 메뉴에 "막힘"을
+// 보이며, 막힌 환경은 **저장 코드**(saveCode/loadCode)로 진행을 옮긴다.
+let saveOk = null;               // null=아직 모름 · true=마지막 저장 성공 · false=막힘
+function saveData(){
+  return {
+    v: SAVE.ver, at: Date.now(),
+    zi: S.zi, stage: S.stage, kills: S.kills,
+    best: S.best, unlocked: S.unlocked,
+    totalKills: S.totalKills, downs: S.downs,
+    silver: S.silver, bossDone: S.bossDone, reach: S.reach, stats: S.stats, rexp: S.rexp,
+    arts: S.arts, karma: S.karma, fates: S.fates, fatebits: S.fatebits,
+    artXp: S.artXp, artStar: S.artStar, artLv: S.artLv,
+    skillManual: S.skillManual, mute: S.mute, tree: S.tree, traits: S.traits, equip: S.equip,
+    itemLv: S.itemLv, inv: S.inv, codex: S.codex,
+    merges: S.merges, levels: S.levels, achv: S.achv,   // 업적 (v2.90)
+  };
+}
 function saveNow(){
-  if (resetting) return;
+  if (resetting) return false;
   try{
-    localStorage.setItem(SAVE.key, JSON.stringify({
-      v: SAVE.ver, at: Date.now(),
-      zi: S.zi, stage: S.stage, kills: S.kills,
-      best: S.best, unlocked: S.unlocked,
-      totalKills: S.totalKills, downs: S.downs,
-      silver: S.silver, bossDone: S.bossDone, reach: S.reach, stats: S.stats, rexp: S.rexp,
-      arts: S.arts, karma: S.karma, fates: S.fates, fatebits: S.fatebits,
-      artXp: S.artXp, artStar: S.artStar, artLv: S.artLv,
-      skillManual: S.skillManual, mute: S.mute, tree: S.tree, traits: S.traits, equip: S.equip,
-      itemLv: S.itemLv, inv: S.inv, codex: S.codex,
-      merges: S.merges, levels: S.levels, achv: S.achv,   // 업적 (v2.90)
-    }));
-  }catch(e){}                    // 시크릿 모드 등 — 저장만 못 할 뿐 게임은 돈다
+    const s = JSON.stringify(saveData());
+    localStorage.setItem(SAVE.key, s);
+    if (localStorage.getItem(SAVE.key) !== s) throw new Error('readback');   // 쓰는 척만 하는 저장소(용량 0)도 막힘으로 친다
+    saveOk = true;
+  }catch(e){ saveOk = false; }   // 시크릿 모드 등 — 저장만 못 할 뿐 게임은 돈다
+  return saveOk;
 }
 
 function loadSave(){
@@ -26,6 +37,29 @@ function loadSave(){
     const d = JSON.parse(localStorage.getItem(SAVE.key));
     return (d && d.v === SAVE.ver) ? d : null;
   }catch(e){ return null; }
+}
+
+// 저장 코드 — 진행을 글자로 뽑아 다른 기기·막힌 브라우저로 옮긴다 (v2.90.2). 머리표 + base64(UTF-8 JSON)
+function saveCode(){
+  return SAVE.codeTag + btoa(unescape(encodeURIComponent(JSON.stringify(saveData()))));
+}
+// 코드 해석 — 우리 코드가 아니거나 판이 다르면 null
+function parseCode(code){
+  try{
+    code = String(code || '').trim();
+    if (!code.startsWith(SAVE.codeTag)) return null;
+    const d = JSON.parse(decodeURIComponent(escape(atob(code.slice(SAVE.codeTag.length)))));
+    return (d && d.v === SAVE.ver) ? d : null;
+  }catch(e){ return null; }
+}
+// 코드 불러오기 — 그 자리에서 적용(새로고침 없음: 막힌 브라우저는 새로고침하면 다시 잃는다). 성공하면 true
+function loadCode(code){
+  const d = parseCode(code); if (!d) return false;
+  applySave(d);
+  if (typeof eqStarter === 'function') eqStarter();
+  enterStage(true);
+  saveNow();
+  return true;
 }
 
 // 저장된 값은 믿지 않는다 — 범위를 벗어나면 잘라낸다

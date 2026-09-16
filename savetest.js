@@ -102,8 +102,36 @@ const ok=(cond,msg)=>{ console.log((cond?'  ':'  ★실패 ')+msg); if(!cond)bad
           const S4=w4.eval('S');
           ok(S4.zi===0 && S4.stage===1 && S4.totalKills===0,'깨진 저장 → 새로 시작');
           ok(e4.length===0,'런타임 오류 0 (깨진 저장)'+(e4.length?': '+e4[0]:''));
-          console.log(bad?('\n★ 실패 '+bad+'건'):'\n문제 없음');
-          process.exit(bad?1:0);
+
+          // ── 5) 저장 코드 · 막힌 저장소 (v2.90.2 "저장이 안 됨") ───────────
+          // 코드 왕복: 뽑은 코드를 새 창에 불러오면 은자·단계·업적이 그대로
+          w4.eval('S.silver=98765; S.totalKills=321; S.achv={kills:2}; S.zi=1; S.stage=3;');
+          const code=w4.eval('saveCode()');
+          ok(typeof code==='string' && code.startsWith('WX1.') && !/[^A-Za-z0-9+/=.]/.test(code),'저장 코드는 WX1. + base64 ('+code.length+'자)');
+          ok(w4.eval('parseCode("아무 글")')===null && w4.eval('parseCode("WX1.@@@")')===null,'엉뚱한 글·깨진 코드는 거부');
+          const {w:w5,errs:e5}=boot();
+          setTimeout(()=>{
+            const got=w5.eval('loadCode('+JSON.stringify(code)+')');
+            const S5=w5.eval('S');
+            ok(got===true && S5.silver===98765 && S5.totalKills===321 && S5.achv.kills===2 && S5.zi===1 && S5.stage===3,
+              '코드 불러오기 → 은자 '+S5.silver+' · 폐촌 '+S5.stage+'단계 · 업적 백인참 '+S5.achv.kills+'단계');
+            ok(w5.eval('loadCode("WX1.zzz")')===false,'못 읽는 코드는 false — 진행 그대로');
+            // 시트: 열면 글상자에 코드, 불러오기 버튼이 loadCode를 부른다
+            w5.document.getElementById('menubtn').click(); w5.document.getElementById('mcode').click();
+            ok(w5.document.getElementById('cpanel').classList.contains('show') && w5.document.getElementById('ctext').value.startsWith('WX1.'),'≡ → 저장 코드 시트: 글상자에 코드');
+            w5.document.getElementById('cclose').click();
+            ok(!w5.document.getElementById('cpanel').classList.contains('show'),'시트 닫힘');
+            // 막힌 저장소: setItem이 던지면 saveNow가 false, ≡ 메뉴 '지금 저장'이 "막힘"
+            w5.eval('Object.defineProperty(window,"localStorage",{value:{getItem(){return null;},setItem(){throw new Error("blocked");},removeItem(){}}})');
+            ok(w5.eval('saveNow()')===false && w5.eval('saveOk')===false,'저장소가 막히면 saveNow=false');
+            w5.document.getElementById('menubtn').click();
+            ok(w5.document.querySelector('#msave .mv').textContent==='막힘','≡ 메뉴 "지금 저장"에 막힘 표시');
+            w5.document.getElementById('msave').click();
+            ok(w5.document.getElementById('toast').textContent.includes('저장 못 했다'),'지금 저장 → "저장 못 했다" 토스트 (거짓 "저장했다" 없음)');
+            ok(e5.length===0,'런타임 오류 0 (저장 코드)'+(e5.length?': '+e5[0]:''));
+            console.log(bad?('\n★ 실패 '+bad+'건'):'\n문제 없음');
+            process.exit(bad?1:0);
+          },900);
         },900);
       },900);
     },900);

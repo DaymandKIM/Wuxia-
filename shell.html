@@ -75,6 +75,14 @@
   .mi.on .mv{color:#8fe3a1;}
   .mi:disabled{opacity:.5;cursor:default;}
   .msep{height:1px;background:#1e242c;margin:4px 6px;}
+  .mi.bad .mv{color:#e08a7a;}   /* 저장소 막힘 (v2.90.2) */
+  /* 저장 코드 시트 (v2.90.2, "저장이 안 됨") — 글상자에 코드, [복사]·[불러오기] */
+  #ctext{display:block;width:calc(100% - 24px);margin:6px 12px 0;height:96px;resize:none;padding:8px 10px;border-radius:9px;
+    border:1.5px solid #2b333d;background:#0e1319;color:#cfe0f2;font:11px/1.45 monospace;word-break:break-all;
+    -webkit-user-select:text;user-select:text;}
+  #cnote{white-space:pre-line;}
+  .cbtns{display:flex;gap:6px;margin:8px 12px 4px;}
+  .cbtns .trbuy{flex:1;padding:10px 0;}
   #menubtn{position:relative;}
   #menudot{position:absolute;top:-3px;right:-3px;width:9px;height:9px;border-radius:50%;background:#e8c96a;box-shadow:0 0 6px #e8c96a;display:none;}
   #menudot.on{display:block;}
@@ -171,14 +179,14 @@
   #tbtn:active{background:#7a5238;}
   #tspd{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px;}
   /* overflow:hidden — 닫힌 시트(아래로 밀린 상태)가 컨테이너 밖 탭바 위로 삐져나오지 않게 */
-  #zpanel,#tpanel,#trpanel,#rpanel,#apanel,#dpanel,#epanel,#vpanel{position:absolute;inset:0 0 var(--tabh) 0;pointer-events:none;
+  #zpanel,#tpanel,#trpanel,#rpanel,#apanel,#dpanel,#epanel,#vpanel,#cpanel{position:absolute;inset:0 0 var(--tabh) 0;pointer-events:none;
     overflow:hidden;background:rgba(6,8,11,0);transition:background .2s;display:flex;align-items:flex-end;}
-  #zpanel.show,#tpanel.show,#trpanel.show,#rpanel.show,#apanel.show,#dpanel.show,#epanel.show,#vpanel.show{pointer-events:auto;background:rgba(6,8,11,.72);}
+  #zpanel.show,#tpanel.show,#trpanel.show,#rpanel.show,#apanel.show,#dpanel.show,#epanel.show,#vpanel.show,#cpanel.show{pointer-events:auto;background:rgba(6,8,11,.72);}
   .zsheet{width:100%;background:#12161c;border-top:1.5px solid #2b333d;
     border-radius:16px 16px 0 0;padding:0 0 calc(env(safe-area-inset-bottom) + 14px);
     transform:translateY(100%);transition:transform .24s cubic-bezier(.2,.8,.3,1);
     max-height:76%;overflow:auto;}
-  #zpanel.show .zsheet,#tpanel.show .zsheet,#trpanel.show .zsheet,#rpanel.show .zsheet,#apanel.show .zsheet,#dpanel.show .zsheet,#epanel.show .zsheet,#vpanel.show .zsheet{transform:translateY(0);}
+  #zpanel.show .zsheet,#tpanel.show .zsheet,#trpanel.show .zsheet,#rpanel.show .zsheet,#apanel.show .zsheet,#dpanel.show .zsheet,#epanel.show .zsheet,#vpanel.show .zsheet,#cpanel.show .zsheet{transform:translateY(0);}
   /* 장비 패널 (v2.70 표준형) — 탭 · 낀 것 · 일괄 합성/자동 장착 · 등급별 아이템 카드 · 상세 */
   .eqrow{display:flex;align-items:center;gap:10px;}
   .eqrow #equnwear{margin-left:auto;flex:0 0 auto;}   /* 무기 벗기 · 맨손 (v2.76.9) */
@@ -434,7 +442,8 @@
     border-radius:9px;color:#eaf3ff;font:900 13px/1 inherit;padding:11px 0;letter-spacing:.06em;}
   #obtn:active{background:#3c6f9e;}
 
-  #toast{position:absolute;left:50%;top:36%;transform:translate(-50%,-50%) scale(.9);
+  #toast{position:absolute;left:50%;top:36%;z-index:45;   /* 시트·메뉴(30)·기연(40) 위 — 업적 시트 뒤에 깔려 잘려 보였다(v2.90.2) */
+    transform:translate(-50%,-50%) scale(.9);
     background:rgba(12,15,20,.92);border:1.5px solid #3a4553;border-radius:10px;
     padding:10px 20px;font-size:15px;font-weight:900;color:#f0e2b8;letter-spacing:.06em;
     white-space:pre-line;text-align:center;line-height:1.45;   /* 줄바꿈 허용 (v2.70.1) */
@@ -493,6 +502,7 @@
       <div class="mhd">설정</div>
       <button class="mi" id="msound"><span>효과음</span><span class="mv">켬</span></button>
       <button class="mi" id="msave"><span>지금 저장</span><span class="mv">›</span></button>
+      <button class="mi" id="mcode"><span>저장 코드</span><span class="mv">›</span></button>
       <div class="msep"></div>
       <div class="mhd">기록</div>
       <button class="mi" id="mach"><span>업적</span><span class="mv"></span></button>
@@ -579,6 +589,15 @@
     <div class="zsheet">
       <div class="zhd">업적<span id="vcnt"></span><button id="vclose">✕</button></div>
       <div id="vbody"></div>
+    </div>
+  </div>
+  <div id="cpanel">
+    <div class="zsheet">
+      <div class="zhd">저장 코드<button id="cclose">✕</button></div>
+      <div class="znote" id="cnote"></div>
+      <textarea id="ctext" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea>
+      <div class="cbtns"><button class="trbuy" id="ccopy">복사</button><button class="trbuy" id="cload">붙여넣은 코드 불러오기</button></div>
+      <div class="znote">코드는 WX1. 로 시작한다. 불러오면 지금 진행을 그 코드로 바꾼다.</div>
     </div>
   </div>
   <div id="opanel">

@@ -84,7 +84,7 @@ for (const z in BOSSFACE){ const k = BOSSFACE[z]; if (ASSET[k]) loadImg(k, ASSET
 for (const z in GROUNDTEX.keys){ const k = GROUNDTEX.keys[z]; if (ASSET[k]) loadImg(k, ASSET[k]); }
 
 // 하단 탭 — 같은 탭 재클릭이면 닫고, 다른 패널은 접는다
-function closeSheets(){ closeZonePanel(); closeTrain(); closeArts(); closeRealmPanel(); closeEquip(); closeMenu(); closeAchv();
+function closeSheets(){ closeZonePanel(); closeTrain(); closeArts(); closeRealmPanel(); closeEquip(); closeMenu(); closeAchv(); closeCode();
   if (typeof closeDeepen === 'function') closeDeepen();
   const tp = $('tpanel'); if (tp) tp.classList.remove('show'); }   // [테스트 전용] 시험 패널이 DOM 뒤라 열린 채면 다른 패널을 덮어 못 눌렀다(v2.70.4)
 $('tab-zone').onclick = () => {
@@ -122,7 +122,13 @@ $('realm').onclick  = () => { closeSheets(); openRealmPanel(); };
 $('menubtn').onclick = () => { const open = $('mpanel').classList.contains('show'); closeSheets(); if (!open) openMenu(); };
 $('mpanel').onclick  = e => { if (e.target.id === 'mpanel') closeMenu(); };
 $('msound').onclick  = () => { S.mute = !S.mute; menuHud(); saveNow(); toast(S.mute ? '효과음을 껐다' : '효과음을 켰다'); };
-$('msave').onclick   = () => { saveNow(); closeMenu(); toast('저장했다'); };
+$('msave').onclick   = () => { const ok = saveNow(); closeMenu();   // 결과를 그대로 말한다 (v2.90.2 "저장이 안 됨" — 막힌 브라우저에서 "저장했다"고 거짓말했다)
+  toast(ok ? '저장했다' : '저장 못 했다\n브라우저가 저장소를 막았다\n≡ 저장 코드로 옮긴다'); };
+$('mcode').onclick   = () => { closeSheets(); openCode(); };        // 저장 코드 (v2.90.2)
+$('ccopy').onclick   = copyCode;
+$('cload').onclick   = pasteCode;
+$('cclose').onclick  = closeCode;
+$('cpanel').onclick  = e => { if (e.target.id === 'cpanel') closeCode(); };
 $('mach').onclick    = () => { closeSheets(); openAchv(); };   // 업적 (v2.90)
 $('vclose').onclick  = closeAchv;
 $('vpanel').onclick  = e => { if (e.target.id === 'vpanel') closeAchv(); };

@@ -26,7 +26,7 @@ function hud(){
   $('tabs').style.opacity = showing ? '1' : '0';
   // 스킬창·시험 버튼은 패널이 열리면 감춘다 — 패널 위로 떠서 스탯 줄·무공
   // 칸을 가린다는 피드백(v2.33). 어느 시트든 열려 있으면 숨긴다.
-  const panelOpen = ['zpanel','trpanel','apanel','dpanel','rpanel','tpanel','opanel','fpanel','epanel','mpanel','vpanel']   // epanel 누락 → 장비 탭 위로 스킬창 쿨이 비쳤다(v2.70.4)
+  const panelOpen = ['zpanel','trpanel','apanel','dpanel','rpanel','tpanel','opanel','fpanel','epanel','mpanel','vpanel','cpanel']   // epanel 누락 → 장비 탭 위로 스킬창 쿨이 비쳤다(v2.70.4)
     .some(id => $(id) && $(id).classList.contains('show'));
   const bars = showing && !panelOpen;
   const sb = $('sbar'); sb.style.opacity = bars ? '1' : '0'; sb.style.pointerEvents = bars ? '' : 'none';
@@ -37,7 +37,7 @@ function hud(){
   if (typeof equipHud === 'function') equipHud();  // 장비 탭 (v2.66)
   // [테스트 전용] 시험 버튼은 패널이 열려 있으면 숨긴다 (v2.69.8 — CSS :has가 구형 크로뮴에서 안 먹혀 JS로)
   const tbtnEl = $('tbtn');
-  if (tbtnEl) tbtnEl.classList.toggle('hide', ['zpanel','trpanel','apanel','dpanel','rpanel','epanel','mpanel','vpanel'].some(id => { const e = $(id); return e && e.classList.contains('show'); }));
+  if (tbtnEl) tbtnEl.classList.toggle('hide', ['zpanel','trpanel','apanel','dpanel','rpanel','epanel','mpanel','vpanel','cpanel'].some(id => { const e = $(id); return e && e.classList.contains('show'); }));
   if (typeof deepenHud === 'function') deepenHud();  // 스킬 심화창(트리) 갱신
   menuHud();                                     // ≡ 메뉴 (v2.85)
   if (typeof achvHud === 'function') achvHud(1/60);   // 업적 달성 알림 (v2.90)
@@ -307,4 +307,32 @@ function menuHud(){
   const ma = $('mach'); if (ma){ const n = typeof achvClaimableAll === 'function' ? achvClaimableAll() : 0; ma.disabled = false;
     ma.querySelector('.mv').textContent = n ? '받을 것 ' + n : ''; ma.classList.toggle('on', n > 0); }
   $('mverv').textContent = typeof GAME_VER !== 'undefined' ? GAME_VER : '';
+  // 저장소 상태 (v2.90.2) — 막힌 브라우저는 여기서 바로 보인다. 저장 코드 줄은 그때 금색으로 권한다
+  const msv = $('msave'); if (msv){ msv.querySelector('.mv').textContent = saveOk === false ? '막힘' : '›'; msv.classList.toggle('bad', saveOk === false); }
+  const mc = $('mcode'); if (mc) mc.classList.toggle('on', saveOk === false);
+}
+/* ── 저장 코드 시트 (v2.90.2, "저장이 안 됨") — 코드를 보여 주고(복사), 붙여넣은 코드를 불러온다 ── */
+function openCode(){
+  const p = $('cpanel'); if (!p) return;
+  const ta = $('ctext'); ta.value = saveCode();
+  $('cnote').textContent = saveOk === false
+    ? '이 브라우저는 저장소를 막았다 — 창을 닫으면 진행이 사라진다\n코드를 복사해 두고, 다음에 붙여넣어 불러온다'
+    : '코드를 복사해 두면 다른 기기·브라우저로 진행을 옮길 수 있다';
+  p.classList.add('show');
+}
+function closeCode(){ const p = $('cpanel'); if (p) p.classList.remove('show'); }
+function copyCode(){
+  const ta = $('ctext'); ta.value = saveCode();
+  ta.focus(); ta.select(); ta.setSelectionRange(0, ta.value.length);
+  const done = () => toast('저장 코드를 복사했다');
+  const fail = () => toast('복사가 막혔다\n글상자를 길게 눌러 직접 복사한다');
+  try{
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(ta.value).then(done, () => { try{ document.execCommand('copy') ? done() : fail(); }catch(e){ fail(); } });
+    else document.execCommand('copy') ? done() : fail();
+  }catch(e){ fail(); }
+}
+function pasteCode(){
+  const ok = loadCode($('ctext').value);
+  if (ok){ closeCode(); closeSheets(); toast('저장 코드를 불러왔다\n' + ZONES[S.zi].n + ' ' + S.stage + '단계'); }
+  else toast('저장 코드가 아니다\nWX1. 로 시작하는 글을 통째로 붙여넣는다');
 }
