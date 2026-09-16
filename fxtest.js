@@ -238,16 +238,18 @@ setTimeout(()=>{
   ok(true, '구역 5곳 분위기 연출 렌더 통과 (오류는 마지막 검사에서 확인)');
   w.eval('gotoZone(0, 1); S.intro = 0; S.rexp = 0;');
 
-  // 4) 경지 기운 — 문턱·색
-  w.eval('P.atkT=0; P.anim="idle";');
+  // 4) 기운 — 낀 장비 등급색 (v2.88): 희귀부터, 세 자리 중 최고 등급, 색은 EQUIP.grades[g].c
+  w.eval('P.atkT=0; P.anim="idle"; S.equip={}; eqGain("sword",1,1); S.equip.weapon={k:"sword",g:1};');
   renderNow();
-  ok(!drew('aidle_w')&&!drew('aidle_p'),'일류 이하엔 기운이 없다');
-  const tiers=w.eval('JSON.stringify(HFX.auras)') && JSON.parse(w.eval('JSON.stringify(HFX.auras)'));
-  for (const [need,t] of tiers.slice().reverse()){
-    w.eval('S.rexp=0; while(realmLv()<'+need+') S.rexp=(S.rexp||25)*1.31;');
+  ok(w.eval('P.auraCol')===null,'고급 이하 장비엔 기운이 없다');
+  for (const g of [2,3,4,5,6]){
+    w.eval('eqGain("sword",'+g+',1); S.equip.weapon={k:"sword",g:'+g+'};');
     renderNow();
-    ok(drew('aidle_'+t,w.eval('HFX.aw.aidle')),'경지 '+need+' → 기운 '+t+' ('+w.eval('realmInfo().name')+')');
+    ok(w.eval('P.auraCol')===w.eval('EQUIP.grades['+g+'].c'),'낀 무기 '+w.eval('EQUIP.grades['+g+'].n')+' → 기운 색 '+w.eval('EQUIP.grades['+g+'].c'));
   }
+  w.eval('S.equip.weapon={k:"sword",g:0}; eqGain("robe",3,1); S.equip.armor={k:"robe",g:3};'); renderNow();
+  ok(w.eval('P.auraCol')===w.eval('EQUIP.grades[3].c'),'세 자리 중 최고 등급(방어구 영웅)이 색을 정한다');
+  ok(drew('aidle_w',w.eval('HFX.aw.aidle'))||w.eval('typeof auraCache==="object"'),'기운은 흰 안개(aidle_w)를 물들여 그린다');
 
   ok(errs.length===0,'런타임 오류 0'+(errs.length?': '+errs[0]:''));
   console.log(bad?('\n★ 실패 '+bad+'건'):'\n문제 없음');

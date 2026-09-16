@@ -6,8 +6,11 @@ let toastT = 0;
 function toast(msg, opt){
   const el = $('toast');
   if (opt && opt.icon){
-    el.innerHTML = '<img class="tico" src="' + opt.icon + '" alt=""><span></span>';
-    el.lastChild.textContent = msg;
+    // 노드로 조립 — innerHTML은 sim의 DOM 스텁에서 자식을 안 만들어 lastChild가 없었다(v2.88 sim 오류)
+    el.textContent = '';
+    const im = document.createElement('img'); im.className = 'tico'; im.src = opt.icon; im.alt = '';
+    const sp = document.createElement('span'); sp.textContent = msg;
+    el.appendChild(im); el.appendChild(sp);
     el.classList.add('pic');
   } else { el.textContent = msg; el.classList.remove('pic'); }
   el.style.borderColor = (opt && opt.color) || '';

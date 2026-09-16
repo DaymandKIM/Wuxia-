@@ -66,7 +66,9 @@ const HFX = {
   shotW: 46, shotH: 30,          // 파공권 권기 탄
   bshotW: 140, bshotH: 49,       // 암향지 지풍 — 두 칸을 관통하던 빔을 이어 붙인 통짜 1프레임
   katkRealm: 12,                 // 절정부터 정권에 권기가 붙는다 (권기의 경지)
-  auras: [[36,'p'],[28,'b'],[20,'g'],[12,'w']],  // [경지 문턱, 기운 색] 내림차순
+  // 몸 뒤 기운 = **낀 장비 등급색**(v2.88, 사용자 확정 "오라는 장비 등급색으로" — 옛 경지 4색 aidle_w/g/b/p는 v2.3~2.87 이력).
+  // 세 자리 중 가장 높은 등급. 희귀(2)부터 보이고 등급이 오를수록 짙어진다(아이콘 프롬프트와 같은 결 — 일반·고급은 빛 없음).
+  auraGrade: { min: 2, alpha: [0, 0, 0.45, 0.6, 0.72, 0.84, 0.95], pad: 4, layer: 0.16, pulse: 0.15 },   // pad: 번짐 반지름+1, layer: 겹당 알파, pulse: 맥동 폭
 };
 
 // 경공(輕功) — 일정 경지부터 먼 적(원거리 몹·후방)에게 훌쩍 날아가 근접한다
@@ -146,10 +148,11 @@ const FXD = {
     motes:  { n:6, r:1.3, spread:20, rise:28, period:2.6, c:'255,246,210' },
   },
 };
+// 기운 정보 — { col: 등급색, a: 진하기 } 또는 null. 흰 안개(aidle_w)를 이 색으로 물들여 그린다(50-render auraImg)
 function auraKey(){
-  const k = realmLv();
-  for (const a of HFX.auras) if (k >= a[0]) return 'aidle_' + a[1];
-  return null;
+  const g = typeof eqAuraGrade === 'function' ? eqAuraGrade() : -1;
+  if (g < HFX.auraGrade.min) return null;
+  return { col: EQUIP.grades[g].c, a: HFX.auraGrade.alpha[g] || 0.9 };
 }
 // 이번 성에서 쓰는 시전 컷 수 — 최소 3, 4성이면 전부
 function castN(k){

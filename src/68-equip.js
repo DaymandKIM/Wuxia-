@@ -28,6 +28,8 @@ function itemLabel(k, g){ const kd = eqKind(k); return EQUIP.grades[g].n + ' ' +
 // 장착 효과(%) — 등급 base × 레벨 배율
 function itemPct(k, g, lv){ return EQUIP.grades[g].base * (1 + EQUIP.lvPer * (lv !== undefined ? lv : itemLv(k, g))); }
 function itemHold(k, g, lv){ return itemPct(k, g, lv) * EQUIP.codexRate; }         // 보유 효과(%)
+// 낀 장비 중 최고 등급 (v2.88 기운 색) — 없으면 -1
+function eqAuraGrade(){ let g = -1; for (const sl of EQUIP.slots){ const it = S.equip[sl.k]; if (it && it.g > g) g = it.g; } return g; }
 function slotPct(slotK){ const it = S.equip[slotK]; return it ? itemPct(it.k, it.g) : 0; }
 // 종류별 스탯 조합 (v2.82) — EQUIP.profile[종류]가 있으면 그것(무기), 없으면 자리 주 스탯 1.0 + 부가 스탯 subRate
 function kindEff(k){

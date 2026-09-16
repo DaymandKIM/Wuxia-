@@ -223,6 +223,32 @@ function drawTrail(im, sx, sy, sw, sh, base){
   ctx.restore();
 }
 
+// 등급색 기운 (v2.88) — 옛 안개 스트립(aidle_*)은 평균 알파 6에 회보라라 색을 입혀도 안 보였다. 대신 **이 컷의 실루엣**을 등급색으로
+// 칠해 8방향×(pad-1)px 번지게 한 발광 캔버스를 (동작·컷·색)마다 한 번 만들고 'lighter'로 몸 뒤에 얹는다(시험판 review/weapon_overlay2와 같은 결).
+// 스크래치 캔버스라 source-in을 써도 본 캔버스에 자국이 없다. jsdom은 null(안 그림).
+const auraCache = {};
+function auraGlow(im, sx, fw, fh, ck, col){
+  const k = ck + ':' + col;
+  if (auraCache[k] !== undefined) return auraCache[k];
+  let out = null;
+  try {
+    const PAD = HFX.auraGrade.pad;
+    const sil = document.createElement('canvas'); sil.width = fw; sil.height = fh;
+    const sg = sil.getContext('2d');
+    if (sg && sg.drawImage && sg.getImageData){
+      sg.drawImage(im, sx, 0, fw, fh, 0, 0, fw, fh);
+      sg.globalCompositeOperation = 'source-in'; sg.fillStyle = col; sg.fillRect(0, 0, fw, fh);
+      const c = document.createElement('canvas'); c.width = fw + PAD * 2; c.height = fh + PAD * 2;
+      const g = c.getContext('2d'); g.globalAlpha = HFX.auraGrade.layer;
+      for (let r = 1; r < PAD; r++) for (let d = 0; d < 8; d++){
+        const a = d * Math.PI / 4; g.drawImage(sil, PAD + Math.round(Math.cos(a) * r), PAD + Math.round(Math.sin(a) * r));
+      }
+      out = c;
+    }
+  } catch(e) {}
+  auraCache[k] = out;
+  return out;
+}
 function drawHero(ox, oy){
   const x = Math.round(P.x - ox), y = Math.round(P.y - oy);
   // 경공 (v2.41) — 날기는 공중에 떠서, 착지는 바닥에. 단일 컷.
@@ -270,16 +296,20 @@ function drawHero(ox, oy){
   // (사냥 중엔 거의 늘 걷고 있어서 idle 한정이면 보이지 않는다)
   // 보스 등장 연출 동안엔 기운을 끈다 — 3.6초간 가만히 서면 안개가 짙게 깔려
   // 캐릭터가 흐릿해 보인다는 제보(v2.42 "등장 때 캐릭터가 흐려짐").
+  const FH = HFX.fh && HFX.fh[key], fh = FH ? FH[0] : HERO.h, ftop = FH ? FH[1] : 0;   // 키 큰 캔버스(머리 위 무기) — 땅은 그대로 (v2.73)
   if ((P.anim === 'idle' || P.anim === 'run') && !(S.summonT > 0) && !(S.gateT > 0)){
     const ak = auraKey();
-    if (ak && IMG[ak]){
-      const aw = HFX.aw.aidle, af = Math.floor(S.t * 4) % 4;
-      ctx.globalAlpha = 0.85;
-      draw(IMG[ak], af*aw, 0, aw, HERO.h, -Math.round(aw/2), -HERO.h, aw, HERO.h);
-      ctx.globalAlpha = 1;
+    P.auraCol = ak ? ak.col : null;                 // 검증용(fxtest) — 저장 안 함
+    if (ak && im && im.complete && im.naturalWidth){
+      const glow = auraGlow(im, fi * fw, fw, fh, key + ':' + fi, ak.col), PAD = HFX.auraGrade.pad;
+      if (glow){
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.globalAlpha = ak.a * (1 - HFX.auraGrade.pulse + HFX.auraGrade.pulse * Math.sin(S.t * 3));   // 숨 쉬듯 맥동
+        ctx.drawImage(glow, -Math.round(fw/2) - PAD, -HERO.h - ftop - PAD);   // draw() 헬퍼는 캔버스(complete 없음)를 거른다 — 직접 그린다
+        ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+      }
     }
   }
-  const FH = HFX.fh && HFX.fh[key], fh = FH ? FH[0] : HERO.h, ftop = FH ? FH[1] : 0;   // 키 큰 캔버스(머리 위 무기) — 땅은 그대로 (v2.73)
   const hurt = P.hitT > 0;
   if (hurt) ctx.globalAlpha = 0.62 + Math.sin(S.t*46)*0.22;
   draw(im, fi*fw, 0, fw, fh, -Math.round(fw/2), -HERO.h - ftop, fw, fh);
