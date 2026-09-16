@@ -75,11 +75,15 @@ setTimeout(()=>{
   ok(d.halls && d.halls.yard===w.hallLv('yard') && d.halls.gate===5 && typeof d.fame==='number','저장에 전각·명성이 든다');
   w.document.getElementById('tab-sect').click();
   const sp=w.document.getElementById('spanel');
-  ok(sp.classList.contains('show') && w.document.querySelectorAll('#sbody .hcard').length===5 && w.document.querySelector('#sbody .fame'),'문파 탭 → 패널: 전각 카드 5 + 명성 띠');
-  const card=w.document.querySelector('#sbody .hcard[data-k="guest"]'), btn=card.querySelector('.abtn');
-  ok(btn && !btn.disabled && card.classList.contains('can'),'객당 카드: 세우기 버튼 활성');
+  ok(sp.classList.contains('show') && w.document.querySelector('#sbody .fame') && w.document.querySelector('#sbody .drow') && !w.document.querySelector('#sbody .hcard'),'문파 탭 → 시트: 명성 띠 + 제자 줄 (전각 카드는 없다 — 마당 팝업으로)');
+  // 마당 탭 → 전각 팝업 (v2.92.1)
+  const hb=w.sceneHallBox('guest'); ok(w.sectTap(hb.x,hb.y-10)==='guest','마당의 객당을 누르면 객당');
+  const hp=w.document.getElementById('hpop'); ok(!hp.hidden && hp.querySelector('.zn').textContent.includes('객당') && hp.style.left!=='','전각 팝업이 뜬다 (객당, 자리 잡힘)');
+  const btn=w.document.getElementById('hpbuy'); ok(btn && !btn.disabled,'팝업 [세우기] 활성');
   const lv0=w.hallLv('guest'); btn.dispatchEvent(new w.PointerEvent('pointerdown',{bubbles:true})); btn.dispatchEvent(new w.PointerEvent('pointerup',{bubbles:true}));
-  ok(w.hallLv('guest')===lv0+1 && card.querySelector('.zn em').textContent.includes('Lv '+(lv0+1)),'버튼으로 세우기 → Lv '+w.hallLv('guest'));
+  ok(w.hallLv('guest')===lv0+1 && hp.querySelector('.zn').textContent.includes('Lv '+(lv0+1)),'팝업 버튼으로 세우기 → Lv '+w.hallLv('guest'));
+  ok(w.sectTap(hb.x, 5)===null && hp.hidden,'빈 곳을 누르면 팝업이 닫힌다');
+  w.sectTap(hb.x,hb.y-10); w.document.getElementById('hpclose').click(); ok(hp.hidden,'✕로 닫힌다');
   // 이름 (v2.91.2) — 기본 무명문·짓기·상한·저장
   ok(w.sectName()==='무명문' && w.document.getElementById('sname').textContent==='무명문' && w.document.getElementById('shan').textContent==='無名門' && !w.document.getElementById('snamerow').hidden,'기본 이름 무명문 無名門 · 처음엔 이름 줄이 펼쳐져 있다');
   w.document.getElementById('snamein').value='  천하  제일문 너무길다  '; w.document.getElementById('snameok').click();

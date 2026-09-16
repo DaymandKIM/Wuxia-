@@ -114,6 +114,13 @@ $('tab-sect').onclick = () => {                 // 문파 (v2.91)
   if (!open) openSect();
 };
 $('sclose').onclick = closeSect;
+// 전각 팝업 버튼 — 꾹 누르면 연속 (v2.92.1)
+{ const el = $('hpbuy'); const stop = () => { if (hallPopIv){ clearInterval(hallPopIv); hallPopIv = 0; } };
+  el.onpointerdown = e => { e.preventDefault(); e.stopPropagation(); if (hallPopK && buildHall(hallPopK)){ refreshHallPop(); refreshSect(); } stop();
+    hallPopIv = setInterval(() => { if (hallPopK && buildHall(hallPopK)){ refreshHallPop(); refreshSect(); } else stop(); }, 180); };
+  el.onpointerup = el.onpointerleave = el.onpointercancel = stop; }
+$('hpclose').onclick = closeHallPop;
+$('hpop').onpointerdown = e => e.stopPropagation();
 cv.addEventListener('pointerdown', e => {                 // 문파 터 화면 탭 — 전각·제자 (v2.92)
   if (typeof sectView === 'undefined' || !sectView) return;
   const r = cv.getBoundingClientRect(); if (!r.width) return;

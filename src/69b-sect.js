@@ -244,8 +244,9 @@ function drawSectScene(){
 function sectTap(x, y){
   for (const h of SECT.halls){ const b = sceneHallBox(h.k); if (Math.abs(x - b.x) <= b.w / 2 && y >= b.y - b.h && y <= b.y + 14){
     sceneFlash = { k: h.k, t: 1.2 };
-    const card = document.querySelector('#sbody .hcard[data-k="' + h.k + '"]'); if (card){ card.scrollIntoView({ block: 'center', behavior: 'smooth' }); card.classList.add('flash'); setTimeout(() => card.classList.remove('flash'), 1200); }
+    openHallPop(h.k);
     return h.k; } }
+  closeHallPop();
   let best = null, bd = 1e9;
   for (const d of sceneDisc){ const dx = x - d.x * VW, dy = y - (d.y * VH - HERO.h * 0.45); const dist = Math.hypot(dx, dy * 0.7); if (dist < 26 && dist < bd){ bd = dist; best = d; } }
   if (best){ const S2 = SECT.disciple; sceneBubble = { i: best.i, text: S2.say[Math.floor(Math.random() * S2.say.length)], t: S2.bubbleSec }; return 'disc'; }
@@ -292,9 +293,8 @@ function buildSectPanel(){
     '<div class="zd">이름 없는 문파에서 시작해 천하에 이름을 알린다. 나중에 ✎로 바꿀 수 있다.</div>' +
     '<div class="snamein"><input id="snamein" maxlength="' + SECT.nameMax + '" placeholder="' + SECT.name + '" value="' + (S.sectName || '') + '" autocomplete="off">' +
     '<button class="trbuy" id="snameok"><span>정한다</span></button></div></div>';
-  b.innerHTML = '<div class="znote">이름 없는 문파를 세운다. 전각을 올리면 힘이 영구히 붙고, 명성이 오르면 전각을 더 높이 올릴 수 있다. 위 마당의 전각·제자를 눌러 본다.</div>' + naming +
-    fameBand() + discipleBand() + SECT.halls.map(hallCard).join('') +
-    '<div class="znote">명성은 적을 잡고, 보스를 꺾고, 업적을 받을 때 쌓인다. 제자와 문파 비무는 곧 들어온다.</div>';
+  b.innerHTML = naming + fameBand() + discipleBand() +
+    '<div class="znote">마당의 전각을 누르면 그 자리에서 올린다. 명성은 적을 잡고, 보스를 꺾고, 업적을 받을 때 쌓인다.</div>';   // 전각 카드는 v2.92.1부터 팝업(사용자)
   const okb = $('snameok'); if (okb) okb.onclick = () => { setSectName($('snamein').value); $('snamerow').hidden = true; toast(sectName() + ' — 이름을 세웠다'); };
   const inp = $('snamein'); if (inp) inp.onkeydown = e => { if (e.key === 'Enter') okb.onclick(); };
   // 꾹 누르면 연속 (수련과 같은 규칙)
@@ -327,12 +327,36 @@ function refreshSect(){
       fb.querySelector('.abar i').style.width = Math.round(Math.max(0, Math.min(1, ((S.fame || 0) - cur.need) / (nxt.need - cur.need))) * 100) + '%'; } }
 }
 function openSect(){ sectSig = ''; sectView = true; sceneSync(); buildSectPanel(); $('spanel').classList.add('show'); }
-function closeSect(){ const p = $('spanel'); if (p) p.classList.remove('show'); sectView = false; sceneBubble = null; }
+function closeSect(){ const p = $('spanel'); if (p) p.classList.remove('show'); sectView = false; sceneBubble = null; closeHallPop(); }
+/* ── 전각 팝업 (v2.92.1) — 마당의 전각을 누르면 그 위에 뜬다: 이름·레벨·효과 지금→다음·[올리기]. 꾹 누르면 연속 ── */
+let hallPopK = null, hallPopIv = 0;
+function openHallPop(k){
+  const el = $('hpop'), h = hallDef(k); if (!el || !h) return;
+  hallPopK = k;
+  const ico = el.querySelector('.hpico'); ico.className = 'hpico' + (ASSET['hall_' + k] ? '' : ' seal'); ico.innerHTML = ASSET['hall_' + k] ? '<img src="' + ASSET['hall_' + k] + '" alt="">' : '<b>' + h.h[0] + '</b>';
+  el.hidden = false;
+  refreshHallPop();
+  // 자리 — 전각 위. 캔버스 단위 → 오버레이 px(#ui는 캔버스와 같은 상자)
+  const b = sceneHallBox(k), sx = VIEW.w / VW, sy = VIEW.h / VH;
+  const pw = el.offsetWidth || 230, ph = el.offsetHeight || 120;
+  const left = clamp(b.x * sx - pw / 2, 8, VIEW.w - pw - 8), top = Math.max(uiTopUnits() * sy + 8, b.y * sy - b.h * sy - ph - 6);
+  el.style.left = Math.round(left) + 'px'; el.style.top = Math.round(top) + 'px';
+}
+function closeHallPop(){ const el = $('hpop'); if (el) el.hidden = true; hallPopK = null; if (hallPopIv){ clearInterval(hallPopIv); hallPopIv = 0; } }
+function refreshHallPop(){
+  const el = $('hpop'), k = hallPopK; if (!el || el.hidden || !k) return;
+  const h = hallDef(k), lv = hallLv(k), cap = hallCap(), full = lv >= cap, can = canBuildHall(k);
+  el.querySelector('.zn').innerHTML = h.n + ' <small>' + h.h + '</small> <em>Lv ' + lv + ' / ' + cap + '</em>';
+  el.querySelector('.zd').innerHTML = '<i>' + (lv ? hallEffText(h, lv) : '아직 효과 없음') + '</i>' + (full ? '' : '<br>→ ' + hallEffText(h, lv + 1));
+  const btn = $('hpbuy');
+  if (full){ btn.disabled = true; btn.querySelector('span').textContent = fameTier() >= SECT.fame.tiers.length - 1 ? '최고' : fameTierDef(fameTier() + 1).n + '에 열림'; btn.querySelector('i').innerHTML = ''; }
+  else { btn.disabled = !can; btn.querySelector('span').textContent = lv ? '올리기' : '세우기'; btn.querySelector('i').innerHTML = coin() + ' ' + fmt(hallCost(k)); }
+}
 // 매 프레임 — 탭 알림점(세울 수 있는 전각), 열려 있으면 은자·명성 변화만 반영
 let sectLastSilver = -1, sectLastFame = -1;
 function sectHud(){
   const tab = $('tab-sect'); if (!tab) return;
   const dot = tab.querySelector('.dot'); if (dot && dot.classList) dot.classList.toggle('on', canBuildAny());
   if (!$('spanel').classList.contains('show')) return;
-  if (sectLastSilver !== S.silver || sectLastFame !== S.fame){ sectLastSilver = S.silver; sectLastFame = S.fame; refreshSect(); }
+  if (sectLastSilver !== S.silver || sectLastFame !== S.fame){ sectLastSilver = S.silver; sectLastFame = S.fame; refreshSect(); refreshHallPop(); }
 }
