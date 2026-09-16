@@ -786,11 +786,12 @@ function drawAmbient(front){
 }
 
 function render(){
-  const sh = shakeV>0 ? (Math.random()-0.5)*shakeV : 0;
+  const inSect = typeof sectView !== 'undefined' && sectView;
+  const sh = (shakeV>0 && !inSect) ? (Math.random()-0.5)*shakeV : 0;   // 마당에선 전투 흔들림을 안 준다 (v2.92.5 "문파에서 계속 흔들림")
   ctx.setTransform(SC,0,0,SC, Math.round(sh*SC), Math.round(sh*SC));
   const ox = S.camX - VW/2, oy = S.camY - VH/2;
   // 문파 터 화면 (v2.92) — 문파 탭이 열려 있으면 전투 대신 마당을 그린다(전투는 뒤에서 계속). 카메라 고정
-  if (typeof sectView !== 'undefined' && sectView){
+  if (inSect){
     drawGround(0, 0);
     drawBackdrop(0);
     drawSectScene();
