@@ -161,7 +161,11 @@ function tintedStrip(key, col){
   }catch(e){ return null; }
   tintCache[ck] = c; return c;
 }
-function hallStage(k){ const lv = hallLv(k), T = SECT.scene.stageLv; let s = -1; for (let i = 0; i < T.length; i++) if (lv >= T[i]) s = i; return s; }   // -1 = 아직 없음
+// 전각의 그림 수 — hall_<k>_0 부터 이어진 만큼(에셋 기준, v2.93). 그림이 하나도 없으면 0
+function hallImgCount(k){ let n = 0; while (typeof ASSET !== 'undefined' && ASSET['hall_' + k + '_' + n]) n++; return n; }
+// 전각의 실제 사다리 — 그림 수만큼: 첫 문턱은 지키고 가운데부터 뺀다 (n=4 → [1,15,30,50]). 그림이 없으면 [1](팻말 한 단계)
+function hallLadder(k){ const L = SECT.scene.stageLv, n = Math.max(1, hallImgCount(k)); return n >= L.length ? L : [L[0]].concat(L.slice(L.length - (n - 1))); }
+function hallStage(k){ const lv = hallLv(k), T = hallLadder(k); let s = -1; for (let i = 0; i < T.length; i++) if (lv >= T[i]) s = i; return s; }   // -1 = 아직 없음
 // 그 단계의 그림 — 없으면 바로 아래 있는 단계로 내려간다(5단계 중 아직 안 온 그림, v2.92.8). 돌려주는 값 = 실제 쓰는 단계(-1 이면 없음)
 function hallImgStage(k, st){ for (let s = st; s >= 0; s--){ const im = IMG['hall_' + k + '_' + s]; if (im && im.complete && im.naturalWidth) return s; } return -1; }
 // 배경 그림이 화면에 깔리는 사각형 (v2.92.6) — cover: 화면을 다 덮는 배율, 가로·세로 중앙. 그림이 없으면 화면 전체(자리 비율이 화면 비율로 떨어진다)
@@ -182,7 +186,7 @@ function drawSectBg(){
 }
 function sceneHallBox(k){
   const st = hallImgStage(k, hallStage(k)), im = st >= 0 ? IMG['hall_' + k + '_' + st] : null, ok = im && im.complete && im.naturalWidth;
-  const nat = ok && SECT.scene.bgHalls[k] && SECT.scene.bgHalls[k][st];   // 배경 위에 얹어 받은 전각 — 배경 배율 그대로, 그 자리 그대로 (v2.92.7)
+  const nat = ok && SECT.scene.bgHalls[k];                                 // 배경 배율 그대로, 앵커 자리 그대로 (v2.92.7 차분 · v2.93 스트립 공통)
   if (nat){ const R = sectBgRect(), [x, y] = scenePt(nat.cx, nat.by);
     return { x, y, w: Math.round(im.naturalWidth * R.s), h: Math.round(im.naturalHeight * R.s), sc: R.s, plotW: 0, native: true }; }
   const [fx, fy, fw] = SECT.scene.halls[k];

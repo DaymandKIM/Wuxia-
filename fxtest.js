@@ -266,10 +266,13 @@ setTimeout(()=>{
   ok(w.eval('SECT.halls.every(h=>{const b=sceneHallBox(h.k), R=sectBgRect(); return b.native ? (Math.abs(b.sc-R.s)<1e-9 && b.x>=0 && b.x<=VW && b.y>=0 && b.y<=VH) : (b.x-b.w/2>=0 && b.x+b.w/2<=VW && b.y-b.h>=0 && b.y<=VH && b.sc>0 && b.sc<=1);})'),'전각 5채가 화면 안 제 터에 선다(배경에서 뽑은 것은 배경 배율, 옆모습은 터 폭 배율 ≤ 1)');
   ok(w.eval('const [hx,hy]=scenePt(SECT.scene.hero[0],SECT.scene.hero[1]); hx>0&&hx<VW&&hy>0&&hy<VH'),'주인공이 가운데 수련장에 선다');
   ok(['yard','library','clinic'].every(k=>draws.some(d=>d.im===w.eval('IMG["hall_'+k+'_'+w.hallImgStage(k,w.hallStage(k))+'"]'))),'전각 그림이 단계에 맞는 그림(없는 단계는 바로 아래 단계 그림)으로 그려진다 (Lv50 = 기와 대)');
-  ok(w.eval('["yard","clinic","library","guest"].every(k=>{S.halls[k]=50; return sceneHallBox(k).native===true;})'),'기와 대(4단계째, Lv50) 4채는 배경에서 뽑은 그림을 제자리에 그린다');
-  renderNow(); ok(['yard','clinic','library','guest'].every(k=>draws.some(d=>d.im===w.eval('IMG["hall_'+k+'_3"]'))),'기와 4채가 실제로 그려진다');
+  ok(w.eval('["yard","clinic","library","guest"].every(k=>{S.halls[k]=50; return sceneHallBox(k).native===true;})'),'Lv50 이면 4채 모두 마지막 단계 그림을 앵커 자리에 배경 배율로 그린다');
+  renderNow(); ok(['yard','clinic','library','guest'].every(k=>draws.some(d=>d.im===w.eval('IMG["hall_'+k+'_'+(w.hallImgCount(k)-1)+'"]'))),'기와 4채가 실제로 그려진다');
+  ok(w.eval('hallImgCount("yard")')===5 && w.eval('JSON.stringify(hallLadder("yard"))')==='[1,6,15,30,50]','연무장 그림 5장 → 사다리 [1,6,15,30,50]');
+  ok(w.eval('hallImgCount("clinic")')===4 && w.eval('JSON.stringify(hallLadder("clinic"))')==='[1,15,30,50]','약방 그림 4장 → 가운데를 뺀 사다리 [1,15,30,50]');
+  ok(w.eval('S.halls.yard=6; hallStage("yard")')===1 && w.eval('S.halls.clinic=6; hallStage("clinic")')===0 && w.eval('S.halls.clinic=15; hallStage("clinic")')===1,'Lv6: 연무장은 2단계(목조), 약방은 아직 초가 · Lv15 약방 목조');
   w.eval('S.halls={yard:0,library:0,clinic:0,guest:0,gate:0};'); renderNow();
-  ok(!['yard','clinic','library','guest'].some(k=>[0,1,2,3].some(s=>draws.some(d=>d.im===w.eval('IMG["hall_'+k+'_'+s+'"]')))),'Lv 0 은 빈 터 그대로 — 전각 그림을 안 얹는다 (v2.92.9)');
+  ok(!['yard','clinic','library','guest'].some(k=>[0,1,2,3,4].some(s=>draws.some(d=>d.im===w.eval('IMG["hall_'+k+'_'+s+'"]')))),'Lv 0 은 빈 터 그대로 — 전각 그림을 안 얹는다 (v2.92.9)');
   w.eval('closeSect();');
 
   ok(errs.length===0,'런타임 오류 0'+(errs.length?': '+errs[0]:''));

@@ -487,7 +487,7 @@ sectdiff.py — 사용자 "이런 느낌이고 싶은데": 제미나이가 배�
 자리가 있으면 배경 배율(sectBgRect.s)로 제자리에, 그림자 없이 그린다(sceneHallBox.native). 기와 4채 반영, 산문·터·초가는 docs/프롬프트-문파 §1d
 건물별 3단계 진화 시트로 받는다). 항목 없는 전각만 옛 옆모습 시트를 터 폭×hallFit 로 줄여 그린다.
 그림이 없으면 옛 방식(rzone()=죽림 바닥+원경, 자리 비율은 화면 비율)으로 떨어진다. 검증 fxtest(sect_bg 그리기·전각 화면 안)·secttest(폴백).
-**Lv 0 = 배경의 빈 터 그대로**(이름표만, v2.92.9 사용자 "터는 빼고 바로 짓자") / hall_<k>_<0..3>(**4단계** 초가·목조·기와 소·기와 대, SECT.scene.stageLv [1,15,30,50] = 명성 단계 상한을 채울 때마다 자람 — 없는 단계 그림은 hallImgStage가 아래 단계로, 그림이 하나도 없으면 팻말), 제자 = 주인공 스트립 도복 계보색 tint(tintedStrip) → disciple_walk/train 시트 오면 교체.
+**Lv 0 = 배경의 빈 터 그대로**(이름표만, v2.92.9 사용자 "터는 빼고 바로 짓자") / hall_<k>_<0..n-1>(**건물마다 단계 수 다름**, v2.93: 연무장 5·약방 4 — hallImgCount로 세고 hallLadder(k)가 stageLv [1,6,15,30,50]에서 첫 문턱은 지키고 가운데부터 뺀 사다리를 준다. 없는 단계 그림은 hallImgStage가 아래 단계로, 그림이 하나도 없으면 팻말). **전각 그림은 사용자 아이소 스트립 → hallstrip.py**(마젠타, 불규칙 격자 OK, 마지막 칸 폭을 hall_diff.json 의 차분 기와 폭에 맞춤) → raw/hallstrip → 검사판 눈검사 → assets(팔레트, 터 칸은 버림). 앵커는 bgHalls[k] 하나(전 단계 공통), 제자 = 주인공 스트립 도복 계보색 tint(tintedStrip) → disciple_walk/train 시트 오면 교체.
 탭: cv pointerdown → sectTap(전각=카드 스크롤·강조, 제자=말풍선). 제자 합류는 인연만(명성 단계·기연 '입문 청'·(v2.93) 비무), 육성 없음, 자질이 값:
 수익 sectYieldPerSec(전투 수입 × 7% × 자질 × 객당, sectStep이 초당 입금·오프라인 70%), 계보 보너스 lineageBonus → artEff. 시트 프롬프트 docs/프롬프트-문파.md.
 **다음**: v2.93 문파 본진 비무(사용자 아이디어 — 소림부터 파일럿, 시트 필요) · 전수(제자 계보 보너스 은자 sink) · 비무 동행.
