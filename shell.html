@@ -20,25 +20,29 @@
   #cv{position:fixed;display:block;image-rendering:pixelated;background:#0e1116;}
   #ui{position:fixed;pointer-events:none;overflow:hidden;}
 
-  #card{position:absolute;left:10px;right:10px;top:calc(env(safe-area-inset-top) + 8px);
-    transition:opacity .22s;
-    background:rgba(13,16,21,.86);border:1.5px solid #262e38;border-radius:12px;padding:8px 10px 7px;}
-  .row1{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;
-    font-family:var(--fw);font-size:15px;color:#e8eef6;letter-spacing:.03em;}
-  .row2{display:flex;justify-content:space-between;align-items:center;margin-top:6px;
-    font-size:13px;font-weight:900;letter-spacing:.03em;}
-  .row2 #realm{color:#9fd0ff;pointer-events:auto;cursor:pointer;
-    border-bottom:1px dotted #4a6a88;padding-bottom:1px;}
-  .row2 #silver{color:#e8c96a;font-variant-numeric:tabular-nums;display:flex;
+  /* 상단 HUD (v2.84, 사용자: "위에 체력바 등이 배경을 좀 가리네") — 불투명 상자를 없애고 얇고 투명한 띠로.
+     제목 한 줄 · 가는 체력바(7px) · 더 가는 수련 바(3px) · 작은 경지·은자 줄. 높이 ~105 → ~62px. 글자는 그림자로 읽힌다. */
+  #card{position:absolute;left:12px;right:12px;top:calc(env(safe-area-inset-top) + 6px);
+    transition:opacity .22s;background:none;border:0;padding:0;
+    text-shadow:0 1px 2px rgba(0,0,0,.95),0 0 6px rgba(0,0,0,.6);}
+  .row1{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;
+    font-family:var(--fw);font-size:15px;color:#f2f6fb;letter-spacing:.03em;}
+  .row1 #kills{font-size:12.5px;color:#d7e2ee;font-variant-numeric:tabular-nums;}
+  .row2{display:flex;justify-content:space-between;align-items:center;margin-top:4px;
+    font-size:12px;font-weight:900;letter-spacing:.03em;}
+  .row2 #realm{color:#b9dcff;pointer-events:auto;cursor:pointer;
+    border-bottom:1px dotted rgba(185,220,255,.55);padding-bottom:1px;}
+  .row2 #silver{color:#f0d078;font-variant-numeric:tabular-nums;display:flex;
     align-items:center;gap:4px;}
-  .coin{width:12px;height:12px;image-rendering:pixelated;vertical-align:-2px;}
-  .bar{position:relative;height:13px;margin-bottom:5px;border-radius:7px;overflow:hidden;
-    background:#0a0d12;border:1.5px solid #222932;}
+  .coin{width:12px;height:12px;image-rendering:pixelated;vertical-align:-2px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.8));}
+  .bar{position:relative;height:7px;margin-bottom:3px;border-radius:4px;overflow:hidden;
+    background:rgba(8,10,14,.55);border:0;box-shadow:0 0 0 1px rgba(0,0,0,.45);}
   .bar>i{display:block;height:100%;width:0%;transition:width .12s linear;}
   #hp>i{background:linear-gradient(90deg,#c8453c,#e0655a);}
+  #kn{height:3px;margin-bottom:0;}
   #kn>i{background:linear-gradient(90deg,#3f7fb8,#69a8dd);}
   .bar>span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-    font-size:10px;font-weight:900;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.9);letter-spacing:.04em;}
+    font-size:8.5px;line-height:1;font-weight:900;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.95);letter-spacing:.04em;}
 
   /* 하단 탭바 — 기능이 들어올 때마다 탭이 하나씩 는다 */
   #ui{--tabh:calc(env(safe-area-inset-bottom) + 52px);}
