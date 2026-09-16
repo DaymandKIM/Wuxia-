@@ -1,4 +1,7 @@
-# v2.87.1 — 장신구 아이콘 일반 등급 6종 (사용자 시트 "1", 2026-09-16)
+# v2.87.1 — 장신구 아이콘 일반·희귀 등급 (사용자 시트 "1"·"3", 2026-09-16)
+
+- 희귀(2): sheets/eq_trinket_2.png(jsonl 복원) → eq_*_2 6종, 검사판 review/eq_trinket_2.png 깨끗. 고급("2")·영웅("4")은 작업 중간에 붙여넣어
+  기록에 안 남아 재전송 필요.
 
 - sheets/eq_trinket_0.png(대화 기록 jsonl에서 복원 — 붙여넣기 그림이 uploads에 안 남았다) → `python eqicons.py 0 sheets/eq_trinket_0.png --slot=trinket`
   → eq_pendant/ring/beads/talisman/gourd/ribbon_0. 검사판 review/eq_trinket_0.png(끊김·잔재 없음). 장신구 탭 일반 줄이 새 아이콘으로 뜬다
