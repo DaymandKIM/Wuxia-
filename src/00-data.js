@@ -298,6 +298,8 @@ const BACKDROP = {
   // 그림 84px)에서 그림의 3/4를 녹여 집·나무 아랫도리가 다 잘려 보였다("아래쪽이 다 짤려").
   // 이제 아래 14%만 녹인다 — 집 주춧돌만 땅에 스민다.
   fadeR: 0.14, fadeMin: 8, fadeSteps: 48, fadePow: 1.0,   // 계단 48(≈1px) — 설산 넓은 눈밭 띠(120px)에서 16단은 줄무늬가 보였다
+  fadePad: 16,                                  // v2.87.4 "원경 아래 선": 시트 아래 균일 띠(bg_extract --pad)가 디졸브보다 높으면 띠 윗변이 불투명한 선으로 남는다(천산 44px > 35px)
+                                                //   → 디졸브 길이 = max(fadeR×높이, 띠 높이 + fadePad). 띠 높이는 backdropScaled가 축소 캔버스에서 잰다(bdBand)
   cull: 0.5,                                    // 지평선 위(fade의 이 비율 지점부터) 소품 안 세움
   keys: { bamboo:'bg_bamboo', village:'bg_village', cave:'bg_cave', snow:'bg_snow', heaven:'bg_heaven' },
   sky:  { bamboo:'#becfbc', village:'#a78e76', cave:'#3f444b', snow:'#cddae8', heaven:'#d8dbc6' },  // 그림 위 남는 하늘(시트 윗줄 평균)

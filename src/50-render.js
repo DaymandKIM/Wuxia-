@@ -40,13 +40,18 @@ function thash(cx, cy, s){
 // 원경 시트는 윗줄이 투명하다(죽림 32·폐촌 83·설산 32·천산 63줄, 동굴은 알파 경사) — 거기로 바닥 타일이 비쳤다.
 // 바가 그 투명 띠를 덮고, 그림의 **불투명한 첫 줄**이 바 바로 아래 오게 y0를 잡는다(y0 = max(바 − 투명 띠, 지평선 − 높이)).
 // 투명 띠 높이(clearTop)는 backdropScaled가 축소 캔버스에서 한 번 재서 bdClear에 둔다. jsdom은 둘 다 0.
-const bdClear = {};
+const bdClear = {}, bdBand = {};   // bdBand: 아래 균일 띠 높이(px) — 디졸브가 이 띠를 다 덮게 (v2.87.4)
 function uiTopUnits(){
   const tb = document.getElementById('topbar');
   if (!tb || !tb.offsetHeight || !VIEW.h) return 0;
   return Math.ceil(tb.offsetHeight * VH / VIEW.h);
 }
 function backdropClear(zk, sw, sh){ return bdClear[zk + ':' + sw + 'x' + sh] || 0; }
+// 디졸브 길이 — 그림 높이 비율과 '아래 균일 띠 + 여유' 중 큰 쪽. 띠 윗변이 불투명 선으로 남지 않게 (v2.87.4 "원경 아래 선이 거슬림")
+function backdropFade(zk, sw, sh){
+  const band = bdBand[zk + ':' + sw + 'x' + sh] || 0;
+  return Math.min(sh - 2, Math.max(BACKDROP.fadeMin, Math.round(sh * BACKDROP.fadeR), band + BACKDROP.fadePad));
+}
 function backdropTop(zk, sw, sh){ return Math.max(uiTopUnits() - backdropClear(zk, sw, sh), Math.round(VH * BACKDROP.hz) - sh); }
 function drawBackdrop(ox){
   const zk = zone().k, img = IMG[BACKDROP.keys[zk]];
@@ -63,7 +68,7 @@ function drawBackdrop(ox){
   ctx.fillStyle = BACKDROP.sky[zk] || zone().ground;              // 그림 위 하늘 — 투명 윗줄까지 덮는다(바닥 타일이 비치지 않게)
   const skyTo = y0 + backdropClear(zk, sw, sh);
   if (skyTo > 0) ctx.fillRect(0, 0, VW, skyTo + 1);
-  const F = Math.min(sh - 2, Math.max(BACKDROP.fadeMin, Math.round(sh * BACKDROP.fadeR))), solid = sh - F, n = BACKDROP.fadeSteps;
+  const F = backdropFade(zk, sw, sh), solid = sh - F, n = BACKDROP.fadeSteps;
   for (let x = off; x < VW; x += sw)                               // 위쪽 불투명부
     ctx.drawImage(src, 0, 0, sw, solid, Math.round(x), y0, sw, solid);
   // 띠 경계는 정수로 잘라 겹치지 않게 — 겹친 반투명 띠가 알파를 쌓아 가로 줄무늬가 됐다
@@ -107,6 +112,11 @@ function backdropScaled(zk, img, sw, sh){
           if (a / sw > 200){ top = y; break; }
         }
         bdClear[key] = top;
+        // 아래 균일 띠 — 줄 평균 밝기가 맨 아랫줄과 3 이내로 이어지는 줄 수 (bg_extract --pad 띠·설산 눈밭)
+        const lum = y => { let a = 0; for (let x = 0; x < sw; x++){ const i = (y * sw + x) * 4; a += d[i] + d[i + 1] + d[i + 2]; } return a / (3 * sw); };
+        const base = lum(sh - 1); let band = 0;
+        for (let y = sh - 1; y >= 0; y--){ if (Math.abs(lum(y) - base) <= 3) band++; else break; }
+        bdBand[key] = band;
       } catch(e) {}
     }
   } catch(e) {}
@@ -119,7 +129,7 @@ function horizonY(){
   if (!img || !img.complete || !img.naturalWidth) return -1e9;
   const sh = Math.round(VH * (BACKDROP.h[zone().k] || BACKDROP.hDef));
   const sw = Math.max(1, Math.round(sh * img.naturalWidth / img.naturalHeight));
-  return backdropTop(zone().k, sw, sh) + sh - Math.round(sh * BACKDROP.fadeR) * BACKDROP.cull;
+  return backdropTop(zone().k, sw, sh) + sh - backdropFade(zone().k, sw, sh) * BACKDROP.cull;
 }
 // 배경 소품 — 시트 스프라이트를 넓은 격자에 성기게. 인물 뒤 층. 가시 셀만.
 function drawProps(ox, oy){
