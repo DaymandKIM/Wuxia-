@@ -1,3 +1,9 @@
+# v2.87.1 — 장신구 아이콘 일반 등급 6종 (사용자 시트 "1", 2026-09-16)
+
+- sheets/eq_trinket_0.png(대화 기록 jsonl에서 복원 — 붙여넣기 그림이 uploads에 안 남았다) → `python eqicons.py 0 sheets/eq_trinket_0.png --slot=trinket`
+  → eq_pendant/ring/beads/talisman/gourd/ribbon_0. 검사판 review/eq_trinket_0.png(끊김·잔재 없음). 장신구 탭 일반 줄이 새 아이콘으로 뜬다
+  (scratch trinket_tab.png). 나머지 등급은 옛 기본 아이콘 그대로(시트 오면 같은 명령). equiptest·test 통과.
+
 # v2.87 — 빙백령 반전 컷 · 표범·풍뎅이 축소 · 암향지 방향 · 장신구 프롬프트 · 무기 덮어씌우기 시험 (사용자, 2026-09-16)
 
 - **빙백령 공격 때 반대 보기**: 시트의 cast3 컷 하나만 왼쪽을 보고 있었다(review/spirit_dir.png) — 좌우 반전해 저장(review/spirit_fixed.png).
