@@ -81,6 +81,9 @@ setTimeout(()=>{
   ok(sp.classList.contains('show') && w.document.querySelector('#sbody .fame') && w.document.querySelector('#sbody .drow') && !w.document.querySelector('#sbody .hcard'),'제자 배지 → 시트: 명성 띠 + 제자 줄 (전각 카드는 없다 — 마당 팝업으로)');
   w.document.getElementById('sclose').click(); ok(!sp.classList.contains('show') && w.eval('sectView')===true,'시트 ✕ → 시트만 닫히고 마당은 그대로');
   w.document.getElementById('sfame').click(); ok(sp.classList.contains('show'),'명성 배지 → 시트');
+  // 마당 배경 (v2.92.6) — jsdom엔 그림이 안 뜨니 화면 전체 사각형으로 떨어지고, 자리는 그 비율로 화면 안 (그림이 뜰 때의 검사는 fxtest)
+  const R=w.sectBgRect(); ok(!R.ok && R.x===0 && R.y===0 && R.w===w.eval('VW') && R.h===w.eval('VH'),'배경 그림이 없으면 sectBgRect = 화면 전체(옛 죽림 바닥+원경으로)');
+  ok(SECT.halls.every(h=>{const b=w.sceneHallBox(h.k); return b.x>0&&b.x<w.eval('VW')&&b.y>0&&b.y<w.eval('VH');}),'전각 5채 자리가 화면 안');
   // 마당 탭 → 전각 팝업 (v2.92.1)
   const hb=w.sceneHallBox('guest'); ok(w.sectTap(hb.x,hb.y-10)==='guest','마당의 객당을 누르면 객당');
   const hp=w.document.getElementById('hpop'); ok(!hp.hidden && hp.querySelector('.zn').textContent.includes('객당') && hp.style.left!=='','전각 팝업이 뜬다 (객당, 자리 잡힘)');

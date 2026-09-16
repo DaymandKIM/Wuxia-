@@ -35,6 +35,7 @@ loadImg('hero_burstkick', ASSET.burstkick);  // 도약 옆차기 (v2.47.1, 성�
 loadImg('hero_hit',   ASSET.hit);
 loadImg('hero_medit', ASSET.medit);
 for (const h of SECT.halls) for (let st = 0; st < 3; st++) if (ASSET['hall_' + h.k + '_' + st]) loadImg('hall_' + h.k + '_' + st, ASSET['hall_' + h.k + '_' + st]);   // 문파 전각 터·초가·기와 (v2.92.2, 사용자 시트 halls.py)
+if (ASSET[SECT.scene.bg]) loadImg(SECT.scene.bg, ASSET[SECT.scene.bg]);   // 문파 터 배경 한 장 (v2.92.6, 사용자 3/4 시점 마당 — sectbg.py)
 for (const k in FOES){
   const seen = {};
   for (const a in FOES[k].anim)

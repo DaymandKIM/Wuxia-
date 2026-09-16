@@ -257,6 +257,16 @@ setTimeout(()=>{
   ok(w.eval('castN("bungsan")')===w.eval('HFX.cast.bungsan[2]'),'시전은 성과 무관하게 전 컷 (붕산장 6컷)');
   ok(drew('aidle_w',w.eval('HFX.aw.aidle'))||w.eval('typeof auraCache==="object"'),'기운은 흰 안개(aidle_w)를 물들여 그린다');
 
+  // 5) 문파 터 배경 (v2.92.6 사용자 3/4 시점 마당 한 장) — 마당을 열면 sect_bg 가 화면을 덮게(cover) 그려지고, 전각·주인공 자리는 그 그림 비율로 화면 안에 선다
+  w.eval('S.halls={yard:1,library:6,clinic:20,guest:1,gate:6}; openSect();'); renderNow();
+  const R=w.eval('sectBgRect()');
+  ok(R.ok && R.w>=w.eval('VW') && R.h>=w.eval('VH') && R.x<=0 && R.y<=0,'마당 배경이 화면을 다 덮는다(cover) '+R.w+'×'+R.h+' @'+R.x+','+R.y);
+  ok(draws.some(d=>d.im===w.eval('IMG.sect_bg')),'render(마당)가 sect_bg 를 그린다');
+  ok(w.eval('SECT.halls.every(h=>{const b=sceneHallBox(h.k); return b.x-b.w/2>=0 && b.x+b.w/2<=VW && b.y-b.h>=0 && b.y<=VH && b.sc>0 && b.sc<=1;})'),'전각 5채가 화면 안 제 터에 선다(터 폭에 맞춘 배율 ≤ 1)');
+  ok(w.eval('const [hx,hy]=scenePt(SECT.scene.hero[0],SECT.scene.hero[1]); hx>0&&hx<VW&&hy>0&&hy<VH'),'주인공이 가운데 수련장에 선다');
+  ok(['yard','library','clinic'].every(k=>draws.some(d=>d.im===w.eval('IMG["hall_'+k+'_'+w.hallStage(k)+'"]'))),'전각 그림이 단계(터 Lv1·초가 Lv6·기와 Lv20)에 맞는 그림으로 그려진다');
+  w.eval('closeSect();');
+
   ok(errs.length===0,'런타임 오류 0'+(errs.length?': '+errs[0]:''));
   console.log(bad?('\n★ 실패 '+bad+'건'):'\n문제 없음');
   process.exit(bad?1:0);

@@ -792,8 +792,7 @@ function render(){
   const ox = S.camX - VW/2, oy = S.camY - VH/2;
   // 문파 터 화면 (v2.92) — 문파 탭이 열려 있으면 전투 대신 마당을 그린다(전투는 뒤에서 계속). 카메라 고정
   if (inSect){
-    drawGround(0, 0);
-    drawBackdrop(0);
+    drawSectBg();                             // v2.92.6 사용자 3/4 시점 마당 그림(cover). 없으면 죽림 바닥+원경
     drawSectScene();
     return;
   }

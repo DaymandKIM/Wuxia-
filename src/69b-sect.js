@@ -125,7 +125,7 @@ function sceneStep(dt){
   for (const d of sceneDisc){
     d.t -= dt; d.af += dt * (d.st === 'walk' ? ANIM.run[1] : d.st === 'train' ? 8 : ANIM.idle[1]);
     if (d.st === 'walk'){
-      d.x += d.dir * C.walkSpd * dt / VW;
+      d.x += d.dir * C.walkSpd * dt;                                  // 그림 폭 비율/s (v2.92.6)
       if (d.x < C.yardX[0]){ d.x = C.yardX[0]; d.dir = 1; } if (d.x > C.yardX[1]){ d.x = C.yardX[1]; d.dir = -1; }
     }
     if (d.t <= 0){
@@ -162,13 +162,33 @@ function tintedStrip(key, col){
   tintCache[ck] = c; return c;
 }
 function hallStage(k){ const lv = hallLv(k), T = SECT.scene.stageLv; let s = -1; for (let i = 0; i < T.length; i++) if (lv >= T[i]) s = i; return s; }   // -1 = 아직 없음
-function sceneHallBox(k){ const [fx, fy] = SECT.scene.halls[k], st = hallStage(k), im = st >= 0 ? IMG['hall_' + k + '_' + st] : null, ok = im && im.complete && im.naturalWidth;
-  return { x: Math.round(fx * VW), y: Math.round(fy * VH), w: ok ? im.naturalWidth : 64, h: ok ? im.naturalHeight : 60 }; }   // 그림이 있으면 그 크기로 탭 판정
+// 배경 그림이 화면에 깔리는 사각형 (v2.92.6) — cover: 화면을 다 덮는 배율, 가로·세로 중앙. 그림이 없으면 화면 전체(자리 비율이 화면 비율로 떨어진다)
+function sectBgRect(){
+  const C = SECT.scene, im = IMG[C.bg], ok = im && im.complete && im.naturalWidth;
+  const iw = ok ? im.naturalWidth : C.bgW, ih = ok ? im.naturalHeight : C.bgH;
+  if (!ok) return { x: 0, y: 0, w: VW, h: VH, s: 1, ok: false };
+  const s = Math.max(VW / iw, VH / ih), w = Math.round(iw * s), h = Math.round(ih * s);
+  return { x: Math.round((VW - w) / 2), y: Math.round((VH - h) / 2), w, h, s, ok: true };
+}
+function scenePt(fx, fy){ const R = sectBgRect(); return [Math.round(R.x + fx * R.w), Math.round(R.y + fy * R.h)]; }   // 그림 비율 → 화면 좌표
+function drawSectBg(){
+  const R = sectBgRect();
+  if (!R.ok){ drawGround(0, 0); drawBackdrop(0); return false; }   // 그림 전엔 옛 방식(죽림 바닥+원경)
+  ctx.fillStyle = rzone().ground; ctx.fillRect(0, 0, VW, VH);
+  draw(IMG[SECT.scene.bg], R.x, R.y, R.w, R.h);
+  return true;
+}
+function sceneHallBox(k){
+  const [fx, fy, fw] = SECT.scene.halls[k], st = hallStage(k), im = st >= 0 ? IMG['hall_' + k + '_' + st] : null, ok = im && im.complete && im.naturalWidth;
+  const [x, y] = scenePt(fx, fy), plotW = Math.max(1, (fw || 0.2) * sectBgRect().w);
+  const sc = ok ? Math.min(1, plotW * SECT.scene.hallFit / im.naturalWidth) : 1;   // 옆모습 시트가 터보다 넓으면 터 폭에 맞춰 줄인다 (v2.92.6)
+  return { x, y, w: ok ? Math.round(im.naturalWidth * sc) : 64, h: ok ? Math.round(im.naturalHeight * sc) : 60, sc, plotW: Math.round(plotW) };   // 그림이 있으면 그 크기로 탭 판정
+}
 function drawSectHall(h){
   const b = sceneHallBox(h.k), st = hallStage(h.k), lv = hallLv(h.k);
   const im = st >= 0 ? IMG['hall_' + h.k + '_' + st] : null;
   shadow(b.x, b.y, Math.round(b.w * 0.8));
-  if (im && im.complete && im.naturalWidth){ draw(im, b.x - Math.round(im.naturalWidth / 2), b.y - im.naturalHeight); }
+  if (im && im.complete && im.naturalWidth){ draw(im, 0, 0, im.naturalWidth, im.naturalHeight, b.x - Math.round(b.w / 2), b.y - b.h, b.w, b.h); }
   else {
     // 시트 전엔 팻말 — 나무 기둥 + 낙관 도장 (Lv 0은 말뚝만)
     ctx.save();
@@ -195,7 +215,7 @@ function drawSectHall(h){
 function drawSectDisc(d){
   const dd = (S.disciples || [])[d.i]; if (!dd) return;
   const col = SCHOOLS[dd.l].c, sc = SECT.scene.discScale;
-  const x = Math.round(d.x * VW), y = Math.round(d.y * VH);
+  const [x, y] = scenePt(d.x, d.y);
   const walk = d.st === 'walk', key = walk ? 'hero_run' : 'hero_idle';
   const n = walk ? ANIM.run[0] : ANIM.idle[0], fw = HFX.aw[walk ? 'run' : 'idle'] || HERO.w;
   const src = tintedStrip(key, col) || IMG[key];
@@ -221,7 +241,7 @@ function drawSectDisc(d){
   }
 }
 function drawSectHero(){
-  const [fx, fy] = SECT.scene.hero, x = Math.round(fx * VW), y = Math.round(fy * VH);
+  const [x, y] = scenePt(SECT.scene.hero[0], SECT.scene.hero[1]);
   const im = IMG['hero_idle'], fw = HFX.aw.idle || HERO.w;
   shadow(x, y, HERO.w);
   ctx.save(); ctx.translate(x, y);
@@ -232,8 +252,8 @@ function drawSectHero(){
 function drawSectScene(){
   sceneSync();
   const ents = SECT.halls.map(h => ({ y: sceneHallBox(h.k).y, hall: h }));
-  for (const d of sceneDisc) ents.push({ y: Math.round(d.y * VH), disc: d });
-  ents.push({ y: Math.round(SECT.scene.hero[1] * VH), hero: true });
+  for (const d of sceneDisc) ents.push({ y: scenePt(d.x, d.y)[1], disc: d });
+  ents.push({ y: scenePt(SECT.scene.hero[0], SECT.scene.hero[1])[1], hero: true });
   ents.sort((a, b) => a.y - b.y);
   for (const e of ents){ if (e.hall) drawSectHall(e.hall); else if (e.disc) drawSectDisc(e.disc); else drawSectHero(); }
   // 문파 이름 현판은 HTML 오버레이(#splaque, v2.92.4)
@@ -246,7 +266,7 @@ function sectTap(x, y){
     return h.k; } }
   closeHallPop();
   let best = null, bd = 1e9;
-  for (const d of sceneDisc){ const dx = x - d.x * VW, dy = y - (d.y * VH - HERO.h * 0.45); const dist = Math.hypot(dx, dy * 0.7); if (dist < 26 && dist < bd){ bd = dist; best = d; } }
+  for (const d of sceneDisc){ const [px, py] = scenePt(d.x, d.y), dx = x - px, dy = y - (py - HERO.h * 0.45); const dist = Math.hypot(dx, dy * 0.7); if (dist < 26 && dist < bd){ bd = dist; best = d; } }
   if (best){ const S2 = SECT.disciple, dd = (S.disciples || [])[best.i];
     sceneBubble = { i: best.i, text: S2.say[Math.floor(Math.random() * S2.say.length)], sub: dd ? SCHOOLS[dd.l].n + ' 출신 · 자질 ' + S2.talents[dd.t].n + ' · ' + SCHOOLS[dd.l].n + ' 무공 +' + S2.talents[dd.t].bonus + '%' : '', t: S2.bubbleSec }; return 'disc'; }
   return null;
