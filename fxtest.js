@@ -265,9 +265,9 @@ setTimeout(()=>{
   // 배경에서 뽑은 전각(bgHalls, v2.92.7)은 배경 배율(R.s) 그대로·그 자리(스텁 이미지는 35×51이라 배율이 커서 폭 검사는 못 한다), 옆모습 전각은 터 폭에 맞춘 배율 ≤ 1
   ok(w.eval('SECT.halls.every(h=>{const b=sceneHallBox(h.k), R=sectBgRect(); return b.native ? (Math.abs(b.sc-R.s)<1e-9 && b.x>=0 && b.x<=VW && b.y>=0 && b.y<=VH) : (b.x-b.w/2>=0 && b.x+b.w/2<=VW && b.y-b.h>=0 && b.y<=VH && b.sc>0 && b.sc<=1);})'),'전각 5채가 화면 안 제 터에 선다(배경에서 뽑은 것은 배경 배율, 옆모습은 터 폭 배율 ≤ 1)');
   ok(w.eval('const [hx,hy]=scenePt(SECT.scene.hero[0],SECT.scene.hero[1]); hx>0&&hx<VW&&hy>0&&hy<VH'),'주인공이 가운데 수련장에 선다');
-  ok(['yard','library','clinic'].every(k=>draws.some(d=>d.im===w.eval('IMG["hall_'+k+'_'+w.hallStage(k)+'"]'))),'전각 그림이 단계(터 Lv1·초가 Lv6·기와 Lv20)에 맞는 그림으로 그려진다');
-  ok(w.eval('["yard","clinic","library","guest"].every(k=>{S.halls[k]=20; return sceneHallBox(k).native===true;})'),'기와 4채(연무장·약방·장경각·객당)는 배경에서 뽑은 그림을 제자리에 그린다');
-  renderNow(); ok(['yard','clinic','library','guest'].every(k=>draws.some(d=>d.im===w.eval('IMG["hall_'+k+'_2"]'))),'기와 4채가 실제로 그려진다');
+  ok(['yard','library','clinic'].every(k=>draws.some(d=>d.im===w.eval('IMG["hall_'+k+'_'+w.hallImgStage(k,w.hallStage(k))+'"]'))),'전각 그림이 단계에 맞는 그림(없는 단계는 바로 아래 단계 그림)으로 그려진다');
+  ok(w.eval('["yard","clinic","library","guest"].every(k=>{S.halls[k]=50; return sceneHallBox(k).native===true;})'),'기와 대(5단계, Lv50) 4채는 배경에서 뽑은 그림을 제자리에 그린다');
+  renderNow(); ok(['yard','clinic','library','guest'].every(k=>draws.some(d=>d.im===w.eval('IMG["hall_'+k+'_4"]'))),'기와 4채가 실제로 그려진다');
   w.eval('closeSect();');
 
   ok(errs.length===0,'런타임 오류 0'+(errs.length?': '+errs[0]:''));

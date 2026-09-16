@@ -34,7 +34,7 @@ loadImg('hero_cresckick', ASSET.cresckick);  // 초승달 참격 발차기 (v2.4
 loadImg('hero_burstkick', ASSET.burstkick);  // 도약 옆차기 (v2.47.1, 성급 21)
 loadImg('hero_hit',   ASSET.hit);
 loadImg('hero_medit', ASSET.medit);
-for (const h of SECT.halls) for (let st = 0; st < 3; st++) if (ASSET['hall_' + h.k + '_' + st]) loadImg('hall_' + h.k + '_' + st, ASSET['hall_' + h.k + '_' + st]);   // 문파 전각 터·초가·기와 (v2.92.2, 사용자 시트 halls.py)
+for (const h of SECT.halls) for (let st = 0; st < SECT.scene.stageLv.length; st++) if (ASSET['hall_' + h.k + '_' + st]) loadImg('hall_' + h.k + '_' + st, ASSET['hall_' + h.k + '_' + st]);   // 문파 전각 단계별 그림 (v2.92.2 시트 → v2.92.7 차분, v2.92.8 5단계)
 if (ASSET[SECT.scene.bg]) loadImg(SECT.scene.bg, ASSET[SECT.scene.bg]);   // 문파 터 배경 한 장 (v2.92.6, 사용자 3/4 시점 마당 — sectbg.py)
 for (const k in FOES){
   const seen = {};
