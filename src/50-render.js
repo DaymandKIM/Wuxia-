@@ -298,7 +298,8 @@ function drawFoe(f, ox, oy){
   const M = foeM(f);
   // 문에서 걸어 나오는 중이면 아래부터 드러난다
   const rise = f.rise > 0 ? clamp(1 - f.rise/SUMMON.rise, 0, 1) : 1;
-  const sc = (f.boss && !ZONEBOSS[zone().k]) ? BOSS.scale : 1;
+  // 종류별 그리기 배율 M.sc (v2.87, 사용자: "표범·풍뎅이 크기가 너무 큼") — 그림·그림자·체력바가 같이 줄어든다
+  const sc = (f.boss && !ZONEBOSS[zone().k]) ? BOSS.scale : (M.sc || 1);
   const x = Math.round(f.x - ox), y = Math.round(f.y - oy);
   // 개구리처럼 캔버스가 몸보다 넓은 적은 실제 몸 폭 sw 를 쓴다
   const BW = M.sw || M.w;
@@ -363,7 +364,7 @@ function drawFoe(f, ox, oy){
   // 체력바 — 보스는 화면 상단에 따로 그린다
   if (!f.dead && f.hp < f.hpMax && !f.boss){
     const w = 24, h = 3;
-    const by = y - (M.bh || M.h) - 6;
+    const by = y - (M.bh || M.h) * sc - 6;
     ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.fillRect(x-w/2, by, w, h);
     ctx.fillStyle = '#d2564a';
     ctx.fillRect(x-w/2, by, w*(f.hp/f.hpMax), h);

@@ -379,12 +379,19 @@ function castArt(a){
   const hits = [];
   if (a.k === 'pagong' || a.k === 'baekbo'){
     // 단일 강타 — 파공권은 가장 가까운, 백보신권은 가장 먼 적
+    // 암향지는 **보고 있는 쪽**의 가장 먼 적을 먼저 고른다 (v2.87, 사용자: "암향지 사용 시 순간 다른 쪽을 바라봄" —
+    // 등 뒤의 먼 적을 고르면 돌아서 쏘고 다시 돌아와 휙 뒤집혔다). 앞쪽에 아무도 없을 때만 뒤를 본다.
     let best = null, bd = a.k === 'pagong' ? 1e9 : -1;
-    for (const f of alive){
-      const d = dist(f.x, f.y, P.x, P.y);
-      if (d > rng) continue;
-      if (a.k === 'pagong' ? d < bd : d > bd){ bd = d; best = f; }
-    }
+    const pick = (front) => {
+      for (const f of alive){
+        const d = dist(f.x, f.y, P.x, P.y);
+        if (d > rng) continue;
+        if (front && (f.x - P.x) * P.dir < 0) continue;
+        if (a.k === 'pagong' ? d < bd : d > bd){ bd = d; best = f; }
+      }
+    };
+    pick(a.k === 'baekbo');
+    if (!best && a.k === 'baekbo') pick(false);
     if (!best) return false;
     hits.push(best);
     // 시전 동작 + 탄 — 파공권은 권기 주먹, 암향지는 지풍 빔이 날아간다
