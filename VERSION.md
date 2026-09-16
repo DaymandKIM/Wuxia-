@@ -1,3 +1,7 @@
+# v2.82.6 — 방어구 아이콘 영웅(등급 3) 4종 반영 (사용자 시트 sheets/eq_armor_3.png, 2026-09-16)
+
+- `python eqicons.py 3 --slot=armor`. 검사판 review/eq_armor_3.png. 전설·신화·초월 3장 대기.
+
 # v2.82.5 — 방어구 아이콘 희귀(등급 2) 4종 반영 (사용자 시트 sheets/eq_armor_2.png, 2026-09-15)
 
 - `python eqicons.py 2 --slot=armor`. 도롱이 옆 반짝임은 배경으로 걷힘. 검사판 review/eq_armor_2.png. 영웅~초월 4장 대기.
