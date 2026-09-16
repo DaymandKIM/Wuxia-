@@ -179,7 +179,11 @@ function drawSectBg(){
   return true;
 }
 function sceneHallBox(k){
-  const [fx, fy, fw] = SECT.scene.halls[k], st = hallStage(k), im = st >= 0 ? IMG['hall_' + k + '_' + st] : null, ok = im && im.complete && im.naturalWidth;
+  const st = hallStage(k), im = st >= 0 ? IMG['hall_' + k + '_' + st] : null, ok = im && im.complete && im.naturalWidth;
+  const nat = ok && SECT.scene.bgHalls[k] && SECT.scene.bgHalls[k][st];   // 배경 위에 얹어 받은 전각 — 배경 배율 그대로, 그 자리 그대로 (v2.92.7)
+  if (nat){ const R = sectBgRect(), [x, y] = scenePt(nat.cx, nat.by);
+    return { x, y, w: Math.round(im.naturalWidth * R.s), h: Math.round(im.naturalHeight * R.s), sc: R.s, plotW: 0, native: true }; }
+  const [fx, fy, fw] = SECT.scene.halls[k];
   const [x, y] = scenePt(fx, fy), plotW = Math.max(1, (fw || 0.2) * sectBgRect().w);
   const sc = ok ? Math.min(1, plotW * SECT.scene.hallFit / im.naturalWidth) : 1;   // 옆모습 시트가 터보다 넓으면 터 폭에 맞춰 줄인다 (v2.92.6)
   return { x, y, w: ok ? Math.round(im.naturalWidth * sc) : 64, h: ok ? Math.round(im.naturalHeight * sc) : 60, sc, plotW: Math.round(plotW) };   // 그림이 있으면 그 크기로 탭 판정
@@ -187,7 +191,7 @@ function sceneHallBox(k){
 function drawSectHall(h){
   const b = sceneHallBox(h.k), st = hallStage(h.k), lv = hallLv(h.k);
   const im = st >= 0 ? IMG['hall_' + h.k + '_' + st] : null;
-  shadow(b.x, b.y, Math.round(b.w * 0.8));
+  if (!b.native) shadow(b.x, b.y, Math.round(b.w * 0.8));            // 배경에서 뽑은 전각은 제 그림자·땅을 갖고 있다
   if (im && im.complete && im.naturalWidth){ draw(im, 0, 0, im.naturalWidth, im.naturalHeight, b.x - Math.round(b.w / 2), b.y - b.h, b.w, b.h); }
   else {
     // 시트 전엔 팻말 — 나무 기둥 + 낙관 도장 (Lv 0은 말뚝만)
