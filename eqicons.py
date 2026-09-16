@@ -2,7 +2,7 @@
 시트: 1줄 6칸(권갑·검·도·창·봉·부채 순), 마젠타/분홍 배경, 칸 사이 세로선(어둡거나 흰색). 시트 전체 덩어리 라벨링 → 픽셀이 가장 많은 칸에 통째로(칸을 넘는 칼끝도 잘리지 않음). 구분선은 '칸 높이 85%↑·폭 24px↓ 덩어리'로 버림.
 배경 = 마젠타(r-g>50·b-g>50) 또는 자줏빛 근접(중앙값 ±70·r>g+8·b>g+8). 가장 큰 덩어리(+150px 넘는 조각)만 남기고 tight bbox →
 96×96 안에 긴 변 92px(기존 아이콘 채움 0.96)로 LANCZOS 축소, 알파 문턱 96. 검사판 review/eq_weapons_<등급>.png
-사용: python eqicons.py <등급 0~6> [시트 경로] [--slot weapon|armor|trinket]  (기본 무기, 시트 기본 sheets/eq_<자리>_<등급>.png)
+사용: python eqicons.py <등급 0~6> [시트 경로] [--slot=weapon|armor|trinket] [--flood: 옅은 그라데이션 배경은 가장자리 영역 채우기]  (기본 무기, 시트 기본 sheets/eq_<자리>_<등급>.png)
 """
 import sys, numpy as np
 from PIL import Image
@@ -11,11 +11,28 @@ SLOTS = { 'weapon': ['fist', 'sword', 'saber', 'spear', 'staff', 'fan'], 'armor'
           'trinket': ['pendant', 'ring', 'beads', 'talisman', 'gourd', 'ribbon'] }   # 자리별 종류 순서 = 게임 순서 (v2.82 방어구·장신구)
 KINDS = SLOTS['weapon']
 FILL = 92
-def main(grade, path, slot='weapon'):
+def main(grade, path, slot='weapon', flood=False):
     global KINDS; KINDS = SLOTS[slot]; N = len(KINDS)
     im = Image.open(path).convert('RGB'); A = np.array(im).astype(int); H, W = A.shape[:2]
     r, g, b = A[..., 0], A[..., 1], A[..., 2]; BG = np.median(A.reshape(-1, 3), 0)
     bg = (((r - g) > 50) & ((b - g) > 50)) | ((np.abs(A - BG) < 70).all(2) & ((r - g) > 8) & ((b - g) > 8))
+    if flood:
+        # 옅은 분홍 그라데이션 + 흰 후광 시트(v2.82.9 초월 방어구): 색 규칙은 후광을 남기고 도복 하이라이트에 구멍을 낸다.
+        # 대신 시트 가장자리에서 밝은 픽셀을 따라 번져 들어간다(이웃과 채널 차 ≤ TOL) — 어두운 외곽선에서 멈추고, 안쪽 구멍엔 안 닿는다.
+        TOL = 26; bright = A.sum(2) > 3 * 150
+        seen = np.zeros((H, W), bool); from collections import deque; q = deque()
+        for y in range(H):
+            for x in (0, W - 1):
+                if bright[y, x]: seen[y, x] = True; q.append((y, x))
+        for x in range(W):
+            for y in (0, H - 1):
+                if bright[y, x] and not seen[y, x]: seen[y, x] = True; q.append((y, x))
+        while q:
+            y, x = q.popleft(); c = A[y, x]
+            for ny, nx in ((y - 1, x), (y + 1, x), (y, x - 1), (y, x + 1)):
+                if 0 <= ny < H and 0 <= nx < W and not seen[ny, nx] and bright[ny, nx] and (np.abs(A[ny, nx] - c) <= TOL).all():
+                    seen[ny, nx] = True; q.append((ny, nx))
+        bg = seen
     fg = ~bg
     # 칸 구분선은 시트마다 색이 다르다(어두운 선·흰 선) — 칸 높이의 85% 넘게 뻗은 가는(≤24px) 세로 덩어리는 버린다
     lab, n = ndi.label(fg); objs = ndi.find_objects(lab); sizes = ndi.sum(np.ones(lab.shape), lab, range(1, n + 1))
@@ -54,7 +71,7 @@ def main(grade, path, slot='weapon'):
         big = ic.resize((288, 288), Image.NEAREST); R.paste(big, (i * 298, 0), big)
     R.save(f'review/eq_{slot}_{grade}.png'); print('검사판', f'review/eq_{slot}_{grade}.png')
 if __name__ == '__main__':
-    args = [a for a in sys.argv[1:] if not a.startswith('--')]; slot = 'weapon'
+    args = [a for a in sys.argv[1:] if not a.startswith('--')]; slot = 'weapon'; flood = '--flood' in sys.argv
     for a in sys.argv[1:]:
         if a.startswith('--slot='): slot = a.split('=', 1)[1]
-    grade = int(args[0]); path = args[1] if len(args) > 1 else f'sheets/eq_{"weapons" if slot == "weapon" else slot}_{grade}.png'; main(grade, path, slot)
+    grade = int(args[0]); path = args[1] if len(args) > 1 else f'sheets/eq_{"weapons" if slot == "weapon" else slot}_{grade}.png'; main(grade, path, slot, flood)
