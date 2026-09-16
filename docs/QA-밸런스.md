@@ -17,7 +17,7 @@
 | 적 강도 지수 곡선 | `DIFF` `BOSS` | foeHp/foeDmg |
 | **문파 무공도 (스킬트리)** — 경지 포인트로 노드 개방, 패시브 %·무공 마디 | `TREE`(65b-treedata)·`SKILLTREE` | spend()가 열린 노드를 무공 마디 우선·싼 것부터 익힘. treeBonus가 heroDmg 등 전투 수식에 합산(수련과 별개 축), 무공 마디는 S.arts로 자동 시전 |
 | **성장형 기본공격** — 성급대로 동작 해금 | `ATKMOVES` | 전투 시각·판정 동일(스프라이트만 교대), DPS 영향 없음 |
-| **장비** (v2.70 표준형) — 3자리 % 보너스, 드랍→합성→장착, 아이템 레벨(은자), 보유 효과 | `EQUIP` | 드랍은 전투 코드(rollDrop), spend()가 일괄 합성→자동 장착→낀 아이템부터 싼 강화 3회. eqBonus가 heroDmg·hp·regen·crit·cdmg·aspd·spd·killSilver에 합산 |
+| **장비** (v2.70 표준형 → v2.89 장착 8자리: 무기·방어구·장신구 6종) — % 보너스, 드랍→합성→장착, 아이템 레벨(은자), 보유 효과. 장신구는 종류별 프로필(주 0.6+은자 0.25) | `EQUIP` | 드랍은 전투 코드(rollDrop), spend()가 일괄 합성→자동 장착→낀 아이템부터 싼 강화 3회. eqBonus가 heroDmg·hp·regen·crit·cdmg·aspd·spd·killSilver에 합산 |
 
 ## 시뮬 밖 — 별도로 검증하는 것
 

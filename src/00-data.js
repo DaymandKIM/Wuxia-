@@ -1065,7 +1065,9 @@ const EQUIP = {
     // 종류는 화면·드랍에서 빠진다(eqKinds) — 권갑 아이콘이 오면 저절로 등장.
     { k:'weapon',  n:'무기',   stat:'atk',  kinds:[['fist','권갑','spd','eq_fist'],['sword','검','crit'],['saber','도','aspd'],['spear','창','cdmg'],['staff','봉','regen'],['fan','부채','gold']] },   // 철구는 뺐고 철선은 부채로(v2.70.4, 사용자)
     { k:'armor',   n:'방어구', stat:'hp',   kinds:[['robe','무복','regen'],['vest','피갑','aspd'],['lamellar','찰갑','hp'],['cloak','도롱이','spd']] },
-    { k:'trinket', n:'장신구', stat:'gold', kinds:[['pendant','옥패','crit'],['ring','반지','cdmg'],['beads','염주','regen'],['talisman','부적','atk'],['gourd','호리병','hp'],['ribbon','비단끈','spd']] },
+    // 장신구는 **종류마다 한 자리**(v2.89, 사용자 확정 "종류별로 하나씩 끼는 게 이상한가? → 하자"): 옥패·반지·염주·부적·호리병·비단끈 여섯 자리.
+    // perKind — 장착 자리 키가 종류 키(S.equip.pendant …). 스탯은 종류별 프로필(아래 profile), 은자 획득은 공통 부가.
+    { k:'trinket', n:'장신구', stat:'gold', perKind:true, kinds:[['pendant','옥패','crit'],['ring','반지','cdmg'],['beads','염주','regen'],['talisman','부적','atk'],['gourd','호리병','hp'],['ribbon','비단끈','spd']] },
   ],
   statName: { atk:'공격력', hp:'체력', regen:'회복', gold:'은자 획득', crit:'치명타', cdmg:'치명 피해', aspd:'공격 속도', spd:'이동 속도' },
   grades: [ { n:'일반', c:'#9aa7b5', base:8,  lvCap:20 },  { n:'고급', c:'#6fd3a8', base:14, lvCap:40 },
@@ -1093,6 +1095,14 @@ const EQUIP = {
     spear: { atk:1.00, crit:0.25, cdmg:0.30 },  // 창 — 찌르기 (사거리 대신 치명 양쪽)
     staff: { atk:0.80, hp:0.45, regen:0.30 },   // 봉 — 지키며 버틴다
     fan:   { atk:0.75, gold:0.50, spd:0.25 },   // 부채 — 풍류, 은자
+    // 장신구 6자리(v2.89) — 옛 한 자리(은자 1.0 + 부가 0.4)를 여섯으로 나눈 만큼 각각은 가볍다(주 0.6 + 은자 0.25 = 0.85, 여섯 합 5.1).
+    // 여섯을 다 높은 등급으로 채우려면 드랍·합성·강화가 여섯 배 드니 실효 등급은 낮다 — 진행 속도는 sim으로 맞춘다(VERSION v2.89).
+    pendant:  { crit:0.60,  gold:0.25 },        // 옥패 — 급소
+    ring:     { cdmg:0.60,  gold:0.25 },        // 반지 — 한 방
+    beads:    { regen:0.60, gold:0.25 },        // 염주 — 숨 고르기
+    talisman: { atk:0.60,   gold:0.25 },        // 부적 — 힘
+    gourd:    { hp:0.60,    gold:0.25 },        // 호리병 — 버팀
+    ribbon:   { spd:0.60,   gold:0.25 },        // 비단끈 — 발
   },
   codexRate: 0.15,               // 보유 효과 = 그 아이템 장착 효과 × 이 비율 (얻어 본 것 전부, 영구)
   lvPer: 0.03,                   // 레벨 1당 효과 ×(1+0.03·lv) — 전설 100렙 = 4배

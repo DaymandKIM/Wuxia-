@@ -3,6 +3,18 @@
    또는 카드 상세에서 직접). 아이템마다 레벨(S.itemLv) — 장착 효과·보유 효과가 그 레벨을 탄다.
    얻어 본 아이템(S.codex 비트)은 영구 보유 효과. 전투 수식은 00-data의 heroDmg 등이 eqBonus(stat)를 합산. */
 function eqSlot(k){ return EQUIP.slots.find(s => s.k === k); }
+// 장착 자리 (v2.89) — 무기·방어구는 탭이 곧 자리, 장신구는 종류마다 한 자리. [{ key, sl, kinds }]
+function eqWearSlots(){
+  const out = [];
+  for (const sl of EQUIP.slots){
+    if (sl.perKind) for (const kd of sl.kinds) out.push({ key: kd[0], sl, kinds: [kd] });
+    else out.push({ key: sl.k, sl, kinds: sl.kinds });
+  }
+  return out;
+}
+function eqWearSlot(key){ return eqWearSlots().find(w => w.key === key); }
+function eqWearKeyOf(kindK){ const kd = eqKind(kindK); return kd ? (kd.sl.perKind ? kindK : kd.sl.k) : null; }   // 이 종류가 들어가는 자리
+function eqWornOf(kindK){ const key = eqWearKeyOf(kindK); return key ? S.equip[key] : null; }
 function eqKind(kindK){ for (const sl of EQUIP.slots){ const x = sl.kinds.find(v => v[0] === kindK); if (x) return { sl, k:x[0], n:x[1], sub:x[2], icon:x[3] }; } return null; }
 // 아이콘 — 종류에 지정된 키, 없으면 eq_<종류>, 그것도 없으면 주먹(train_atk)
 // 아이콘 — 등급별(eq_<종류>_<등급>, v2.80 사용자 시트)이 있으면 그것, 없으면 종류 기본(eq_<종류> 또는 kinds[3])
@@ -13,10 +25,11 @@ function eqKinds(sl){ return sl.kinds.filter(kd => eqHasIcon(kd[0])); }   // 화
 function eqStarter(){
   let n = 0;
   for (const sl of EQUIP.slots){
-    if (S.equip[sl.k]) continue;
-    if (sl.kinds.some(kd => eqSeen(kd[0], 0) || (S.inv[kd[0]] || []).some(x => x > 0))) continue;
+    if (eqWearSlots().some(ws => ws.sl === sl && S.equip[ws.key])) continue;                        // 이 탭에 낀 게 있으면 시작 장비 없음
+    if (sl.kinds.some(kd => eqSeen(kd[0], 0) || (S.inv[kd[0]] || []).some(x => x > 0))) continue;   // 주머니·도감에 뭐라도 있어도
     const k = (EQUIP.starter[sl.k] || []).find(eqHasIcon); if (!k) continue;
-    eqGain(k, 0, 1); S.equip[sl.k] = { k, g:0 }; eqLogPush(itemLabel(k, 0) + ' — 시작 장비'); n++;
+    const key = eqWearKeyOf(k); if (S.equip[key]) continue;
+    eqGain(k, 0, 1); S.equip[key] = { k, g:0 }; eqLogPush(itemLabel(k, 0) + ' — 시작 장비'); n++;
   }
   return n;
 }
@@ -29,8 +42,8 @@ function itemLabel(k, g){ const kd = eqKind(k); return EQUIP.grades[g].n + ' ' +
 function itemPct(k, g, lv){ return EQUIP.grades[g].base * (1 + EQUIP.lvPer * (lv !== undefined ? lv : itemLv(k, g))); }
 function itemHold(k, g, lv){ return itemPct(k, g, lv) * EQUIP.codexRate; }         // 보유 효과(%)
 // 낀 장비 중 최고 등급 (v2.88 기운 색) — 없으면 -1
-function eqAuraGrade(){ let g = -1; for (const sl of EQUIP.slots){ const it = S.equip[sl.k]; if (it && it.g > g) g = it.g; } return g; }
-function slotPct(slotK){ const it = S.equip[slotK]; return it ? itemPct(it.k, it.g) : 0; }
+function eqAuraGrade(){ let g = -1; for (const key in S.equip){ const it = S.equip[key]; if (it && it.g > g) g = it.g; } return g; }
+function slotPct(key){ const it = S.equip[key]; return it ? itemPct(it.k, it.g) : 0; }   // key = 장착 자리
 // 종류별 스탯 조합 (v2.82) — EQUIP.profile[종류]가 있으면 그것(무기), 없으면 자리 주 스탯 1.0 + 부가 스탯 subRate
 function kindEff(k){
   const kd = eqKind(k); if (!kd) return {};
@@ -52,11 +65,8 @@ function codexPct(sl){ return codexStat(sl, sl.stat); }
 function eqBonus(stat){
   if (!S.equip) return 0;
   let b = 0;
-  for (const sl of EQUIP.slots){
-    const it = S.equip[sl.k];
-    if (it){ const e = kindEff(it.k)[stat]; if (e) b += slotPct(sl.k) * e; }
-    b += codexStat(sl, stat);
-  }
+  for (const key in S.equip){ const it = S.equip[key]; if (it){ const e = kindEff(it.k)[stat]; if (e) b += slotPct(key) * e; } }   // 낀 것 전부(8자리)
+  for (const sl of EQUIP.slots) b += codexStat(sl, stat);
   return b;
 }
 function eqLogPush(msg){ S.eqLog.unshift(msg); if (S.eqLog.length > 4) S.eqLog.length = 4; }
@@ -64,7 +74,7 @@ function eqLogPush(msg){ S.eqLog.unshift(msg); if (S.eqLog.length > 4) S.eqLog.l
 function eqGain(k, g, n){
   const kd = eqKind(k); if (!kd) return false;
   eqInv(k)[g] += n || 1; S.codex[k] = (S.codex[k] | 0) | (1 << g);
-  if (!S.equip[kd.sl.k]) S.equip[kd.sl.k] = { k, g };          // 빈 자리는 바로 낀다 (첫 장비)
+  const key = eqWearKeyOf(k); if (!S.equip[key]) S.equip[key] = { k, g };   // 빈 자리는 바로 낀다 (첫 장비)
   return true;
 }
 // 합성 — 같은 아이템 mergeN개 → 한 등급 위 1개 (한 번). 최고 등급은 안 된다.
@@ -81,33 +91,33 @@ function eqMerge(k, g){
 function mergeCount(){ let n = 0; for (const k in S.inv) for (let g = 0; g < EQUIP.grades.length - 1; g++) if (canMerge(k, g)) n += Math.floor(eqSpare(k, g) / EQUIP.mergeN); return n; }
 function eqMergeAll(){ let n = 0; for (const sl of EQUIP.slots) for (const kd of sl.kinds) for (let g = 0; g < EQUIP.grades.length - 1; g++) while (eqMerge(kd[0], g)) n++; return n; }
 // 자동 장착 — 자리마다 가진 것 중 장착 효과(레벨 반영)가 가장 큰 것
-function eqBest(slotK){
-  const sl = eqSlot(slotK); let best = null, bp = -1;
-  for (const kd of sl.kinds)
+function eqBest(key){
+  const ws = eqWearSlot(key); if (!ws) return null; let best = null, bp = -1;
+  for (const kd of ws.kinds)
     for (let g = 0; g < EQUIP.grades.length; g++) if (eqSeen(kd[0], g)){ const p = itemPct(kd[0], g); if (p > bp){ bp = p; best = { k: kd[0], g }; } }   // 얻어 본 것 전부 (v2.82.1)
   return best;
 }
-function eqAutoEquip(slotK){
-  const best = eqBest(slotK), cur = S.equip[slotK];
-  if (best && (!cur || itemPct(best.k, best.g) > slotPct(slotK) + 1e-9)){ S.equip[slotK] = best; eqLogPush(itemLabel(best.k, best.g) + ' 장착'); return true; }
+function eqAutoEquip(key){
+  const best = eqBest(key), cur = S.equip[key];
+  if (best && (!cur || itemPct(best.k, best.g) > slotPct(key) + 1e-9)){ S.equip[key] = best; eqLogPush(itemLabel(best.k, best.g) + ' 장착'); return true; }
   return false;
 }
-function eqAutoEquipAll(){ let n = 0; for (const sl of EQUIP.slots) if (eqAutoEquip(sl.k)) n++; return n; }
+function eqAutoEquipAll(){ let n = 0; for (const ws of eqWearSlots()) if (eqAutoEquip(ws.key)) n++; return n; }
 function eqWear(k, g){
   const kd = eqKind(k); if (!kd || !eqSeen(k, g)) return false;          // 얻어 본 것이면 개수 0이어도 낀다 (v2.82.1)
-  S.equip[kd.sl.k] = { k, g }; eqLogPush(itemLabel(k, g) + ' 장착'); return true;
+  S.equip[eqWearKeyOf(k)] = { k, g }; eqLogPush(itemLabel(k, g) + ' 장착'); return true;
 }
 // 무기 벗기 → 맨손(주먹·발차기 무브셋). v2.76.9 사용자: "무기 중에 권이 없어서 주먹 모션을 못 봐" — 권갑 아이콘이 올 때까지
 // 무기를 한 번 끼면 맨손으로 돌아갈 길이 없었다. 자동 장착은 버튼을 눌러야만 다시 낀다.
-function eqUnwear(slotK){
-  const it = S.equip[slotK]; if (!it) return false;
-  S.equip[slotK] = null; eqLogPush(itemLabel(it.k, it.g) + ' 벗음 — 맨손'); return true;
+function eqUnwear(key){
+  const it = S.equip[key]; if (!it) return false;
+  S.equip[key] = null; eqLogPush(itemLabel(it.k, it.g) + ' 벗음 — 맨손'); return true;
 }
 // 강화(레벨업) — 은자. 가진 아이템만(개수 0이어도 얻어 봤으면 보유 효과용으로 허용).
 function lvCost(k, g){ return Math.round(killSilver() * EQUIP.costK * (g + 1) * Math.pow(EQUIP.costGrow, itemLv(k, g))); }
 function canLevelItem(k, g){ return eqSeen(k, g) && itemLv(k, g) < EQUIP.grades[g].lvCap && S.silver >= lvCost(k, g); }
 function levelItem(k, g){ if (!canLevelItem(k, g)) return false; S.silver -= lvCost(k, g); eqLvs(k)[g]++; return true; }
-function eqBetterAny(){ return EQUIP.slots.some(sl => { const b = eqBest(sl.k); return b && itemPct(b.k, b.g) > slotPct(sl.k) + 1e-9; }); }
+function eqBetterAny(){ return eqWearSlots().some(ws => { const b = eqBest(ws.key); return b && itemPct(b.k, b.g) > slotPct(ws.key) + 1e-9; }); }
 function canEquipAny(){ return mergeCount() > 0 || eqBetterAny(); }   // 탭 알림점 — 할 일이 있다
 function codexCount(){ let n = 0; for (const sl of EQUIP.slots) for (const kd of eqKinds(sl)) for (let g = 0; g < EQUIP.grades.length; g++) if (eqSeen(kd[0], g)) n++; return n; }
 // 드랍 굴리기 — 구역 등급 가중으로 등급, 자리·종류는 균등
@@ -154,10 +164,11 @@ function buildEquipPanel(){
   for (let g = 0; g < EQUIP.grades.length; g++){                    // 일반이 위(v2.70.2, 사용자: "등급 낮은 게 위에서부터")
     const G = EQUIP.grades[g];
     h += '<div class="eqsec" style="color:' + G.c + '">' + G.n + ' <i>장착 ' + G.base + '% · Lv 상한 ' + G.lvCap + '</i></div><div class="eqcards">';
-    for (const kd of eqKinds(sl)){ const worn = S.equip[sl.k] && S.equip[sl.k].k === kd[0] && S.equip[sl.k].g === g; h += eqCard(kd[0], g, worn); }
+    for (const kd of eqKinds(sl)){ const w0 = eqWornOf(kd[0]); const worn = w0 && w0.k === kd[0] && w0.g === g; h += eqCard(kd[0], g, worn); }
     h += '</div>';
   }
   h += '<div class="znote" id="eqlog"></div>';
+  if (sl.perKind) h += '<div class="znote">장신구는 <b>종류마다 하나씩</b> 낀다 — 옥패·반지·염주·부적·호리병·비단끈 여섯 자리. 종류마다 올려 주는 힘이 다르다.</div>';
   h += '<div class="znote">적을 잡으면 장비가 떨어져 주머니에 쌓인다. 같은 것 ' + EQUIP.mergeN + '개는 합성으로 한 등급 위가 되고, ' +
        '얻어 본 아이템은 안 껴도 보유 효과가 영구히 붙는다(레벨을 올리면 보유 효과도 는다). 보스는 반드시 떨어뜨린다.</div>';
   b.innerHTML = h;
@@ -172,10 +183,12 @@ function buildEquipPanel(){
 function refreshEquip(){
   $('esilver').innerHTML = coin() + ' ' + fmt(S.silver);
   $('eqcnt').textContent = '도감 ' + codexCount() + '/' + EQUIP.slots.reduce((a, sl) => a + eqKinds(sl).length, 0) * EQUIP.grades.length;
-  const sl = eqSlot(eqTab), worn0 = S.equip[sl.k], top = $('eqtop');
-  // 위쪽 창 = 누른 장비(없으면 낀 것) (v2.83, 사용자: "장비 클릭하면 위쪽 창에 해당 장비를 보여줘 — 착용한 건 카드로 아니까").
+  const sl = eqSlot(eqTab), top = $('eqtop');
+  // 위쪽 창 = 누른 장비(없으면 낀 것 — 장신구는 여섯 자리 중 첫 낀 것) (v2.83, 사용자: "장비 클릭하면 위쪽 창에 해당 장비를 보여줘").
   // 행동(장착·강화·합성·벗기)도 여기서. 아래 등급 줄 밑 상세 칸은 뺐다.
-  const sel = (eqSel && eqKind(eqSel.k) && eqKind(eqSel.k).sl.k === sl.k) ? eqSel : worn0;
+  const wornAny = eqWearSlots().filter(ws => ws.sl === sl).map(ws => S.equip[ws.key]).find(Boolean) || null;
+  const sel = (eqSel && eqKind(eqSel.k) && eqKind(eqSel.k).sl.k === sl.k) ? eqSel : wornAny;
+  const worn0 = sel ? eqWornOf(sel.k) : null;
   if (!sel){
     top.innerHTML = '<div class="zn"><span class="eqsl">' + sl.n + '</span> ' + (sl.k === 'weapon' ? '맨손' : '비었다') + '</div>' +
       '<div class="zd">' + (sl.k === 'weapon' ? '주먹·발차기로 싸운다<br>무기를 끼면 그 무기 동작으로' : '적이 떨어뜨린다') + '<br><small>아래 카드를 누르면 여기에 보인다</small></div>';
@@ -202,7 +215,7 @@ function refreshEquip(){
       '<button class="sb" id="eqdmerge"' + (canMerge(k, g) ? '' : ' disabled') + '>합성 ' + EQUIP.mergeN + '→1' + (g < EQUIP.grades.length - 1 ? '' : ' (최고)') + '</button>' +
       '</div>';
     const wb = $('eqdwear'); if (wb) wb.onclick = () => {
-      if (worn){ if (eqUnwear(sl.k)){ toast('무기를 벗었다\n맨손 주먹·발차기'); buildEquipPanel(); } }
+      if (worn){ if (eqUnwear(eqWearKeyOf(k))){ toast('무기를 벗었다\n맨손 주먹·발차기'); buildEquipPanel(); } }
       else if (eqWear(k, g)) buildEquipPanel(); };
     $('eqdmerge').onclick = () => { if (eqMerge(k, g)){ toast(itemLabel(k, g + 1) + ' 합성', { icon: eqIcon(k, g + 1), color: EQUIP.grades[g + 1].c, sec: 2.2 }); buildEquipPanel(); } };
     const lb = $('eqdlv'); let iv = 0; const stop = ()=>{ if (iv){ clearInterval(iv); iv = 0; } };
@@ -216,7 +229,7 @@ function refreshEquip(){
   // 카드 값 갱신 (레벨·개수·착용)
   $('ebody').querySelectorAll('.eqcard').forEach(el => {
     const k = el.dataset.k, g = +el.dataset.g, n = eqInv(k)[g], seen = eqSeen(k, g);
-    const worn = S.equip[eqTab] && S.equip[eqTab].k === k && S.equip[eqTab].g === g;
+    const w0 = eqWornOf(k), worn = w0 && w0.k === k && w0.g === g;
     el.classList.toggle('seen', seen); el.classList.toggle('have', n > 0); el.classList.toggle('worn', !!worn);
     el.classList.toggle('sel', !!(eqSel && eqSel.k === k && eqSel.g === g));
     const em = el.querySelector('em'); if (em) em.textContent = 'Lv' + itemLv(k, g);

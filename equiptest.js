@@ -32,17 +32,19 @@ setTimeout(()=>{
   const d=w.document, S=w.eval('S'), EQ=w.eval('EQUIP');
   w.closeTitle && w.closeTitle();
   // 1) 드랍
-  ok(S.equip.weapon && S.equip.weapon.k==='fist' && S.equip.weapon.g===0 && S.equip.armor && S.equip.armor.g===0 && S.equip.trinket && S.equip.trinket.g===0,
-     '시작 장비: 무기 권갑·방어구·장신구 일반 하나 (v2.79 — 권갑 아이콘 eq_fist)');
+  ok(S.equip.weapon && S.equip.weapon.k==='fist' && S.equip.weapon.g===0 && S.equip.armor && S.equip.armor.g===0 && S.equip.pendant && S.equip.pendant.g===0 && !S.equip.ring,
+     '시작 장비: 무기 권갑·방어구·옥패 일반 하나 (v2.89 장신구 종류별 자리 — 옥패 자리에 낀다)');
+  ok(w.eqWearSlots().length===8 && Object.keys(S.equip).length===8,'장착 자리 8 = 무기·방어구 + 장신구 6종 (v2.89)');
   ok(w.eval('atkPool()[0].key')==='punch','권갑을 끼면 맨손 무브셋(주먹·발차기)');
-  EQ.dropCh=1; S.inv={}; S.codex={}; S.itemLv={}; S.equip={weapon:null,armor:null,trinket:null};
+  const EMPTY=()=>({weapon:null,armor:null,pendant:null,ring:null,beads:null,talisman:null,gourd:null,ribbon:null});
+  EQ.dropCh=1; S.inv={}; S.codex={}; S.itemLv={}; S.equip=EMPTY();
   ok(w.eqKinds(EQ.slots[0]).length===6 && w.eqKinds(EQ.slots[0])[0][0]==='fist','무기 6종(권갑·검·도·창·봉·부채) — 권갑이 첫 자리 (v2.79)');
-  S.equip={weapon:null,armor:null,trinket:null};
-  for(let i=0;i<40;i++) w.rollDrop(false);
-  ok(EQ.slots.every(sl=>S.equip[sl.k]),'40번 드랍에 빈 자리 셋이 첫 장비를 꼈다');
+  S.equip=EMPTY();
+  for(let i=0;i<300;i++) w.rollDrop(false);
+  ok(Object.values(S.equip).every(Boolean),'300번 드랍에 빈 자리 여덟이 다 첫 장비를 꼈다');
   ok(w.codexCount()>0 && Object.keys(S.inv).length>0,'도감 '+w.codexCount()+'종 · 주머니에 쌓였다 (v2.79 권갑도 떨어진다)');
   // 2) 합성 수동
-  S.inv={}; S.codex={}; S.itemLv={}; S.equip={weapon:null,armor:null,trinket:null};
+  S.inv={}; S.codex={}; S.itemLv={}; S.equip=EMPTY();
   w.eqGain('sword',0,3);                                    // 첫 검은 빈 자리에 끼워진다
   ok(S.inv.sword[0]===3 && w.canMerge('sword',0),'3개 모여도 저절로 합쳐지지 않는다 (합성 가능 표시) — 낀 것도 재료 (v2.82.1)');
   ok(w.eqMerge('sword',0) && S.inv.sword[0]===0 && S.inv.sword[1]===1 && w.eqSeen('sword',1) && S.equip.weapon.k==='sword' && S.equip.weapon.g===0,
@@ -82,8 +84,17 @@ setTimeout(()=>{
   ok(Math.abs(hb-expect)<1e-9,'보유 효과: 얻어 본 창 3등급 = +'+hb.toFixed(2)+'% (장착 없이)');
   w.eqGain('saber',2,1);
   ok(w.eqBonus('cdmg')>0 && w.eqBonus('aspd')===0,'도를 끼면 치명 피해(도 조합), 공격 속도는 없음 (v2.82)');
+  // 5) 장신구 6자리 (v2.89)
+  S.inv={}; S.codex={}; S.itemLv={}; S.equip=EMPTY();
+  w.eqGain('pendant',2,1); w.eqGain('ring',3,1); w.eqGain('gourd',1,1);
+  ok(S.equip.pendant.g===2 && S.equip.ring.g===3 && S.equip.gourd.g===1 && !S.equip.beads,'장신구는 종류마다 제 자리에 낀다 (옥패·반지·호리병 동시 착용)');
+  ok(Math.abs(w.eqBonus('crit')-w.itemPct('pendant',2)*EQ.profile.pendant.crit-w.codexStat(EQ.slots[2],'crit')-w.codexStat(EQ.slots[0],'crit'))<1e-9,'옥패 = 치명타 주 효과 (종류별 프로필)');
+  ok(Math.abs(w.eqBonus('gold')-(w.itemPct('pendant',2)+w.itemPct('ring',3)+w.itemPct('gourd',1))*EQ.profile.ring.gold-w.codexStat(EQ.slots[2],'gold')-w.codexStat(EQ.slots[0],'gold'))<1e-9,'은자 획득은 장신구 공통 부가 — 낀 셋이 합산');
+  w.eqGain('ring',5,1);
+  ok(w.eqAutoEquipAll()===1 && S.equip.ring.g===5 && S.equip.pendant.g===2,'자동 장착은 자리마다 — 반지 자리만 신화로 바뀐다');
+  ok(w.eqAuraGrade()===5,'기운 색은 8자리 중 최고 등급(신화 반지)');
   // 6) 저장·복원·이월
-  S.inv={sword:[2,0,0,0,0],robe:[0,0,1,0,0]}; S.itemLv={sword:[5,0,0,0,0]}; S.codex={sword:1,robe:4}; S.equip={weapon:{k:'sword',g:0},armor:{k:'robe',g:2},trinket:null};
+  S.inv={sword:[2,0,0,0,0],robe:[0,0,1,0,0]}; S.itemLv={sword:[5,0,0,0,0]}; S.codex={sword:1,robe:4}; S.equip=Object.assign(EMPTY(),{weapon:{k:'sword',g:0},armor:{k:'robe',g:2}});
   w.saveNow(); const saved=w.localStorage.getItem('wuxia1');
   const {w:w2}=boot(saved);
   setTimeout(()=>{
@@ -93,7 +104,7 @@ setTimeout(()=>{
     const {w:w3}=boot(JSON.stringify(old));
     setTimeout(()=>{
       const S3=w3.eval('S');
-      ok(S3.equip.weapon.k==='saber' && S3.equip.weapon.g===6 && S3.itemLv.saber[6]===7 && S3.equip.armor===null && S3.itemLv.ring[3]===9,'옛 저장: 등급 잘림(최고 6 초월), 자리 강화 7·장비 lv 9는 아이템 레벨로 이월, 없는 종류 버림');
+      ok(S3.equip.weapon.k==='saber' && S3.equip.weapon.g===6 && S3.itemLv.saber[6]===7 && S3.equip.armor===null && S3.itemLv.ring[3]===9 && S3.equip.ring && S3.equip.ring.g===3 && !('trinket' in S3.equip),'옛 저장: 등급 잘림(최고 6 초월), 자리 강화 7·장비 lv 9는 아이템 레벨로 이월, 없는 종류 버림, 옛 장신구 자리(ring)는 반지 자리로 이월 (v2.89)');
       // 7) 패널
       const d3=w3.document; w3.closeTitle && w3.closeTitle();
       d3.getElementById('tab-equip').click();

@@ -61,22 +61,28 @@ function applySave(d){
   S.mute        = !!d.mute;                     // 효과음 끔 (v2.85, 예전 저장엔 없다 → 켬)
   // 장비 (v2.70 표준형) — 자리·주머니·아이템 레벨·도감을 유효한 것만 되살린다.
   // v2.66/67 저장의 자리 강화(eqLv·장비 lv)는 장착품의 아이템 레벨로 옮긴다.
-  S.equip = { weapon:null, armor:null, trinket:null }; S.inv = {}; S.itemLv = {}; S.codex = {};
+  S.equip = {}; for (const ws of eqWearSlots()) S.equip[ws.key] = null;
+  S.inv = {}; S.itemLv = {}; S.codex = {};
   const NG = EQUIP.grades.length;
   for (const sl of EQUIP.slots){
-    const it = d.equip && d.equip[sl.k];
-    if (it && typeof it === 'object' && sl.kinds.some(x => x[0] === it.k))
-      S.equip[sl.k] = { k: it.k, g: clamp(it.g|0, 0, NG-1) };
+    // 자리 이월 — 장신구는 v2.89부터 종류별 자리: 옛 저장의 equip.trinket {k:'ring'}은 S.equip.ring으로
+    const wsList = eqWearSlots().filter(ws => ws.sl === sl);
+    let it = null;
+    for (const ws of wsList){
+      const raw = d.equip && (d.equip[ws.key] || (sl.perKind && d.equip[sl.k] && d.equip[sl.k].k === ws.key ? d.equip[sl.k] : null));
+      if (raw && typeof raw === 'object' && ws.kinds.some(x => x[0] === raw.k)){ S.equip[ws.key] = { k: raw.k, g: clamp(raw.g|0, 0, NG-1) }; it = it || raw; }
+    }
     for (const kd of sl.kinds){
       const k = kd[0];
       if (d.inv && Array.isArray(d.inv[k])) S.inv[k] = Array.from({length:NG}, (_, i) => Math.max(0, d.inv[k][i]|0));
       if (d.itemLv && Array.isArray(d.itemLv[k])) S.itemLv[k] = Array.from({length:NG}, (_, i) => clamp(d.itemLv[k][i]|0, 0, EQUIP.grades[i].lvCap));
       if (d.codex && typeof d.codex === 'object' && d.codex[k]) S.codex[k] = (d.codex[k]|0) & ((1<<NG)-1);
     }
-    const w = S.equip[sl.k];
-    if (w){
+    for (const ws of wsList){
+      const w = S.equip[ws.key]; if (!w) continue;
       S.codex[w.k] = (S.codex[w.k]|0) | (1 << w.g);
-      const old = (it && it.lv) ? it.lv|0 : (d.eqLv && d.eqLv[sl.k]) ? d.eqLv[sl.k]|0 : 0;   // 옛 자리 강화 이월
+      const raw = d.equip && (d.equip[ws.key] || (sl.perKind ? d.equip[sl.k] : null));
+      const old = (raw && raw.lv) ? raw.lv|0 : (d.eqLv && d.eqLv[sl.k]) ? d.eqLv[sl.k]|0 : 0;   // 옛 자리 강화 이월
       if (old > 0){ if (!S.itemLv[w.k]) S.itemLv[w.k] = Array.from({length:NG}, () => 0);
         S.itemLv[w.k][w.g] = clamp(Math.max(S.itemLv[w.k][w.g], old), 0, EQUIP.grades[w.g].lvCap); }
     }

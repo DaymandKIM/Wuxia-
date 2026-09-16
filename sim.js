@@ -66,7 +66,7 @@ function spend(){
   R.eqMergeAll(); R.eqAutoEquipAll();
   for(let n=0;n<3;n++){
     let b=null,c=1e18;
-    for(const sl of R.EQUIP.slots){ const it=S.equip[sl.k]; if(!it) continue;
+    for(const key in S.equip){ const it=S.equip[key]; if(!it) continue;   // 낀 것 전부 (v2.89 8자리)
       if(R.canLevelItem(it.k,it.g)){ const cc=R.lvCost(it.k,it.g); if(cc<c){c=cc;b=it;} } }
     if(!b)break;
     R.levelItem(b.k,b.g);

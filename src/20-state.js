@@ -35,7 +35,7 @@ const S = {
   tree: {},                      // 문파 무공도 — 익힌 노드 { 문파키: { 노드id:1 } }
   treeArt: {},                   // (구) 트리로 습득한 무공 — v2.54.2에서 폐지, 옛 저장 회수용
   traits: {},                    // 스킬 심화 특성 { 무공키: { 특성id:1 } } (v2.55)
-  equip: { weapon:null, armor:null, trinket:null },   // 장착 { k:종류, g:등급 } (v2.70 표준형)
+  equip: { weapon:null, armor:null, pendant:null, ring:null, beads:null, talisman:null, gourd:null, ribbon:null },   // 장착 { k:종류, g:등급 } — 자리 키 = eqWearSlots() (v2.89 장신구 종류별 6자리)
   inv:   {},                     // 주머니 { 종류: [등급별 개수 ×5] } — 합성은 수동(일괄 합성)
   itemLv:{},                     // 아이템 레벨 { 종류: [등급별 레벨 ×5] } — 장착·보유 효과가 탄다
   codex: {},                     // 도감 { 종류: 얻어 본 등급 비트 } — 보유 효과의 근거
