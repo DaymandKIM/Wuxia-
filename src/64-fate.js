@@ -51,7 +51,15 @@ function maybeFate(){
 function stepFate(dt){
   if (!fateEv) return;
   fateAutoT -= dt;
-  $('fbtn').innerHTML = '<span>받아들인다</span><i>' + Math.max(1, Math.ceil(fateAutoT)) + '초 뒤 저절로</i>';
+  // 카운트다운은 초가 바뀔 때 <i>의 글자만 바꾼다 (v2.83 "기연 버튼이 동작 안 함") — 매 프레임 innerHTML을 갈아끼우면
+  // 손가락이 닿은 <span>이 떼기 전에 DOM에서 사라져 click이 안 살아난다.
+  const sec = Math.max(1, Math.ceil(fateAutoT)), fb = $('fbtn');
+  if (fb.dataset.sec !== String(sec)){
+    fb.dataset.sec = String(sec);
+    let ci = fb.querySelector('i');
+    if (!ci){ fb.innerHTML = '<span>받아들인다</span><i></i>'; ci = fb.querySelector('i'); }
+    ci.textContent = sec + '초 뒤 저절로';
+  }
   if (fateAutoT <= 0) applyFate();
 }
 

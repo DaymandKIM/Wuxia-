@@ -147,7 +147,13 @@
   .eqcard.seen img{filter:grayscale(1) brightness(.7);}
   .eqcard.have{background:color-mix(in srgb,var(--gc) 26%,#0e1319);}
   .eqcard.have img{filter:none;}
-  .eqcard.worn{box-shadow:0 0 0 2px var(--gc) inset,0 0 8px color-mix(in srgb,var(--gc) 60%,transparent);}
+  .eqcard.worn{border-color:#ffd95e;box-shadow:0 0 0 2px #ffd95e inset,0 0 10px #ffd95e88;}   /* 착용 = 금색 (v2.83, 사용자: "착용은 좀 더 잘 보이게 색을") */
+  .eqcard.worn i{color:#ffd95e;}
+  .eqico.worn{box-shadow:0 0 0 2px #ffd95e inset,0 0 10px #ffd95e66;}
+  .eqwornTag{font-style:normal;font-size:10px;color:#0a0d12;background:#ffd95e;border-radius:5px;padding:1px 5px;margin-left:4px;font-weight:900;}
+  #eqtop .zst{margin-top:8px;display:flex;gap:6px;}
+  #eqtop .zst .sb,#eqtop .zst .trbuy{flex:1;padding:8px 6px;font-size:12.5px;}
+  #eqtop .zst .sb:disabled,#eqtop .zst .trbuy:disabled{opacity:.42;}
   .eqcard.sel{outline:2px solid #eaf3ff;outline-offset:1px;}
   .eqcard em{position:absolute;left:2px;top:1px;font-style:normal;font-size:8.5px;color:#cfe0f2;text-shadow:0 1px 2px #000;}
   .eqcard b{position:absolute;right:2px;bottom:1px;font-size:9.5px;color:#fff;text-shadow:0 1px 2px #000;}
@@ -331,7 +337,7 @@
   #opanel.show{pointer-events:auto;opacity:1;}
   /* 기연은 자동 수락이라 화면 가운데를 막지 않는다 (v2.33) — 위에서 내려오는
      띠로 흘려보낸다. 배경 어둠 없음, 전투가 계속 보인다. */
-  #fpanel{position:absolute;left:0;right:0;top:calc(env(safe-area-inset-top) + 78px);
+  #fpanel{position:absolute;left:0;right:0;top:calc(env(safe-area-inset-top) + 78px);z-index:40;   /* 패널·스킬창 위 (v2.83 "기연 버튼이 동작 안 함") */
     display:flex;justify-content:center;pointer-events:none;opacity:0;
     transform:translateY(-12px);transition:opacity .25s,transform .25s;}
   #fpanel.show{opacity:1;transform:translateY(0);}

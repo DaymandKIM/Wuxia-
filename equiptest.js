@@ -100,8 +100,11 @@ setTimeout(()=>{
       ok(d3.getElementById('epanel').classList.contains('show'),'장비 탭이 패널을 연다');
       ok(d3.querySelectorAll('#etabs .askind').length===3,'[무기][방어구][장신구] 탭');
       ok(d3.querySelectorAll('.eqcard').length===42,'무기 탭 카드 = 6종×7등급 (v2.81 신화·초월)');
-      d3.querySelector('.eqcard.seen').click();
-      ok(!d3.getElementById('eqdet').hidden && !!d3.getElementById('eqdlv'),'카드를 누르면 상세(장착·강화·합성)가 열린다');
+      const firstUnseen=[...d3.querySelectorAll('.eqcard')].find(e=>!e.classList.contains('seen')); firstUnseen.click();
+      ok(!!d3.getElementById('eqdlv') && d3.getElementById('eqtop').textContent.includes('미보유') && d3.getElementById('eqdwear').disabled,
+         '안 가진 카드를 누르면 위쪽 창에 그 장비(미보유·장착 비활성)가 보인다 (v2.83)');
+      d3.querySelector('.eqcard.worn').click();
+      ok(d3.getElementById('eqtop').textContent.includes('착용 중') && d3.querySelectorAll('.eqcard.worn').length===1,'낀 카드를 누르면 위쪽 창에 착용 중 표시');
       d3.querySelector('#etabs .askind[data-t="trinket"]').click();
       ok(d3.querySelectorAll('.eqcard.worn').length===1,'장신구 탭에서 낀 반지가 표시된다');
       ok(errs.length===0,'런타임 오류 '+errs.length+(errs.length?': '+errs[0]:''));

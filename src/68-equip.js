@@ -154,8 +154,6 @@ function buildEquipPanel(){
     h += '<div class="eqsec" style="color:' + G.c + '">' + G.n + ' <i>장착 ' + G.base + '% · Lv 상한 ' + G.lvCap + '</i></div><div class="eqcards">';
     for (const kd of eqKinds(sl)){ const worn = S.equip[sl.k] && S.equip[sl.k].k === kd[0] && S.equip[sl.k].g === g; h += eqCard(kd[0], g, worn); }
     h += '</div>';
-    // 상세·행동창은 누른 카드의 등급 줄 바로 아래 (v2.82, 사용자: "행동창이 맨 아래 뜨니까 불편")
-    if (eqSel && eqSel.g === g && eqKind(eqSel.k) && eqKind(eqSel.k).sl.k === sl.k) h += '<div class="eqdet" id="eqdet" hidden></div>';
   }
   h += '<div class="znote" id="eqlog"></div>';
   h += '<div class="znote">적을 잡으면 장비가 떨어져 주머니에 쌓인다. 같은 것 ' + EQUIP.mergeN + '개는 합성으로 한 등급 위가 되고, ' +
@@ -165,56 +163,54 @@ function buildEquipPanel(){
   $('eqmerge').onclick = () => { const n = eqMergeAll(); if (n) toast('합성 ' + n + '회'); buildEquipPanel(); };
   $('eqauto').onclick  = () => { const n = eqAutoEquipAll(); toast(n ? '더 좋은 장비로 갈아입었다' : '이미 가장 좋은 장비다'); buildEquipPanel(); };
   b.querySelectorAll('.eqcard').forEach(el => { el.onclick = () => { const k = el.dataset.k, g = +el.dataset.g;
-    eqSel = { k, g }; buildEquipPanel();                        // 안 가진 것도 눌러 능력치를 본다 (v2.82, 사용자: "얼마나 센지 봐야지")
-    const d = $('eqdet'); if (d && d.scrollIntoView) d.scrollIntoView({ block: 'nearest' }); }; });
+    eqSel = { k, g }; buildEquipPanel();                        // 안 가진 것도 눌러 능력치를 본다 (v2.82) — 위쪽 창에 보인다 (v2.83)
+    const b2 = $('ebody'); if (b2) b2.scrollTop = 0; }; });
   refreshEquip();
 }
 function refreshEquip(){
   $('esilver').innerHTML = coin() + ' ' + fmt(S.silver);
   $('eqcnt').textContent = '도감 ' + codexCount() + '/' + EQUIP.slots.reduce((a, sl) => a + eqKinds(sl).length, 0) * EQUIP.grades.length;
-  const sl = eqSlot(eqTab), it = S.equip[sl.k], top = $('eqtop');
-  if (!it) top.innerHTML = '<div class="zn"><span class="eqsl">' + sl.n + '</span> ' + (sl.k === 'weapon' ? '맨손' : '비었다') + '</div>' +
-    '<div class="zd">' + (sl.k === 'weapon' ? '주먹·발차기로 싸운다<br>무기를 끼면 그 무기 동작으로' : '적이 떨어뜨린다') + '</div>';
-  else {
-    const G = EQUIP.grades[it.g], kd = eqKind(it.k), pct = slotPct(sl.k), cx = codexPct(sl);
-    top.innerHTML = '<div class="eqrow"><div class="eqico" style="border-color:' + G.c + '"><img src="' + eqIcon(it.k, it.g) + '" alt=""><b>Lv' + itemLv(it.k, it.g) + '</b></div>' +
-      '<div class="trl"><div class="zn"><span class="eqsl">' + sl.n + '</span> <em style="color:' + G.c + '">' + G.n + ' ' + kd.n + '</em></div>' +
-      '<div class="zd">' + itemStats(it.k, it.g).map(x => EQUIP.statName[x.stat] + ' +' + x.pct.toFixed(1) + '%').join('<br>') +
-      '<br><span class="eqhold">보유 효과 합 ' + EQUIP.statName[sl.stat] + ' +' + cx.toFixed(1) + '%</span></div></div>' +
-      (sl.k === 'weapon' ? '<button class="sb" id="equnwear">벗기 · 맨손</button>' : '') + '</div>';
-    const ub = $('equnwear'); if (ub) ub.onclick = () => { if (eqUnwear(sl.k)){ toast('무기를 벗었다\n맨손 주먹·발차기'); buildEquipPanel(); } };
-  }
-  const mc = mergeCount(); $('eqmerge').textContent = '일괄 합성' + (mc ? ' (' + mc + ')' : ''); $('eqmerge').disabled = !mc;
-  $('eqmerge').classList.toggle('on', mc > 0);   // 합성할 게 있으면 호박색으로 (v2.79.1 사용자: "활성화되면 색을 바꿔 잘 보이게")
-  $('eqauto').classList.toggle('on', eqBetterAny());
-  // 상세
-  const d = $('eqdet');
-  if (d && eqSel){
-    const { k, g } = eqSel, G = EQUIP.grades[g], kd = eqKind(k), n = eqInv(k)[g], lv = itemLv(k, g), cap = G.lvCap, seen = eqSeen(k, g);
-    const worn = S.equip[kd.sl.k] && S.equip[kd.sl.k].k === k && S.equip[kd.sl.k].g === g;
+  const sl = eqSlot(eqTab), worn0 = S.equip[sl.k], top = $('eqtop');
+  // 위쪽 창 = 누른 장비(없으면 낀 것) (v2.83, 사용자: "장비 클릭하면 위쪽 창에 해당 장비를 보여줘 — 착용한 건 카드로 아니까").
+  // 행동(장착·강화·합성·벗기)도 여기서. 아래 등급 줄 밑 상세 칸은 뺐다.
+  const sel = (eqSel && eqKind(eqSel.k) && eqKind(eqSel.k).sl.k === sl.k) ? eqSel : worn0;
+  if (!sel){
+    top.innerHTML = '<div class="zn"><span class="eqsl">' + sl.n + '</span> ' + (sl.k === 'weapon' ? '맨손' : '비었다') + '</div>' +
+      '<div class="zd">' + (sl.k === 'weapon' ? '주먹·발차기로 싸운다<br>무기를 끼면 그 무기 동작으로' : '적이 떨어뜨린다') + '<br><small>아래 카드를 누르면 여기에 보인다</small></div>';
+  } else {
+    const { k, g } = sel, G = EQUIP.grades[g], kd = eqKind(k), n = eqInv(k)[g], lv = itemLv(k, g), cap = G.lvCap, seen = eqSeen(k, g);
+    const worn = !!(worn0 && worn0.k === k && worn0.g === g);
     const cur = itemStats(k, g), nxt = itemStats(k, g, lv + 1), hold = itemStats(k, g, undefined, true), holdN = itemStats(k, g, lv + 1, true);
-    d.hidden = false;
-    d.innerHTML = '<div class="zn"><em style="color:' + G.c + '">' + G.n + '</em> ' + kd.n + ' <small>' +
-      (seen ? 'Lv ' + lv + ' / ' + cap + ' · 보유 ×' + n : '미보유 · Lv 상한 ' + cap) + '</small></div>' +
+    const grow = seen && lv < cap;
+    top.innerHTML = '<div class="eqrow"><div class="eqico' + (worn ? ' worn' : '') + '" style="border-color:' + G.c + '"><img src="' + eqIcon(k, g) + '" alt="">' +
+        (seen ? '<b>Lv' + lv + '</b>' : '') + '</div>' +
+      '<div class="trl"><div class="zn"><em style="color:' + G.c + '">' + G.n + '</em> ' + kd.n +
+        (worn ? ' <i class="eqwornTag">착용 중</i>' : '') + ' <small>' + (seen ? 'Lv ' + lv + ' / ' + cap + ' · 보유 ×' + n : '미보유 · Lv 상한 ' + cap) + '</small></div>' +
       '<div class="zd">' + cur.map((x, i) => '<span class="eqlab">' + (i ? '' : '장착') + '</span>' + EQUIP.statName[x.stat] + ' +' + x.pct.toFixed(1) + '%' +
-        (seen && lv < cap ? ' <i>→ +' + nxt[i].pct.toFixed(1) + '%</i>' : '')).join('<br>') + '</div>' +
-      '<div class="zd">' + hold.map((x, i) => '<span class="eqlab">' + (i ? '' : '보유') + '</span>' + EQUIP.statName[x.stat] + ' +' + x.pct.toFixed(2) + '%' +
-        (seen && lv < cap ? ' <i>→ +' + holdN[i].pct.toFixed(2) + '%</i>' : '')).join('<br>') + ' <small>(영구)</small></div>' +
+        (grow ? ' <i>→ +' + nxt[i].pct.toFixed(1) + '%</i>' : '')).join('<br>') + '</div>' +
+      '<div class="zd"><span class="eqlab">보유</span>' + hold.map((x, i) => EQUIP.statName[x.stat] + ' +' + x.pct.toFixed(2) + '%' + (grow ? ' <i>→ +' + holdN[i].pct.toFixed(2) + '%</i>' : '')).join('<br><span class="eqlab"></span>') + ' <small>(영구)</small>' +
+        '<br><span class="eqhold">이 자리 보유 효과 합 ' + EQUIP.statName[sl.stat] + ' +' + codexPct(sl).toFixed(1) + '%</span></div>' +
       (seen ? '' : '<div class="zd"><small>사냥에서 떨어지거나 아래 등급 ' + EQUIP.mergeN + '개를 합성하면 얻는다</small></div>') +
+      '</div></div>' +
       '<div class="zst">' +
-      (worn && kd.sl.k === 'weapon'
-        ? '<button class="sb" id="eqdwear">벗기 · 맨손</button>'
-        : '<button class="sb" id="eqdwear"' + (worn || !seen ? ' disabled' : '') + '>' + (worn ? '착용 중' : '장착') + '</button>') +
+      (worn
+        ? (sl.k === 'weapon' ? '<button class="sb" id="eqdwear">벗기 · 맨손</button>' : '<button class="sb" disabled>착용 중</button>')
+        : '<button class="sb" id="eqdwear"' + (seen ? '' : ' disabled') + '>장착</button>') +
       '<button class="trbuy" id="eqdlv"' + (canLevelItem(k, g) ? '' : ' disabled') + '><span>' + (lv >= cap ? '상한' : '강화 ' + fmt(lvCost(k, g))) + '</span><i>' + coin() + '</i></button>' +
-      '<button class="sb" id="eqdmerge"' + (canMerge(k, g) ? '' : ' disabled') + '>합성 ' + EQUIP.mergeN + '→1' + (g < EQUIP.grades.length - 1 ? (worn && n > 0 && n - 1 < EQUIP.mergeN ? ' (낀 것 제외)' : '') : ' (최고)') + '</button>' +
+      '<button class="sb" id="eqdmerge"' + (canMerge(k, g) ? '' : ' disabled') + '>합성 ' + EQUIP.mergeN + '→1' + (g < EQUIP.grades.length - 1 ? '' : ' (최고)') + '</button>' +
       '</div>';
-    $('eqdwear').onclick = () => { if (worn && kd.sl.k === 'weapon' ? eqUnwear(kd.sl.k) : eqWear(k, g)) buildEquipPanel(); };
+    const wb = $('eqdwear'); if (wb) wb.onclick = () => {
+      if (worn){ if (eqUnwear(sl.k)){ toast('무기를 벗었다\n맨손 주먹·발차기'); buildEquipPanel(); } }
+      else if (eqWear(k, g)) buildEquipPanel(); };
     $('eqdmerge').onclick = () => { if (eqMerge(k, g)) buildEquipPanel(); };
     const lb = $('eqdlv'); let iv = 0; const stop = ()=>{ if (iv){ clearInterval(iv); iv = 0; } };
     lb.onpointerdown = e => { e.preventDefault(); if (levelItem(k, g)) refreshEquip(); stop();
       iv = setInterval(()=>{ if (levelItem(k, g)) refreshEquip(); else stop(); }, 140); };
     lb.onpointerup = lb.onpointerleave = lb.onpointercancel = stop;
-  } else if (d){ d.hidden = true; d.innerHTML = ''; }
+  }
+  const mc = mergeCount(); $('eqmerge').textContent = '일괄 합성' + (mc ? ' (' + mc + ')' : ''); $('eqmerge').disabled = !mc;
+  $('eqmerge').classList.toggle('on', mc > 0);   // 합성할 게 있으면 호박색으로 (v2.79.1 사용자: "활성화되면 색을 바꿔 잘 보이게")
+  $('eqauto').classList.toggle('on', eqBetterAny());
   // 카드 값 갱신 (레벨·개수·착용)
   $('ebody').querySelectorAll('.eqcard').forEach(el => {
     const k = el.dataset.k, g = +el.dataset.g, n = eqInv(k)[g], seen = eqSeen(k, g);
