@@ -1109,6 +1109,26 @@ const EQUIP = {
   costK: 4, costGrow: 1.06,      // 강화 비용 = 현 단계 처치 은자 × costK × (등급+1) × costGrow^lv
 };
 
+// 업적 (v2.90, 사용자: "업적 메뉴 채우기") — 누적형 11종, 단계(tiers)마다 은자 보상. 보상은 현 단계 처치 은자 × rewardMul[단계]
+// (늦게 받을수록 커진다 — 받는 재미가 남는 쪽). src 값: 69-achv achvValue()가 읽는 상태 이름. fmt: 값 표기 방식.
+const ACHV = {
+  list: [
+    { k:'kills',  n:'백인참',   d:'적을 쓰러뜨린다',            src:'totalKills', tiers:[100, 1000, 10000, 100000, 1000000] },
+    { k:'boss',   n:'수호자 격파', d:'구역 보스를 처음 꺾는다',   src:'bosses',     tiers:[1, 2, 3, 4, 5] },
+    { k:'realm',  n:'경지',     d:'경지에 오른다',              src:'realm',      tiers:[4, 8, 12, 20, 28, 36], fmt:'realm' },
+    { k:'zone',   n:'천하 유람', d:'새 사냥터에 발을 들인다',    src:'unlocked',   tiers:[2, 3, 4, 5] },
+    { k:'codex',  n:'장비 도감', d:'장비를 얻어 본다',           src:'codex',      tiers:[10, 30, 60, 90, 112] },
+    { k:'grade',  n:'명품',     d:'높은 등급 장비를 낀다',       src:'grade',      tiers:[2, 3, 4, 5, 6], fmt:'grade' },
+    { k:'merge',  n:'단조',     d:'장비를 합성한다',            src:'merges',     tiers:[1, 30, 100, 500] },
+    { k:'level',  n:'연마',     d:'장비를 강화한다',            src:'levels',     tiers:[1, 50, 200, 1000] },
+    { k:'arts',   n:'박학',     d:'무공을 익힌다',              src:'arts',       tiers:[1, 3, 6, 10] },
+    { k:'fate',   n:'기연',     d:'기연을 만난다',              src:'fates',      tiers:[1, 5, 15, 40] },
+    { k:'downs',  n:'칠전팔기', d:'쓰러져도 일어선다',           src:'downs',      tiers:[1, 10, 50, 200] },
+  ],
+  rewardMul: [8, 25, 70, 200, 600, 1500],      // 단계별 보상 = 처치 은자 × 이 값 (v2.90 첫 안 30~4000은 4h 진행을 한 단계 당겼다 → 1/3~1/4)
+  checkSec: 1,                                 // 달성 알림 검사 주기(초)
+};
+
 // 은자 — 첫 재화. 처치 드랍 + 보스 첫 격파 + 오프라인 정산.
 // ※ 수치는 임시. 쓸 곳(심법)이 들어오면 sim으로 다시 잡는다.
 const SILVER = {

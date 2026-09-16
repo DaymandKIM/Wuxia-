@@ -26,7 +26,7 @@ function hud(){
   $('tabs').style.opacity = showing ? '1' : '0';
   // 스킬창·시험 버튼은 패널이 열리면 감춘다 — 패널 위로 떠서 스탯 줄·무공
   // 칸을 가린다는 피드백(v2.33). 어느 시트든 열려 있으면 숨긴다.
-  const panelOpen = ['zpanel','trpanel','apanel','dpanel','rpanel','tpanel','opanel','fpanel','epanel','mpanel']   // epanel 누락 → 장비 탭 위로 스킬창 쿨이 비쳤다(v2.70.4)
+  const panelOpen = ['zpanel','trpanel','apanel','dpanel','rpanel','tpanel','opanel','fpanel','epanel','mpanel','vpanel']   // epanel 누락 → 장비 탭 위로 스킬창 쿨이 비쳤다(v2.70.4)
     .some(id => $(id) && $(id).classList.contains('show'));
   const bars = showing && !panelOpen;
   const sb = $('sbar'); sb.style.opacity = bars ? '1' : '0'; sb.style.pointerEvents = bars ? '' : 'none';
@@ -37,9 +37,10 @@ function hud(){
   if (typeof equipHud === 'function') equipHud();  // 장비 탭 (v2.66)
   // [테스트 전용] 시험 버튼은 패널이 열려 있으면 숨긴다 (v2.69.8 — CSS :has가 구형 크로뮴에서 안 먹혀 JS로)
   const tbtnEl = $('tbtn');
-  if (tbtnEl) tbtnEl.classList.toggle('hide', ['zpanel','trpanel','apanel','dpanel','rpanel','epanel','mpanel'].some(id => { const e = $(id); return e && e.classList.contains('show'); }));
+  if (tbtnEl) tbtnEl.classList.toggle('hide', ['zpanel','trpanel','apanel','dpanel','rpanel','epanel','mpanel','vpanel'].some(id => { const e = $(id); return e && e.classList.contains('show'); }));
   if (typeof deepenHud === 'function') deepenHud();  // 스킬 심화창(트리) 갱신
   menuHud();                                     // ≡ 메뉴 (v2.85)
+  if (typeof achvHud === 'function') achvHud(1/60);   // 업적 달성 알림 (v2.90)
   skillHud();                                    // 스킬창 — 초식 쿨다운
 
   const st = stage();
@@ -303,5 +304,7 @@ function menuHud(){
   const mp = $('mpanel'); if (!mp || !mp.classList.contains('show')) return;
   const ms = $('msound'); ms.classList.toggle('on', !S.mute); ms.querySelector('.mv').textContent = S.mute ? '끔' : '켬';
   $('mstatv').textContent = '처치 ' + fmt(S.totalKills) + ' · 쓰러짐 ' + S.downs;
+  const ma = $('mach'); if (ma){ const n = typeof achvClaimableAll === 'function' ? achvClaimableAll() : 0; ma.disabled = false;
+    ma.querySelector('.mv').textContent = n ? '받을 것 ' + n : ''; ma.classList.toggle('on', n > 0); }
   $('mverv').textContent = typeof GAME_VER !== 'undefined' ? GAME_VER : '';
 }

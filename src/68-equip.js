@@ -84,7 +84,7 @@ function eqSpare(k, g){ return eqInv(k)[g]; }
 function canMerge(k, g){ return g < EQUIP.grades.length - 1 && eqSpare(k, g) >= EQUIP.mergeN; }
 function eqMerge(k, g){
   if (!canMerge(k, g)) return false;
-  const inv = eqInv(k); inv[g] -= EQUIP.mergeN; inv[g + 1] += 1; S.codex[k] = (S.codex[k] | 0) | (1 << (g + 1));
+  const inv = eqInv(k); inv[g] -= EQUIP.mergeN; inv[g + 1] += 1; S.codex[k] = (S.codex[k] | 0) | (1 << (g + 1)); S.merges = (S.merges | 0) + 1;
   eqLogPush(itemLabel(k, g) + ' ×' + EQUIP.mergeN + ' → ' + itemLabel(k, g + 1));
   return true;
 }
@@ -116,7 +116,7 @@ function eqUnwear(key){
 // 강화(레벨업) — 은자. 가진 아이템만(개수 0이어도 얻어 봤으면 보유 효과용으로 허용).
 function lvCost(k, g){ return Math.round(killSilver() * EQUIP.costK * (g + 1) * Math.pow(EQUIP.costGrow, itemLv(k, g))); }
 function canLevelItem(k, g){ return eqSeen(k, g) && itemLv(k, g) < EQUIP.grades[g].lvCap && S.silver >= lvCost(k, g); }
-function levelItem(k, g){ if (!canLevelItem(k, g)) return false; S.silver -= lvCost(k, g); eqLvs(k)[g]++; return true; }
+function levelItem(k, g){ if (!canLevelItem(k, g)) return false; S.silver -= lvCost(k, g); eqLvs(k)[g]++; S.levels = (S.levels | 0) + 1; return true; }
 function eqBetterAny(){ return eqWearSlots().some(ws => { const b = eqBest(ws.key); return b && itemPct(b.k, b.g) > slotPct(ws.key) + 1e-9; }); }
 function canEquipAny(){ return mergeCount() > 0 || eqBetterAny(); }   // 탭 알림점 — 할 일이 있다
 function codexCount(){ let n = 0; for (const sl of EQUIP.slots) for (const kd of eqKinds(sl)) for (let g = 0; g < EQUIP.grades.length; g++) if (eqSeen(kd[0], g)) n++; return n; }

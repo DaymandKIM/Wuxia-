@@ -84,7 +84,7 @@ for (const z in BOSSFACE){ const k = BOSSFACE[z]; if (ASSET[k]) loadImg(k, ASSET
 for (const z in GROUNDTEX.keys){ const k = GROUNDTEX.keys[z]; if (ASSET[k]) loadImg(k, ASSET[k]); }
 
 // 하단 탭 — 같은 탭 재클릭이면 닫고, 다른 패널은 접는다
-function closeSheets(){ closeZonePanel(); closeTrain(); closeArts(); closeRealmPanel(); closeEquip(); closeMenu();
+function closeSheets(){ closeZonePanel(); closeTrain(); closeArts(); closeRealmPanel(); closeEquip(); closeMenu(); closeAchv();
   if (typeof closeDeepen === 'function') closeDeepen();
   const tp = $('tpanel'); if (tp) tp.classList.remove('show'); }   // [테스트 전용] 시험 패널이 DOM 뒤라 열린 채면 다른 패널을 덮어 못 눌렀다(v2.70.4)
 $('tab-zone').onclick = () => {
@@ -123,6 +123,9 @@ $('menubtn').onclick = () => { const open = $('mpanel').classList.contains('show
 $('mpanel').onclick  = e => { if (e.target.id === 'mpanel') closeMenu(); };
 $('msound').onclick  = () => { S.mute = !S.mute; menuHud(); saveNow(); toast(S.mute ? '효과음을 껐다' : '효과음을 켰다'); };
 $('msave').onclick   = () => { saveNow(); closeMenu(); toast('저장했다'); };
+$('mach').onclick    = () => { closeSheets(); openAchv(); };   // 업적 (v2.90)
+$('vclose').onclick  = closeAchv;
+$('vpanel').onclick  = e => { if (e.target.id === 'vpanel') closeAchv(); };
 $('mstat').onclick   = () => { toast('처치 ' + fmt(S.totalKills) + '\n쓰러짐 ' + S.downs + '\n기연 ' + (S.fates|0)); };
 $('rclose').onclick = closeRealmPanel;
 $('rpanel').onclick = e => { if (e.target.id === 'rpanel') closeRealmPanel(); };
