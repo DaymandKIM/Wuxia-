@@ -198,9 +198,11 @@ function offlineGains(awaySec){
   S.karma += Math.min(kills * killKarmaAt(), karmaNeed() * OFFLINE.karmaCap);
   S.totalKills += kills;
   S.silver += silver;
-  if (typeof fameAdd === 'function') fameAdd(kills * killFame());   // 명성도 쌓인다 (v2.91)
-  const sect = (typeof sectYieldPerSec === 'function') ? Math.round(sectYieldPerSec() * sec * SECT.disciple.offRate) : 0;   // 제자 수익 (v2.92)
+  // 제자 수익 (v2.92) — 명성보다 **먼저** 잰다: 자리를 비운 사이 명성 단계가 올라 합류한 제자(자질 랜덤)는 그 기간 수익이 없다.
+  // (v2.92.6 — 뒤에 재면 같은 저장이라도 정산 은자가 매번 달라 savetest "24h = 8h 상한"이 흔들렸다)
+  const sect = (typeof sectYieldPerSec === 'function') ? Math.round(sectYieldPerSec() * sec * SECT.disciple.offRate) : 0;
   S.silver += sect;
+  if (typeof fameAdd === 'function') fameAdd(kills * killFame());   // 명성도 쌓인다 (v2.91) — 단계가 오르면 제자가 합류한다(돌아온 뒤부터 수익)
   if (S.karma >= karmaNeed()) S.fatePending = 1;
   return { sec, kills, silver, sect, exp: Math.round(S.rexp - rexp0), fate: S.fatePending };
 }
