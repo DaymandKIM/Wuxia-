@@ -424,7 +424,7 @@
     opacity:0;transition:opacity .18s,transform .18s;}
   #toast.show{opacity:1;transform:translate(-50%,-50%) scale(1);}
   /* 그림 토스트 (v2.86) — 장비 획득·합성: 왼쪽 아이콘 액자 + 글자. 테두리·빛은 등급색(60-ui toast opt) */
-  #toast.pic{display:flex;align-items:center;gap:12px;padding:9px 18px 9px 10px;text-align:left;}
+  #toast.pic{display:flex;align-items:center;gap:12px;padding:9px 18px 9px 10px;text-align:left;white-space:nowrap;}   /* '획/득' 두 줄 방지 (v2.87.5) */
   #toast .tico{width:44px;height:44px;object-fit:contain;image-rendering:pixelated;flex:none;
     background:#0e1319;border:1.5px solid #2b333d;border-radius:9px;padding:3px;}
   #toast:not(.show) .tico{opacity:0;}
