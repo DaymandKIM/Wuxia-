@@ -143,7 +143,7 @@ review/            검사판 PNG (생성물)
 | `hero_spear2.py` | `sheets/hero_spear2.png` | 옛 시트(액자선에 잘림). 쓰지 않는다 |
 | `hero_staff3.py` | `sheets/hero_staff3.png` | **현행** (v2.74.4 재작업 시트, gridless) |
 | `hero_staff2.py` | `sheets/hero_staff2.png` | 옛 시트(액자선에 잘림). 쓰지 않는다 |
-| `eqicons.py <등급>` | `sheets/eq_weapons_<등급>.png` | 돌아간다 (v2.80 — 무기 아이콘 등급별 1줄 6칸 → eq_<종류>_<등급>. 무기 **7등급 전부**, 방어구 일반~전설(--slot=armor) 반영. 나머지 방어구·장신구 시트 대기. 시트 전체 덩어리 라벨링(칸을 넘는 칼끝 보존)·구분선은 '칸 높이 85% 세로 막대'·최대 덩어리 50% 미만 조각은 버림·**팔레트 PNG 저장**(빌드 16MB 한도)) |
+| `eqicons.py <등급>` | `sheets/eq_weapons_<등급>.png` | 돌아간다 (v2.80 — 무기 아이콘 등급별 1줄 6칸 → eq_<종류>_<등급>. 무기 **7등급 전부**, 방어구 일반~신화(--slot=armor) 반영. 나머지 방어구·장신구 시트 대기. 시트 전체 덩어리 라벨링(칸을 넘는 칼끝 보존)·구분선은 '칸 높이 85% 세로 막대'·최대 덩어리 50% 미만 조각은 버림·**팔레트 PNG 저장**(빌드 16MB 한도)) |
 | `bossfx.py` | **시트 없음** | 못 돌린다 |
 | `shamanmagic.py` `shamanstaff.py` | — | 옛 주술사(추정 지팡이). v2.64에 대체돼 쓰지 않는다 |
 | `shaman.py` `demon.py` `shamanorb.py` | — | 옛 버전. 쓰지 않는다 |

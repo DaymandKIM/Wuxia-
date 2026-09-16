@@ -1,3 +1,7 @@
+# v2.82.8 — 방어구 아이콘 신화(등급 5) 4종 반영 (사용자 시트 sheets/eq_armor_5.png, 2026-09-16)
+
+- `python eqicons.py 5 --slot=armor`. 화염 오라는 주황이라 살아남았다. 검사판 review/eq_armor_5.png. 초월 1장 대기.
+
 # v2.82.7 — 방어구 아이콘 전설(등급 4) 4종 반영 (사용자 시트 sheets/eq_armor_4.png, 2026-09-16)
 
 - `python eqicons.py 4 --slot=armor`. 흰금 오라·반짝임은 배경으로 걷힘. 검사판 review/eq_armor_4.png. 신화·초월 2장 대기.
