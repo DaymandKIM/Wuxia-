@@ -296,6 +296,18 @@ setTimeout(()=>{
   // 본진 전용 원경·바닥 (v2.94.4 개방) — 에셋이 있으면 rzone 이 본진 자체가 되고 bg_hq_/ground_hq_ 가 그려진다
   ok(w.eval('typeof tintedFx')==='function' && w.eval('tintedFx("fx_aura", SCHOOLS.sorim.c) !== tintedFx("fx_aura", SCHOOLS.gaebang.c)'),'장로 기운은 문파색으로 물든 캔버스를 문파마다 따로 만든다(실제 색은 크로뮴 스크린샷으로 확인)');
   ok(w.eval('S.hq="sorim"; bossFxCol()')===w.eval('rgbOf(SCHOOLS.sorim.c)') && w.eval('S.hq=null; bossFxCol()')===w.eval('FXD.boss.c'),'보스 등장·스킬 파열 색: 본진은 문파색, 사냥터는 옛 주황');
+  // 문파별 전용 시트가 제 상황·제 폭으로 그려지는지 (v2.94.15 무당·화산 추가)
+  for (const [k, who] of [['mudang','md'],['hwasan','hs']]){
+    w.eval('S.foes.length=0; S.bossAlive=false; gotoHq("'+k+'"); S.intro=0; hqLoadStep(99); S.foes.length=0; spawnFoe(); S.foes[0].anim="idle"; S.foes[0].af=0; S.foes[0].x=P.x+60; S.foes[0].y=P.y;');
+    renderNow();
+    ok(w.eval('S.foes[0].k')===who+'_disc' && drew(who+'_disc_idle0', w.eval('FOES.'+who+'_disc.w')),k+' 본진 제자 = '+who+'_disc, 대기 컷이 선언 폭('+w.eval('FOES.'+who+'_disc.w')+')으로');
+    for (const tier of ['elite','elder']){
+      w.eval('S.foes.length=0; S.foes.push({k:"'+who+'_'+tier+'",anim:"atk",af:2,x:P.x+70,y:P.y,hp:9,hpMax:9,dir:-1,atkT:0,cd:9,hitDone:false,hit:0,dead:false,dying:0,rise:0,skT:0,skCd:9,kb:0,kx:0,ky:0});');
+      renderNow();
+      ok(drew(who+'_'+tier+'_atk2', w.eval('FOES.'+who+'_'+tier+'.w')),k+' '+tier+' 임팩트 컷이 선언 폭('+w.eval('FOES.'+who+'_'+tier+'.w')+')으로');
+    }
+  }
+  w.eval('S.foes.length=0; S.bossAlive=false; gotoZone(0,1);');
   w.eval('S.foes.length=0; S.bossAlive=false; gotoHq("gaebang"); S.intro=0;'); renderNow();
   ok(w.eval('rzone().k')==='hq_gaebang' && w.eval('rzone().ground')===w.eval('DUEL.hqGround.gaebang'),'개방 본진: rzone = hq_gaebang · 땅색 '+w.eval('rzone().ground'));
   ok(w.eval('!!IMG[BACKDROP.keys[rzone().k]] && !!IMG[GROUNDTEX.keys[rzone().k]]'),'개방 원경(bg_hq_gaebang)·바닥(ground_hq_gaebang) 에셋이 로드 목록에 있다 (jsdom 은 이미지를 안 읽어 그리기는 캔버스 캐시로 간다)');

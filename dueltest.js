@@ -50,7 +50,8 @@ setTimeout(()=>{
   S.foes.length=0; w.spawnFoe(); const f=S.foes[0];
   const ZF=w.eval('ZONEFOE'); ok(ZF['hq_gaebang'].includes(f.k) && FOES[f.k].school==='gaebang' && (FOES[f.k].heroStrip || FOES[f.k].anim.idle.length===4),'젠 = '+f.k+' (계보 개방 · '+(FOES[f.k].heroStrip?'주인공 스트립 임시':'전용 시트')+')');
   // 전용 시트가 없는 문파는 여전히 주인공 tint (소림은 시트가 오면 바뀐다)
-  ok(ZF['hq_mudang'][0]==='disc_mudang' && FOES.disc_mudang.heroStrip,'시트 없는 문파(무당)는 주인공 스트립 임시');
+  { const left = Object.keys(DUEL.gBase).filter(k => !DUEL.art[k]);   // 아직 전용 시트가 없는 문파
+    ok(left.every(k => ZF['hq_'+k][0]==='disc_'+k && FOES['disc_'+k].heroStrip),'전용 시트가 없는 문파는 주인공 스트립 임시 ('+(left.join(', ')||'없음 — 8문파 다 전용 시트')+')'); }
   const e0=errs.length; for(let i=0;i<20;i++){ w.step(1/60); w.render(); }
   f.anim='atk'; f.af=1; w.render(); f.anim='hit'; w.render();
   ok(errs.length===e0,'제자 렌더(대기·공격·피격) 오류 '+(errs.length-e0));

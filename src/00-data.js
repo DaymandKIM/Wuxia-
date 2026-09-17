@@ -1395,7 +1395,28 @@ FOES.sr_elder = {
   fps:{ idle:3.5, walk:6, atk:7.3, hit:6, death:4 },
   hp:1.0, dmg:1.0, spd:0.9, range:64,
 };
-DUEL.art = { gaebang:{ disc:'gb_disc', elite:'gb_elite', elder:'gb_elder' }, sorim:{ disc:'sr_disc', elite:'sr_elite', elder:'sr_elder' } };
+// 무당·화산 3등급 (v2.94.15, 사용자 시트 — sr_sheet.py). 캔버스가 넓은 것은 이펙트 폭이다(drawFoe 가 좌우 중앙 정렬):
+// md_disc 는 목검을 머리 위로 든 컷이라 높이 72, md_elite 는 검 끝 파란 고리, md_elder 는 청록 소용돌이, hs_elder 는 크림 초승달.
+FOES.md_disc  = { n:'무당 수습제자', w:42,  h:72, sw:22, bh:48, school:'mudang',
+  anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'], atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
+  fps:{ idle:4, walk:7, atk:7.3, hit:6, death:4 }, hp:1.1, dmg:1.0, spd:1.0, range:52 };
+FOES.md_elite = { n:'무당 정예제자', w:128, h:55, sw:27, bh:50, school:'mudang', elite:true,
+  anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'], atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
+  fps:{ idle:4, walk:7, atk:7.3, hit:6, death:4 }, hp:1.7, dmg:1.3, spd:1.0, range:60 };
+FOES.md_elder = { n:'무당 장로',     w:160, h:66, sw:33, bh:58, school:'mudang',
+  anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'], atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
+  fps:{ idle:3.5, walk:6, atk:7.3, hit:6, death:4 }, hp:1.0, dmg:1.0, spd:0.9, range:70 };
+FOES.hs_disc  = { n:'화산 수습제자', w:66,  h:58, sw:27, bh:48, school:'hwasan',
+  anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'], atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
+  fps:{ idle:4, walk:7, atk:7.3, hit:6, death:4 }, hp:1.1, dmg:1.0, spd:1.0, range:48 };
+FOES.hs_elite = { n:'화산 정예제자', w:60,  h:53, sw:23, bh:50, school:'hwasan', elite:true,
+  anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'], atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
+  fps:{ idle:4, walk:7, atk:7.3, hit:6, death:4 }, hp:1.7, dmg:1.3, spd:1.0, range:60 };
+FOES.hs_elder = { n:'화산 장로',     w:124, h:64, sw:32, bh:58, school:'hwasan',
+  anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'], atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
+  fps:{ idle:3.5, walk:6, atk:7.3, hit:6, death:4 }, hp:1.0, dmg:1.0, spd:0.9, range:64 };
+DUEL.art = { gaebang:{ disc:'gb_disc', elite:'gb_elite', elder:'gb_elder' }, sorim:{ disc:'sr_disc', elite:'sr_elite', elder:'sr_elder' },
+             mudang:{ disc:'md_disc', elite:'md_elite', elder:'md_elder' }, hwasan:{ disc:'hs_disc', elite:'hs_elite', elder:'hs_elder' } };
 // 본진 전용 원경·바닥 (v2.94.3, 사용자 시트 — docs/프롬프트-배경.md "본진 원경·바닥"): 에셋 bg_hq_<k>·ground_hq_<k> 가 있으면 rzone() 이 본진을 돌려주고
 // 그 땅색(hqGround)·원경·바닥으로 그린다. 없으면 이웃 사냥터를 빌린다(vis). 소품·날씨 입자는 본진엔 없다.
 DUEL.hqGround = { gaebang:'#6e6349', sorim:'#7a7368', mudang:'#6c7a7c', hwasan:'#7d6658', ami:'#647a5a', dangmun:'#5e5450', magyo:'#4a4448', bamboo:'#6a7a52' };

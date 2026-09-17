@@ -39,11 +39,13 @@ def _groups(v):
         else: g.append([i])
     return [(int(x[0]), int(x[-1])) for x in g]
 
-def grid_rows(sh):
+def grid_rows(sh, nosplit=False, darklv=70):
     """어두운 테두리 줄 → 행 경계(전체 폭) + 행마다 열 경계. 바깥 테두리가 없으면 그림 가장자리를 보탠다.
-    한 칸이 중앙값 1.6배보다 넓으면 그 안에서 가장 어두운 열(줄이 그림에 덮인 것)로 쪼갠다."""
+    한 칸이 중앙값 1.6배보다 넓으면 그 안에서 가장 어두운 열(줄이 그림에 덮인 것)로 쪼갠다.
+    nosplit=True 면 그 쪼개기를 끄고 검출한 줄만 믿는다 — 칸 폭이 원래 들쭉날쭉한 시트(무당 정예: 좁은 칸 101 · 내지름 칸 237)는
+    넓은 칸이 진짜 한 칸이라 쪼개면 프레임이 두 동강 난다(CLAUDE.md "칸은 프레임 경계가 아니다"). v2.95.3"""
     H, W = sh.shape[:2]
-    lum = sh.sum(-1) / 3; dark = lum < 70
+    lum = sh.sum(-1) / 3; dark = lum < darklv       # --dark=N: 시트마다 테두리 줄 밝기가 다르다(무당 장로는 자주 줄이 lum 78~120 이라 70 으론 한 줄도 안 잡힌다)
     rl = _groups(np.where(dark.mean(1) > 0.8)[0])
     if not rl or rl[0][0] > 4: rl = [(-1, -1)] + rl
     if rl[-1][1] < H - 5: rl = rl + [(H, H)]
@@ -76,6 +78,8 @@ def grid_rows(sh):
                 prof = lum[y0:y1, l2:h2].mean(0); xs = l2 + int(np.argmin(prof))
                 out.append((xs, xs))
             return out
+        if nosplit:
+            cols.append(cl); continue
         fixed = [cl[0]]
         for j in range(len(cl) - 1):
             fixed += split(cl[j][1], cl[j + 1][0]); fixed.append(cl[j + 1])
@@ -93,10 +97,17 @@ def cut(sh, bg, y0, y1, x0, x1, inset=3):
 
 def finish(sub, m):
     lab, n = ndimage.label(m); keep = np.zeros_like(m)
+    H_, W_ = sub.shape[:2]
     for i in range(1, n + 1):
         ys, xs = np.where(lab == i)
         bw, bh = xs.max() - xs.min() + 1, ys.max() - ys.min() + 1
-        ring = bw > sub.shape[1] * 0.85 and bh > sub.shape[0] * 0.85 and len(ys) < bw * bh * 0.3
+        # 테두리 고리: 칸을 가득 채우면서 속이 빈 것. 단, "칸만큼 크고 성기다"만 보면 칸을 가로지르는 그림도 걸린다
+        # (v2.95.3 무당 정예 내지름 칸 237x137: 검을 쭉 뻗은 인물이 고리로 몰려 통째로 버려졌다) —
+        # 그래서 제 픽셀의 60% 이상이 칸 가장자리 8px 안에 있을 때만 고리로 본다.
+        ring = bw > W_ * 0.85 and bh > H_ * 0.85 and len(ys) < bw * bh * 0.3
+        if ring:
+            edge = (xs < 8) | (xs >= W_ - 8) | (ys < 8) | (ys >= H_ - 8)
+            ring = edge.mean() > 0.6
         if len(ys) < 40 or ring: continue
         keep[lab == i] = 1
     er = ndimage.binary_erosion(keep, iterations=1)
@@ -158,6 +169,24 @@ def blobmap(sh, bl, prefix):
         d.text((x0 + 2, y0 + 2), 'b%d' % i, fill=(255, 255, 255)); d.text((x0 + 3, y0 + 3), 'b%d' % i, fill=(0, 0, 0))
     p = os.path.join(R, 'review', prefix + '_blobs.png'); im.save(p); print('덩어리 지도 →', p)
     for i, b in enumerate(bl): print('  b%-2d y %d~%d x %d~%d (%dx%d) px %d' % (i, b[0], b[1], b[2], b[3], b[3] - b[2], b[1] - b[0], b[4]))
+
+def pick_side(rgba, side, pad=6):
+    """한 칸에 인물이 둘 들어 있을 때(화산 수습 4줄 첫 칸: 피격 2연속) 왼쪽('L')/오른쪽('R') 것만 남긴다. v2.95.3
+    큰 덩어리(최대의 20% 이상)들 중 요청한 쪽 끝의 것을 고르고, 그 pad px 안에 닿는 조각(검·머리끈)을 같이 남긴다."""
+    m = rgba[..., 3] > 0
+    lab, n = ndimage.label(m, structure=np.ones((3, 3)))
+    if n <= 1: return rgba
+    sizes = ndimage.sum(m, lab, range(1, n + 1))
+    big = [i + 1 for i, sz in enumerate(sizes) if sz > sizes.max() * 0.2]
+    cx = {i: float(np.where(lab == i)[1].mean()) for i in big}
+    tgt = min(big, key=lambda i: cx[i]) if side.upper().startswith('L') else max(big, key=lambda i: cx[i])
+    near = ndimage.binary_dilation(lab == tgt, iterations=pad)
+    keep = np.zeros_like(m)
+    for i in range(1, n + 1):
+        if (near & (lab == i)).any(): keep |= lab == i
+    out = rgba.copy(); out[~keep] = 0
+    print(' %s쪽 인물만 남김: 덩어리 %d → %d px' % (side, n, int(keep.sum())))
+    return out
 
 def solo(rgba, pad=6):
     """최대 덩어리와 그 pad px 안에 닿는 덩어리만 남긴다(쓰러짐 컷의 떠 있는 반짝이 제거)."""
@@ -268,7 +297,14 @@ def main():
         for i, (y0, y1, x0, x1, n) in enumerate(bl):
             raw['b%d' % i] = cut(sh, bg, y0 - 4, y1 + 4, x0 - 4, x1 + 4, inset=0)
     else:
-        rl, cols = grid_rows(sh)
+        rl, cols = grid_rows(sh, nosplit='nosplit' in opts, darklv=int(opts.get('dark', 70)))
+        # --nocol=r2:37;158;162,r3:40 — 잘못 잡힌 세로줄 버리기. 어두운 세로 물건(아미 장로 석장·고리)이 칸 테두리로 잡힌다
+        # (문턱을 낮추면 이번엔 진짜 테두리를 놓친다 — 시트마다 줄 밝기가 달라서. v2.95.3)
+        for it in (opts['nocol'].split(',') if opts.get('nocol') else []):
+            rk, xs_ = it.split(':'); ri = int(rk[1:]); drops = [int(v) for v in xs_.split(';')]
+            cols[ri] = [g for j, g in enumerate(cols[ri])
+                        if j in (0, len(cols[ri]) - 1) or not any(abs(g[0] - x) <= 3 for x in drops)]
+            print(' %s줄 세로줄 %s 버림 → %d칸' % (rk, drops, len(cols[ri]) - 1))
         print('행 경계', rl); [print(' %d줄 열 %d칸' % (i + 1, len(cl) - 1), cl) for i, cl in enumerate(cols)]
         inset = tuple(int(v) for v in opts['inset'].split(',')) if 'inset' in opts else 3      # --inset=위,아래,왼,오른
         mend = set(opts['mend'].split(',')) if opts.get('mend') else set()                       # --mend=r2c0,... 띠 위 머리 복원
@@ -285,11 +321,15 @@ def main():
 
     def idx(s): return s.split(',')
     sel = {'idle': idx(opts['idle']), 'walk': opts['walk'], 'atk': idx(opts['atk']), 'hit': idx(opts['hit']), 'death': idx(opts['death'])}
-    solos = set(sel['death']) | set(idx(opts.get('solo', '')) if opts.get('solo') else [])
+    solos = (set(sel['death']) | set(idx(opts.get('solo', '')) if opts.get('solo') else [])) - set(idx(opts['nosolo']) if opts.get('nosolo') else [])
+    # --nosolo=키,... : 그 컷만 solo(최대 덩어리만 남기기)를 끈다 — 쓰러짐 칸에 그림으로 그려진 조각이 따로 있을 때
+    # (v2.95.3 무당 정예 넘어짐: 놓친 검이 땅에 떨어져 몸과 떨어져 있다. 반짝이가 아니라 그림이라 살린다)
     for k in (idx(opts['decyan']) if opts.get('decyan') else []):          # 옅은 청록 호(정예 봉 휘두르기) — 축소하면 점만 남아 떠 보인다
         a = raw[k]; r_, g_, b_ = a[..., 0].astype(int), a[..., 1].astype(int), a[..., 2].astype(int)
         cy = (b_ > r_ + 20) & (b_ > 150) & (g_ > 120); a[cy] = 0        # 옅은 라벤더~흰 (190,180,255) 계열; raw[k] = solo(a)
         print(' %s 청록 호 픽셀 %d 제거' % (k, cy.sum()))
+    for it in (idx(opts['pick']) if opts.get('pick') else []):      # --pick=r3c0:L — 한 칸에 인물이 둘일 때 한쪽만
+        pk, pside = it.split(':'); raw[pk] = pick_side(raw[pk], pside)
     for k in solos: raw[k] = solo(raw[k])
 
     ref = opts.get('ref', sel['idle'][0])
