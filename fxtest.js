@@ -292,6 +292,11 @@ setTimeout(()=>{
   w.eval('S.foes.length=0; S.foes.push({k:"sr_elder",boss:true,anim:"atk",af:2,x:P.x+90,y:P.y,hp:9,hpMax:9,dir:-1,atkT:0,cd:9,hitDone:false,hit:0,dead:false,dying:0,rise:0,skT:0,skCd:9,kb:0,kx:0,ky:0}); S.bossAlive=true;'); renderNow();
   ok(drew('sr_elder_atk2', 72),'소림 장로 연꽃 장풍 컷이 캔버스 폭 72 로 그려진다');
   ok(w.eval('rzone().k')===w.eval('ZONES[HQZONE.sorim.vis].k') || w.eval('rzone().k')==='hq_sorim','본진 배경: 전용 원경이 없으면 이웃 사냥터, 있으면 본진 자체 — 지금 '+w.eval('rzone().k'));
+  // 본진 전용 원경·바닥 (v2.94.4 개방) — 에셋이 있으면 rzone 이 본진 자체가 되고 bg_hq_/ground_hq_ 가 그려진다
+  w.eval('S.foes.length=0; S.bossAlive=false; gotoHq("gaebang"); S.intro=0;'); renderNow();
+  ok(w.eval('rzone().k')==='hq_gaebang' && w.eval('rzone().ground')===w.eval('DUEL.hqGround.gaebang'),'개방 본진: rzone = hq_gaebang · 땅색 '+w.eval('rzone().ground'));
+  ok(drew('bg_hq_gaebang') && drew('ground_hq_gaebang'),'개방 원경(bg_hq_gaebang)·바닥(ground_hq_gaebang)이 실제로 그려진다');
+  ok(w.eval('BACKDROP.sky.hq_gaebang')===w.eval('DUEL.hqSky.gaebang'),'원경 위 하늘색 등록');
   w.eval('S.foes.length=0; S.bossAlive=false; gotoZone(0,1);');
 
   ok(errs.length===0,'런타임 오류 0'+(errs.length?': '+errs[0]:''));
