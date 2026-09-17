@@ -150,6 +150,8 @@ $('realm').onclick  = () => { closeSheets(); openRealmPanel(); };
 $('menubtn').onclick = () => { const open = $('mpanel').classList.contains('show'); closeSheets(); if (!open) openMenu(); };
 $('mpanel').onclick  = e => { if (e.target.id === 'mpanel') closeMenu(); };
 $('msound').onclick  = () => { S.mute = !S.mute; menuHud(); saveNow(); toast(S.mute ? '효과음을 껐다' : '효과음을 켰다'); };
+$('mqual').onclick  = () => { S.__qualManual = true; setQual((qualStep() + 1) % QUALITY.steps.length); menuHud(); saveNow();
+                              toast('화질 ' + QUALITY.name[qualStep()] + '\n낮을수록 부드럽다'); };   // (v2.95.5)
 $('msave').onclick   = () => { const ok = saveNow(); closeMenu();   // 결과를 그대로 말한다 (v2.90.2 "저장이 안 됨" — 막힌 브라우저에서 "저장했다"고 거짓말했다)
   toast(ok ? '저장했다' : '저장 못 했다\n브라우저가 저장소를 막았다\n≡ 저장 코드로 옮긴다'); };
 $('mcode').onclick   = () => { closeSheets(); openCode(); };        // 저장 코드 (v2.90.2)
@@ -240,9 +242,26 @@ document.addEventListener('visibilitychange', () => {
 addEventListener('pagehide', saveNow);
 
 let last = performance.now();
+// 화질 자동 낮추기 (v2.95.5) — 보는 내내 재지 않는다. 표본 하나를 모아 한 번 판단하고 끝낸다.
+// 손으로 고른 적이 있으면(S.qual 이 저장에서 왔으면) 건드리지 않는다.
+let qSample = [], qChecked = false, qLast = 0;
+function qualWatch(ms){
+  if (qChecked || !QUALITY.auto || S.__qualManual) return;
+  if (ms > 0 && ms < 400) qSample.push(ms);
+  if (qSample.length < QUALITY.sampleN) return;
+  qChecked = true;
+  const s = qSample.sort((a, b) => a - b), mid = s[(s.length * 0.5) | 0];
+  if (mid > QUALITY.slowMs && qualStep() < QUALITY.steps.length - 1){
+    setQual(qualStep() + 1);
+    qSample = []; qChecked = false;            // 한 칸 내리고 다시 재 본다(최저 칸까지)
+    if (typeof toast === 'function') toast('화면이 버거워 화질을 낮췄다\n≡ 메뉴에서 바꿀 수 있다');
+  }
+}
+
 function loop(now){
   try{
     const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    qualWatch((now - (qLast || now))); qLast = now;
     // 미세 경직 (v2.61) — 치명타 순간 step만 멈추고 render는 계속한다.
     // 배속 중엔 그만큼 빨리 풀려 배속과 충돌하지 않는다.
     if (hitstopT > 0) hitstopT -= dt * (TEST ? TESTSPEED : 1);

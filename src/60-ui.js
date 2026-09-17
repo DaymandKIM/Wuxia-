@@ -334,6 +334,8 @@ function closeMenu(){ $('mpanel').classList.remove('show'); $('menubtn').classLi
 function menuHud(){
   const mp = $('mpanel'); if (!mp || !mp.classList.contains('show')) return;
   const ms = $('msound'); ms.classList.toggle('on', !S.mute); ms.querySelector('.mv').textContent = S.mute ? '끔' : '켬';
+  // 화질 (v2.95.5) — 누를 때마다 높음→보통→낮음 순환. 손으로 고르면 자동 낮추기는 멈춘다
+  const mq = $('mqualv'); if (mq) mq.textContent = QUALITY.name[qualStep()];
   $('mstatv').textContent = '처치 ' + fmt(S.totalKills) + ' · 쓰러짐 ' + S.downs;
   const ma = $('mach'); if (ma){ const n = typeof achvClaimableAll === 'function' ? achvClaimableAll() : 0; ma.disabled = false;
     ma.querySelector('.mv').textContent = n ? '받을 것 ' + n : ''; ma.classList.toggle('on', n > 0); }

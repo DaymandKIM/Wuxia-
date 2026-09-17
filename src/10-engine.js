@@ -11,6 +11,21 @@ const MAXPX  = 4.0e6;   // iOS 캔버스 픽셀 상한
 const ASPECT = 0.52;    // 게임판 가로/세로 비율 (세로로 긴 화면)
 const BASE_W = 400;     // 아트 기준 폭 (이 값이 SC를 정한다)
 
+// 지금 화질 배율 — S.qual 이 null 이면 자동(QUALITY.start), 숫자면 손으로 고른 칸 (v2.95.5)
+function qualStep(){
+  // S 는 const 라 아직 안 만들어졌으면 typeof 도 던진다(TDZ) — resize() 는 그 전에 한 번 돈다
+  let q = QUALITY.start;
+  try{ if (S && S.qual != null) q = S.qual; }catch(e){}
+  return Math.max(0, Math.min(QUALITY.steps.length - 1, q | 0));
+}
+function qualScale(){ return QUALITY.steps[qualStep()]; }
+function setQual(i){
+  const n = Math.max(0, Math.min(QUALITY.steps.length - 1, i | 0));
+  if (S.qual === n) return false;
+  S.qual = n; resize();
+  return true;
+}
+
 function resize(){
   const cw = innerWidth, ch = innerHeight;
   // 화면이 가로로 넓으면(패드·PC) 세로 비율로 잘라 가운데 배치
@@ -28,8 +43,9 @@ function resize(){
   cv.style.left   = VIEW.x + 'px';
   cv.style.top    = VIEW.y + 'px';
 
-  // 픽셀아트가 너무 작아지지 않게 최소 2배는 확보한다
-  const raw = Math.max(2, Math.min(window.devicePixelRatio || 1, 3));
+  // 백버퍼 배율 — 화질 단계에서 나온다 (v2.95.5). 옛 판은 무조건 max(2, min(DPR,3)) 이라
+  // DPR 3 폰에서 1170×2532 를 매 프레임 칠했다(11fps). 이제 기본이 2배다.
+  const raw = Math.max(1, Math.min(window.devicePixelRatio || 1, qualScale()));
   let pw = Math.round(w * raw), ph = Math.round(h * raw);
   if (pw * ph > MAXPX){
     const k = Math.sqrt(MAXPX / (pw * ph));

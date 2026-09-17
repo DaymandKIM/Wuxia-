@@ -337,6 +337,18 @@ const PROPS = {
 // 바닥 텍스처 — 큰 무봉 그림 한 장을 카메라와 1:1로 2D 타일링(32px 타일 아님).
 // 땅색 위에 알파 a로 얹어 가독성을 지킨다(스프라이트·이펙트가 이 위에 그려진다).
 // 텍스처가 있으면 옅은 이동감 격자는 끈다. 시트 → ground_extract.py. 없으면 단색.
+// 화질 — 캔버스 백버퍼 배율 (v2.95.5, 사용자 "화면이 느리게 굴러간다")
+// 재 보니 이게 전부였다: DPR 3 폰은 캔버스가 1170×2532(3M 픽셀)로 잡혀 **매 프레임 소프트웨어로 칠한다**.
+// CPU 6배 느리게 건 측정에서 3배 11fps · 2배 22fps · 1배 59fps. JS 시간은 프레임당 6.5ms 뿐이라 전부 칠하는 비용이다.
+// 픽셀아트라 1배로 그리고 CSS 로 늘려도 스프라이트는 똑같이 보인다(둘 다 최근접 확대) — 캔버스 글자·호만 조금 거칠어진다.
+const QUALITY = {
+  steps: [3, 2, 1],            // 백버퍼 배율 후보 (DPR 로 한 번 더 잘린다)
+  start: 1,                    // 기본 = 2배. 3배는 폰에서 감당이 안 된다
+  auto: true,                  // 느리면 스스로 한 칸 내린다
+  slowMs: 26, sampleN: 90,     // 이 표본에서 중앙값이 이보다 느리면 내린다
+  name: ['높음', '보통', '낮음'],
+};
+
 const GROUNDTEX = {
   a: 0.9, scale: 1,
   keys: { bamboo:'ground_bamboo', village:'ground_village', cave:'ground_cave', snow:'ground_snow', heaven:'ground_heaven' },
