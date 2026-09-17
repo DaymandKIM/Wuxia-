@@ -88,7 +88,8 @@ function applySave(d){
   S.stats = {};
   if (d.stats && typeof d.stats === 'object')
     for (const s of TRAIN.list) S.stats[s.k] = Math.max(0, d.stats[s.k]|0);
-  S.rexp = Math.max(0, +d.rexp || 0);
+  S.rexp = Math.max(0, +d.rexp || 0);   // Infinity 는 JSON 에서 null 로 와 0 이 된다
+  fixRealmOverflow();                   // 옛 [테스트 전용] 보상으로 경지가 폭주한 저장 되살리기 (v2.95.8)
   S.arts = {};
   if (d.arts && typeof d.arts === 'object')
     for (const a of ARTS.list) if (d.arts[a.k]) S.arts[a.k] = 1;
@@ -186,6 +187,17 @@ function offKillTime(){
 // 자리 비운 시간만큼 정산한다. 보고용 {sec, kills, silver, fate}를 준다.
 // 단계는 넘어가지 않는다(사용자 확정) — 지금 단계에서 제자리 사냥으로
 // 은자·수련치·인연만 쌓는다. 진행은 돌아와서 직접 본다.
+/* 경지 폭주 복구 (v2.95.8, 사용자 "체력이 무한대야") — [테스트 전용] 보상 365일이 3285 승급을 줘서
+   주인공 체력이 1.31^3285 = Infinity 가 됐다. 이런 저장은 경지를 상한까지 내려 되살린다.
+   평소 저장은 경지가 수백을 넘을 일이 없어 이 함수가 아무것도 안 한다. */
+function fixRealmOverflow(){
+  const cap = (typeof TESTGIVE !== 'undefined' && TESTGIVE.realmCap) || 400;
+  let guard = 0;
+  while (guard++ < 4000 && S.rexp > 0 && (realmLv() > cap || !isFinite(heroHpMax()) || !isFinite(heroDmg())))
+    S.rexp = Math.floor(S.rexp / 2);
+  if (!isFinite(S.rexp) || S.rexp < 0) S.rexp = 0;
+}
+
 // noCap = true 면 8시간 상한을 건너뛴다 — **[테스트 전용]** 시험 패널의 "보상 N일" 뿐이다 (v2.95.7)
 function offlineGains(awaySec, noCap){
   const sec = noCap ? awaySec : Math.min(awaySec, OFFLINE.cap);
@@ -208,6 +220,7 @@ function offlineGains(awaySec, noCap){
     // 넘치기 직전에 멈춘다: 저장·표기·경지 계산이 NaN 으로 깨지는 것보다 낫다.
     const need = realmNeed(realmLv());
     if (!isFinite(need) || !isFinite(S.rexp + need * take) || S.rexp + need * take > 1e300) break;
+    if (noCap && realmLv() >= TESTGIVE.realmCap) break;   // [테스트 전용] 보상은 경지를 여기서 멈춘다 (체력 Infinity 방지, v2.95.8)
     S.rexp += need * take;
     grant -= take;
   }

@@ -178,7 +178,7 @@ if (TEST){
   // 보상 N일 (v2.95.7, 사용자 "테스트 모드에 보상 1/3/7/15/30/100/200/365일 넣어") —
   // 그만큼 자리를 비운 셈 치고 오프라인 정산을 그대로 돌린다. **8시간 상한은 건너뛴다**(그래야 날수가 의미가 있다).
   const gv = $('tgive');
-  if (gv) for (const d of TESTGIVE){
+  if (gv) for (const d of TESTGIVE.days){
     const b = document.createElement('button');
     b.className = 'sb'; b.style.padding = '6px 9px'; b.textContent = d + '일';
     b.onclick = () => {
@@ -212,6 +212,11 @@ addEventListener('keydown', e => {
     $('tpanel').classList.remove('show');    // [테스트 전용]
   }
 });
+
+// iframe(아티팩트·앱 웹뷰)이면 화면 맨 위 여백을 깔아 둔다 (v2.95.8) — env(safe-area-inset-top) 이 0 으로 오는 자리다
+try{ if (window.self !== window.top) document.documentElement.style.setProperty('--satmin', SAFETOP_IFRAME + 'px'); }catch(e){
+  document.documentElement.style.setProperty('--satmin', SAFETOP_IFRAME + 'px');   // 접근 자체가 막히면 그것도 iframe 이다
+}
 
 // 저장 불러오기 → 자리 비운 만큼 진행 → 시작
 const sv = loadSave();

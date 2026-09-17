@@ -24,7 +24,7 @@
      빈자리를 불투명 띠로 덮고 HUD를 그 안에 넣는다. 그림은 50-render backdropTop이 바 아래로 내려 그린다(안 가림).
      오른쪽 ≡ 버튼이 메뉴(설정·업적)를 접었다 편다.
      v2.84의 얇은 HUD(제목 · 체력바 7px · 수련 바 3px · 경지·은자 줄)는 그대로 띠 안으로. */
-  #topbar{position:absolute;left:0;right:0;top:0;padding:calc(env(safe-area-inset-top) + 6px) 10px 6px 12px;
+  #topbar{position:absolute;left:0;right:0;top:0;padding:calc(var(--sat, 0px) + 6px) 10px 6px 12px;   /* 맨 위 여백은 --sat 하나로 (v2.95.8) */
     display:flex;align-items:center;gap:8px;pointer-events:none;transition:opacity .22s;
     background:linear-gradient(#1a2028,#10141a);border-bottom:1.5px solid #2b333d;
     box-shadow:0 2px 8px rgba(0,0,0,.45);}
@@ -61,7 +61,7 @@
   #mpanel{position:absolute;inset:0 0 var(--tabh) 0;pointer-events:none;overflow:hidden;z-index:30;
     background:rgba(6,8,11,0);transition:background .2s;}
   #mpanel.show{pointer-events:auto;background:rgba(6,8,11,.55);}
-  .msheet{position:absolute;right:10px;top:calc(env(safe-area-inset-top) + 70px);width:210px;
+  .msheet{position:absolute;right:10px;top:calc(var(--sat, 0px) + 70px);width:210px;
     background:#12161c;border:1.5px solid #2b333d;border-radius:12px;padding:6px;
     transform:translateY(-10px) scale(.96);transform-origin:top right;opacity:0;
     transition:transform .18s cubic-bezier(.2,.8,.3,1),opacity .18s;box-shadow:0 8px 24px rgba(0,0,0,.55);}
@@ -164,7 +164,10 @@
   .snamein .trbuy{flex:0 0 auto;padding:9px 16px;}
 
   /* 하단 탭바 — 기능이 들어올 때마다 탭이 하나씩 는다 */
-  #ui{--tabh:calc(env(safe-area-inset-bottom) + 52px);}
+  /* --sat: 화면 맨 위에 비워야 할 높이 — 노치·상태바. 시트가 상단 바까지 덮으니(v2.95.6) 머리글과
+     그 아래 sticky 들이 이만큼 내려앉아야 한다. **아티팩트·앱 웹뷰는 iframe 이라 env() 가 0 으로 온다** —
+     정작 위는 앱 바에 가려 머리글·✕ 가 잘렸다(v2.95.8 사용자). 그래서 iframe 이면 --satmin 을 깔아 둔다(70-main). */
+  #ui{--tabh:calc(env(safe-area-inset-bottom) + 52px);--sat:max(env(safe-area-inset-top),var(--satmin,0px));}
   #tabs{position:absolute;left:0;right:0;bottom:0;height:var(--tabh);
     padding-bottom:env(safe-area-inset-bottom);display:flex;pointer-events:auto;
     background:rgba(13,16,21,.96);border-top:1.5px solid #262e38;transition:opacity .22s;}
@@ -259,7 +262,7 @@
   .eqico b{position:absolute;right:-5px;bottom:-6px;font-size:9.5px;background:#12161c;border:1px solid #2b333d;border-radius:6px;padding:1px 4px;color:#cfe0f2;}
   .eqsl{color:#8b97a5;font-size:12px;}
   /* v2.90.3 — 탭·상세 창·버튼을 한 덩어리(#eqhead)로 머리글(44px) 아래에 붙인다. 카드 줄을 내려도 누른 장비의 상세·장착·강화가 보인다 */
-  #eqhead{position:sticky;top:44px;z-index:3;background:#12161c;border-bottom:1px solid #1e242c;box-shadow:0 6px 10px -6px rgba(0,0,0,.6);}
+  #eqhead{position:sticky;top:calc(var(--sat, 0px) + 44px);z-index:3;background:#12161c;border-bottom:1px solid #1e242c;box-shadow:0 6px 10px -6px rgba(0,0,0,.6);}
   #etabs{display:flex;gap:6px;align-items:center;background:#12161c;padding:9px 12px 8px;border-bottom:1px solid #1e242c;}
   #eqcnt{margin-left:auto;font-size:11.5px;color:#8b97a5;}
   .eqtop{margin-bottom:6px;}
@@ -301,7 +304,7 @@
   .zn em{font-style:normal;}
   /* 수련 패널 줄 */
   /* 배수 토글은 스크롤해도 위에 붙어 있는다 (스탯창 보기 불편 피드백) */
-  .zst.tramt{position:sticky;top:44px;z-index:2;background:#12161c;
+  .zst.tramt{position:sticky;top:calc(var(--sat, 0px) + 44px);z-index:2;background:#12161c;
     margin:0;padding:9px 12px 8px;border-bottom:1px solid #1e242c;}
   .trow{display:flex;align-items:center;gap:10px;}
   .trl{flex:1;min-width:0;}
@@ -350,7 +353,7 @@
   .atile .bd.lv{display:block;color:#69a8dd;}
   @keyframes bdp{50%{transform:scale(1.35);}}
   /* 상세·버튼은 탭 줄 아래에 붙어 있다 (v2.94.30) — 타일을 훑는 동안에도 배우기·연마 버튼이 늘 보인다 */
-  .adet{position:sticky;top:34px;z-index:2;margin:10px 12px 4px;padding:10px 14px;background:#171d25;border:1.5px solid #3c6f9e;
+  .adet{position:sticky;top:calc(var(--sat, 0px) + 34px);z-index:2;margin:10px 12px 4px;padding:10px 14px;background:#171d25;border:1.5px solid #3c6f9e;
     border-radius:11px;scroll-margin-bottom:14px;
     /* 2열 (v2.95.6, 사용자 "스킬 배우면 상세창이 아래를 너무 많이 덮음 — 오른쪽 빈 공간도 써서 길이를 최소화") */
     display:grid;grid-template-columns:1fr 1fr;gap:2px 12px;align-content:start;max-height:46vh;overflow:auto;}
@@ -413,7 +416,7 @@
   .tchip.own .tcc{color:#7fc78f;}
   .tchip.poor{opacity:.5;}
   .tchip:not(.own):not(.poor):active{background:#1a2230;}
-  #tschtabs{position:sticky;top:44px;z-index:3;display:flex;gap:6px;overflow-x:auto;
+  #tschtabs{position:sticky;top:calc(var(--sat, 0px) + 44px);z-index:3;display:flex;gap:6px;overflow-x:auto;
     padding:6px 12px 8px;background:#12161c;border-bottom:1px solid #1e242c;scrollbar-width:none;}
   #tschtabs::-webkit-scrollbar{display:none;}
   .tsch{flex:0 0 auto;padding:6px 11px 5px;border-radius:999px;border:1.5px solid #3a4756;
@@ -453,7 +456,7 @@
   .zd.need{color:#7a97b5;margin-top:3px;}
   .znote.asec{margin-top:9px;font-family:var(--fw);font-size:14px;color:#b7c2cf;letter-spacing:.04em;}
   .zhd{position:sticky;top:0;z-index:5;background:#12161c;display:flex;justify-content:space-between;   /* z-index — 아이콘(filter가 쌓임 맥락을 만든다)이 머리글 위로 스크롤돼 겹쳤다 (v2.69.10) */
-    align-items:center;padding:14px 16px 10px;font-family:var(--fw);font-size:17px;color:#e8eef6;
+    align-items:center;padding:calc(var(--sat, 0px) + 14px) 16px 10px;font-family:var(--fw);font-size:17px;color:#e8eef6;   /* 시트가 상단 바까지 덮으니(v2.95.6) 머리글이 노치·상태바 밑으로 들어가 ✕ 가 안 보였다 (v2.95.8) */
     letter-spacing:.06em;border-bottom:1px solid #1e242c;}
   .zhd button{background:none;border:0;color:#7f8b99;font-size:19px;padding:2px 6px;}
   #vall{margin-left:auto;margin-right:4px;font-size:12px;font-family:inherit;color:#0a0d12;background:#e8c96a;border-radius:8px;padding:5px 10px;font-weight:900;}   /* 업적 모두 받기 (v2.93.6 사용자) */
@@ -498,12 +501,12 @@
 
   /* 복귀 카드와 기연 카드는 **같은 자리·같은 높이**(v2.87.2, 사용자: "수련 계속과 기연이 뜨는 위치를 같게 해서 바로바로 클릭") —
      둘 다 바 아래 84px에서 시작, 카드 높이 고정(.ocard min-height)에 버튼은 맨 아래(margin-top:auto)라 두 버튼이 같은 자리에 온다. */
-  #opanel{position:absolute;inset:0;display:flex;align-items:flex-start;justify-content:center;padding-top:calc(env(safe-area-inset-top) + 84px);
+  #opanel{position:absolute;inset:0;display:flex;align-items:flex-start;justify-content:center;padding-top:calc(var(--sat, 0px) + 84px);
     pointer-events:none;opacity:0;background:rgba(6,8,11,.66);transition:opacity .2s;}
   #opanel.show{pointer-events:auto;opacity:1;}
   /* 기연은 자동 수락이라 화면 가운데를 막지 않는다 (v2.33) — 위에서 내려오는
      띠로 흘려보낸다. 배경 어둠 없음, 전투가 계속 보인다. */
-  #fpanel{position:absolute;left:0;right:0;top:calc(env(safe-area-inset-top) + 84px);z-index:40;   /* 패널·스킬창 위 (v2.83 "기연 버튼이 동작 안 함") */
+  #fpanel{position:absolute;left:0;right:0;top:calc(var(--sat, 0px) + 84px);z-index:40;   /* 패널·스킬창 위 (v2.83 "기연 버튼이 동작 안 함") */
     display:flex;justify-content:center;pointer-events:none;opacity:0;
     transform:translateY(-12px);transition:opacity .25s,transform .25s;}
   #fpanel.show{opacity:1;transform:translateY(0);}
