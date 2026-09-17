@@ -1508,9 +1508,17 @@ FOES.hs_disc  = { n:'화산 수습제자', w:56,  h:54, sw:26, bh:50, school:'hw
 FOES.hs_elite = { n:'화산 정예제자', w:60,  h:53, sw:23, bh:50, school:'hwasan', elite:true,
   anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'], atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
   fps:{ idle:4, walk:7, atk:7.3, hit:6, death:4 }, hp:1.7, dmg:1.3, spd:1.0, range:60 };
-FOES.hs_elder = { n:'화산 장로',     w:124, h:64, sw:32, bh:58, school:'hwasan',
-  anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'], atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
-  fps:{ idle:3.5, walk:6, atk:7.3, hit:6, death:4 }, hp:1.0, dmg:1.0, spd:0.9, range:64 };
+// 화산 장로 — sheets/hs_elder2.png(v2.94.28 3.5등신 재작업판). **공격 세 벌**: atk 머리 위 큰 호 · atk2 올려 베는 나선+흰 매화 ·
+// atk3 땅 내리꽂기(흰 먼지 충격파). 대기 12 · 걷기 10 · 공격 10·10·9 · 쓰러짐 6 — 컷을 아끼지 않는다.
+// 캔버스 72×71 — 몸 38×59(대기 폭 53 은 내린 검까지다).
+FOES.hs_elder = { n:'화산 장로',     w:72, h:71, sw:38, bh:59, school:'hwasan',
+  anim:{ idle:['idle0','idle1','idle2','idle3','idle4','idle5','idle6','idle7','idle8','idle9','idle10','idle11'],
+         walk:['walk0','walk1','walk2','walk3','walk4','walk5','walk6','walk7','walk8','walk9'],
+         atk:['atk0','atk1','atk2','atk3','atk4','atk5','atk6','atk7','atk8','atk9'],
+         atk2:['atk2_0','atk2_1','atk2_2','atk2_3','atk2_4','atk2_5','atk2_6','atk2_7','atk2_8','atk2_9'],
+         atk3:['atk3_0','atk3_1','atk3_2','atk3_3','atk3_4','atk3_5','atk3_6','atk3_7','atk3_8'],
+         hit:['hit'], death:['hit','death0','death1','death2','death3','death4','death5'] },
+  fps:{ idle:3.5, walk:7, atk:7.3, hit:6, death:7 }, hp:1.0, dmg:1.0, spd:0.9, range:64 };
 // 당문·마교 3등급 (v2.94.16, 사용자 시트). 캔버스가 넓은 것은 이펙트 폭 — dm_elder 독무 구름 108px 이 가장 크다.
 FOES.dm_disc = { n:'당문 수습제자', w:56, h:51, sw:22, bh:48, school:'dangmun',
   anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'], atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
