@@ -20,12 +20,38 @@ function hqFragGain(k, n, quiet){
   if (!quiet && typeof toast === 'function') toast(a.n + ' 비급 조각 +' + n + '\n' + (S.frag[a.k] | 0) + ' / ' + a.frag);
   return a;
 }
+// 본진 진입 로딩 화면 (v2.94.7) — 그림이 있으면 일러스트, 없으면 문파색 바탕. 전투는 뒤에서 이미 돌아가므로
+// 이 화면은 연출일 뿐이다(막지 않는다 — sim·테스트는 DOM 이 없어도 그대로 지나간다).
+let hqLoadT = 0;
+function showHqLoad(k){
+  const el = typeof $ === 'function' && $('hqload'); if (!el) return;
+  const sc = SCHOOLS[k] || SCHOOLS.none;
+  const art = ASSET['hq_art_' + k], frame = ASSET.hq_load_frame, ink = ASSET.hq_load_ink;
+  const im = $('hqart'); if (im){ if (art){ im.src = art; im.hidden = false; } else im.hidden = true; }
+  const fr = $('hqframe'); if (fr){ if (frame){ fr.src = frame; fr.hidden = false; } else fr.hidden = true; }
+  const ik = $('hqink'); if (ik){ if (ink){ ik.src = ink; ik.hidden = false; } else ik.hidden = true; }
+  const nm = $('hqname'); if (nm) nm.textContent = sc.n + ' 본진';
+  const hz = $('hqhan'); if (hz) hz.textContent = (ARTS.list.find(a => a.school === k && a.frag) || {}).h || '';
+  const tp = $('hqtip'); if (tp) tp.textContent = hqRank(k) + '단 · ' + (hqIsMaster(k) ? '장문인이 기다린다' : '장로가 기다린다');
+  el.style.setProperty('--hqc', sc.c);
+  el.hidden = false; el.classList.remove('gone');
+  hqLoadT = DUEL.load.dur;
+}
+function hqLoadStep(dt){
+  if (hqLoadT <= 0) return;
+  hqLoadT -= dt;
+  const el = typeof $ === 'function' && $('hqload'); if (!el) return;
+  const bar = $('hqbar'); if (bar) bar.style.width = Math.max(0, Math.min(100, (1 - hqLoadT/DUEL.load.dur) * 100)) + '%';
+  if (hqLoadT <= DUEL.load.fade) el.classList.add('gone');
+  if (hqLoadT <= 0){ el.hidden = true; el.classList.remove('gone'); }
+}
 // 본진으로 이동 — 단계 10(제자 젠). 사냥터로 돌아오는 건 gotoZone(S.hq=null)
 function gotoHq(k){
   if (DUEL.gBase[k] === undefined) return false;
   S.hq = k; S.stage = BOSS_STAGE - 1; S.kills = 0;
   if (typeof closeZonePanel === 'function') closeZonePanel();
   enterStage(true);
+  showHqLoad(k);            // 진입 연출 (v2.94.7)
   return true;
 }
 // 본진에서 처치 — 제자는 조각 1%, 장로·장문인은 보상 묶음 + 단 상승. 돌려주는 값 = 추가 은자

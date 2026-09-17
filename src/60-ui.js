@@ -36,6 +36,7 @@ function hud(){
   const sb = $('sbar'); sb.style.opacity = bars ? '1' : '0'; sb.style.pointerEvents = bars ? '' : 'none';
   const tb = $('tbtn'); if (tb){ tb.style.opacity = bars ? '1' : '0'; tb.style.pointerEvents = bars ? '' : 'none'; }   // [테스트 전용]
   if (!showing) return;
+  if (typeof hqLoadStep === 'function') hqLoadStep(1/60);   // 본진 진입 로딩 화면 (v2.94.7)
   trainHud();                                    // 수련 탭 알림점·열린 패널 갱신
   artsHud();                                     // 무공 탭 알림점·열린 패널 갱신
   if (typeof equipHud === 'function') equipHud();  // 장비 탭 (v2.66)

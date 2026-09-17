@@ -1400,6 +1400,9 @@ DUEL.art = { gaebang:{ disc:'gb_disc', elite:'gb_elite', elder:'gb_elder' }, sor
 DUEL.hqGround = { gaebang:'#6e6349', sorim:'#7a7368', mudang:'#6c7a7c', hwasan:'#7d6658', ami:'#647a5a', dangmun:'#5e5450', magyo:'#4a4448', bamboo:'#6a7a52' };
 DUEL.hqSky = { gaebang:'#e1b677', sorim:'#cea98c' };
 DUEL.hqGroundA = { sorim:0.8 };       // 줄눈이 어두운 석판은 텍스처를 옅게(인물 가독성, GROUNDTEX.aZone)
+// 본진 진입 로딩 화면 (v2.94.7, 사용자 "해당 문파로 넘어갈 때 이미지 3장 로딩 화면에서") — 에셋이 없으면 문파색 바탕으로 뜬다.
+// 그림 키: hq_art_<문파>(세로 일러스트) · hq_load_frame(공통 두루마리 테두리) · hq_load_ink(공통 먹 번짐)
+DUEL.load = { dur:1.7, fade:0.45, ink:0.5 };   // 머무는 시간 · 걷히는 시간 · 먹 번짐이 도는 시간
 DUEL.hqGroundScale = { sorim:0.5, gaebang:0.7 };   // 타일 배율 — 소림 석판 128px→64px(인물 키 47 정도), 개방 발자국·모닥불 자국   // 원경 위 남는 하늘(시트 첫 불투명 5줄 평균, hqbg.py 보고) — 없으면 땅색으로 칠해져 갈색 띠가 뜬다
 for (const k in DUEL.gBase){
   BACKDROP.keys['hq_' + k] = 'bg_hq_' + k;

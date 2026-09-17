@@ -530,6 +530,22 @@
   #toast:not(.show) .tico{opacity:0;}
   /* 타이틀 화면 (v2.65) — 사용자 일러스트 배경 + 주인공 초상. 아무 데나 누르면 걷힌다.
      게임은 뒤에서 이미 돌고 있다(방치형) — 복귀 카드·기연은 걷힌 뒤에 보여준다. */
+  #hqload{position:absolute;inset:0;z-index:51;overflow:hidden;background:#0d1014;pointer-events:none;
+    display:flex;flex-direction:column;justify-content:flex-end;align-items:center;transition:opacity .45s;}
+  #hqload.gone{opacity:0;}
+  #hqload[hidden]{display:none;}
+  #hqart{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 35%;}
+  #hqink,#hqframe{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;}
+  #hqink{opacity:.85;mix-blend-mode:screen;animation:hqInk .5s ease-out both;}
+  @keyframes hqInk{from{opacity:1;transform:scale(1.25)}to{opacity:.35;transform:scale(1)}}
+  .hqveil{position:absolute;inset:0;background:radial-gradient(120% 70% at 50% 28%,rgba(13,16,20,0) 30%,rgba(13,16,20,.72) 78%,rgba(13,16,20,.95));}
+  .hqbody{position:relative;width:100%;max-width:340px;padding:0 24px calc(env(safe-area-inset-bottom) + 84px);text-align:center;}
+  #hqhan{font-family:var(--fw);font-size:30px;color:var(--hqc,#d8a84a);opacity:.55;letter-spacing:.3em;line-height:1;}
+  #hqname{font-family:var(--fw);font-size:32px;color:#f2e8d2;letter-spacing:.14em;margin-top:6px;
+    text-shadow:0 2px 0 #241a08,0 5px 20px rgba(0,0,0,.85);word-break:keep-all;}
+  #hqtip{font-size:13px;color:#b9c6d3;margin-top:8px;letter-spacing:.06em;word-break:keep-all;}
+  .hqtrack{margin-top:16px;height:4px;border-radius:3px;background:rgba(255,255,255,.14);overflow:hidden;}
+  #hqbar{height:100%;width:0;background:var(--hqc,#d8a84a);box-shadow:0 0 10px var(--hqc,#d8a84a);transition:width .12s linear;}
   #title{position:absolute;inset:0;z-index:50;pointer-events:auto;overflow:hidden;background:#0e1116;
     display:flex;flex-direction:column;justify-content:flex-end;align-items:center;
     transition:opacity .5s;}
@@ -552,6 +568,19 @@
 </style></head><body>
 <canvas id="cv"></canvas>
 <div id="ui">
+  <!-- 본진 진입 로딩 화면 (v2.94.7) — 그림 셋은 있으면 쓰고 없으면 문파색 바탕 -->
+  <div id="hqload" hidden>
+    <img id="hqart" alt="" hidden>
+    <div class="hqveil"></div>
+    <img id="hqink" alt="" hidden>
+    <img id="hqframe" alt="" hidden>
+    <div class="hqbody">
+      <div id="hqhan"></div>
+      <div id="hqname"></div>
+      <div id="hqtip"></div>
+      <div class="hqtrack"><div id="hqbar"></div></div>
+    </div>
+  </div>
   <div id="title" hidden>
     <img id="tbg" alt="">
     <div class="tveil"></div>

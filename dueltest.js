@@ -36,6 +36,9 @@ setTimeout(()=>{
   S.rexp=w.seedExp(2,5); S.hp=P.hpMax=w.eval('heroHpMax()'); P.hp=P.hpMax;
   ok(w.gotoHq('gaebang')===true && S.hq==='gaebang' && w.eval("zone()").n==='개방 본진' && w.eval("zone()").hq==='gaebang','gotoHq → zone() = '+w.eval("zone()").n);
   ok(S.stage===BOSS_STAGE-1 && S.kills===0,'단계 '+S.stage+'(제자 젠) · 처치 0');
+  { const el=w.document.getElementById('hqload'); ok(el && !el.hidden && w.document.getElementById('hqname').textContent==='개방 본진','진입 로딩 화면이 뜬다: "'+w.document.getElementById('hqname').textContent+'" · '+w.document.getElementById('hqtip').textContent);
+    for(let i=0;i<Math.ceil(DUEL.load.dur*60)+4;i++) w.hqLoadStep(1/60);
+    ok(el.hidden===true,'로딩 화면은 '+DUEL.load.dur+'초 뒤 스스로 걷힌다'); }
   ok(w.eval("gstage()")===DUEL.gBase.gaebang && w.hqRank('gaebang')===1,'전역 단계 = gBase '+w.eval("gstage()")+' · 1단');
   S.intro=0; w.hud && w.hud();
   const st=w.document.getElementById('stage').textContent;
