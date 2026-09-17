@@ -133,7 +133,7 @@ function newItem(zi){
 function rollDrop(boss){
   const ch = boss ? EQUIP.bossDrop : EQUIP.dropCh;
   if (!(ch > 0) || Math.random() >= ch) return null;
-  const it = newItem(S.zi); if (!it) return null;
+  const it = newItem(S.hq ? DUEL.nearZone[S.hq] : S.zi); if (!it) return null;
   const first = !eqSeen(it.k, it.g);
   eqGain(it.k, it.g, 1);
   eqLogPush(itemLabel(it.k, it.g) + ' 획득');

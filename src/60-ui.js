@@ -50,11 +50,11 @@ function hud(){
 
   const st = stage();
   if (isBoss()){
-    $('stage').textContent = zone().n + ' · 보스';
+    $('stage').textContent = zone().n + (S.hq ? ' ' + hqRank(S.hq) + '단 · 장로' : ' · 보스');
     const b = S.foes.find(f=>f.boss && !f.dead);
     $('kills').textContent = b ? zone().boss : '접근 중';
   } else {
-    $('stage').textContent = zone().n + ' ' + S.stage + '단계';
+    $('stage').textContent = zone().n + ' ' + (S.hq ? hqRank(S.hq) + '단' : S.stage + '단계');   // 본진은 단(段) (v2.94)
     $('kills').textContent = S.kills + ' / ' + stageNeed();
   }
   $('hpt').textContent = fmt(Math.ceil(P.hp)) + ' / ' + fmt(P.hpMax);
@@ -144,12 +144,12 @@ function skillHud(){
 // 단계는 상단 표시로 충분). 구역이 바뀌거나 보스 단계일 때만 연출한다.
 function enterStage(intro){
   if (!S.reach) S.reach = [];
-  S.reach[S.zi] = Math.max(S.reach[S.zi] | 0, S.stage);   // 가 본 단계 — 사냥터 패널 선택 범위
+  if (!S.hq) S.reach[S.zi] = Math.max(S.reach[S.zi] | 0, S.stage);   // 가 본 단계 — 사냥터 패널 선택 범위 (본진은 안 센다, v2.94)
   P.hpMax = heroHpMax(); P.hp = P.hpMax;
   P.x = 0; P.y = 0; P.anim = 'idle'; P.af = 0;
   S.camX = 0; S.camY = -24;
   S.foes.length = 0; S.fx.length = 0; S.shots.length = 0; S.bossAlive = false;
-  if (intro) beginIntro(isBoss() ? zone().boss : (S.stage + '단계'), zone().n);
+  if (intro) beginIntro(isBoss() ? zone().boss : (S.hq ? hqRank(S.hq) + '단' : S.stage + '단계'), zone().n);
   else { S.intro = 0; if (!isBoss()) spawnFoe(); }   // 연출 생략 시 바로 적을 채워 빈 화면을 줄인다
   // 인연이 차 있으면 기연이 나타난다.
   // sim.js 등 검증 도구는 64-fate 없이 60-ui까지만 이어붙이므로 가드가 필요하다.
@@ -159,6 +159,7 @@ function enterStage(intro){
 function stageReach(i){ return TEST ? BOSS_STAGE : Math.max(1, (S.reach && S.reach[i]) | 0); }   // 그 구역에서 고를 수 있는 최고 단계
 function gotoZone(i, st){
   if (!TEST && (i >= S.unlocked || (st || 1) > stageReach(i))) return;
+  S.hq = null;                 // 본진에서 돌아온다 (v2.94)
   S.zi = i; S.stage = st || 1; S.kills = 0;
   // [테스트 전용] 앞 구역으로 점프하면 걸맞은 수련치를 채워준다 — 안 그러면 못 버틴다
   if (TEST) S.rexp = Math.max(S.rexp, seedExp(i, st));
@@ -254,8 +255,9 @@ function buildZonePanel(){
       ? '테스트 모드 — 구역을 누르고 아래에서 단계를 고른다.'
       : '구역을 누르고 아래에서 단계를 고른다.') + '</div>';
   b.innerHTML = svg + strip + note;
-  b.querySelectorAll('.hqnode').forEach(el => { el.onclick = () => { const q = el.dataset.q;
-    toast(q === 'home' ? (typeof sectName === 'function' ? sectName() : SECT.name) + ' — 문파 탭에서 마당으로' : SCHOOLS[q].n + ' 본진\n비무는 곧 열린다'); }; });
+  b.querySelectorAll('.hqnode').forEach(el => { el.onclick = e => { e.stopPropagation(); const q = el.dataset.q;
+    if (q === 'home'){ toast((typeof sectName === 'function' ? sectName() : SECT.name) + ' — 문파 탭에서 마당으로'); return; }
+    if (typeof gotoHq === 'function') gotoHq(q); }; });   // 본진으로 이동 (v2.94)
   b.querySelectorAll('.znode[data-z], .zn[data-z]').forEach(el => {
     el.onclick = () => { const i = parseInt(el.dataset.z, 10); if (!TEST && i >= S.unlocked) return; zoneSel = i; buildZonePanel(); };   // 선택만 — 이동은 단계 줄에서
   });

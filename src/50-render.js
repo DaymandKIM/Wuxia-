@@ -1,6 +1,6 @@
 /* ── 그리기 ───────────────────────────────────────── */
 // 그리는 구역 — 문파 터 화면(v2.92)은 어느 구역에 있든 죽림 원경·바닥으로 그린다
-function rzone(){ return (typeof sectView !== 'undefined' && sectView) ? ZONES[0] : zone(); }
+function rzone(){ return (typeof sectView !== 'undefined' && sectView) ? ZONES[0] : (S.hq ? ZONES[HQZONE[S.hq].vis] : zone()); }   // 본진은 가까운 사냥터 배경을 빌린다 (v2.94)
 function drawGround(ox, oy){
   ctx.fillStyle = rzone().ground;
   ctx.fillRect(0, 0, VW, VH);
@@ -353,16 +353,26 @@ function drawFoe(f, ox, oy){
   if (f.dir < 0) ctx.scale(-1, 1);
   if (f.dead) ctx.globalAlpha = Math.max(0, f.dying/0.22);
   // 공격 중엔 앞으로 기운다
-  let dw = Math.round(M.w*sc), dh = Math.round(M.h*sc), off = 0;
+  let dw = Math.round(M.w*sc), dh = Math.round(M.h*sc), off = 0, lx = 1, ly = 1;
   if (f.atkT > 0){
     const k = 1 - Math.abs(1 - (1 - f.atkT/FOE.dur)/FOE.hitAt);
-    dw = Math.round(M.w*sc*(1+0.10*k)); dh = Math.round(M.h*sc*(1+0.06*k));
+    lx = 1+0.10*k; ly = 1+0.06*k;
+    dw = Math.round(M.w*sc*lx); dh = Math.round(M.h*sc*ly);
     off = Math.round(BW*sc*0.14*k);
   }
   const seq = M.anim[f.anim] || M.anim.idle;
   let fi = Math.floor(f.af);
   fi = (f.anim==='atk' || f.anim==='death') ? Math.min(fi, seq.length-1) : (fi % seq.length);
-  const im = IMG[f.k + '_' + seq[fi]];
+  // 주인공 스트립을 빌려 쓰는 몹(본진 제자·장로, v2.94) — 도복만 문파색으로 물들인 캔버스, 컷은 스트립 오프셋
+  const HS = M.heroStrip ? (M.heroStrip[f.anim] || M.heroStrip.idle) : null;
+  let im, sx = 0, sw = 0;
+  if (HS){
+    const col = (SCHOOLS[M.school] || SCHOOLS.none).c;
+    im = (typeof tintedStrip === 'function' && tintedStrip(HS[0], col)) || IMG[HS[0]];
+    sw = HFX.aw[HS[1]] || HERO.w; sx = fi * sw;
+    dw = Math.round(sw*sc*lx); dh = Math.round(HERO.h*sc*ly);
+  } else im = IMG[f.k + '_' + seq[fi]];
+  const blit = () => { if (HS){ if (im) try{ ctx.drawImage(im, sx, 0, sw, HERO.h, -Math.round(dw/2)+off, -dh, dw, dh); }catch(e){} } else draw(im, -Math.round(dw/2)+off, -dh, dw, dh); };
   if (rise < 1){
     // 아래 절반부터 서서히 드러난다
     ctx.save();
@@ -370,7 +380,7 @@ function drawFoe(f, ox, oy){
     ctx.rect(-dw, -dh*rise, dw*2, dh*rise + 4);
     ctx.clip();
     ctx.globalAlpha = 0.35 + rise*0.65;
-    draw(im, -Math.round(dw/2)+off, -dh, dw, dh);
+    blit();
     ctx.restore();
     ctx.globalAlpha = 1;
     return;
@@ -380,18 +390,18 @@ function drawFoe(f, ox, oy){
   if (f.boss && f.rise <= 0){
     drawAura(0, 0, dw, dh);
   }
-  draw(im, -Math.round(dw/2)+off, -dh, dw, dh);
+  blit();
   if (f.boss){                     // 보스는 몸에만 붉은 기운이 돈다
     ctx.globalCompositeOperation = 'lighter';
     ctx.globalAlpha = 0.14 + Math.sin(S.t*3.4)*0.06;
-    draw(im, -Math.round(dw/2)+off, -dh, dw, dh);
+    blit();
     ctx.globalCompositeOperation = 'source-over';
     ctx.globalAlpha = 1;
   }
   if (f.hit > 0){
     ctx.globalCompositeOperation = 'lighter';
     ctx.globalAlpha = Math.min(0.45, f.hit*4);
-    draw(im, -Math.round(dw/2)+off, -dh, dw, dh);
+    blit();
     ctx.globalCompositeOperation = 'source-over';
   }
   // 피격 브라이튼 (v2.61) — 같은 스프라이트를 lighter로 n겹 더 얹어 실루엣 그대로
@@ -400,7 +410,7 @@ function drawFoe(f, ox, oy){
     const k = FXD.hitflash.a * Math.min(1, f.hitT / FXD.hitflash.life);
     ctx.globalCompositeOperation = 'lighter';
     ctx.globalAlpha = k;
-    for (let i = 0; i < FXD.hitflash.n; i++) draw(im, -Math.round(dw/2)+off, -dh, dw, dh);
+    for (let i = 0; i < FXD.hitflash.n; i++) blit();
     ctx.globalCompositeOperation = 'source-over';
     ctx.globalAlpha = 1;
   }
@@ -719,7 +729,7 @@ function drawFx(ox, oy){
 // 저장할 것이 없어 저장·시뮬에 영향이 없고, 화면 좌표라 카메라와 무관히 채워진다.
 function ambHash(i, s){ return ((i * 2654435761 + s * 97) % 1000) / 1000; }
 function drawAmbient(front){
-  const A = AMB[zone().k];
+  const A = AMB[rzone().k];
   if (!A) return;
   ctx.save();
   if (!front && A.kind === 'cloud'){
@@ -842,7 +852,7 @@ function drawIntro(){
   ctx.globalAlpha = 1;
 
   // 3장을 세로로 쌓았을 때의 배치를 미리 잰다
-  const im0 = IMG[zone().k + '1'];
+  const im0 = IMG[rzone().k + '1'];
   if (!im0 || !im0.complete || !im0.naturalWidth){ drawIntroText(W,H,el); return; }
   const sc = W / im0.naturalWidth;
   const ih = im0.naturalHeight * sc;              // 장당 높이 (셋이 같다)
@@ -851,7 +861,7 @@ function drawIntro(){
   const top = (H - total) / 2;                    // 화면 세로 가운데
 
   for (let i=0; i<3; i++){
-    const im = IMG[zone().k + (i+1)];
+    const im = IMG[rzone().k + (i+1)];
     if (!im || !im.complete || !im.naturalWidth) continue;
     const t0 = i * INTRO.stagger;                 // 이 장이 출발하는 시각
     const k = clamp((el - t0) / INTRO.slide, 0, 1);
@@ -876,7 +886,7 @@ function drawIntroText(W, H, el){
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
 
   // 배경 3장이 놓인 자리를 재서 위아래 여백 가운데에 쓴다
-  const im0 = IMG[zone().k + '1'];
+  const im0 = IMG[rzone().k + '1'];
   let topY = H*0.118, botY = H*0.881;
   if (im0 && im0.complete && im0.naturalWidth){
     const ih = im0.naturalHeight * (W / im0.naturalWidth);

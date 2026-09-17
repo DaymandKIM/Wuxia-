@@ -31,7 +31,7 @@ function treeNeedOk(s,n){
 const treeAvail = (s,n) => !treeArtNode(n) && !treeHas(s,n.id) && treeNeedOk(s,n);
 
 // 경지 포인트 — 누적 성 개수 × ptsPerStar. 쓴 점은 익힌 트리 노드 + 스킬 심화 특성 비용의 합.
-const skillPtsTotal = () => realmLv() * SKILLTREE.ptsPerStar;
+const skillPtsTotal = () => realmLv() * SKILLTREE.ptsPerStar + ((S.ptsBonus | 0));   // + 본진 장로·장문인이 준 무공점 (v2.94)
 function skillPtsSpent(){
   let c=0;
   for (const s in S.tree) for (const id in S.tree[s]){ const n=treeNode(s,id); if(n) c += n.c||0; }

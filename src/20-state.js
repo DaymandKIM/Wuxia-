@@ -49,6 +49,11 @@ const S = {
   fame: 0,                       // 문파 명성 누적 (v2.91)
   sectName: '',                  // 문파 이름 — 빈 값이면 SECT.name(무명문) (v2.91.2)
   disciples: [],                 // 문파 제자 [{n:이름, l:계보키, t:자질 index}] (v2.92)
+  hq: null,                      // 본진 비무 중이면 문파 키 (v2.94) — zone()이 HQZONE 을 돌려준다
+  duel: {},                      // 문파별 단(段) {sorim:3}
+  frag: {},                      // 비급 조각 {무공키: 개수}
+  hqDone: {},                    // 문파별 첫 격파한 최고 단 (제자 확정 합류 판정)
+  ptsBonus: 0,                   // 본진에서 얻은 무공점 (skillPtsTotal 에 더한다)
   achvNote: {},                  // 업적 { k: 알린 단계 수 } — 달성 토스트 중복 방지 (저장 안 함)
   fatePending: 0,                // >0 이면 기연이 기다린다
   fatebits: {},                  // 실전 비급 조각 { guyang: 0~3, geongon: 0~3 }

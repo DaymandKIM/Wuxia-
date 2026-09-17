@@ -142,6 +142,7 @@ for (const a in ANIM) {
 
 for (const k in FOES) {
   const M = FOES[k];
+  if (M.heroStrip) continue;   // 본진 제자·장로 — 주인공 스트립을 빌린다 (v2.94)
   const seen = new Set();
   for (const a in M.anim) for (const f of M.anim[a]) seen.add(f);
   console.log(`${M.n} (${k}) — 선언 ${M.w}x${M.h}${M.sw ? ` · 몸 ${M.sw}x${M.bh}` : ''} · 프레임 ${seen.size}`);

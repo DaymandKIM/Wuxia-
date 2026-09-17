@@ -20,6 +20,7 @@ function saveData(){
     itemLv: S.itemLv, inv: S.inv, codex: S.codex,
     merges: S.merges, levels: S.levels, achv: S.achv,   // 업적 (v2.90)
     halls: S.halls, fame: S.fame, sectName: S.sectName, disciples: S.disciples,   // 문파 (v2.91~92)
+    hq: S.hq, duel: S.duel, frag: S.frag, hqDone: S.hqDone, ptsBonus: S.ptsBonus,      // 본진 비무 (v2.94)
   };
 }
 function saveNow(){
@@ -77,6 +78,13 @@ function applySave(d){
     ? d.bossDone.slice(0, ZONES.length).map(v => v ? 1 : 0) : [];
   S.reach = Array.isArray(d.reach) ? d.reach.slice(0, ZONES.length).map(v => clamp(v|0, 0, BOSS_STAGE)) : [];   // 옛 저장엔 없다 → 지금 단계에서 시작
   for (let i = 0; i < S.zi; i++) if (!S.reach[i]) S.reach[i] = BOSS_STAGE;   // 지나온 구역은 끝까지 가 본 것
+  // 본진 비무 (v2.94) — 문파 키는 화이트리스트, 단·조각은 정수. 본진에 있었으면 단계는 10(제자 젠)·11(장로)만
+  S.hq = (d.hq && DUEL.gBase[d.hq] !== undefined) ? d.hq : null;
+  S.duel = {}; if (d.duel && typeof d.duel === 'object') for (const k in DUEL.gBase) if (d.duel[k]) S.duel[k] = Math.max(1, d.duel[k] | 0);
+  S.hqDone = {}; if (d.hqDone && typeof d.hqDone === 'object') for (const k in DUEL.gBase) if (d.hqDone[k]) S.hqDone[k] = Math.max(0, d.hqDone[k] | 0);
+  S.frag = {}; if (d.frag && typeof d.frag === 'object') for (const k in d.frag) if (ARTS.list.some(a => a.k === k) && (d.frag[k] | 0) > 0) S.frag[k] = d.frag[k] | 0;
+  S.ptsBonus = Math.max(0, d.ptsBonus | 0);
+  if (S.hq) S.stage = clamp(S.stage, BOSS_STAGE - 1, BOSS_STAGE);
   S.stats = {};
   if (d.stats && typeof d.stats === 'object')
     for (const s of TRAIN.list) S.stats[s.k] = Math.max(0, d.stats[s.k]|0);

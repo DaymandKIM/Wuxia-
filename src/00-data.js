@@ -239,7 +239,7 @@ const ZONES = [
   { k:'snow',    n:'설산',   ground:'#a4b3c0', boss:'설산백호',   map:[280, 142] },   // v2.35 톤다운 (흰 백호 대비)
   { k:'heaven',  n:'천산',   ground:'#7f9a86', boss:'뇌운신장',   map:[95, 70] },
 ];
-const zone = ()=> ZONES[S.zi];
+const zone = ()=> (S.hq && HQZONE[S.hq]) || ZONES[S.zi];   // 본진(S.hq)이면 합성 구역 (v2.94)
 
 // 구역별 분위기 연출 — 무상태 입자(해시+시간으로 좌표를 만들어 저장이 필요 없다).
 // 단계가 올라도 화면이 똑같다는 지적의 해법 중 "구역별 화면 변화" 축.
@@ -322,7 +322,7 @@ const DIFF = {
   dmgBase: 3.0, dmgGrow: 1.19,   // 적 피해 — 밀어붙일 때만 위험하게 (sim 쓰러짐 기준)
   needBase: 24, needPer: 7,      // 처치 목표 = base + g×per (31 → 374)
 };
-const gstage    = ()=> S.zi * 10 + Math.min(S.stage, 10);
+const gstage    = ()=> S.hq ? DUEL.gBase[S.hq] + DUEL.gPerRank * (hqRank(S.hq) - 1) : S.zi * 10 + Math.min(S.stage, 10);   // 본진은 단(段)이 축 (v2.94)
 const stageNeed = ()=> DIFF.needBase + gstage() * DIFF.needPer;
 
 // 단계별 연출 수치 (구역 안 1~10)
@@ -422,8 +422,8 @@ const BOSSKILL = {
 // 실제 수치 — 전부 전역 단계 g에서 나온다
 const foeHp  = ()=> Math.round(DIFF.hpBase * Math.pow(DIFF.hpGrow, gstage()-1));
 const foeDmg = ()=> DIFF.dmgBase * Math.pow(DIFF.dmgGrow, gstage()-1);
-const bossHp = ()=> Math.round(DIFF.hpBase * Math.pow(DIFF.hpGrow, S.zi*10+9) * BOSS.hp);
-const bossDmg= ()=> DIFF.dmgBase * Math.pow(DIFF.dmgGrow, S.zi*10+9) * BOSS.dmg;
+const bossHp = ()=> Math.round(DIFF.hpBase * Math.pow(DIFF.hpGrow, S.hq ? gstage()-1 : S.zi*10+9) * BOSS.hp * (S.hq ? DUEL.elderHp : 1));   // 본진 장로는 그 단의 힘 (v2.94)
+const bossDmg= ()=> DIFF.dmgBase * Math.pow(DIFF.dmgGrow, S.hq ? gstage()-1 : S.zi*10+9) * BOSS.dmg;
 
 // 단계 진입 연출 — 배경 3장이 차례로 흐른다
 // 단계 진입 연출 — 3장이 위에서 아래로 차례로 슬라이드해 들어온다
@@ -920,6 +920,24 @@ const ARTS = { list: [
     d:'위태로우면 숨을 불어넣는다',       cd:18, heal:0.3, below:0.4 },
   { k:'bungsan', n:'붕산장',   h:'崩山掌',   type:'active', school:'magyo', need:22, cost:60000,
     d:'산을 무너뜨리듯 사방을 친다',      cd:30, mul:4,   range:300 },
+  // ── 상승(上乘) 초식 — 본진 비무 조각(frag)으로만 익힌다 (v2.94, docs/설계-비무.md). 같은 자리 기본 초식의 1.4~1.6배.
+  //    시전 컷은 cast(기존 스트립 키), 탄은 shot('pashot'|'bshot'), far=먼 적부터. 새 유형(버프·다단·피해감소)은 v2.94b에서
+  { k:'geumgang',    n:'금강파산권', h:'金剛破山拳', type:'active', school:'sorim',   need:12, cost:8000,  frag:5, tier:2, cast:'pagong',
+    d:'금강의 주먹이 산을 부순다',       cd:11, mul:5.5, range:80,  kb:true },
+  { k:'taegeukhwan', n:'태극환장',   h:'太極環掌',   type:'active', school:'mudang',  need:16, cost:20000, frag:5, tier:2, cast:'bungsan',
+    d:'둥근 장력이 사방을 밀어낸다',     cd:9,  mul:3,   range:120, kb:true },
+  { k:'pyomae',      n:'표매권',     h:'飄梅拳',     type:'active', school:'hwasan',  need:10, cost:5000,  frag:5, tier:2, cast:'pagong', shot:'pashot',
+    d:'매화가 흩날리듯 권기가 날아간다', cd:7,  mul:4.5, range:220 },
+  { k:'geumjeong',   n:'금정장',     h:'金頂掌',     type:'active', school:'ami',     need:14, cost:12000, frag:5, tier:2, cast:'hwalin',
+    d:'장력이 사방을 치고 숨을 돌려준다', cd:10, mul:3,   range:110, heal:0.12 },
+  { k:'chwibo',      n:'취보권',     h:'醉步拳',     type:'active', school:'gaebang', need:6,  cost:1500,  frag:5, tier:2, cast:'whirl',
+    d:'비틀대는 걸음 끝에 주먹이 온다',   cd:7,  mul:2.6, range:90,  kb:true },
+  { k:'bichim',      n:'비침우',     h:'飛針雨',     type:'active', school:'dangmun', need:18, cost:35000, frag:5, tier:2, cast:'baekbo', shot:'bshot', far:true,
+    d:'바늘비가 가장 먼 적을 꿰뚫는다',   cd:16, mul:7,   range:300 },
+  { k:'mayeom',      n:'마염참',     h:'魔炎斬',     type:'active', school:'magyo',   need:22, cost:90000, frag:5, tier:2, cast:'bungsan',
+    d:'검은 불꽃이 들판을 삼킨다',       cd:34, mul:6,   range:340 },
+  { k:'jukyeop',     n:'죽엽비',     h:'竹葉飛',     type:'active', school:'bamboo',  need:4,  cost:400,   frag:5, tier:2, cast:'pagong', shot:'pashot',
+    d:'댓잎 한 장이 바람을 타고 간다',   cd:4,  mul:2.2, range:200 },
   // ── 심법 (패시브 증폭) ────────────────────────────
   { k:'samjae',  n:'삼재심법',   h:'三才心法',   type:'passive', school:'none', need:2,  cost:60,
     d:'숨을 고르는 첫걸음',       regen:0.25 },
@@ -1277,3 +1295,35 @@ const OFFLINE = {
   expLv8h: 3,                    // 오프라인 수련치 = 8시간에 승급 이만큼 분량 (시간 비례)
   karmaCap: 1.5,                 // 오프라인 인연 상한 = 현재 필요량 × 이 값
 };
+
+/* ── 문파 본진 비무 (v2.94, docs/설계-비무.md 2안) — 본진 = 특수 사냥터. 제자가 젠되고 처치 목표가 차면 장로(보스 틀) 출현,
+   격파하면 단 +1·조각·은자·명성·제자. 쿨·티켓 없음. 오프라인은 제자 제자리 사냥 정산만(조각·단 없음) ── */
+const DUEL = {
+  gBase: { bamboo:3, gaebang:5, hwasan:10, sorim:12, ami:14, mudang:16, dangmun:18, magyo:22 },   // 1단의 전역 단계 g — 개방은 죽림 중반, 마교는 천산급
+  gPerRank: 2,                 // 단마다 g +2
+  masterEvery: 10,             // 이 배수 단은 장로 대신 장문인
+  elderHp: 1.0,                // 장로 체력 = BOSS.hp × 이 값
+  silverMob: 0.7,              // 제자 처치 은자 = 사냥터의 70% (본진이 사냥보다 못 벌게)
+  frag: { mob:0.01, elder:1, elderHi:2, elderHiFrom:7, master:3 },   // 비급 조각: 제자 1% · 장로 1(7단↑ 2) · 장문인 3
+  disc: { at:[3,7], repeat:0.2, masterTalent:2 },                     // 제자 합류: 3·7단 첫 격파 확정, 그 뒤 격파마다 20%, 장문인은 자질 상
+  pts:  { elder:0.3, master:2 },                                      // 무공점(특성): 장로 30% +1, 장문인 +2
+  fragNeed: 5,                 // 상승 무공 습득에 드는 조각(ARTS frag 기본값)
+  nearZone: { bamboo:0, gaebang:0, hwasan:1, sorim:2, ami:2, mudang:3, dangmun:3, magyo:4 },   // 배경·장비 등급표를 빌리는 사냥터(시트 오기 전)
+  silverMaster: 2,             // 장문인 추가 은자 = 보스 격파 은자 × 이 값
+};
+// 합성 구역 — zone()이 S.hq 일 때 돌려준다. k 는 ZONEFOE/ZONEBOSS/BOSSCRY 키, vis 는 배경을 빌릴 사냥터 index
+const HQZONE = {};
+for (const k in DUEL.gBase){
+  const z = ZONES[DUEL.nearZone[k]];
+  HQZONE[k] = { k:'hq_' + k, hq:k, n:SCHOOLS[k].n + ' 본진', ground:z.ground, boss:SCHOOLS[k].n + ' 장로', vis:DUEL.nearZone[k] };
+  // 제자·장로 — 주인공 스트립을 문파색으로 물들여 쓴다(heroStrip: anim → [스트립 키, HFX.aw 키]). anim 배열은 컷 수만 맞춘 더미. 제자 시트가 오면 교체
+  const HSTRIP = { idle:['hero_idle','idle'], walk:['hero_run','run'], atk:['hero_punch','punch'], hit:['hero_hit','hit'], death:['hero_hit','hit'], skill:['hero_punch','punch'] };
+  const ANIMD = { idle:['s'], walk:['s','s','s','s','s','s'], atk:['s','s','s','s'], hit:['s'], death:['s'], skill:['s','s','s','s'] };
+  FOES['disc_' + k]  = { n:SCHOOLS[k].n + ' 제자', w:34, h:HERO.h, bh:47, school:k, heroStrip:HSTRIP, anim:ANIMD,
+                         fps:{ idle:1, walk:10, atk:6, hit:6, death:5, skill:3 }, hp:1.1, dmg:1.0, spd:1.0, range:44 };
+  FOES['elder_' + k] = { n:SCHOOLS[k].n + ' 장로', w:34, h:HERO.h, bh:47, school:k, heroStrip:HSTRIP, anim:ANIMD, sc:1.18,
+                         fps:{ idle:1, walk:10, atk:6, hit:6, death:5, skill:3 }, hp:1.0, dmg:1.0, spd:0.9, range:44 };
+  ZONEFOE['hq_' + k]  = ['disc_' + k];
+  ZONEBOSS['hq_' + k] = 'elder_' + k;
+  BOSSCRY['hq_' + k]  = SCHOOLS[k].n + ' 장로가 나선다';
+}

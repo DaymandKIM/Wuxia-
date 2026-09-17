@@ -245,10 +245,10 @@ function hurtFoe(f, dmg, crit){
     for (const a of ARTS.list)
       if (a.type === 'passive' && S.arts[a.k]) S.artXp[a.k] = (S.artXp[a.k] || 0) + artXpGain();
     // 명성 — 처치·보스·첫 격파 (문파 v2.91)
-    if (typeof fameAdd === 'function') fameAdd(f.boss ? SECT.fame.boss + (!S.bossDone[S.zi] ? SECT.fame.bossFirst : 0) : killFame());
+    if (typeof fameAdd === 'function') fameAdd(f.boss ? SECT.fame.boss + (!S.hq && !S.bossDone[S.zi] ? SECT.fame.bossFirst : 0) : killFame());
     // 은자 드랍 — 보스는 크게, 구역 첫 격파면 보너스까지
-    let sv = killSilver() * (f.boss ? SILVER.bossKill : 1);
-    if (f.boss && !S.bossDone[S.zi]){
+    let sv = killSilver() * (f.boss ? SILVER.bossKill : (S.hq ? DUEL.silverMob : 1));   // 본진 제자는 사냥터의 70% (v2.94)
+    if (f.boss && !S.hq && !S.bossDone[S.zi]){
       S.bossDone[S.zi] = 1;
       const bonus = killSilver() * SILVER.firstMul;
       sv += bonus;
@@ -256,6 +256,8 @@ function hurtFoe(f, dmg, crit){
     }
     S.silver += sv;
     if (typeof rollDrop === 'function') rollDrop(f.boss);   // 장비 드랍 (v2.66)
+    // 본진: 장로 격파 보상·단 상승, 제자 조각 1% (v2.94) — 드랍 토스트 **뒤에** 불러야 장로 격파 토스트가 남는다(토스트는 큐가 없다)
+    if (S.hq && typeof hqKill === 'function') S.silver += hqKill(f);
     fxPush({ k:'burst', x:f.x, y:f.y - (foeM(f).bh||foeM(f).h)*0.4, life:0.3, t:0.3 });
     sfx('kill');
   }
@@ -357,6 +359,7 @@ function castByHand(k){
 
 // 시전 동작 진입 — 초식별 스트립 길이만큼 (프레임 수 / castFps)
 function beginCast(k){
+  const a0 = artDef(k); if (a0 && a0.cast) k = a0.cast;   // 상승 초식은 기존 시전 컷을 빌린다 (v2.94)
   const c = HFX.cast[k];
   if (!c) return;
   P.castK = k; P.castT = castN(k) / HFX.castFps / (1 + tBonus('castSpd')/100); P.anim = 'cast'; P.af = 0;
@@ -364,7 +367,7 @@ function beginCast(k){
 // 시전 성공 여부를 돌려준다 — 대상이 없으면 쿨을 아낀다
 function castArt(a){
   // 활인기공 — 위태로울 때만
-  if (a.heal){
+  if (a.heal && !a.mul){
     if (P.hp > P.hpMax * a.below) return false;
     beginCast(a.k);
     P.hp = Math.min(P.hpMax, P.hp + P.hpMax * a.heal * artEff(a.k) * traitMul(a.k, 'power'));
@@ -379,27 +382,28 @@ function castArt(a){
   const dmg = heroDmg() * a.mul * artEff(a.k) * (1 + tBonus('artPower')/100)
             * traitMul(a.k, 'power');                                           // 숙련 성·트리 초식위력·심화 위력
   const hits = [];
-  if (a.k === 'pagong' || a.k === 'baekbo'){
+  const shot = a.shot || (a.k === 'pagong' ? 'pashot' : a.k === 'baekbo' ? 'bshot' : null), far = !!a.far || a.k === 'baekbo';   // 탄형 초식 일반화 (v2.94 상승 초식)
+  if (shot){
     // 단일 강타 — 파공권은 가장 가까운, 백보신권은 가장 먼 적
     // 암향지는 **보고 있는 쪽**의 가장 먼 적을 먼저 고른다 (v2.87, 사용자: "암향지 사용 시 순간 다른 쪽을 바라봄" —
     // 등 뒤의 먼 적을 고르면 돌아서 쏘고 다시 돌아와 휙 뒤집혔다). 앞쪽에 아무도 없을 때만 뒤를 본다.
-    let best = null, bd = a.k === 'pagong' ? 1e9 : -1;
+    let best = null, bd = far ? -1 : 1e9;
     const pick = (front) => {
       for (const f of alive){
         const d = dist(f.x, f.y, P.x, P.y);
         if (d > rng) continue;
         if (front && (f.x - P.x) * P.dir < 0) continue;
-        if (a.k === 'pagong' ? d < bd : d > bd){ bd = d; best = f; }
+        if (far ? d > bd : d < bd){ bd = d; best = f; }
       }
     };
-    pick(a.k === 'baekbo');
-    if (!best && a.k === 'baekbo') pick(false);
+    pick(far);
+    if (!best && far) pick(false);
     if (!best) return false;
     hits.push(best);
     // 시전 동작 + 탄 — 파공권은 권기 주먹, 암향지는 지풍 빔이 날아간다
     beginCast(a.k);
     P.dir = best.x >= P.x ? 1 : -1;
-    fxPush({ k: a.k === 'pagong' ? 'pashot' : 'bshot',
+    fxPush({ k: shot,
                 x:P.x, y:P.y - HERO.h*0.55,
                 tx:best.x, ty:best.y - (foeM(best).bh||foeM(best).h)*0.5,
                 life:HFX.shotT + HFX.fadeT, t:HFX.shotT + HFX.fadeT });
@@ -408,12 +412,13 @@ function castArt(a){
     for (const f of alive) if (dist(f.x, f.y, P.x, P.y) <= rng) hits.push(f);
     if (!hits.length) return false;
     beginCast(a.k);
-    const gc = (HFX.glow[a.k]||{}).c;
+    const gc = (HFX.glow[a.k]||HFX.glow[a.cast]||{}).c || (SCHOOLS[a.school]||SCHOOLS.none).c;
     fxPush({ k:'ring', x:P.x, y:P.y, r:rng, c:gc, life:0.4, t:0.4 });
     // 광역 초식 파열 (v2.31) — 무공 색 섬광·속도선이 함께 터진다
     fxBlast(P.x, P.y - HERO.h*0.4, rng*0.55, gc, true);
     shake(a.k === 'bungsan' ? 10 : 4);
   }
+  if (a.heal && a.mul){ P.hp = Math.min(P.hpMax, P.hp + P.hpMax * a.heal * artEff(a.k)); fxPush({ k:'heal', x:P.x, y:P.y, life:0.6, t:0.6 }); }   // 금정장 — 치고 숨을 돌린다 (v2.94)
   for (const f of hits){
     hurtFoe(f, dmg);
     if (a.kb && !f.boss){

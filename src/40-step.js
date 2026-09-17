@@ -396,13 +396,15 @@ function step(dt){
     if (S.bossAlive && !S.foes.some(f=>f.boss)){
       S.bossAlive = false;
       S.kills = 0; S.foes.length = 0;
-      if (S.zi + 1 < ZONES.length){
+      if (S.hq){
+        S.stage = BOSS_STAGE - 1;      // 본진: 단은 hqKill 이 올렸다 — 다시 제자 젠 (v2.94)
+      } else if (S.zi + 1 < ZONES.length){
         if (S.unlocked < S.zi + 2) S.unlocked = S.zi + 2;
         S.zi++; S.stage = 1;
       } else {
         S.stage = 1;                   // 마지막 구역은 처음부터
       }
-      S.best = Math.max(S.best, lv());
+      if (!S.hq) S.best = Math.max(S.best, lv());
       enterStage(true);        // 보스 격파 후 새 구역·재시작 — 연출한다
     }
     // 카메라만 갱신하고 아래 일반 클리어 판정은 건너뛴다

@@ -4,7 +4,7 @@
    숫자는 전부 00-data.js의 ARTS.
 */
 function canLearn(a){
-  return !a.fate && !S.arts[a.k] && realmLv() >= a.need && S.silver >= a.cost;
+  return !a.fate && !S.arts[a.k] && realmLv() >= a.need && S.silver >= a.cost && (!a.frag || (S.frag[a.k] | 0) >= a.frag);   // 상승 무공은 비급 조각도 (v2.94)
 }
 // 돌파 조건 = 연마 상한 도달 + 숙련 게이지 만충 + 은자 (사용자 확정:
 // "레벨이랑 횟수 다 차야 업글") — 갈고, 손에 익히고, 그다음에야 벽을 넘는다
@@ -45,6 +45,7 @@ function learnArt(k){
   const a = artDef(k);
   if (!canLearn(a)) return false;
   S.silver -= a.cost;
+  if (a.frag) S.frag[k] = (S.frag[k] | 0) - a.frag;   // 조각 소모 (v2.94)
   S.arts[k] = 1;
   toast(a.n + '을(를) 익혔다');
   sfx('down');
@@ -172,7 +173,7 @@ function refreshArts(){
   const sig = [artSel, got, st, got ? artLv(a.k) : 0, xp >= need && need > 0, open,
                got && a.cost !== undefined && S.silver >= artLvCost(a.k),
                need > 0 && S.silver >= artBreakCost(a.k),
-               !got && open && S.silver >= a.cost,
+               !got && open && S.silver >= a.cost, (S.frag[a.k] | 0),
                got && typeof traitDefs === 'function' ? traitDefs(a.k).map(t => hasTrait(a.k, t.id) ? 1 : 0).join('') + ':' + skillPtsLeft() : ''].join('|');
   if (sig === artDetSig){
     const ax = $('axp');                          // 숙련 숫자만 제자리 갱신
@@ -181,7 +182,7 @@ function refreshArts(){
   }
   artDetSig = sig;
   let d = '<div class="zn">' + a.n + ' <small>' + a.h + '</small>' +
-          ' <i class="sch" style="color:' + sc.c + '">' + sc.n + '</i>' +
+          ' <i class="sch" style="color:' + sc.c + '">' + sc.n + '</i>' + (a.tier === 2 ? ' <em class="fate" style="color:#e8c96a">상승</em>' : '') +
           (got ? ' <em>익힘</em>' : (a.fate ? ' <em class="fate">기연</em>' : '')) + '</div>' +
           '<div class="zd">' + a.d + (artFxText(a) ? '<b class="trv">' + artFxLines(a) + '</b>' : '') + '</div>';
   if (got){
@@ -223,6 +224,10 @@ function refreshArts(){
   }
   if (a.fate && !got){
     d += '<div class="zd need">기연으로만 얻는다 — 언젠가 강호에서 만난다.</div>';
+  } else if (!got && a.frag && (S.frag[a.k] | 0) < a.frag){
+    // 상승 무공 — 본진 비무에서 조각을 모아야 (v2.94)
+    d += '<div class="zd need">비급 조각 <b style="color:#e8c96a">' + (S.frag[a.k] | 0) + ' / ' + a.frag + '</b> · ' + sc.n + ' 본진 장로가 떨군다' +
+         (open ? '' : '<br>' + realmName(a.need) + '에 열린다') + ' · ' + coin() + ' ' + fmt(a.cost) + '</div>';
   } else if (!got){
     d += open
       ? '<button class="trbuy" id="abuy"' + (S.silver >= a.cost ? '' : ' disabled') +
