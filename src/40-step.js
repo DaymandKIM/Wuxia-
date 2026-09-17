@@ -193,9 +193,13 @@ function step(dt){
     }
     // 동작 결정 — 공격 중엔 피격으로 끊지 않는다
     const M = foeM(f);
+    // **붙어서 쿨을 기다리는 동안엔 걷지 않는다** (v2.95.1 사용자 "몬스터가 캐릭터 가까이 와도 계속 걷는다") —
+    // 여태 공격·피격이 아니면 무조건 'walk' 이라, 사거리 안에서 쿨이 도는 내내 제자리걸음을 했다.
+    // 주인공의 HERO.hold 와 같은 처리다. f.mv 는 **지난 프레임에 실제로 움직였나**(아래 이동 지점들이 켠다).
     const na = f.dhT>0 ? 'dash'
-             : (f.skT>0 ? 'skill' : (f.atkT>0 ? foeAtkAnim(f) : (f.hit>0 ? 'hit' : 'walk')));
+             : (f.skT>0 ? 'skill' : (f.atkT>0 ? foeAtkAnim(f) : (f.hit>0 ? 'hit' : (f.mv ? 'walk' : 'idle'))));
     if (na !== f.anim){ f.anim = na; f.af = 0; }
+    f.mv = false;                       // 이번 프레임에 움직이면 아래에서 다시 켠다
     f.af += dt * foeFps(f, M);   // 공격 스트립은 컷 수에 맞춰 속도가 정해진다 — 몇 장이든 다 보인다
     const d = dist(f.x,f.y,P.x,P.y) || 1;
     f.dir = P.x >= f.x ? 1 : -1;
@@ -326,12 +330,14 @@ function step(dt){
         f.cd -= dt*1.25;
         // 물러나지 않는다. 멀면 다가갈 뿐이다.
         if (d > far){
+          f.mv = true;
           f.x += (P.x-f.x)/d * st.spd * M.spd * dt;
           f.y += (P.y-f.y)/d * st.spd * M.spd * dt;
         }
       } else if (d <= far){
         f.atkT = 0.78; f.hitDone = false; foeAtkRoll(f);
       } else {
+        f.mv = true;
         f.x += (P.x-f.x)/d * st.spd * M.spd * dt;
         f.y += (P.y-f.y)/d * st.spd * M.spd * dt;
       }
@@ -352,6 +358,7 @@ function step(dt){
       f.cd -= dt;
       if (d > rng){                          // 접근
         const sp = st.spd * (f.boss ? BOSS.spd : foeM(f).spd);
+        f.mv = true;
         f.x += (P.x-f.x)/d * sp * dt;
         f.y += (P.y-f.y)/d * sp * dt;
       }
@@ -359,6 +366,7 @@ function step(dt){
       f.atkT = (f.boss ? BOSSATK.dur : FOE.dur); f.hitDone = false; foeAtkRoll(f);
     } else {
       const sp = st.spd * (f.boss ? BOSS.spd : foeM(f).spd);
+      f.mv = true;
       f.x += (P.x-f.x)/d * sp * dt;
       f.y += (P.y-f.y)/d * sp * dt;
     }

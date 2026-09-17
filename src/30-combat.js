@@ -43,7 +43,7 @@ function spawnFoe(){
     af: rnd(0,4),
     dead: false, dying: 0,
     hit: 0,
-    atkT: 0, cd: rnd(0.4, 1.6), hitDone: false,
+    atkT: 0, cd: rnd(0.4, 1.6), hitDone: false, mv: false,  // mv = 지난 프레임에 움직였나 (제자리걸음 방지, v2.95.1)
   });
 }
 
@@ -74,7 +74,7 @@ function spawnBoss(){
     hp, hpMax: hp,
     dir: -1,
     dead:false, dying:0, hit:0,
-    atkT:0, cd:1.4, hitDone:false,
+    atkT:0, cd:1.4, hitDone:false, mv:false,
     skT:0, skCd:BOSSKILL.cd*0.6, skDone:false,
     kb:0, kx:0, ky:0,
   });
