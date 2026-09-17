@@ -96,6 +96,7 @@ def cut(sh, bg, y0, y1, x0, x1, inset=3):
     m = ~bg[y0:y1, x0:x1]
     return finish(sub, m)
 
+MINBLOB = 40        # 이 크기 미만 덩어리는 버린다. --minblob 으로 낮추면 꽃잎·불티가 산다
 def finish(sub, m):
     lab, n = ndimage.label(m); keep = np.zeros_like(m)
     H_, W_ = sub.shape[:2]
@@ -109,7 +110,7 @@ def finish(sub, m):
         if ring:
             edge = (xs < 8) | (xs >= W_ - 8) | (ys < 8) | (ys >= H_ - 8)
             ring = edge.mean() > 0.6
-        if len(ys) < 40 or ring: continue
+        if len(ys) < MINBLOB or ring: continue   # --minblob=8 : 매화 꽃잎처럼 작은 이펙트 조각을 살린다 (v2.95.4)
         keep[lab == i] = 1
     # declutter(1px 침식 → 큰 덩어리만 → 2px 팽창): 옆칸 조각이 얇은 다리로 붙어 오는 것을 끊는다.
     # 그런데 **몸에 붙은 얇고 긴 물건**(아미 장로 고리 석장 2~3px)도 침식에 통째로 사라져 같이 버려진다 —
@@ -121,7 +122,11 @@ def finish(sub, m):
         big = np.isin(lab2, [i + 1 for i, s in enumerate(sizes) if s > sizes.max() * 0.05])
         keep = ndimage.binary_dilation(big, iterations=2) & keep
     rim = keep & ~ndimage.binary_erosion(keep, iterations=3)
-    tint = rim & (sub[..., 0] > sub[..., 1] + 10) & (sub[..., 2] > sub[..., 1] + 10)
+    # 가장자리에 물든 마젠타만 걷는다. **|r-b| < 40 조건이 없으면 붉은 것까지 눌러 검은 막대로 만든다**
+    # (v2.95.4 화산 장로 붉은 술 — r 200·b 60 이 r>g+10 & b>g+10 에 걸려 새카맣게 나왔다. 마교는 온몸이 진홍이라 더 위험하다).
+    # 마젠타 번짐은 r≈b 라 이 조건으로도 그대로 걷힌다.
+    tint = (rim & (sub[..., 0] > sub[..., 1] + 10) & (sub[..., 2] > sub[..., 1] + 10)
+                & (np.abs(sub[..., 0].astype(int) - sub[..., 2].astype(int)) < 40))
     sub[..., 0][tint] = np.minimum(sub[..., 0][tint], sub[..., 1][tint] + 18)
     sub[..., 2][tint] = np.minimum(sub[..., 2][tint], sub[..., 1][tint] + 18)
     return np.dstack([sub, np.where(keep, 255, 0)]).astype(np.uint8)
@@ -291,7 +296,8 @@ def main():
     args = [a for a in sys.argv[1:] if not a.startswith('--')]
     opts = dict((a[2:].split('=', 1) + ['1'])[:2] for a in sys.argv[1:] if a.startswith('--'))
     sheet, prefix = args[0], args[1]
-    global DECLUTTER, FAT
+    global DECLUTTER, FAT, MINBLOB
+    if 'minblob' in opts: MINBLOB = int(opts['minblob'])
     if 'nodeclutter' in opts: DECLUTTER = False
     if 'fat' in opts: FAT = True
     body_h = int(opts.get('body', 48))
