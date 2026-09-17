@@ -306,6 +306,16 @@ const PROPS = {
                pick:[ ['prophq_hwasan_0',32,3], ['prophq_hwasan_1',42,1], ['prophq_hwasan_2',34,2],
                       ['prophq_hwasan_3',44,1], ['prophq_hwasan_4',20,3], ['prophq_hwasan_5',26,2],
                       ['prophq_hwasan_6',32,2], ['prophq_hwasan_7',28,3] ] },
+  // 아미 마당 — 석불 두상·바리때·삼나무 가지·석탑·돗자리·통나무·돌 수반·풍경 기둥 (v2.94.26)
+  hq_ami: { kind:'sprite', dens:0.38, grid:170,
+            pick:[ ['prophq_ami_0',32,1], ['prophq_ami_1',20,3], ['prophq_ami_2',26,3],
+                   ['prophq_ami_3',44,1], ['prophq_ami_4',18,3], ['prophq_ami_5',26,2],
+                   ['prophq_ami_6',28,2], ['prophq_ami_7',44,1] ] },
+  // 당문 마당 — 침 상자·독 항아리·표창 박힌 인형·밧줄·돌 작업대·취통 거치대·돌판·나무 통 (v2.94.26)
+  hq_dangmun: { kind:'sprite', dens:0.38, grid:170,
+                pick:[ ['prophq_dangmun_0',30,2], ['prophq_dangmun_1',32,2], ['prophq_dangmun_2',44,1],
+                       ['prophq_dangmun_3',18,3], ['prophq_dangmun_4',28,2], ['prophq_dangmun_5',40,1],
+                       ['prophq_dangmun_6',20,3], ['prophq_dangmun_7',30,3] ] },
 };
 
 // 상단 원경 배경 — 화면 위쪽 h(VH 비율)에 구역별 원경 한 장을 가로 타일링, 카메라
