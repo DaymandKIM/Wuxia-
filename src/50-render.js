@@ -383,6 +383,7 @@ function drawFoe(f, ox, oy){
     blit();
     ctx.restore();
     ctx.globalAlpha = 1;
+    ctx.restore();                // 바깥 save(translate)도 닫는다 — 안 닫으면 rise 동안 뒤에 그리는 주인공·탄이 보스 좌표만큼 밀려 화면 밖으로(v2.94, 스크린샷 에이전트 발견)
     return;
   }
   // 상시 오라 — 발밑에서 시작해 몸을 타고 오른다
