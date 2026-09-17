@@ -285,6 +285,12 @@ const PROPS = {
   heaven:  { kind:'sprite', dens:0.44, grid:158,
              pick:[ ['hev_cairn',48,2], ['hev_windtree',66,2], ['hev_boulder',48,2], ['hev_bonsai',72,1],
                     ['hev_menhir',64,1], ['hev_grass',42,3], ['hev_stones',30,3], ['hev_flag',74,1] ] },
+  // 본진 마당 소품 (v2.94.21, 사용자 시트 — hqprops.py). rzone() 이 본진이면 'hq_<문파>' 키를 그대로 찾는다.
+  // 마당이라 사냥터(dens .44~.50)보다 성글게. 잔소품(방석·솔잎)은 잦게, 랜드마크(목인장·종·봉 거치대)는 드물게.
+  hq_sorim: { kind:'sprite', dens:0.38, grid:170,
+              pick:[ ['prophq_sorim_0',36,2], ['prophq_sorim_1',44,1], ['prophq_sorim_2',22,3],
+                     ['prophq_sorim_3',44,1], ['prophq_sorim_4',30,3], ['prophq_sorim_5',32,2],
+                     ['prophq_sorim_6',38,2], ['prophq_sorim_7',44,1] ] },
 };
 
 // 상단 원경 배경 — 화면 위쪽 h(VH 비율)에 구역별 원경 한 장을 가로 타일링, 카메라

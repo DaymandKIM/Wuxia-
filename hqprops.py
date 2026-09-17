@@ -160,7 +160,7 @@ def review(key, out):
         h = show[i] if i < len(show) else 40
         w = max(1, round(im.width * h / im.height))
         items.append((name, im.resize((w, h), Image.NEAREST), h))
-    tot = sum(it[1].width + PAD for it in items) + hero.width + PAD * 2
+    tot = sum(it[1].width + PAD for it in items) + hero.width + PAD * 4
     top = max([it[1].height for it in items] + [hh]) + 22
     W, H = tot * Z, (top + BASE) * Z
     canvas = Image.new('RGB', (W, H), GROUND)
