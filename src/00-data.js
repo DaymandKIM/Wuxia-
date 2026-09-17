@@ -1403,7 +1403,7 @@ DUEL.hqGroundA = { sorim:0.8, ami:0.7, dangmun:0.8, hwasan:0.85, bamboo:0.85 }; 
 // 본진 진입 로딩 화면 (v2.94.7, 사용자 "해당 문파로 넘어갈 때 이미지 3장 로딩 화면에서") — 에셋이 없으면 문파색 바탕으로 뜬다.
 // 그림 키: hq_art_<문파>(세로 일러스트) · hq_load_frame(공통 두루마리 테두리) · hq_load_ink(공통 먹 번짐)
 DUEL.load = { dur:1.7, fade:0.45, ink:0.5 };   // 머무는 시간 · 걷히는 시간 · 먹 번짐이 도는 시간
-DUEL.hqGroundScale = { sorim:0.5, gaebang:0.7, mudang:0.5, hwasan:0.55, ami:0.45, dangmun:0.5, magyo:0.5, bamboo:0.6 };   // 타일 배율 — 소림 석판 128px→64px(인물 키 47 정도), 개방 발자국·모닥불 자국   // 원경 위 남는 하늘(시트 첫 불투명 5줄 평균, hqbg.py 보고) — 없으면 땅색으로 칠해져 갈색 띠가 뜬다
+DUEL.hqGroundScale = { sorim:0.5, gaebang:0.7, mudang:0.62, hwasan:0.55, ami:0.46, dangmun:0.5, magyo:0.5, bamboo:0.6 };   // 무당·아미는 새 시트가 잘려 나와(--cut=joints) 칸이 작다   // 타일 배율 — 소림 석판 128px→64px(인물 키 47 정도), 개방 발자국·모닥불 자국   // 원경 위 남는 하늘(시트 첫 불투명 5줄 평균, hqbg.py 보고) — 없으면 땅색으로 칠해져 갈색 띠가 뜬다
 for (const k in DUEL.gBase){
   BACKDROP.keys['hq_' + k] = 'bg_hq_' + k;
   GROUNDTEX.keys['hq_' + k] = 'ground_hq_' + k;
