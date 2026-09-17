@@ -319,6 +319,14 @@
   #trsilver{font-size:13px;color:#e8c96a;font-weight:900;font-variant-numeric:tabular-nums;}
   /* 무공 패널 — 문파별 타일 그리드 + 상세 칸 */
   .agrid{display:flex;flex-wrap:wrap;gap:6px;margin:4px 12px 0;}
+  /* 무공 표 상태 머리글 (v2.94.22) — 배울 수 있는 묶음이 맨 위에 눈에 띄게 */
+  .asec{display:flex;align-items:center;gap:5px;margin:10px 12px 2px;font-size:10.5px;font-weight:800;
+        color:#7f8c9b;letter-spacing:.4px;}
+  .asec::after{content:'';flex:1;height:1px;background:#28313c;}
+  .asec i{font-style:normal;font-size:9px;color:#8b97a5;background:#222b35;border-radius:7px;padding:1px 5px;}
+  .asec.hot{color:#6fd3a8;}
+  .asec.hot::after{background:#2c4a40;}
+  .asec.hot i{color:#0f1a16;background:#6fd3a8;}
   .atile{position:relative;width:56px;height:60px;border-radius:10px;border:1.5px solid #2c3540;
     background:#171d25;display:flex;flex-direction:column;align-items:center;justify-content:center;
     gap:5px;color:#9fb0c2;padding:4px 0 2px;overflow:hidden;}   /* v2.63.5 메달과 이름 사이 띄움("위로 붙어 있네") */

@@ -111,9 +111,32 @@ function buildArtsPanel(){
 function drawArtGrid(){
   for (const el of $('abody').querySelectorAll('.askind'))
     el.classList.toggle('on', el.dataset.t === artTab);
-  const list = ARTS.list.filter(a => a.type === artTab)
-    .sort((a, b) => (a.fate ? 999 : a.need) - (b.fate ? 999 : b.need));
-  let h = '<div class="agrid">';
+  // 상태별로 묶는다 (v2.94.22, 사용자 "배울 수 있는 게 딱 안 보여서") — 옛 판은 경지 순이라
+  // 지금 배울 수 있는 것이 익힌 것들 사이에 흩어져 있었다. 배울 것 → 손볼 것 → 익힌 것 → 잠긴 것 → 기연.
+  const all = ARTS.list.filter(a => a.type === artTab);
+  const grp = a => canLearn(a) ? 0 : ((canBreak(a) || canLevel(a)) ? 1 : (S.arts[a.k] ? 2 : (a.fate ? 4 : 3)));
+  const GN = ['지금 배울 수 있다', '갈고닦을 수 있다', '익힌 무공', '아직 이르다', '기연으로만'];
+  let h = '';
+  for (let gi = 0; gi < GN.length; gi++){
+    const list = all.filter(a => grp(a) === gi).sort((x, y) => (x.fate ? 999 : x.need) - (y.fate ? 999 : y.need));
+    if (!list.length) continue;
+    h += '<div class="asec' + (gi === 0 ? ' hot' : '') + '">' + GN[gi] + ' <i>' + list.length + '</i></div><div class="agrid">';
+    h += artTiles(list);
+    h += '</div>';
+  }
+  $('agridwrap').innerHTML = h;
+  $('agridwrap').querySelectorAll('.atile').forEach(el => {
+    el.onclick = () => { artSel = el.dataset.k; artDetSig = ''; refreshArts();
+      const det = $('adet'); if (det && det.scrollIntoView) det.scrollIntoView({ block:'nearest', behavior:'smooth' }); };
+  });
+  // 선택 무공이 이 탭에 없으면 이 탭 첫 무공으로
+  if (!artSel || !all.some(a => a.k === artSel)) artSel = (all[0] || ARTS.list[0]).k;
+  artDetSig = '';
+  refreshArts();
+}
+// 타일 묶음 HTML — 그룹마다 불린다
+function artTiles(list){
+  let h = '';
   for (const a of list){
     const sc = SCHOOLS[a.school] || SCHOOLS.none;
     h += '<button class="atile' + (a.fate ? ' fate' : '') + '" data-k="' + a.k +
@@ -123,16 +146,7 @@ function drawArtGrid(){
                               : '<span class="g">' + a.h[0] + '</span>') +
          '<span class="nm">' + a.n + '</span><em class="bd"></em></button>';
   }
-  h += '</div>';
-  $('agridwrap').innerHTML = h;
-  $('agridwrap').querySelectorAll('.atile').forEach(el => {
-    el.onclick = () => { artSel = el.dataset.k; artDetSig = ''; refreshArts();
-      const det = $('adet'); if (det && det.scrollIntoView) det.scrollIntoView({ block:'nearest', behavior:'smooth' }); };
-  });
-  // 선택 무공이 이 탭에 없으면 이 탭 첫 무공으로
-  if (!artSel || !list.some(a => a.k === artSel)) artSel = (list[0] || ARTS.list[0]).k;
-  artDetSig = '';
-  refreshArts();
+  return h;
 }
 
 // 타일 상태와 상세 칸만 갱신 — 패널을 다시 만들지 않는다
