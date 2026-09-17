@@ -1543,7 +1543,7 @@ FOES.dm_elite = { n:'당문 정예제자', w:64, h:54, sw:29, bh:50, school:'dan
 // 당문 장로 — sheets/dm_elder2_fix.png(v2.94.28 3.5등신 재작업판. 자주색 침이 배경 판정에 먹혀 연녹으로 물들인 손질본).
 // **공격 세 벌**: atk 독무 장풍(연녹 구름 9컷) · atk2 소맷자락 침 뿌리기(10컷) · atk3 독환 던지기(7컷).
 // **캔버스 268 은 독무 구름이 칸을 여럿 넘어 그려진 폭**이다 — 몸은 28×58 이라 그림자·기울임은 sw 를 쓴다.
-FOES.dm_elder = { n:'당문 장로', w:268, h:60, sw:28, bh:58, school:'dangmun',
+FOES.dm_elder = { n:'당문 장로', w:268, h:60, sw:30, bh:58, school:'dangmun',
   anim:{ idle:['idle0','idle1','idle2','idle3','idle4','idle5','idle6','idle7','idle8','idle9','idle10','idle11','idle12'],
          walk:['walk0','walk1','walk2','walk3','walk4','walk5','walk6','walk7','walk8','walk9','walk10','walk11','walk12'],
          atk:['atk0','atk1','atk2','atk3','atk4','atk5','atk6','atk7','atk8'],
@@ -1565,9 +1565,17 @@ FOES.mg_elite = { n:'마교 정예제자', w:64, h:58, sw:26, bh:51, school:'mag
          atk2:['atk2_0','atk2_1','atk2_2','atk2_3','atk2_4','atk2_5','atk2_6','atk2_7','atk2_8'],
          hit:['hit'], death:['hit','death0','death1','death2','death3','death4'] },
   fps:{ idle:4, walk:8, atk:7.3, hit:6, death:6 }, hp:1.7, dmg:1.3, spd:1.0, range:60 };
-FOES.mg_elder = { n:'마교 장로', w:128, h:61, sw:29, bh:58, school:'magyo',
-  anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'], atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
-  fps:{ idle:3.5, walk:6, atk:7.3, hit:6, death:4 }, hp:1.0, dmg:1.0, spd:0.9, range:66 };
+// 마교 장로 — sheets/mg_elder2.png(v2.94.28 3.5등신 재작업판). **이 시트는 줄이 아니라 칸 묶음이 동작이다** —
+// 왼쪽 칸은 옆모습 장(掌), 가운데는 3/4 정면 갈퀴, 오른쪽 둘은 정면 분출. 줄을 통째로 넣으면 인물이 순간이동한다.
+// **공격 세 벌**: atk 혈장(진홍 구체 10컷) · atk2 마염 분출(금빛 기둥 6컷, 정면) · atk3 갈퀴 할퀴기(흰 참격선 11컷).
+// 캔버스 82×61 — 몸 34×60(42 는 소매 벌린 폭이라 뺐다).
+FOES.mg_elder = { n:'마교 장로', w:82, h:61, sw:34, bh:60, school:'magyo',
+  anim:{ idle:['idle0','idle1','idle2','idle3','idle4','idle5'], walk:['walk0','walk1','walk2','walk3'],
+         atk:['atk0','atk1','atk2','atk3','atk4','atk5','atk6','atk7','atk8','atk9'],
+         atk2:['atk2_0','atk2_1','atk2_2','atk2_3','atk2_4','atk2_5'],
+         atk3:['atk3_0','atk3_1','atk3_2','atk3_3','atk3_4','atk3_5','atk3_6','atk3_7','atk3_8','atk3_9','atk3_10'],
+         hit:['hit'], death:['hit','death0','death1','death2'] },
+  fps:{ idle:3.5, walk:6, atk:7.3, hit:6, death:5 }, hp:1.0, dmg:1.0, spd:0.9, range:66 };
 // 아미·청죽문 3등급 (v2.94.17). bb_elite 는 시트 한 줄 안에서 대기와 걷기가 10% 다르게 그려져 칸 단위 배율(--rowref)로 맞췄다.
 // 아미 수습제자 — sheets/am_disc2.png(v2.94.28 3.5등신 재작업판). 대기 10 · 걷기 10 · 장 치기 10컷 · 쓰러짐 5 — 컷을 아끼지 않는다.
 // 캔버스 54×53 — 몸 26×50.
@@ -1597,15 +1605,24 @@ FOES.am_elder = { n:'아미 장로', w:114, h:67, sw:32, bh:62, school:'ami',
          atk3:['atk3_0','atk3_1','atk3_2','atk3_3','atk3_4','atk3_5','atk3_6','atk3_7','atk3_8','atk3_9'],
          hit:['hit'], death:['hit','death0','death1','death2'] },
   fps:{ idle:3.5, walk:7, atk:7.3, hit:6, death:5 }, hp:1.0, dmg:1.0, spd:0.9, range:66 };
-FOES.bb_disc = { n:'청죽문 수습제자', w:104, h:53, sw:26, bh:48, school:'bamboo',
-  anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'], atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
-  fps:{ idle:4, walk:7, atk:7.3, hit:6, death:4 }, hp:1.1, dmg:1.0, spd:1.0, range:50 };
+// 청죽문 수습제자 — sheets/bb_disc2.png(v2.94.28 3.5등신 재작업판). 대기 10 · 걷기 10 · 봉 찌르기 7컷 · 쓰러짐 5.
+// 캔버스 58×51 — 몸 26×48(걷기 폭 32~34 는 어깨에 걸친 봉까지다).
+FOES.bb_disc = { n:'청죽문 수습제자', w:58, h:51, sw:26, bh:48, school:'bamboo',
+  anim:{ idle:['idle0','idle1','idle2','idle3','idle4','idle5','idle6','idle7','idle8','idle9'], walk:['walk0','walk1','walk2','walk3','walk4','walk5','walk6','walk7','walk8','walk9'], atk:['atk0','atk1','atk2','atk3','atk4','atk5','atk6'],
+         hit:['hit'], death:['hit','death0','death1','death2','death3','death4'] },
+  fps:{ idle:4, walk:8, atk:7.3, hit:6, death:6 }, hp:1.1, dmg:1.0, spd:1.0, range:50 };
 FOES.bb_elite = { n:'청죽문 정예제자', w:100, h:77, sw:25, bh:50, school:'bamboo', elite:true,
   anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'], atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
   fps:{ idle:4, walk:7, atk:7.3, hit:6, death:4 }, hp:1.7, dmg:1.3, spd:1.0, range:60 };
-FOES.bb_elder = { n:'청죽문 장로', w:146, h:63, sw:32, bh:58, school:'bamboo',
-  anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'], atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
-  fps:{ idle:3.5, walk:6, atk:7.3, hit:6, death:4 }, hp:1.0, dmg:1.0, spd:0.9, range:66 };
+// 청죽문 장로 — sheets/bb_elder2.png(v2.94.28 3.5등신 재작업판). **공격 세 벌**: atk 봉 찌르기(연녹 기운 8컷) ·
+// atk2 회전 방어(댓잎 고리 8컷) · atk3 후리기(연녹 호 9컷). 대기 9 · 걷기 9. 캔버스 140×66 은 이펙트 폭 — 몸 30×62.
+FOES.bb_elder = { n:'청죽문 장로', w:140, h:66, sw:33, bh:62, school:'bamboo',
+  anim:{ idle:['idle0','idle1','idle2','idle3','idle4','idle5','idle6','idle7','idle8'], walk:['walk0','walk1','walk2','walk3','walk4','walk5','walk6','walk7','walk8'],
+         atk:['atk0','atk1','atk2','atk3','atk4','atk5','atk6','atk7'],
+         atk2:['atk2_0','atk2_1','atk2_2','atk2_3','atk2_4','atk2_5','atk2_6','atk2_7'],
+         atk3:['atk3_0','atk3_1','atk3_2','atk3_3','atk3_4','atk3_5','atk3_6','atk3_7','atk3_8'],
+         hit:['hit'], death:['hit','death0','death1','death2'] },
+  fps:{ idle:3.5, walk:7, atk:7.3, hit:6, death:5 }, hp:1.0, dmg:1.0, spd:0.9, range:66 };
 DUEL.art = { gaebang:{ disc:'gb_disc', elite:'gb_elite', elder:'gb_elder' }, sorim:{ disc:'sr_disc', elite:'sr_elite', elder:'sr_elder' },
              mudang:{ disc:'md_disc', elite:'md_elite', elder:'md_elder' }, hwasan:{ disc:'hs_disc', elite:'hs_elite', elder:'hs_elder' },
              dangmun:{ disc:'dm_disc', elite:'dm_elite', elder:'dm_elder' }, magyo:{ disc:'mg_disc', elite:'mg_elite', elder:'mg_elder' },
