@@ -71,8 +71,20 @@ setTimeout(()=>{
   b.hp=1; P.x=b.x-30; P.y=b.y; w.hurtFoe(b,10,false);
   const tt=w.document.getElementById('toast').textContent;
   ok(w.hqRank('gaebang')===2 && S.hqDone.gaebang===1,'격파 → 2단 · hqDone 1');
-  const fk=Object.keys(S.frag); fr=fk.reduce((s,k)=>s+S.frag[k],0);
-  ok(fk.length===1 && fr===DUEL.frag.elder && w.eval('artDef("'+fk[0]+'")').school==='gaebang','조각 +'+DUEL.frag.elder+' → '+fk[0]+' (개방 무공)');
+  // 장로 조각은 확률 — 열 판을 돌려 기대값 안에 드는지 본다 (v2.94.19)
+  { let got=0, tries=0; S.frag={};
+    for(;tries<40 && got<3;tries++){ const before=Object.values(S.frag).reduce((x,y)=>x+y,0); w.hqFragGain('gaebang', (Math.random()<DUEL.frag.elderCh?DUEL.frag.elder:0), true);
+      got=Object.values(S.frag).reduce((x,y)=>x+y,0); if(got===before) continue; }
+    const fk=Object.keys(S.frag).filter(k=>S.frag[k]>0);
+    ok(fk.length>=1 && fk.every(k=>w.eval('artDef("'+k+'")').school==='gaebang'),'장로 조각은 확률로 떨어지고 개방 무공에 쌓인다 ('+fk.map(k=>k+' '+S.frag[k]).join(', ')+')'); }
+  ok(DUEL.frag.elderCh>0 && DUEL.frag.elderCh<1,'장로 조각 확률 '+(DUEL.frag.elderCh*100)+'%');
+  // 돌파 재료 — 상승 무공은 조각도 든다
+  { const a2=ARTS.list.find(x=>x.school==='gaebang'&&x.frag);
+    S.arts[a2.k]=1; S.artStar[a2.k]=1; S.artLv[a2.k]=w.eval('artLvCap("'+a2.k+'")'); S.artXp[a2.k]=w.eval('artXpNeed("'+a2.k+'")'); S.silver=1e12;
+    const need=w.breakFragNeed(a2); S.frag[a2.k]=need-1;
+    ok(need>0 && w.canBreak(a2)===false,a2.n+' 돌파: 조각 '+(need-1)+'/'+need+' 이면 막힌다');
+    S.frag[a2.k]=need+1;
+    ok(w.canBreak(a2)===true && w.breakArt(a2.k)===true && S.artStar[a2.k]===2 && S.frag[a2.k]===1,'조각 '+need+'개를 쓰고 2성으로 (남은 조각 '+S.frag[a2.k]+')'); }
   ok(JSON.stringify(S.bossDone)===done0 && S.fame-fame0<=w.eval('SECT.fame.boss')+1e-6,'첫 격파 보너스(bossDone·bossFirst 명성)는 본진에서 안 준다');
   ok(tt.includes('개방 1단 장로 격파'),'격파 토스트 "'+tt.replace(/\n/g,' / ')+'"');
   steps(12,()=>S.stage===BOSS_STAGE-1);

@@ -8,10 +8,17 @@ function canLearn(a){
 }
 // 돌파 조건 = 연마 상한 도달 + 숙련 게이지 만충 + 은자 (사용자 확정:
 // "레벨이랑 횟수 다 차야 업글") — 갈고, 손에 익히고, 그다음에야 벽을 넘는다
+// 상승 무공은 돌파에도 비급 조각이 든다 (v2.94.19) — 성 1→2에 2개, 2→3에 3개, 3→4에 4개
+function breakFragNeed(a){
+  if (!a.frag || !DUEL.breakFrag) return 0;
+  const st = artStar(a.k);
+  return DUEL.breakFrag[Math.min(st - 1, DUEL.breakFrag.length - 1)] | 0;
+}
 function canBreak(a){
   return S.arts[a.k] && artStar(a.k) < MASTERY.maxStar &&
          artLv(a.k) >= artLvCap(a.k) &&
-         (S.artXp[a.k] | 0) >= artXpNeed(a.k) && S.silver >= artBreakCost(a.k);
+         (S.artXp[a.k] | 0) >= artXpNeed(a.k) && S.silver >= artBreakCost(a.k) &&
+         (S.frag[a.k] | 0) >= breakFragNeed(a);
 }
 // 연마 — 은자로 레벨을 올린다. 상한은 성×10이라 돌파가 상한을 연다
 function canLevel(a){
@@ -35,6 +42,7 @@ function breakArt(k){
   const a = artDef(k);
   if (!canBreak(a)) return false;
   S.silver -= artBreakCost(k);
+  const fn = breakFragNeed(a); if (fn) S.frag[k] = (S.frag[k] | 0) - fn;   // 조각 소모 (v2.94.19)
   S.artXp[k] = 0;
   S.artStar[k] = artStar(k) + 1;
   toast(a.n + ' ' + S.artStar[k] + '성 — 손에 익었다');
@@ -205,8 +213,10 @@ function refreshArts(){
            (a.type === 'active' ? ' (시전 횟수)' : ' (처치 수)') + '</div>' +
            '<div class="zd need">돌파하면 →<br>' + artFxLines(a, st + 1) + '</div>';
       const lvFull = a.cost === undefined || artLv(a.k) >= artLvCap(a.k);
+      const fn = breakFragNeed(a), haveF = (S.frag[a.k] | 0);
+      if (fn) d += '<div class="zd need">돌파 재료 — 비급 조각 <b style="color:' + (haveF >= fn ? '#e8c96a' : '#8b97a5') + '">' + haveF + ' / ' + fn + '</b></div>';
       if (xp >= need && lvFull)
-        d += '<button class="trbuy" id="abrk"' + (S.silver >= cost ? '' : ' disabled') +
+        d += '<button class="trbuy" id="abrk"' + (canBreak(a) ? '' : ' disabled') +
              '><span>' + fmt(cost) + '</span><i>' + coin() + ' 돌파</i></button>';
       else if (xp >= need)
         d += '<div class="zd need">연마를 상한(Lv ' + artLvCap(a.k) + ')까지 채우면 돌파가 열린다</div>';

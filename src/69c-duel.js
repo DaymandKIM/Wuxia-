@@ -60,8 +60,10 @@ function hqKill(f){
   if (!f.boss){ if (Math.random() < DUEL.frag.mob) hqFragGain(k, 1); return 0; }
   const r = hqRank(k), master = hqIsMaster(k), first = ((S.hqDone && S.hqDone[k]) | 0) < r;
   // 조각
-  const n = master ? DUEL.frag.master : (r >= DUEL.frag.elderHiFrom ? DUEL.frag.elderHi : DUEL.frag.elder);
-  const a = hqFragGain(k, n, true);
+  // 장로는 확률, 장문인은 확정 (v2.94.19)
+  const n = master ? DUEL.frag.master
+          : (Math.random() < DUEL.frag.elderCh ? (r >= DUEL.frag.elderHiFrom ? DUEL.frag.elderHi : DUEL.frag.elder) : 0);
+  const a = n ? hqFragGain(k, n, true) : null;
   // 제자 — 3·7단 첫 격파 확정, 그 뒤 20%, 장문인은 자질 상
   let joined = null;
   if (typeof discipleAdd === 'function' && discipleSlotsFree() > 0){
