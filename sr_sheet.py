@@ -31,6 +31,7 @@ from scipy import ndimage
 from foesheet import pack, R
 
 GROUND = (106, 122, 82)       # 죽림 바닥색 — 검사판 배경(흰 배경은 도복 구멍을 못 보여 준다)
+DECLUTTER = True              # --nodeclutter 로 끈다 (아래 finish 참고)
 
 def _groups(v):
     g = []
@@ -110,7 +111,10 @@ def finish(sub, m):
             ring = edge.mean() > 0.6
         if len(ys) < 40 or ring: continue
         keep[lab == i] = 1
-    er = ndimage.binary_erosion(keep, iterations=1)
+    # declutter(1px 침식 → 큰 덩어리만 → 2px 팽창): 옆칸 조각이 얇은 다리로 붙어 오는 것을 끊는다.
+    # 그런데 **몸에 붙은 얇고 긴 물건**(아미 장로 고리 석장 2~3px)도 침식에 통째로 사라져 같이 버려진다 —
+    # 칸마다 인물 하나뿐이고 가장자리 접촉이 없는 시트는 --nodeclutter 로 끈다. v2.95.3
+    er = ndimage.binary_erosion(keep, iterations=1) if DECLUTTER else np.zeros_like(keep)
     lab2, n2 = ndimage.label(er)
     if n2:
         sizes = ndimage.sum(er, lab2, range(1, n2 + 1))
@@ -201,15 +205,20 @@ def solo(rgba, pad=6):
     out = rgba.copy(); out[~keep] = 0
     return out
 
+FAT = False                   # --fat: 축소 전 알파 1px 팽창 + 문턱 96 (CLAUDE.md "얇은 칼날은 축소에서 사라진다")
+
 def shrink(rgba, scale):
-    """축소 — 엣지 확장(투명 픽셀을 가장 가까운 그림 픽셀 색으로 채움) 뒤 RGB·알파를 따로 LANCZOS, 알파 문턱 110(gb_disc 와 같다)."""
+    """축소 — 엣지 확장(투명 픽셀을 가장 가까운 그림 픽셀 색으로 채움) 뒤 RGB·알파를 따로 LANCZOS, 알파 문턱 110(gb_disc 와 같다).
+    --fat 이면 hero_sheet.shrink 처럼 알파를 1px 팽창하고 문턱을 96 으로 낮춘다 — 2~3px 짜리 석장·칼날이
+    축소에서 토막 나는 시트(아미 장로 고리 석장)용. 인물이 1px 굵어지므로 필요한 시트에만 쓴다. v2.95.3"""
     al = rgba[..., 3] > 0
     _, (iy, ix) = ndimage.distance_transform_edt(~al, return_indices=True)
     rgb = rgba[..., :3][iy, ix]
     w, h = max(1, round(rgba.shape[1] * scale)), max(1, round(rgba.shape[0] * scale))
+    src = ndimage.binary_dilation(al, iterations=1) if FAT else al
     c = np.array(Image.fromarray(rgb, 'RGB').resize((w, h), Image.LANCZOS))
-    a = np.array(Image.fromarray((al * 255).astype(np.uint8), 'L').resize((w, h), Image.LANCZOS))
-    out = np.dstack([c, np.where(a >= 110, 255, 0)]).astype(np.uint8)
+    a = np.array(Image.fromarray((src * 255).astype(np.uint8), 'L').resize((w, h), Image.LANCZOS))
+    out = np.dstack([c, np.where(a >= (96 if FAT else 110), 255, 0)]).astype(np.uint8)
     out[out[..., 3] == 0] = 0
     al2 = out[..., 3] > 0; rim = al2 & ~ndimage.binary_erosion(al2, iterations=1)
     r_, g_, b_ = out[..., 0].astype(int), out[..., 1].astype(int), out[..., 2].astype(int)
@@ -282,6 +291,9 @@ def main():
     args = [a for a in sys.argv[1:] if not a.startswith('--')]
     opts = dict((a[2:].split('=', 1) + ['1'])[:2] for a in sys.argv[1:] if a.startswith('--'))
     sheet, prefix = args[0], args[1]
+    global DECLUTTER, FAT
+    if 'nodeclutter' in opts: DECLUTTER = False
+    if 'fat' in opts: FAT = True
     body_h = int(opts.get('body', 48))
     os.makedirs(os.path.join(R, 'review'), exist_ok=True)
 
@@ -297,9 +309,25 @@ def main():
         for i, (y0, y1, x0, x1, n) in enumerate(bl):
             raw['b%d' % i] = cut(sh, bg, y0 - 4, y1 + 4, x0 - 4, x1 + 4, inset=0)
     else:
-        rl, cols = grid_rows(sh, nosplit='nosplit' in opts, darklv=int(opts.get('dark', 70)))
+        if 'grid' in opts:
+            # --grid=행수x칸수 : 균등 격자를 강제한다. 어두운 옷(당문 짙은 녹색 무복)이 세로줄로 잡혀
+            # 문턱을 어떻게 잡아도 격자 검출이 안 되는 시트용 — 대신 칸이 정말 균등한지 눈으로 확인할 것. v2.95.3
+            RN, CN = (int(v) for v in opts['grid'].split('x')); Hs, Ws = sh.shape[:2]
+            # --rowsat=215,419 : 줄 높이가 제각각인 시트는 줄 경계 y 를 직접 준다(칸은 그대로 균등).
+            ys_ = [0] + [int(v) for v in opts['rowsat'].split(',')] + [Hs] if opts.get('rowsat') else \
+                  [int(round(i * Hs / RN)) for i in range(RN + 1)]
+            rl = [(y - 1, y) for y in ys_]
+            cols = [[(int(round(j * Ws / CN)) - 1, int(round(j * Ws / CN))) for j in range(CN + 1)] for _ in range(RN)]
+            print('균등 격자 %d줄 x %d칸 (행 %s)' % (RN, CN, [r[1] for r in rl]))
+        else:
+            rl, cols = grid_rows(sh, nosplit='nosplit' in opts, darklv=int(opts.get('dark', 70)))
         # --nocol=r2:37;158;162,r3:40 — 잘못 잡힌 세로줄 버리기. 어두운 세로 물건(아미 장로 석장·고리)이 칸 테두리로 잡힌다
         # (문턱을 낮추면 이번엔 진짜 테두리를 놓친다 — 시트마다 줄 밝기가 달라서. v2.95.3)
+        # --colsat=r1:122;249;376;518;765 : 그 줄의 칸 경계 x 를 직접 준다(줄마다 칸 수·폭이 다른 시트)
+        for it in (opts['colsat'].split(',') if opts.get('colsat') else []):
+            rk, xs_ = it.split(':'); ri = int(rk[1:]); W_ = sh.shape[1]
+            cols[ri] = [(-1, 0)] + [(int(v) - 1, int(v)) for v in xs_.split(';')] + [(W_ - 1, W_)]
+            print(' %s줄 칸 경계 직접 지정 → %d칸' % (rk, len(cols[ri]) - 1))
         for it in (opts['nocol'].split(',') if opts.get('nocol') else []):
             rk, xs_ = it.split(':'); ri = int(rk[1:]); drops = [int(v) for v in xs_.split(';')]
             cols[ri] = [g for j, g in enumerate(cols[ri])

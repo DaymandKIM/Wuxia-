@@ -297,7 +297,7 @@ setTimeout(()=>{
   ok(w.eval('typeof tintedFx')==='function' && w.eval('tintedFx("fx_aura", SCHOOLS.sorim.c) !== tintedFx("fx_aura", SCHOOLS.gaebang.c)'),'장로 기운은 문파색으로 물든 캔버스를 문파마다 따로 만든다(실제 색은 크로뮴 스크린샷으로 확인)');
   ok(w.eval('S.hq="sorim"; bossFxCol()')===w.eval('rgbOf(SCHOOLS.sorim.c)') && w.eval('S.hq=null; bossFxCol()')===w.eval('FXD.boss.c'),'보스 등장·스킬 파열 색: 본진은 문파색, 사냥터는 옛 주황');
   // 문파별 전용 시트가 제 상황·제 폭으로 그려지는지 (v2.94.15 무당·화산 추가)
-  for (const [k, who] of [['mudang','md'],['hwasan','hs']]){
+  for (const [k, who] of [['mudang','md'],['hwasan','hs'],['dangmun','dm'],['magyo','mg']]){
     w.eval('S.foes.length=0; S.bossAlive=false; gotoHq("'+k+'"); S.intro=0; hqLoadStep(99); S.foes.length=0; spawnFoe(); S.foes[0].anim="idle"; S.foes[0].af=0; S.foes[0].x=P.x+60; S.foes[0].y=P.y;');
     renderNow();
     ok(w.eval('S.foes[0].k')===who+'_disc' && drew(who+'_disc_idle0', w.eval('FOES.'+who+'_disc.w')),k+' 본진 제자 = '+who+'_disc, 대기 컷이 선언 폭('+w.eval('FOES.'+who+'_disc.w')+')으로');
