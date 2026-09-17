@@ -168,9 +168,7 @@ function buildEquipPanel(){
     h += '</div>';
   }
   h += '<div class="znote" id="eqlog"></div>';
-  if (sl.perKind) h += '<div class="znote">장신구는 <b>종류마다 하나씩</b> 낀다 — 옥패·반지·염주·부적·호리병·비단끈 여섯 자리. 종류마다 올려 주는 힘이 다르다.</div>';
-  h += '<div class="znote">적을 잡으면 장비가 떨어져 주머니에 쌓인다. 같은 것 ' + EQUIP.mergeN + '개는 합성으로 한 등급 위가 되고, ' +
-       '얻어 본 아이템은 안 껴도 보유 효과가 영구히 붙는다(레벨을 올리면 보유 효과도 는다). 보스는 반드시 떨어뜨린다.</div>';
+  if (sl.perKind) h += '<div class="znote">장신구는 종류마다 하나씩 낀다.</div>';   // 긴 설명은 뺐다 (v2.93.5 사용자 "설명이 기니까 힘들어")
   b.innerHTML = h;
   b.querySelectorAll('#etabs .askind').forEach(el => { el.onclick = () => { eqTab = el.dataset.t; eqSel = null; buildEquipPanel(); }; });
   $('eqmerge').onclick = () => { const n = eqMergeAll(); if (n) toast('합성 ' + n + '회'); buildEquipPanel(); };
@@ -191,7 +189,7 @@ function refreshEquip(){
   const worn0 = sel ? eqWornOf(sel.k) : null;
   if (!sel){
     top.innerHTML = '<div class="zn"><span class="eqsl">' + sl.n + '</span> ' + (sl.k === 'weapon' ? '맨손' : '비었다') + '</div>' +
-      '<div class="zd">' + (sl.k === 'weapon' ? '주먹·발차기로 싸운다<br>무기를 끼면 그 무기 동작으로' : '적이 떨어뜨린다') + '<br><small>아래 카드를 누르면 여기에 보인다</small></div>';
+      '<div class="zd">' + (sl.k === 'weapon' ? '주먹·발차기로 싸운다' : '적이 떨어뜨린다') + '<br><small>아래 카드를 누르면 여기에</small></div>';
   } else {
     const { k, g } = sel, G = EQUIP.grades[g], kd = eqKind(k), n = eqInv(k)[g], lv = itemLv(k, g), cap = G.lvCap, seen = eqSeen(k, g);
     const worn = !!(worn0 && worn0.k === k && worn0.g === g);
@@ -199,13 +197,15 @@ function refreshEquip(){
     const grow = seen && lv < cap;
     top.innerHTML = '<div class="eqrow"><div class="eqico' + (worn ? ' worn' : '') + '" style="border-color:' + G.c + '"><img src="' + eqIcon(k, g) + '" alt="">' +
         (seen ? '<b>Lv' + lv + '</b>' : '') + '</div>' +
-      '<div class="trl"><div class="zn"><em style="color:' + G.c + '">' + G.n + '</em> ' + kd.n +
-        (worn ? ' <i class="eqwornTag">착용 중</i>' : '') + ' <small>' + (seen ? 'Lv ' + lv + ' / ' + cap + ' · 보유 ×' + n : '미보유 · Lv 상한 ' + cap) + '</small></div>' +
-      '<div class="zd">' + cur.map((x, i) => '<span class="eqlab">' + (i ? '' : '장착') + '</span>' + EQUIP.statName[x.stat] + ' +' + x.pct.toFixed(1) + '%' +
-        (grow ? ' <i>→ +' + nxt[i].pct.toFixed(1) + '%</i>' : '')).join('<br>') + '</div>' +
-      '<div class="zd"><span class="eqlab">보유</span>' + hold.map((x, i) => EQUIP.statName[x.stat] + ' +' + x.pct.toFixed(2) + '%' + (grow ? ' <i>→ +' + holdN[i].pct.toFixed(2) + '%</i>' : '')).join('<br><span class="eqlab"></span>') + ' <small>(영구)</small>' +
-        '<br><span class="eqhold">이 자리 보유 효과 합 ' + EQUIP.statName[sl.stat] + ' +' + codexPct(sl).toFixed(1) + '%</span></div>' +
-      (seen ? '' : '<div class="zd"><small>사냥에서 떨어지거나 아래 등급 ' + EQUIP.mergeN + '개를 합성하면 얻는다</small></div>') +
+      // 줄 수 고정 6줄 (v2.93.5 "장비마다 줄이 달라 작아졌다 커졌다"): 이름 · 상태 · 장착 3줄(빈 줄 채움) · 보유 — 버튼이 늘 같은 자리
+      '<div class="trl"><div class="zn"><em style="color:' + G.c + '">' + G.n + '</em> ' + kd.n + (worn ? ' <i class="eqwornTag">착용 중</i>' : '') + '</div>' +
+      '<div class="zd"><small>' + (seen ? 'Lv ' + lv + ' / ' + cap + ' · 보유 ×' + n : '미보유 · Lv 상한 ' + cap) + '</small></div>' +
+      '<div class="zd">' + [0, 1, 2].map(i => cur[i] ? '<span class="eqlab">' + (i ? '' : '장착') + '</span>' + EQUIP.statName[cur[i].stat] + ' +' + cur[i].pct.toFixed(1) + '%' +
+        (grow ? ' <i>→ +' + nxt[i].pct.toFixed(1) + '%</i>' : '') : '&nbsp;').join('<br>') + '</div>' +
+      // 보유 효과는 한 줄로 (v2.93.5 사용자 "설명이 기니까 힘들어") — 종류별 수치 나열 대신 규칙 + 이 자리 합. 미보유면 그 줄에 얻는 법
+      '<div class="zd eqhl">' + (seen
+        ? '<span class="eqlab">보유</span><span class="eqhold">' + EQUIP.statName[hold[0].stat] + ' +' + hold[0].pct.toFixed(2) + '%' + (grow ? ' <i>→ +' + holdN[0].pct.toFixed(2) + '%</i>' : '') + '</span> <small>· 이 자리 합 ' + EQUIP.statName[sl.stat] + ' +' + codexPct(sl).toFixed(1) + '%</small>'
+        : '<span class="eqlab">보유</span><small>미보유 — 사냥 드랍이나 합성 ' + EQUIP.mergeN + '→1</small>') + '</div>' +
       '</div></div>' +
       '<div class="zst">' +
       (worn

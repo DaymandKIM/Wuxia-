@@ -323,7 +323,7 @@ function buildSectPanel(){
     '<div class="snamein"><input id="snamein" maxlength="' + SECT.nameMax + '" placeholder="' + SECT.name + '" value="' + (S.sectName || '') + '" autocomplete="off">' +
     '<button class="trbuy" id="snameok"><span>정한다</span></button></div></div>';
   b.innerHTML = naming + fameBand() + discipleBand() +
-    '<div class="znote">마당의 전각을 누르면 그 자리에서 올린다. 명성은 적을 잡고, 보스를 꺾고, 업적을 받을 때 쌓인다.</div>';   // 전각 카드는 v2.92.1부터 팝업(사용자)
+    '<div class="znote">전각은 마당에서 누른다. 명성은 처치·보스·업적으로.</div>';   // 전각 카드는 v2.92.1부터 팝업(사용자)
   const okb = $('snameok'); if (okb) okb.onclick = () => { setSectName($('snamein').value); $('snamerow').hidden = true; toast(sectName() + ' — 이름을 세웠다'); };
   const inp = $('snamein'); if (inp) inp.onkeydown = e => { if (e.key === 'Enter') okb.onclick(); };
   // 꾹 누르면 연속 (수련과 같은 규칙)
@@ -390,7 +390,9 @@ function refreshHallPop(){
   const el = $('hpop'), k = hallPopK; if (!el || el.hidden || !k) return;
   const h = hallDef(k), lv = hallLv(k), cap = hallCap(), full = lv >= cap, can = canBuildHall(k);
   el.querySelector('.zn').innerHTML = h.n + ' <small>' + h.h + '</small> <em>Lv ' + lv + ' / ' + cap + '</em>';
-  el.querySelector('.zd').innerHTML = '<i>' + (lv ? hallEffText(h, lv) : '아직 효과 없음') + '</i>' + (full ? '' : '<br>→ ' + hallEffText(h, lv + 1));
+  // 효과마다 한 줄 "이름 지금 → 다음" (v2.93.5 — 두 줄 나열은 레벨마다 접혀 팝업 높이가 들쭉날쭉했다). 줄 수는 CSS 로 3줄 고정
+  const sg = k => (k === 'artcost' || k === 'downcut' ? '−' : '+'), pct = (k, l) => sg(k) + (Math.round(h.eff[k] * l * 10) / 10) + '%';
+  el.querySelector('.zd').innerHTML = Object.keys(h.eff).map(k => SECT.effName[k] + ' <i>' + pct(k, lv) + '</i>' + (full ? '' : ' → ' + pct(k, lv + 1))).join('<br>');
   const btn = $('hpbuy');
   if (full){ btn.disabled = true; btn.querySelector('span').textContent = fameTier() >= SECT.fame.tiers.length - 1 ? '최고' : fameTierDef(fameTier() + 1).n + '에 열림'; btn.querySelector('i').innerHTML = ''; }
   else { btn.disabled = !can; btn.querySelector('span').textContent = lv ? '올리기' : '세우기'; btn.querySelector('i').innerHTML = coin() + ' ' + fmt(hallCost(k)); }

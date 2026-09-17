@@ -66,7 +66,7 @@ function achvCard(a){
 function buildAchvPanel(){
   const b = $('vbody'); if (!b) return;
   const list = ACHV.list.slice().sort((x, y) => (achvClaimable(y) > 0) - (achvClaimable(x) > 0));   // 받을 것이 위
-  b.innerHTML = '<div class="znote">쌓아 온 것을 돌아본다. 단계마다 은자를 준다 — 보상은 받는 순간의 사냥터 기준이라 늦게 받아도 손해가 없다.</div>' +
+  b.innerHTML = '<div class="znote">단계마다 은자. 늦게 받아도 손해 없다.</div>' +
     list.map(achvCard).join('');
   b.querySelectorAll('.abtn').forEach(el => { el.onclick = () => { const k = el.closest('.acard').dataset.k, r = achvClaim(k);
     if (r){ toast('업적 보상 ' + fmt(r), { icon: ASSET.silver, color: '#e8c96a', sec: ACHV.toastSec }); saveNow(); buildAchvPanel(); } }; });

@@ -240,8 +240,8 @@ function buildZonePanel(){
   strip += stBtn(BOSS_STAGE, '보스', ' bs');
   strip += '</div></div>';
   const note = '<div class="znote">' + (TEST
-      ? '테스트 모드 — 구역을 누르고 아래에서 단계를 고르면 이동한다.'
-      : '구역을 누르고 아래에서 가 본 단계를 고르면 이동한다. ' + (ZONES.length > S.unlocked ? '구역을 끝까지 깨면 다음 길이 열린다.' : '모든 구역을 열었다.')) + '</div>';
+      ? '테스트 모드 — 구역을 누르고 아래에서 단계를 고른다.'
+      : '구역을 누르고 아래에서 단계를 고른다.') + '</div>';
   b.innerHTML = svg + strip + note;
   b.querySelectorAll('.znode[data-z], .zn[data-z]').forEach(el => {
     el.onclick = () => { const i = parseInt(el.dataset.z, 10); if (!TEST && i >= S.unlocked) return; zoneSel = i; buildZonePanel(); };   // 선택만 — 이동은 단계 줄에서
@@ -282,8 +282,7 @@ function buildRealmPanel(){
        '<div class="zn">' + REALM.last +
        (inLast ? ' <em>지금 · ' + (ri.k - top + 1) + '성</em>' : '') + '</div>' +
        '<div class="zd">' + (inLast ? '성이 끝없이 오른다' : '자연경 너머 — 성이 끝없이 오른다') + '</div></div>';
-  h += '<div class="znote">적을 잡을수록 수련치가 쌓여 경지가 오른다. ' +
-       '경지가 오르면 몸이 강해지고 수련 상한이 열린다.</div>';
+  h += '<div class="znote">적을 잡으면 수련치가 쌓여 경지가 오른다.</div>';
   $('rbody').innerHTML = h;
 }
 function openRealmPanel(){ buildRealmPanel(); $('rpanel').classList.add('show'); }

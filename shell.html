@@ -134,7 +134,7 @@
   #sover .sbar{display:block;width:100%;height:4px;border-radius:2px;background:#0e1319;overflow:hidden;margin-top:3px;}
   #sover .sbar u{display:block;height:100%;background:linear-gradient(90deg,#8a6d2f,#e8c96a);}
   /* 전각 팝업 (v2.92.1) — 마당 위에 뜨는 작은 카드 */
-  #hpop{position:absolute;z-index:35;pointer-events:auto;width:236px;padding:9px 10px 9px 10px;background:rgba(18,22,28,.96);border:1.5px solid #7fc78f;
+  #hpop{position:absolute;z-index:35;pointer-events:auto;width:268px;padding:9px 10px 9px 10px;background:rgba(18,22,28,.96);border:1.5px solid #7fc78f;
     border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.6);display:grid;grid-template-columns:auto 1fr;gap:4px 10px;align-items:center;}
   #hpop[hidden]{display:none;}
   #hpop .hpico{width:40px;height:40px;border-radius:9px;background:#0e1319;border:1.5px solid #2b333d;display:flex;align-items:center;justify-content:center;grid-row:1 / span 2;}
@@ -142,7 +142,7 @@
   #hpop .hpico b{font-family:'Nanum Myeongjo',serif;font-size:21px;color:#fff1dc;}
   #hpop .hpico img{width:32px;height:32px;object-fit:contain;image-rendering:pixelated;}
   #hpop .zn{font-size:15px;padding-right:22px;} #hpop .zn small{color:#e8c96a;font-size:10px;} #hpop .zn em{font-style:normal;font-size:11px;color:#69a8dd;margin-left:4px;}
-  #hpop .zd{font-size:11.5px;margin-top:0;} #hpop .zd i{font-style:normal;color:#7fc78f;}
+  #hpop .zd{font-size:11.5px;margin-top:0;height:51px;line-height:17px;white-space:nowrap;overflow:hidden;}   /* 효과 줄 높이 고정 — 올릴 때마다 [올리기] 버튼이 안 움직인다 (v2.93.5) */ #hpop .zd i{font-style:normal;color:#7fc78f;}
   #hpop .trbuy{grid-column:1 / span 2;padding:9px 0;font-size:13px;}
   #hpop .trbuy i{display:inline;margin-left:6px;font-size:12px;}
   #hpclose{position:absolute;right:4px;top:2px;background:none;border:0;color:#7f8b99;font-size:16px;padding:4px 8px;}
@@ -294,6 +294,7 @@
   .eqlab{display:inline-block;width:34px;color:#8b97a5;font-size:11px;}
   .eqhold{color:#e8c96a;}
   .eqdet .zd small{color:#6b7683;}
+  #eqtop .eqrow{align-items:flex-start;} #eqtop .trl{height:118px;overflow:hidden;} #eqtop .trl .zn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:20px;} #eqtop .trl .zd{line-height:17px;white-space:nowrap;overflow:hidden;}   /* v2.93.5 "장비마다 줄이 달라 작아졌다 커졌다": 글 칸 높이를 고정해 장착·강화·합성 버튼이 한자리에 있다 */
   .eqdet .zst .sb{padding:8px 12px;font-size:12.5px;}
   .eqdet .zst .trbuy{min-width:0;padding:6px 12px;}
   .zn em{font-style:normal;}
@@ -514,7 +515,7 @@
     opacity:0;transition:opacity .18s,transform .18s;}
   #toast.show{opacity:1;transform:translate(-50%,-50%) scale(1);}
   /* 그림 토스트 (v2.86) — 장비 획득·합성: 왼쪽 아이콘 액자 + 글자. 테두리·빛은 등급색(60-ui toast opt) */
-  #toast.pic{display:flex;align-items:center;gap:12px;padding:9px 18px 9px 10px;text-align:left;white-space:nowrap;}   /* '획/득' 두 줄 방지 (v2.87.5) */
+  #toast.pic{display:flex;align-items:center;gap:12px;padding:9px 18px 9px 10px;text-align:left;white-space:pre-line;}   /* v2.93.5 "제자 알림 글씨 잘림": nowrap 이 \n 까지 죽여 한 줄로 늘어나 잘렸다. 폭은 max-content 라 '획/득' 두 줄(v2.87.5)은 이제 안 생긴다 */
   #toast .tico{width:44px;height:44px;object-fit:contain;image-rendering:pixelated;flex:none;
     background:#0e1319;border:1.5px solid #2b333d;border-radius:9px;padding:3px;}
   #toast:not(.show) .tico{opacity:0;}
