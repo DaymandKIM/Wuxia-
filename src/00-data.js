@@ -1446,8 +1446,13 @@ FOES.md_elite = { n:'무당 정예제자', w:138, h:54, sw:27, bh:50, school:'mu
          atk:['atk0','atk1','atk2','atk3'], atk2:['atk2_0','atk2_1','atk2_2','atk2_3'],
          hit:['hit'], death:['hit','death0','death1'] },
   fps:{ idle:4, walk:7, atk:7.3, hit:6, death:4 }, hp:1.7, dmg:1.3, spd:1.0, range:60 };
-FOES.md_elder = { n:'무당 장로',     w:160, h:66, sw:33, bh:58, school:'mudang',
-  anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'], atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
+// 무당 장로 — 같은 시트에서 공격 **세 벌**을 뽑았다 (v2.94.25, 사용자 "장로는 3개"):
+// atk 불진 휘두르기(흰 원호) · atk2 손가락 지법(흰 섬광) · atk3 장풍(푸른 기운 구체 → 밀기).
+// 인물 없는 파란 나선 단독 칸은 뺐다 — 쓰면 몸이 한 컷 사라져 보인다. 걷기 4칸만 9% 크게 그려져 칸 단위 --rowref 로 눌렀다.
+FOES.md_elder = { n:'무당 장로',     w:76, h:64, sw:30, bh:58, school:'mudang',
+  anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'],
+         atk:['atk0','atk1','atk2','atk3'], atk2:['atk2_0','atk2_1','atk2_2','atk2_3'], atk3:['atk3_0','atk3_1','atk3_2','atk3_3'],
+         hit:['hit'], death:['hit','death0','death1'] },
   fps:{ idle:3.5, walk:6, atk:7.3, hit:6, death:4 }, hp:1.0, dmg:1.0, spd:0.9, range:70 };
 FOES.hs_disc  = { n:'화산 수습제자', w:66,  h:58, sw:27, bh:48, school:'hwasan',
   anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'], atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
