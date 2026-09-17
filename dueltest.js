@@ -77,7 +77,8 @@ setTimeout(()=>{
   const sv3=S.silver, expM=w.eval("killSilver()*SILVER.bossKill")*(1+DUEL.silverMaster); m.hp=1; P.x=m.x-30; P.y=m.y; w.hurtFoe(m,10,false);
   fr=Object.keys(S.frag).reduce((s,k)=>s+S.frag[k],0);
   ok(fr===DUEL.frag.master && S.ptsBonus===DUEL.pts.master && w.eval("skillPtsTotal()")===pt0+DUEL.pts.master,'장문인: 조각 +'+fr+' · 무공점 +'+S.ptsBonus+' (skillPtsTotal '+pt0+'→'+w.eval("skillPtsTotal()")+')');
-  ok(Math.abs((S.silver-sv3)/expM-1)<0.02,'장문인 은자 = 보스 은자 × (1+'+DUEL.silverMaster+') = '+Math.round(S.silver-sv3));
+  // 보스 드랍(100%)으로 도감 보유 효과(은자 %)가 사이에 바뀔 수 있어 ±5%
+  ok(Math.abs((S.silver-sv3)/expM-1)<0.05,'장문인 은자 ≈ 보스 은자 × (1+'+DUEL.silverMaster+') = '+Math.round(S.silver-sv3)+' (기대 '+Math.round(expM)+')');
   ok(w.hqRank('gaebang')===11,'11단');
   // ── 5) 상승 무공 — 조각
   const a=ARTS.list.find(x=>x.school==='gaebang'&&x.frag);
