@@ -433,6 +433,8 @@
     align-items:center;padding:14px 16px 10px;font-family:var(--fw);font-size:17px;color:#e8eef6;
     letter-spacing:.06em;border-bottom:1px solid #1e242c;}
   .zhd button{background:none;border:0;color:#7f8b99;font-size:19px;padding:2px 6px;}
+  #vall{margin-left:auto;margin-right:4px;font-size:12px;font-family:inherit;color:#0a0d12;background:#e8c96a;border-radius:8px;padding:5px 10px;font-weight:900;}   /* 업적 모두 받기 (v2.93.6 사용자) */
+  #vall:disabled{opacity:.35;}
   .zrow{margin:8px 12px;padding:12px 14px;background:#171d25;border:1.5px solid #232b35;
     border-radius:11px;}
   .zrow.on{border-color:#3c6f9e;background:#1a2430;}
@@ -665,7 +667,7 @@
   </div>
   <div id="vpanel">
     <div class="zsheet">
-      <div class="zhd">업적<span id="vcnt"></span><button id="vclose">✕</button></div>
+      <div class="zhd">업적<span id="vcnt"></span><button id="vall">모두 받기</button><button id="vclose">✕</button></div>
       <div id="vbody"></div>
     </div>
   </div>

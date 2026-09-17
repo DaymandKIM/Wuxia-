@@ -94,10 +94,10 @@ setTimeout(()=>{
       S.fx.length=0; stepArts(1/60);`);
     ok(w.eval('S.fx.filter(e=>e.k==="artname").length')===1,
       '한 프레임엔 초식 하나만 (동시 시전 금지)');
-    ok(w.eval('P.castT>0 && P.artCd.whirl<=0'),
-      '둘째 초식은 시전이 끝날 때까지 쿨을 쥔 채 기다린다');
+    ok(w.eval('P.castT>0 && P.artCd.pagong<=0'),
+      '둘째 초식(파공권 — v2.93.6부터 선풍퇴가 먼저)은 시전이 끝날 때까지 쿨을 쥔 채 기다린다');
     w.eval('P.castT=0; P.castGapT=0; S.fx.length=0; stepArts(1/60);');
-    ok(w.eval('S.fx.filter(e=>e.k==="artname").length')===1 && w.eval('P.artCd.whirl>0'),
+    ok(w.eval('S.fx.filter(e=>e.k==="artname").length')===1 && w.eval('P.artCd.pagong>0'),
       '앞 시전이 끝나면 기다리던 초식이 나간다');
     // 5.9) 스킬창 — 익힌 초식 슬롯 + 쿨다운 덮개
     w.eval('hud()');

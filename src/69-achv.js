@@ -71,6 +71,9 @@ function buildAchvPanel(){
   b.querySelectorAll('.abtn').forEach(el => { el.onclick = () => { const k = el.closest('.acard').dataset.k, r = achvClaim(k);
     if (r){ toast('업적 보상 ' + fmt(r), { icon: ASSET.silver, color: '#e8c96a', sec: ACHV.toastSec }); saveNow(); buildAchvPanel(); } }; });
   const c = $('vcnt'); if (c) c.textContent = ACHV.list.reduce((s, a) => s + achvClaimed(a), 0) + ' / ' + ACHV.list.reduce((s, a) => s + a.tiers.length, 0);
+  // 모두 받기 (v2.93.6 사용자 "업적도 한번에 다 받을 수 있게") — 받을 게 있을 때만
+  const all = $('vall'); if (all){ const n = achvClaimableAll(); all.disabled = !n; all.textContent = n ? '모두 받기 ' + n : '모두 받기';
+    all.onclick = () => { const r = achvClaimAll(); if (r.n){ toast('업적 보상 ' + r.n + '건 · ' + fmt(r.sum), { icon: ASSET.silver, color: '#e8c96a', sec: ACHV.toastSec }); saveNow(); buildAchvPanel(); } }; }
 }
 function openAchv(){ buildAchvPanel(); $('vpanel').classList.add('show'); }
 function closeAchv(){ const v = $('vpanel'); if (v) v.classList.remove('show'); }

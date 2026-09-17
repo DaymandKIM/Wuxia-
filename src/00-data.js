@@ -908,10 +908,11 @@ const CASTQ = { gap: 0.35 };
 
 const ARTS = { list: [
   // ── 초식 (자동 시전) ──────────────────────────────
-  { k:'pagong',  n:'파공권',   h:'破空拳',   type:'active', school:'sorim', need:4,  cost:200,
-    d:'주먹 기운이 허공을 갈라 날아간다', cd:6,  mul:3,   range:170 },
-  { k:'whirl',   n:'선풍퇴',   h:'旋風腿',   type:'active', school:'gaebang', need:9,  cost:1200,
+  // v2.93.6 사용자 "파공권 왜 이리 세냐, 배우는 순서대로 세져야지 — 선풍뢰를 처음 배우게": 선풍퇴(기본 무공 느낌)가 첫 초식, 파공권은 둘째
+  { k:'whirl',   n:'선풍퇴',   h:'旋風腿',   type:'active', school:'gaebang', need:4,  cost:200,
     d:'휘돌아 차서 주위를 쓸어낸다',     cd:9,  mul:1.5, range:74, kb:true },
+  { k:'pagong',  n:'파공권',   h:'破空拳',   type:'active', school:'sorim', need:9,  cost:1200,
+    d:'주먹 기운이 허공을 갈라 날아간다', cd:6,  mul:3,   range:170 },
   { k:'baekbo',  n:'암향지',   h:'暗香指',   type:'active', school:'dangmun', need:13, cost:5000,
     d:'어둠 속 향기가 닿으면 이미 늦었다', cd:14, mul:5,   range:280 },
   { k:'hwalin',  n:'활인기공', h:'活人氣功', type:'active', school:'ami', need:19, cost:25000,
