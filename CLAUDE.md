@@ -310,7 +310,7 @@ v2.39부터 얼음·번개 등 모든 fly 탄이 나는 각도로 회전. 왼쪽
 있는데(파일 첨부만 저장됨), 그럴 땐 **대화 기록 jsonl의 base64 인라인 이미지를
 디코드해 복원**한다: `~/.claude/projects/-home-user-Wuxia-/<세션>.jsonl`을 줄단위로
 파싱해 content의 `type:'image'` 블록 `source.data`(webp base64)를 base64 디코드→
-PIL로 열어 png 저장(v2.60에서 폐촌·동굴·설산·천산 4장 이렇게 복원).
+PIL로 열어 png 저장(v2.60에서 폐촌·동굴·설산·천산 4장 이렇게 복원). **턴 도중에 붙여넣은 그림은 `type:'attachment'` 줄의 `attachment.type:'queued_command'` → `prompt[].source.data`에 있다**(v2.94.1 — user 줄만 뒤지면 못 찾고, 같은 크기의 옛 그림을 잘못 집는다. 줄 번호·색 평균으로 확인).
 5구역 × (10단계 + 보스). 무기 없음, 맨손 정권만.
 **이동 애니 질주 6프레임**(v2.71.1, sheets/hero_run2 1줄 — hero_run2.py. 아래는 옛 10프레임 이력) **← v2.44 10프레임** — v2.43 8프레임이 조깅 느낌이라 아쉽다는
 피드백 → docs/프롬프트-주인공.md 질주 프롬프트로 재작업 시트를 받아 교체
