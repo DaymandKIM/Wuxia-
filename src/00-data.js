@@ -1330,3 +1330,20 @@ for (const k in DUEL.gBase){
   ZONEBOSS['hq_' + k] = 'elder_' + k;
   BOSSCRY['hq_' + k]  = SCHOOLS[k].n + ' 장로가 나선다';
 }
+// 본진 전용 시트가 온 문파는 임시 주인공 tint 대신 제 그림(사용자 시트, gb_disc.py 계열 추출 — v2.94.1 개방 수습제자부터).
+// disc = 잡몹, elite = 정예(DUEL.eliteFrom 단부터 섞임, 시트 오면), elder = 보스. 항목이 있는 것만 바꾼다.
+FOES.gb_disc = {
+  // 개방 수습제자 — sheets/gb_disc.png. 대기·걷기는 봉 든 자세(시트 4~7칸)로 통일(0~3칸은 봉을 늘어뜨린 딴 자세라 섞으면 봉이 튄다).
+  // 캔버스 82×53 은 공격 원호(파란·금) 폭 — 몸은 32×48 (sw/bh). 죽음 = 피격 → 웅크려 누움 → 늘어짐.
+  n:'개방 수습제자', w:82, h:53, sw:32, bh:48, school:'gaebang',
+  anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'],
+         atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
+  fps:{ idle:4, walk:7, atk:7.3, hit:6, death:4 },
+  hp:1.1, dmg:1.0, spd:1.0, range:52,   // 봉이라 강도(44)보다 조금 길게
+};
+DUEL.art = { gaebang:{ disc:'gb_disc' } };   // 문파 → {disc, elite, elder} FOES 키. 시트가 오면 여기만 채운다
+for (const k in DUEL.art){
+  const A = DUEL.art[k];
+  if (A.disc)  ZONEFOE['hq_' + k]  = [A.disc];
+  if (A.elder) ZONEBOSS['hq_' + k] = A.elder;
+}

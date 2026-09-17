@@ -275,6 +275,14 @@ setTimeout(()=>{
   ok(!['yard','clinic','library','guest'].some(k=>[0,1,2,3,4].some(s=>draws.some(d=>d.im===w.eval('IMG["hall_'+k+'_'+s+'"]')))),'Lv 0 은 빈 터 그대로 — 전각 그림을 안 얹는다 (v2.92.9)');
   w.eval('closeSect();');
 
+  // ── 본진 전용 시트 (v2.94.1 개방 수습제자) — 본진에서 젠된 제자가 제 스트립(gb_disc_*)을 제 폭(82)으로 그린다
+  w.eval('S.rexp=seedExp(2,5); gotoHq("gaebang"); S.intro=0; S.foes.length=0; spawnFoe(); S.foes[0].anim="idle"; S.foes[0].af=0; S.foes[0].x=P.x+60; S.foes[0].y=P.y;');
+  renderNow();
+  ok(w.eval('S.foes[0].k')==='gb_disc' && drew('gb_disc_idle0', 82),'개방 본진 제자 = gb_disc, 대기 컷이 캔버스 폭 82 로 그려진다');
+  w.eval('S.foes[0].anim="atk"; S.foes[0].af=1;'); renderNow(); ok(drew('gb_disc_atk1', 82),'공격 2번째 컷(파란 원호)이 그려진다');
+  w.eval('S.foes[0].anim="death"; S.foes[0].af=2; S.foes[0].dead=true;'); renderNow(); ok(drew('gb_disc_death1', 82),'죽음 마지막 컷(늘어짐)이 그려진다');
+  w.eval('gotoZone(0,1);');
+
   ok(errs.length===0,'런타임 오류 0'+(errs.length?': '+errs[0]:''));
   console.log(bad?('\n★ 실패 '+bad+'건'):'\n문제 없음');
   process.exit(bad?1:0);
