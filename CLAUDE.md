@@ -52,7 +52,7 @@ spritetest와 별개로, 그 그림이 실제로 맞는 상황·맞는 스트립
 ## 명령
 
 ```bash
-python build.py        # src/ + assets/ → dist/wuxia.html   (먼저 이걸 돌린다)
+python build.py        # src/ + assets/ → dist/wuxia.html (단일, 로컬·테스트용) + dist/web/ (게시용 분리 빌드: index.html·game.js·assets<N>.json — v2.93.4)
 
 node lint.js           # 정의 없는 호출·빠진 필수 함수
 node spritetest.js     # 선언 규격 vs 실제 PNG · 캔버스 가장자리 접촉
@@ -86,7 +86,8 @@ python castshot.py     # 주술사 두 동작 미리보기 그림
 ```
 
 `npm i` 한 번 필요하다 (jsdom).
-빌드 경로를 바꾸려면 `WUXIA_OUT=/어디/wuxia.html python build.py`.
+빌드 경로를 바꾸려면 `WUXIA_OUT=/어디/wuxia.html python build.py` (분리 빌드는 `WUXIA_WEB=/어디`).
+**아티팩트 게시는 dist/web/index.html + files(game.js·assets*.json)** — 한 페이지 16MB 한도를 피한다(v2.93.4). 단일 파일은 file:// 로 열리지만 분리 빌드는 fetch 라 서버·아티팩트에서만 돈다.
 
 ---
 
