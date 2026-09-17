@@ -43,7 +43,9 @@ setTimeout(()=>{
   S.intro=0; w.hud && w.hud();
   const st=w.document.getElementById('stage').textContent;
   ok(/개방 본진 1단/.test(st),'HUD "'+st+'"');
-  ok(w.eval("rzone()").k==='hq_gaebang' && w.eval("S.hq='mudang'; rzone().k")==='snow' && (S.hq='gaebang',true),'배경: 전용 원경이 있으면 본진(hq_gaebang), 없으면 이웃 구역(무당→설산)');
+  { const own=w.eval("rzone().k");
+    const fall=w.eval("const _t=IMG.bg_hq_gaebang; delete IMG.bg_hq_gaebang; const _k=rzone().k; IMG.bg_hq_gaebang=_t; _k");   // 원경 에셋이 없을 때만 이웃을 빌린다
+    ok(own==='hq_gaebang' && fall==='bamboo','배경: 전용 원경이 있으면 본진('+own+'), 없으면 이웃 구역('+fall+')'); }
   // ── 2) 제자 젠·렌더
   S.foes.length=0; w.spawnFoe(); const f=S.foes[0];
   const ZF=w.eval('ZONEFOE'); ok(ZF['hq_gaebang'].includes(f.k) && FOES[f.k].school==='gaebang' && (FOES[f.k].heroStrip || FOES[f.k].anim.idle.length===4),'젠 = '+f.k+' (계보 개방 · '+(FOES[f.k].heroStrip?'주인공 스트립 임시':'전용 시트')+')');
