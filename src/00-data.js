@@ -301,6 +301,11 @@ const PROPS = {
                pick:[ ['prophq_mudang_0',24,1], ['prophq_mudang_1',28,2], ['prophq_mudang_2',44,2],
                       ['prophq_mudang_3',40,1], ['prophq_mudang_4',30,3], ['prophq_mudang_5',22,3],
                       ['prophq_mudang_6',38,2], ['prophq_mudang_7',40,2] ] },
+  // 화산 마당 — 붉은 바위·꽂힌 검·매화 가지·돌 푯말·밧줄·깨진 돌계단·무쇠 화로·짚 과녁 더미 (v2.94.25)
+  hq_hwasan: { kind:'sprite', dens:0.38, grid:170,
+               pick:[ ['prophq_hwasan_0',32,3], ['prophq_hwasan_1',42,1], ['prophq_hwasan_2',34,2],
+                      ['prophq_hwasan_3',44,1], ['prophq_hwasan_4',20,3], ['prophq_hwasan_5',26,2],
+                      ['prophq_hwasan_6',32,2], ['prophq_hwasan_7',28,3] ] },
 };
 
 // 상단 원경 배경 — 화면 위쪽 h(VH 비율)에 구역별 원경 한 장을 가로 타일링, 카메라
