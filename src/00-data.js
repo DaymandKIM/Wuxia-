@@ -291,6 +291,16 @@ const PROPS = {
               pick:[ ['prophq_sorim_0',36,2], ['prophq_sorim_1',44,1], ['prophq_sorim_2',22,3],
                      ['prophq_sorim_3',44,1], ['prophq_sorim_4',30,3], ['prophq_sorim_5',32,2],
                      ['prophq_sorim_6',38,2], ['prophq_sorim_7',44,1] ] },
+  // 개방 마당 — 화톳불·누더기·깨진 항아리·대나무 묶음·돗자리·수레바퀴·호리병 죽장·짚더미 (v2.94.24)
+  hq_gaebang: { kind:'sprite', dens:0.38, grid:170,
+              pick:[ ['prophq_gaebang_0',40,2], ['prophq_gaebang_1',22,3], ['prophq_gaebang_2',34,2],
+                     ['prophq_gaebang_3',28,2], ['prophq_gaebang_4',18,3], ['prophq_gaebang_5',38,1],
+                     ['prophq_gaebang_6',44,1], ['prophq_gaebang_7',30,3] ] },
+  // 무당 마당 — 태극 석반·향로 좌탁·무기 거치대·죽통 수반·이끼 바위·돗자리·석등·분재 (v2.94.24)
+  hq_mudang: { kind:'sprite', dens:0.38, grid:170,
+               pick:[ ['prophq_mudang_0',24,1], ['prophq_mudang_1',28,2], ['prophq_mudang_2',44,2],
+                      ['prophq_mudang_3',40,1], ['prophq_mudang_4',30,3], ['prophq_mudang_5',22,3],
+                      ['prophq_mudang_6',38,2], ['prophq_mudang_7',40,2] ] },
 };
 
 // 상단 원경 배경 — 화면 위쪽 h(VH 비율)에 구역별 원경 한 장을 가로 타일링, 카메라
@@ -1424,8 +1434,12 @@ FOES.sr_elder = {
 FOES.md_disc  = { n:'무당 수습제자', w:42,  h:72, sw:22, bh:48, school:'mudang',
   anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'], atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
   fps:{ idle:4, walk:7, atk:7.3, hit:6, death:4 }, hp:1.1, dmg:1.0, spd:1.0, range:52 };
-FOES.md_elite = { n:'무당 정예제자', w:128, h:55, sw:27, bh:50, school:'mudang', elite:true,
-  anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'], atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
+// 무당 정예 — 3.5등신 재작업 시트 2장(대기·공격 + 질주·피격)을 세로로 붙여 뽑았다 (v2.94.24, sheets/md_elite2.png).
+// **공격이 두 벌**(사용자 "정예는 2개"): atk = 원호 휘두르기, atk2 = 도약 초승달 → 파란 구체 찌르기. 캔버스 138 은 검·호 폭이다.
+FOES.md_elite = { n:'무당 정예제자', w:138, h:54, sw:27, bh:50, school:'mudang', elite:true,
+  anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'],
+         atk:['atk0','atk1','atk2','atk3'], atk2:['atk2_0','atk2_1','atk2_2','atk2_3'],
+         hit:['hit'], death:['hit','death0','death1'] },
   fps:{ idle:4, walk:7, atk:7.3, hit:6, death:4 }, hp:1.7, dmg:1.3, spd:1.0, range:60 };
 FOES.md_elder = { n:'무당 장로',     w:160, h:66, sw:33, bh:58, school:'mudang',
   anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'], atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },

@@ -322,6 +322,11 @@ setTimeout(()=>{
   w.eval('gotoHq("sorim"); S.intro=0; hqLoadStep(99); S.camX=0; S.camY=0;'); renderNow();
   ok(w.eval('!!PROPS[rzone().k]') && draws.some(d=>String((d.im&&d.im.__key)||'').indexOf('prophq_sorim')===0 || true),'소림 본진 소품 표가 rzone 키로 잡힌다 ('+w.eval('PROPS[rzone().k].pick.length')+'종)');
   ok(w.eval('PROPS.hq_sorim.pick.every(p=>!!IMG[p[0]])'),'소림 소품 8종 로드');
+  // 본진 소품이 들어온 문파는 전부 로드·높이 검사 (v2.94.24) — 사람 키 48 을 넘으면 마당이 소품에 먹힌다
+  w.eval("Object.keys(PROPS).filter(k=>k.indexOf('hq_')===0)").forEach(k => {
+    ok(w.eval("PROPS['"+k+"'].pick.every(p=>!!IMG[p[0]])"), k+' 소품 '+w.eval("PROPS['"+k+"'].pick.length")+'종 로드');
+    ok(w.eval("PROPS['"+k+"'].pick.every(p=>p[1]<=48)"), k+' 소품이 사람 키(48)를 안 넘는다');
+  });
   w.eval('gotoHq("sorim"); S.intro=0;'); renderNow();
   ok(w.eval('rzone().k')==='hq_sorim' && w.eval('!!IMG[BACKDROP.keys[rzone().k]] && !!IMG[GROUNDTEX.keys[rzone().k]]') && w.eval('GROUNDTEX.aZone.hq_sorim')===0.8,'소림 본진: 전용 원경·바닥(석판, 텍스처 0.8)');
   w.eval('S.foes.length=0; S.bossAlive=false; gotoZone(0,1);');
