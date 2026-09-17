@@ -54,7 +54,7 @@ function spawnBoss(){
   });
   S.bossAlive = true;
   // 등장 파열 (v2.31) — 문이 닫히며 기운이 터진다
-  fxBlast(S.summonX || P.x, (S.summonY || P.y) - 46, FXD.boss.r, FXD.boss.c, true);
+  fxBlast(S.summonX || P.x, (S.summonY || P.y) - 46, FXD.boss.r, bossFxCol(), true);   // 본진은 문파색 (v2.94.6)
   shake(7);
   // 문이 어둠 속으로 스러진다 (v2.40) — 보스가 걸어 나온 뒤 페이드아웃
   S.gateT = SUMMON.fade; S.gateX = S.summonX; S.gateYb = S.summonY;
@@ -100,7 +100,9 @@ const BOSSATK = { dur:0.72, hitAt:0.62 };
 
 // 몸이 넓은 보스는 거리를 몸 가장자리에서 잰다 — 같은 높이로 대치하면서
 // 주인공이 중심까지 파고들어 스프라이트에 파묻히는 것 방지 (v2.29)
-const foeRad = f => f.boss ? (foeM(f).sw || foeM(f).w) * BOSS.edge : 0;
+const foeRad = f => (foeM(f).sw || foeM(f).w) * (f.boss ? BOSS.edge : HERO.foeEdge);   // 잡몹도 몸 반폭을 센다 (v2.94.6)
+const moveReach = k => MOVEREACH[k] || HERO.atkRange;                                 // 동작별 판정 사거리
+const heroReach = (k, f) => moveReach(k) + foeRad(f);
 
 // 이펙트 헬퍼 (v2.31 — "이펙트가 조잡하다" 피드백) ────────
 // 상한을 넘으면 가장 오래된 것부터 밀어낸다 (v2.36 — 예전엔 상한에서 그냥
@@ -130,11 +132,13 @@ function heroAttack(){
     const d = Math.hypot(f.x-P.x, (f.y-P.y)/HERO.atkFlat);
     if (d < bd){ bd=d; best=f; }
   }
-  if (!best || bd > HERO.atkRange + HERO.atkReach + foeRad(best)) return false;
-  P.dir = best.x >= P.x ? 1 : -1;
-  // 성장형 무브셋 — 지금 열린 공격 동작을 순서대로 돌려 쓴다 (v2.46)
+  // 성장형 무브셋 — 지금 열린 공격 동작을 순서대로 돌려 쓴다 (v2.46).
+  // 이번 타의 동작을 먼저 정하고 그 동작의 사거리로 잰다 (v2.94.6) — 접근·판정이 어긋나면 헛친다.
   const pool = atkPool();
-  P.atkKey = pool[(P.atkMove | 0) % pool.length].key;
+  const nk = pool[(P.atkMove | 0) % pool.length].key;
+  if (!best || bd > heroReach(nk, best) + HERO.atkReach) return false;
+  P.dir = best.x >= P.x ? 1 : -1;
+  P.atkKey = nk;
   P.atkMove = ((P.atkMove | 0) + 1) % pool.length;
   P.atkT = ANIM.atk[0] / ANIM.atk[1] / heroAtkSpd();   // 공격 속도만큼 빨리 지나간다
   P.atkCd = HERO.atkCd / heroAtkSpd();
@@ -189,10 +193,10 @@ function heroHitCheck(){
   for (const f of S.foes){
     if (f.dead) continue;
     // 세로는 눌러서 잰다 — 바닥이 기울어 보이는 시점이라 위아래가 가깝게 느껴진다
-    const dx = f.x - cx, dy = (f.y - cy) / HERO.atkFlat;   // 나누면 세로가 넓어진다
-    // 판정은 공격 시작 여유(atkReach)만큼 넉넉히 — 붙어서 친 뒤 적이 살짝
-    // 밀리거나 움직여도 놓치지 않는다 (v2.38, "손만 허우적" 잔여 제거)
-    if (Math.hypot(dx, dy) < HERO.atkRange + HERO.atkReach + foeRad(f)){
+    const dx = f.x - P.x, dy = (f.y - cy) / HERO.atkFlat;   // 나누면 세로가 넓어진다
+    // 그림이 닿는 데까지만 (v2.94.6) — 동작 사거리 + 적 몸 반폭, 뒤로는 backHit 까지.
+    // 옛 판(44+10, 앞으로 14 민 중심)은 발차기 다리보다 20px 넘게 멀리 때렸다.
+    if (Math.hypot(dx, dy) < heroReach(P.atkKey, f) + HERO.atkReach && dx * P.dir > -HERO.backHit){
       // 치명타 — 급소를 때리면 배수 피해, 노란 숫자로 알린다
       const crit = Math.random() < critCh();
       hurtFoe(f, heroDmg() * (crit ? critMul() : 1), crit);

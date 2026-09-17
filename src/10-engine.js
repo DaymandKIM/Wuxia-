@@ -82,3 +82,15 @@ function fmt(n){
     }
   }
 }
+
+// '#rrggbb' → 'r,g,b' (fxBlast 색 문자열). 본진 장로 이펙트를 문파색으로 쓸 때 (v2.94.6)
+function rgbOf(hex){
+  if (!hex || hex[0] !== '#') return hex;
+  return parseInt(hex.slice(1,3),16) + ',' + parseInt(hex.slice(3,5),16) + ',' + parseInt(hex.slice(5,7),16);
+}
+// 지금 보스 계열의 이펙트 색 — 본진이면 문파색, 아니면 옛 주황
+function bossFxCol(){
+  const k = S.hq && ZONEBOSS['hq_' + S.hq];
+  const sc = k && FOES[k] && FOES[k].school;
+  return sc ? rgbOf((SCHOOLS[sc] || SCHOOLS.none).c) : FXD.boss.c;
+}

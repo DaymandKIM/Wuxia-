@@ -121,7 +121,9 @@ function step(dt){
   // 공격 발동 거리(atkRange+atkReach)가 달라, 바짝 붙기 전에 멀리서 정권을 질러
   // 판정 거리 밖을 헛쳤다 ("멀리서 손만 허우적" — 설산 빙백령처럼 원거리 적).
   // 이제 붙은 뒤에만 친다: stopD < 판정 거리(atkRange)라 반드시 닿는다.
-  const stopD = tgt ? HERO.atkRange*closeIn + foeRad(tgt) : 0;
+  // v2.94.6: 이번에 나갈 동작의 사거리로 붙는다 (동작마다 팔·다리가 닿는 거리가 다르다)
+  const nk = (atkPool()[(P.atkMove | 0) % atkPool().length] || {}).key;
+  const stopD = tgt ? moveReach(nk)*closeIn + foeRad(tgt) : 0;
   // 제패 연출 중엔 쫓지도 치지도 않는다 — 사방으로 밀려나는 적을 번갈아
   // 조준하면 방향이 매 프레임 뒤집혀 파닥거린다 ("이쪽 저쪽 바라봄")
   // 데드존(HERO.hold) — 붙은 뒤 이 거리 안에선 걷지 않는다. 쿨다운 중 경계에서
@@ -223,7 +225,7 @@ function step(dt){
               hurtHero(bossDmg() * BOSSKILL.dmg);
             }
             // v2.31 — 옛 'shock'은 렌더러가 없어 아예 안 보였다. 파열 묶음으로 교체
-            fxBlast(f.x, f.y - FOE.h*0.3, BOSSKILL.range, FXD.boss.c, true);
+            fxBlast(f.x, f.y - FOE.h*0.3, BOSSKILL.range, bossFxCol(), true);
             shake(9); sfx('down');
           }
         }

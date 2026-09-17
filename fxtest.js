@@ -17,6 +17,7 @@ const ctxStub=new Proxy({},{get:(t,k)=>{
   if(['imageSmoothingEnabled','globalAlpha','fillStyle','strokeStyle','lineWidth',
       'globalCompositeOperation','font','textAlign','textBaseline'].includes(k)) return 0;
   if(k==='createLinearGradient') return ()=>({addColorStop(){}});
+  if(k==='getImageData') return (x,y,w,h)=>({data:new Uint8ClampedArray(Math.max(1,w*h*4)),width:w,height:h});   // 이펙트 색 물들이기(tintedFx) 경로용
   return ()=>{};
 },set:()=>true});
 const errs=[];
@@ -278,21 +279,23 @@ setTimeout(()=>{
   // ── 본진 전용 시트 (v2.94.1 개방 수습제자) — 본진에서 젠된 제자가 제 스트립(gb_disc_*)을 제 폭(82)으로 그린다
   w.eval('S.rexp=seedExp(2,5); gotoHq("gaebang"); S.intro=0; S.foes.length=0; spawnFoe(); S.foes[0].anim="idle"; S.foes[0].af=0; S.foes[0].x=P.x+60; S.foes[0].y=P.y;');
   renderNow();
-  ok(w.eval('S.foes[0].k')==='gb_disc' && drew('gb_disc_idle0', 82),'개방 본진 제자 = gb_disc, 대기 컷이 캔버스 폭 82 로 그려진다');
-  w.eval('S.foes[0].anim="atk"; S.foes[0].af=1;'); renderNow(); ok(drew('gb_disc_atk1', 82),'공격 2번째 컷(파란 원호)이 그려진다');
-  w.eval('S.foes[0].anim="death"; S.foes[0].af=2; S.foes[0].dead=true;'); renderNow(); ok(drew('gb_disc_death1', 82),'죽음 마지막 컷(늘어짐)이 그려진다');
+  ok(w.eval('S.foes[0].k')==='gb_disc' && drew('gb_disc_idle0', w.eval('FOES.gb_disc.w')),'개방 본진 제자 = gb_disc, 대기 컷이 선언 폭('+w.eval('FOES.gb_disc.w')+')으로 그려진다');
+  w.eval('S.foes[0].anim="atk"; S.foes[0].af=1;'); renderNow(); ok(drew('gb_disc_atk1', w.eval('FOES.gb_disc.w')),'공격 2번째 컷(파란 원호)이 그려진다');
+  w.eval('S.foes[0].anim="death"; S.foes[0].af=2; S.foes[0].dead=true;'); renderNow(); ok(drew('gb_disc_death1', w.eval('FOES.gb_disc.w')),'죽음 마지막 컷(늘어짐)이 그려진다');
   w.eval('S.foes.length=0; S.foes.push({k:"gb_elite",anim:"atk",af:2,x:P.x+70,y:P.y,hp:9,hpMax:9,dir:-1,af:2,atkT:0,cd:9,hitDone:false,hit:0,dead:false,dying:0});'); renderNow();
   ok(drew('gb_elite_atk2', 122),'개방 정예제자 봉 찌르기 컷이 캔버스 폭 122 로 그려진다');
   w.eval('S.foes.length=0; S.foes.push({k:"gb_elder",boss:true,anim:"atk",af:2,x:P.x+90,y:P.y,hp:9,hpMax:9,dir:-1,atkT:0,cd:9,hitDone:false,hit:0,dead:false,dying:0,rise:0,skT:0,skCd:9,kb:0,kx:0,ky:0}); S.bossAlive=true;'); renderNow();
   ok(drew('gb_elder_atk2', 148),'개방 장로 휘두르기(청록 호) 컷이 캔버스 폭 148 로 그려진다');
   w.eval('S.foes.length=0; S.bossAlive=false; gotoHq("sorim"); S.intro=0; S.foes.length=0; spawnFoe(); S.foes[0].anim="idle"; S.foes[0].af=0; S.foes[0].x=P.x+60; S.foes[0].y=P.y;'); renderNow();
-  ok(w.eval('S.foes[0].k')==='sr_disc' && drew('sr_disc_idle0', 84),'소림 본진 제자 = sr_disc, 대기 컷이 캔버스 폭 84 로 그려진다');
+  ok(w.eval('S.foes[0].k')==='sr_disc' && drew('sr_disc_idle0', w.eval('FOES.sr_disc.w')),'소림 본진 제자 = sr_disc, 대기 컷이 선언 폭('+w.eval('FOES.sr_disc.w')+')으로 그려진다');
   w.eval('S.foes.length=0; S.foes.push({k:"sr_elite",anim:"atk",af:2,x:P.x+70,y:P.y,hp:9,hpMax:9,dir:-1,atkT:0,cd:9,hitDone:false,hit:0,dead:false,dying:0});'); renderNow();
   ok(drew('sr_elite_atk2', 54),'소림 정예제자 내려치기 컷이 캔버스 폭 54 로 그려진다');
   w.eval('S.foes.length=0; S.foes.push({k:"sr_elder",boss:true,anim:"atk",af:2,x:P.x+90,y:P.y,hp:9,hpMax:9,dir:-1,atkT:0,cd:9,hitDone:false,hit:0,dead:false,dying:0,rise:0,skT:0,skCd:9,kb:0,kx:0,ky:0}); S.bossAlive=true;'); renderNow();
   ok(drew('sr_elder_atk2', 72),'소림 장로 연꽃 장풍 컷이 캔버스 폭 72 로 그려진다');
   ok(w.eval('rzone().k')===w.eval('ZONES[HQZONE.sorim.vis].k') || w.eval('rzone().k')==='hq_sorim','본진 배경: 전용 원경이 없으면 이웃 사냥터, 있으면 본진 자체 — 지금 '+w.eval('rzone().k'));
   // 본진 전용 원경·바닥 (v2.94.4 개방) — 에셋이 있으면 rzone 이 본진 자체가 되고 bg_hq_/ground_hq_ 가 그려진다
+  ok(w.eval('typeof tintedFx')==='function' && w.eval('tintedFx("fx_aura", SCHOOLS.sorim.c) !== tintedFx("fx_aura", SCHOOLS.gaebang.c)'),'장로 기운은 문파색으로 물든 캔버스를 문파마다 따로 만든다(실제 색은 크로뮴 스크린샷으로 확인)');
+  ok(w.eval('S.hq="sorim"; bossFxCol()')===w.eval('rgbOf(SCHOOLS.sorim.c)') && w.eval('S.hq=null; bossFxCol()')===w.eval('FXD.boss.c'),'보스 등장·스킬 파열 색: 본진은 문파색, 사냥터는 옛 주황');
   w.eval('S.foes.length=0; S.bossAlive=false; gotoHq("gaebang"); S.intro=0;'); renderNow();
   ok(w.eval('rzone().k')==='hq_gaebang' && w.eval('rzone().ground')===w.eval('DUEL.hqGround.gaebang'),'개방 본진: rzone = hq_gaebang · 땅색 '+w.eval('rzone().ground'));
   ok(w.eval('!!IMG[BACKDROP.keys[rzone().k]] && !!IMG[GROUNDTEX.keys[rzone().k]]'),'개방 원경(bg_hq_gaebang)·바닥(ground_hq_gaebang) 에셋이 로드 목록에 있다 (jsdom 은 이미지를 안 읽어 그리기는 캔버스 캐시로 간다)');

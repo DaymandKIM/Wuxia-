@@ -395,7 +395,7 @@ function drawFoe(f, ox, oy){
   // 상시 오라 — 발밑에서 시작해 몸을 타고 오른다
   // 상시 오라 — 점을 이어 하나의 면으로 그린다
   if (f.boss && f.rise <= 0){
-    drawAura(0, 0, dw, dh);
+    drawAura(0, 0, dw, dh, M.school ? (SCHOOLS[M.school] || SCHOOLS.none).c : null);   // 본진 장로는 문파색 기운 (v2.94.6)
   }
   blit();
   if (f.boss){                     // 보스는 몸에만 붉은 기운이 돈다
@@ -1343,9 +1343,31 @@ function curveLoop(P2){
 /* ── 보스 오라 ─────────────────────────────────────
    준 이미지를 연하게 여러 겹 겹쳐 주변을 감싼다.
 */
-function drawAura(cx, cy, dw, dh){
-  const au = IMG.fx_aura;
-  if (!au || !au.complete || !au.naturalWidth) return;
+// 이펙트 그림을 통째로 다른 색으로 (v2.94.6 본진 장로 — 문파색 기운).
+// tintedStrip 은 도복 픽셀만 고르지만 이건 밝기·알파를 두고 색만 갈아 끼운다.
+const fxTintCache = {};
+function tintedFx(key, col){
+  const ck = key + ':' + col; if (fxTintCache[ck] !== undefined) return fxTintCache[ck];
+  const im = IMG[key]; if (!im || !im.complete || !im.naturalWidth) return null;
+  let c = null;
+  try{
+    c = document.createElement('canvas'); c.width = im.naturalWidth; c.height = im.naturalHeight;
+    const g = c.getContext('2d'); if (!g || !g.getImageData) return null;
+    g.drawImage(im, 0, 0);
+    const id = g.getImageData(0, 0, c.width, c.height), p = id.data;
+    const cr = parseInt(col.slice(1, 3), 16), cg = parseInt(col.slice(3, 5), 16), cb = parseInt(col.slice(5, 7), 16);
+    for (let i = 0; i < p.length; i += 4){
+      if (!p[i + 3]) continue;
+      const k = Math.max(p[i], p[i + 1], p[i + 2]) / 255;      // 밝기만 남긴다
+      p[i] = cr * k; p[i + 1] = cg * k; p[i + 2] = cb * k;
+    }
+    g.putImageData(id, 0, 0);
+  }catch(e){ c = null; }
+  fxTintCache[ck] = c; return c;
+}
+function drawAura(cx, cy, dw, dh, col){
+  const au = col ? (tintedFx('fx_aura', col) || IMG.fx_aura) : IMG.fx_aura;
+  if (!au || (au.complete !== undefined && (!au.complete || !au.naturalWidth))) return;
   for (let i = 0; i < AURA.layers; i++){
     const ph = S.t * AURA.sway + i * 2.1;
     const grow = 0.94 + Math.sin(ph) * 0.07;
@@ -1353,7 +1375,10 @@ function drawAura(cx, cy, dw, dh){
     const ah = Math.max(2, Math.round(dh * AURA.tall * (0.82 + i*0.12) * grow));
     const sx = Math.sin(ph*0.6) * (1.5 + i);
     ctx.globalAlpha = Math.max(0, (AURA.alpha - i*0.08) + Math.sin(ph*1.4)*0.04);
-    draw(au, cx - Math.round(aw/2) + sx, cy + dh*AURA.drop - ah, aw, ah);
+    // 물들인 것은 캔버스라 draw() 헬퍼(complete 검사)를 못 쓴다 — 직접 그린다
+    const dx = cx - Math.round(aw/2) + sx, dy = cy + dh*AURA.drop - ah;
+    if (au.complete === undefined) { try{ ctx.drawImage(au, dx, dy, aw, ah); }catch(e){} }
+    else draw(au, dx, dy, aw, ah);
   }
   ctx.globalAlpha = 1;
 }

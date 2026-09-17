@@ -13,6 +13,8 @@ const HERO = {
   hp:100,
   atkRange:44,                   // 정권 사거리 (몸이 닿는 거리)
   atkReach:10,                   // 이만큼 더 가까우면 공격 시작
+  foeEdge:0.34,                  // 잡몹 몸 반경 = 몸 폭(sw)×이 값 — 판정·멈추는 거리에 더한다 (v2.94.6, 보스는 BOSS.edge)
+  backHit:14,                    // 등 뒤로 이만큼까지만 맞는다 — 앞으로 지른 동작이 뒤통수까지 때리지 않게
   atkFlat:1.55,                  // 세로 판정을 넓히는 정도 (탑다운 보정)
   atkDmg:10,
   atkCd:0.46,                    // 공격 간격
@@ -170,6 +172,13 @@ const HITFRAME = 2;              // 공격 몇 번째 프레임에서 판정하�
 // 기본공격 무브셋 — 경지 성급이 오를수록 동작이 는다 (v2.46, 사용자 설계).
 //   처음엔 양주먹만, 발차기는 need 성급부터 해금. 앞으로 성급대로 더 얹는다.
 //   기본공격은 지금 열린 동작들을 순서대로 돌려 쓴다(cycle).
+// 동작별 판정 사거리 (v2.94.6, 사용자 "발차기 쓸 때 뭔가 멀리 있는데 맞는 느낌") — 스트립 임팩트 컷의
+// 앞쪽 실루엣 끝을 몸 중앙에서 재서 정한 값(px). 옛 판은 동작과 무관하게 44+10 이라 그림이 닿지 않는
+// 자리까지 때렸다. 판정·접근 거리는 여기에 적 몸 반폭(foeRad)을 더해 잡는다. 없는 키는 HERO.atkRange.
+const MOVEREACH = {
+  punch:23, punchdbl:20, punchup:20, qipunch:30, qipunchb:30,
+  kickside:19, kickside2:18, kickround:24, kickround2:18, kickhigh:26, kickhigh2:19,
+};
 const ATKMOVES = [
   // v2.76.2 (사용자: "기존 것들도 잘 살려서 넣어") — 새 시트 6동작 + 옛 시트 5동작을 전부 돌려 쓴다. 주먹·발차기를 번갈아 배열.
   { key:'punch',     need:0 },   // 정권 — 기수식→잽→내지름→초승달 기운 (v2.76 사용자 주먹 시트 hero_punch4 1줄)
@@ -1334,9 +1343,9 @@ for (const k in DUEL.gBase){
 // 본진 전용 시트가 온 문파는 임시 주인공 tint 대신 제 그림(사용자 시트, gb_disc.py 계열 추출 — v2.94.1 개방 수습제자부터).
 // disc = 잡몹, elite = 정예(DUEL.eliteFrom 단부터 섞임, 시트 오면), elder = 보스. 항목이 있는 것만 바꾼다.
 FOES.gb_disc = {
-  // 개방 수습제자 — sheets/gb_disc.png. 대기·걷기는 봉 든 자세(시트 4~7칸)로 통일(0~3칸은 봉을 늘어뜨린 딴 자세라 섞으면 봉이 튄다).
-  // 캔버스 82×53 은 공격 원호(파란·금) 폭 — 몸은 32×48 (sw/bh). 죽음 = 피격 → 웅크려 누움 → 늘어짐.
-  n:'개방 수습제자', w:82, h:53, sw:32, bh:48, school:'gaebang',
+  // 개방 수습제자 — sheets/gb_disc.png(v2.94.6 6.5등신 재작업판). 대기·걷기는 1·2줄 0~3칸 한 자세, 공격은 2줄 4~7칸(파란 호 → 금 호).
+  // 캔버스 52×58 은 봉을 머리 위로 든 컷 높이 — 몸은 23×48 (sw/bh). 죽음 = 피격 → 넘어짐 → 누움.
+  n:'개방 수습제자', w:52, h:58, sw:23, bh:48, school:'gaebang',
   anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'],
          atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
   fps:{ idle:4, walk:7, atk:7.3, hit:6, death:4 },
@@ -1361,8 +1370,8 @@ FOES.gb_elder = {
   hp:1.0, dmg:1.0, spd:0.9, range:70,
 };
 FOES.sr_disc = {
-  // 소림 수습제자 — sheets/sr_disc.png(sr_sheet.py). 대기 8칸은 한 자세 숨쉬기(0~3), 걷기 다리 IoU 로 0,3,6,7. 캔버스 84×52 는 주먹 금색 타격 폭 — 몸 23×48.
-  n:'소림 수습제자', w:84, h:52, sw:23, bh:48, school:'sorim',
+  // 소림 수습제자 — sheets/sr_disc.png(v2.94.6 6.5등신 재작업판). 대기 0~3 · 걷기 IoU 로 4~7 · 주먹 당김→뻗기→타격(임팩트)→회수. 캔버스 72×50 — 몸 20×48.
+  n:'소림 수습제자', w:72, h:50, sw:20, bh:48, school:'sorim',
   anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'],
          atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
   fps:{ idle:4, walk:7, atk:7.3, hit:6, death:4 },

@@ -14,6 +14,15 @@ gb_disc.py 와 다른 점:
   - 배율의 기준 높이는 '몸'(가로 12px 이상 차는 줄)만 — 정예는 봉이 머리 위로 솟아 전체 높이가 몸보다 크다.
   - 검은 조각 눈검사판을 review/blackcheck_<접두어>.png 로 따로 만든다(blackcheck.py 는 review/blackcheck.png 하나라 다른 에이전트와 경쟁).
   - death 컷은 전부 solo(부유 반짝이 제거), --solo=키,... 로 더 지정. --decyan=키,... 는 옅은 청록 호를 지운다(정예 atk0 — 축소하면 점만 남는다).
+  - v2.95.2 (6.5등신 재작업 시트 — 개방 gb_disc 3줄·소림 sr_disc 4줄):
+      --walk=auto:r1c0,r1c1,r1c2,r1c3   걷기 후보를 제한(개방 2줄은 걷기 4칸+공격 4칸)
+      --inset=위,아래,왼,오른            칸 안쪽 여백(기본 3) — 맨 아래 줄 테두리가 한 줄이면 아래 1 로(발끝이 3px 안에 있다)
+      --rowref=r1:r1c0                  줄마다 배율 기준 컷(개방 2줄 인물이 1줄보다 9% 크게 그려짐 — 키로 통일)
+      --mend=r2c0,r2c1                  위 테두리 띠에 덮인 머리끝 복원(mend_top)
+      격자: 넓은 칸 안의 옅은 줄(lum<110 75% 이상)을 균등 분할보다 먼저 쓴다 — 다시 저장된 시트는 줄이 lum 73 으로 dark(<70) 판정을 살짝 넘긴다.
+    예: python sr_sheet.py gb_disc.png gb_disc --body=48 --idle=r0c0,r0c1,r0c2,r0c3 --walk=auto:r1c0,r1c1,r1c2,r1c3 --atk=r1c4,r1c5,r1c6,r1c7 \
+          --hit=r2c0 --death=r2c2,r2c3 --mend=r2c0,r2c1 --inset=3,1,3,3 --rowref=r1:r1c0
+        python sr_sheet.py sr_disc.png sr_disc --body=48 --idle=r0c0,r0c1,r0c2,r0c3 --walk=auto --atk=r2c1,r2c3,r2c4,r2c6 --hit=r3c0 --death=r3c2,r3c3 --inset=3,1,3,3
 """
 import sys, os, glob, json
 import numpy as np
@@ -46,24 +55,43 @@ def grid_rows(sh):
         if cl[-1][1] < W - 5: cl = cl + [(W, W)]
         gaps = [cl[j + 1][0] - cl[j][1] for j in range(len(cl) - 1)]
         med = float(np.median(gaps))
+        faintd = (lum[y0:y1] < 110).mean(0)          # 옅은 줄용 — 다시 저장된 시트는 줄 밝기가 70을 살짝 넘는다(소림 수습 x=512 lum 73, v2.95.2)
+        def split(a, b):
+            """a(왼 줄 오른끝)~b(오른 줄 왼끝) 사이가 칸 중앙값 1.6배보다 넓으면 안의 줄을 찾는다.
+            먼저 옅은 줄(lum<110 이 75% 이상인 열)을 찾고 — 그것이 진짜 경계 — 남은 틈이 여전히 넓으면 재귀.
+            옅은 줄도 없으면 균등 분할 자리 ±6 에서 가장 어두운 열(장로 2줄: 도포가 줄을 덮음)."""
+            g = b - a
+            if g <= med * 1.6: return []
+            n = int(round(g / med)); lo, hi = a + int(med * 0.5), b - int(med * 0.5)
+            faint = _groups(np.where(faintd[lo:hi] > 0.75)[0] + lo)   # 0.4 는 인물 윤곽 열까지 잡았다
+            if faint:
+                pts = [(a, a)] + faint + [(b, b)]; out = []
+                for q in range(len(pts) - 1):
+                    out += split(pts[q][1], pts[q + 1][0])
+                    if q + 1 < len(pts) - 1: out.append(pts[q + 1])
+                return out
+            out = []
+            for k in range(1, n):
+                xe = int(round(a + g * k / n)); l2, h2 = xe - 6, xe + 6
+                prof = lum[y0:y1, l2:h2].mean(0); xs = l2 + int(np.argmin(prof))
+                out.append((xs, xs))
+            return out
         fixed = [cl[0]]
         for j in range(len(cl) - 1):
-            g = cl[j + 1][0] - cl[j][1]
-            if g > med * 1.6:
-                n = int(round(g / med)); x0 = cl[j][1]
-                for k in range(1, n):
-                    xe = int(round(x0 + g * k / n)); lo, hi = xe - 6, xe + 6
-                    prof = dark[y0:y1, lo:hi].mean(0); xs = lo + int(np.argmax(prof))
-                    fixed.append((xs, xs))
-            fixed.append(cl[j + 1])
+            fixed += split(cl[j][1], cl[j + 1][0]); fixed.append(cl[j + 1])
         cols.append(fixed)
     return rl, cols
 
 def cut(sh, bg, y0, y1, x0, x1, inset=3):
-    """foesheet._cell 의 칸 안 처리 그대로(테두리 고리 버림·5% 미만 조각 버림·물든 가장자리 색만 고침), 영역만 직접 받는다."""
-    y0 += inset; y1 -= inset; x0 += inset; x1 -= inset
+    """foesheet._cell 의 칸 안 처리 그대로(테두리 고리 버림·5% 미만 조각 버림·물든 가장자리 색만 고침), 영역만 직접 받는다.
+    inset 은 한 값(네 변 같음) 또는 (위, 아래, 왼, 오른) — 개방 시트 3줄은 아래 테두리가 한 줄이라 발끝이 3px 안에 있다(v2.95.2)."""
+    t, b_, l, r_ = (inset,) * 4 if isinstance(inset, int) else inset
+    y0 += t; y1 -= b_; x0 += l; x1 -= r_
     sub = sh[y0:y1, x0:x1].copy()
     m = ~bg[y0:y1, x0:x1]
+    return finish(sub, m)
+
+def finish(sub, m):
     lab, n = ndimage.label(m); keep = np.zeros_like(m)
     for i in range(1, n + 1):
         ys, xs = np.where(lab == i)
@@ -82,6 +110,30 @@ def cut(sh, bg, y0, y1, x0, x1, inset=3):
     sub[..., 0][tint] = np.minimum(sub[..., 0][tint], sub[..., 1][tint] + 18)
     sub[..., 2][tint] = np.minimum(sub[..., 2][tint], sub[..., 1][tint] + 18)
     return np.dstack([sub, np.where(keep, 255, 0)]).astype(np.uint8)
+
+def mend_top(sh, bg, rl, cl, cy, cx, inset=3, ext=14):
+    """위 테두리 띠에 덮인 머리끝 복원(v2.95.2, 개방 수습제자 3줄 피격·비틀 — 머리카락이 띠를 지나 윗줄 칸 바닥에 조각으로 남는다).
+    CLAUDE.md "가로 줄 띠에 걸친 머리·발은 되살린다": 칸 위로 ext px 를 더 잘라 붙이고, 띠 줄은 위·아래 3줄이 다 그림인 열만 다리로 남겨
+    위·아래 색을 선형으로 섞어 채운다(나머지 띠 픽셀은 배경으로). 다리로 이어진 조각만 살아남고, 띠 위에만 있는 조각(윗줄 인물의 발)은 버린다."""
+    t, b_, l, r_ = (inset,) * 4 if isinstance(inset, int) else inset
+    yb0, yb1 = rl[cy]                                  # 띠 줄(포함)
+    y0 = max(0, yb0 - ext); y1 = rl[cy + 1][0] - b_; x0 = cl[cx][1] + 1 + l; x1 = cl[cx + 1][0] - r_
+    sub = sh[y0:y1, x0:x1].copy(); m = ~bg[y0:y1, x0:x1]
+    b0, b1 = yb0 - y0, yb1 - y0
+    above = m[max(0, b0 - 3):b0].any(0); below = m[b1 + 1:b1 + 4].any(0)
+    bridge = above & below
+    m[b0:b1 + 1] = bridge[None, :]
+    ca, cb = sub[b0 - 1].astype(float), sub[b1 + 1].astype(float)
+    for i, yy in enumerate(range(b0, b1 + 1)):
+        w = (i + 1) / (b1 - b0 + 2)
+        sub[yy] = np.where(bridge[:, None], (ca * (1 - w) + cb * w).round(), np.array([255, 0, 255]))
+    out = finish(sub, m)
+    al = out[..., 3] > 0; lab, n = ndimage.label(al)
+    for i in range(1, n + 1):
+        ys = np.where(lab == i)[0]
+        if ys.max() <= b1: out[lab == i] = 0                 # 띠 위에만 있는 조각
+    print(' %s 띠 위 머리 복원: 다리 %d열, 위 조각 %d px' % ('r%dc%d' % (cy, cx), int(bridge.sum()), int((out[:b0, :, 3] > 0).sum())))
+    return out
 
 def blobs(sh, bg, merge=10, minpx=400):
     """마젠타가 아닌 픽셀을 merge px 팽창해 라벨링 → 원본 픽셀의 bbox 목록(위→아래 띠, 왼→오른 순)."""
@@ -218,9 +270,12 @@ def main():
     else:
         rl, cols = grid_rows(sh)
         print('행 경계', rl); [print(' %d줄 열 %d칸' % (i + 1, len(cl) - 1), cl) for i, cl in enumerate(cols)]
+        inset = tuple(int(v) for v in opts['inset'].split(',')) if 'inset' in opts else 3      # --inset=위,아래,왼,오른
+        mend = set(opts['mend'].split(',')) if opts.get('mend') else set()                       # --mend=r2c0,... 띠 위 머리 복원
         for cy, cl in enumerate(cols):
             for cx in range(len(cl) - 1):
-                a = cut(sh, bg, rl[cy][1] + 1, rl[cy + 1][0], cl[cx][1] + 1, cl[cx + 1][0])
+                k = 'r%dc%d' % (cy, cx)
+                a = mend_top(sh, bg, rl, cols[cy], cy, cx, inset) if k in mend else cut(sh, bg, rl[cy][1] + 1, rl[cy + 1][0], cl[cx][1] + 1, cl[cx + 1][0], inset)
                 if (a[..., 3] > 0).sum() < 40: print(' %d줄 %d칸 빈 칸' % (cy + 1, cx)); continue
                 raw['r%dc%d' % (cy, cx)] = a
         if 'map' in opts:
@@ -241,7 +296,13 @@ def main():
     bh0 = body_height(raw[ref], int(opts.get('bodymin', 12)))
     scale = body_h / bh0
     print('%s %s 몸높이 %d → 배율 %.3f' % (sheet, ref, bh0, scale))
-    small = {k: shrink(v, scale) for k, v in raw.items()}
+    # --rowref=r1:r1c0,... 줄마다 배율 기준 컷(v2.95.2 — 개방 시트는 2줄 인물이 1줄보다 9% 크게 그려져 대기↔걷기에서 키가 튄다.
+    # CLAUDE.md "크기는 키로 통일한다 — 머리 비율보다 먼저"). 안 적은 줄은 전체 배율.
+    rowscale = {}
+    for it in (opts['rowref'].split(',') if opts.get('rowref') else []):
+        rk, rr = it.split(':'); bhr = body_height(raw[rr], int(opts.get('bodymin', 12))); rowscale[rk] = body_h / bhr
+        print('  %s줄 기준 %s 몸높이 %d → 배율 %.3f' % (rk, rr, bhr, rowscale[rk]))
+    small = {k: shrink(v, rowscale.get(k.split('c')[0], scale)) for k, v in raw.items()}
 
     out = {}
     for i, k in enumerate(sel['idle']): out['idle%d' % i] = small[k]
