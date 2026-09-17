@@ -476,8 +476,14 @@ const BOSSKILL = {
 };
 
 // 실제 수치 — 전부 전역 단계 g에서 나온다
-// 문파 성격 곱 — 본진 몹(school 이 있는 것)만. 사냥터 몹은 school 이 없어 1 이다 (v2.95.2)
-const sectMul = (M, k)=> (M && M.school && DUEL.sectMul && DUEL.sectMul[M.school]) ? (DUEL.sectMul[M.school][k] || 1) : 1;
+// 결 곱 (v2.95.2~3) — 본진 몹은 **문파 성격**(DUEL.sectMul), 사냥터 몹은 **구역 성격**(ZONEMUL).
+// 난이도 사다리는 여전히 DIFF(전역 단계 g)가 만든다 — 이건 같은 단계 안에서 "어디가 어떻게 힘든가"를 가르는 곱이다.
+// 구역 곱은 평균 1.0 근처라 v2.0 에 폐지한 ZONES.mul(구역마다 배율을 더 얹어 난이도를 밀던 것)과 다르다.
+const sectMul = (M, k)=> {
+  if (M && M.school) return (DUEL.sectMul && DUEL.sectMul[M.school] && DUEL.sectMul[M.school][k]) || 1;
+  const z = (typeof zone === 'function' && zone()) || null;
+  return (z && ZONEMUL[z.k] && ZONEMUL[z.k][k]) || 1;
+};
 const foeHp  = ()=> Math.round(DIFF.hpBase * Math.pow(DIFF.hpGrow, gstage()-1));
 const foeDmg = ()=> DIFF.dmgBase * Math.pow(DIFF.dmgGrow, gstage()-1);
 const bossHp = ()=> Math.round(DIFF.hpBase * Math.pow(DIFF.hpGrow, S.hq ? gstage()-1 : S.zi*10+9) * BOSS.hp * (S.hq ? DUEL.elderHp : 1));   // 본진 장로는 그 단의 힘 (v2.94)
@@ -848,6 +854,16 @@ const FOEFXC = {
   'md_elder.atk2':'240,248,255', 'mg_elder.atk2':'255,240,244', 'mg_elder.atk3':'255,226,150',
   'sr_elder.atk':'255,226,150',  'am_elder.atk3':'200,255,206', 'dm_elder.atk':'201,239,162',
   'dm_elder.atk3':'201,239,162', 'dm_elite.atk':'180,236,255',
+};
+// 구역 성격 (v2.95.3, 사용자 "사냥터도 순서대로 난이도를 줘야지") — 개체별 결(FOES.hp/dmg/spd)은 이미 있는데
+// **구역 전체의 결**이 없었다. 단계 숫자만 오르고 어디를 가나 체감이 같았다.
+// 평균 1.0 근처로 잡아 DIFF 사다리는 건드리지 않고 "어디가 어떻게 힘든가"만 가른다.
+const ZONEMUL = {
+  bamboo:  { hp:1.00, dmg:1.00, spd:1.00 },   // 죽림 — 기준
+  village: { hp:1.10, dmg:0.95, spd:0.92 },   // 폐촌 — 낭인·들개. 질기고 느리다. 때리는 시간이 길다
+  cave:    { hp:0.85, dmg:1.10, spd:1.15 },   // 동굴 — 독충·박쥐. 얇고 빠르고 아프다. 어둠 속에서 몰아친다
+  snow:    { hp:1.18, dmg:1.00, spd:0.88 },   // 설산 — 눈을 헤치는 설랑·빙백령. 가장 질기고 가장 느리다
+  heaven:  { hp:0.95, dmg:1.18, spd:1.12 },   // 천산 — 수리·수호무사. 빠르고 아프다. 한 대가 무섭다
 };
 const ZONEFOE = {
   bamboo:  ['bandit','thug','wisp','wasp','panther','panther','shaman','frog','frog',
