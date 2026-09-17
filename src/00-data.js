@@ -436,7 +436,8 @@ const BOSSKILL = {
 const foeHp  = ()=> Math.round(DIFF.hpBase * Math.pow(DIFF.hpGrow, gstage()-1));
 const foeDmg = ()=> DIFF.dmgBase * Math.pow(DIFF.dmgGrow, gstage()-1);
 const bossHp = ()=> Math.round(DIFF.hpBase * Math.pow(DIFF.hpGrow, S.hq ? gstage()-1 : S.zi*10+9) * BOSS.hp * (S.hq ? DUEL.elderHp : 1));   // 본진 장로는 그 단의 힘 (v2.94)
-const bossDmg= ()=> DIFF.dmgBase * Math.pow(DIFF.dmgGrow, S.hq ? gstage()-1 : S.zi*10+9) * BOSS.dmg;
+// 본진 장로는 **반복해서** 잡는 상대다 (v2.94.19) — 구역 보스와 같은 피해면 쓰러짐이 눈덩이처럼 분다(sim 4h 17→107).
+const bossDmg= ()=> DIFF.dmgBase * Math.pow(DIFF.dmgGrow, S.hq ? gstage()-1 : S.zi*10+9) * BOSS.dmg * (S.hq ? DUEL.elderDmg : 1);
 
 // 단계 진입 연출 — 배경 3장이 차례로 흐른다
 // 단계 진입 연출 — 3장이 위에서 아래로 차례로 슬라이드해 들어온다
@@ -1324,10 +1325,11 @@ const DUEL = {
   lag: 4,                      // 장로 전역 단계의 하한 = 가 본 최고 단계(S.best) − lag — 사냥터가 앞서도 장로가 순삭되지 않게
   masterEvery: 10,             // 이 배수 단은 장로 대신 장문인
   elderHp: 1.0,                // 장로 체력 = BOSS.hp × 이 값
+  elderDmg: 0.6,               // 장로 피해 = 보스 피해 × 이 값 — 반복해서 잡는 상대라 구역 보스보다 약하게 (v2.94.19)
   silverMob: 0.7,              // 제자 처치 은자 = 사냥터의 70% (본진이 사냥보다 못 벌게)
   // 비급 조각 (v2.94.19 사용자 "무조건 떨구는 게 아니라 확률이지") — 제자는 1%, 장로는 elderCh 확률로 1개(elderHiFrom 단부터 2개),
   // 장문인(10단마다)만 확정 3개. 기대값은 장로 한 판에 0.55~1.1 이라 다섯 판 남짓이면 하나를 배운다.
-  frag: { mob:0.01, elderCh:0.55, elder:1, elderHi:2, elderHiFrom:7, master:3 },
+  frag: { mob:0.01, elderCh:0.65, elder:1, elderHi:2, elderHiFrom:7, master:3 },
   // 돌파 재료 (v2.94.19) — 상승 무공(frag 가 있는 것)은 성 돌파에 조각도 든다. 성 1→2에 2개, 2→3에 3개, 3→4에 4개.
   // 여덟을 다 배운 뒤에도 본진에 갈 이유가 된다(옛 판은 배우고 나면 조각이 쌓이기만 했다).
   breakFrag: [2, 3, 4],
