@@ -1527,12 +1527,19 @@ FOES.hs_elder = { n:'화산 장로',     w:72, h:71, sw:38, bh:59, school:'hwasa
          hit:['hit'], death:['hit','death0','death1','death2','death3','death4','death5'] },
   fps:{ idle:3.5, walk:7, atk:7.3, hit:6, death:7 }, hp:1.0, dmg:1.0, spd:0.9, range:64 };
 // 당문·마교 3등급 (v2.94.16, 사용자 시트). 캔버스가 넓은 것은 이펙트 폭 — dm_elder 독무 구름 108px 이 가장 크다.
-FOES.dm_disc = { n:'당문 수습제자', w:56, h:51, sw:22, bh:48, school:'dangmun',
-  anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'], atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
-  fps:{ idle:4, walk:7, atk:7.3, hit:6, death:4 }, hp:1.1, dmg:1.0, spd:1.0, range:50 };
-FOES.dm_elite = { n:'당문 정예제자', w:66, h:53, sw:27, bh:50, school:'dangmun', elite:true,
-  anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2'], atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
-  fps:{ idle:4, walk:7, atk:7.3, hit:6, death:4 }, hp:1.7, dmg:1.3, spd:1.0, range:60 };
+// 당문 수습제자 — sheets/dm_disc2.png(v2.94.28 3.5등신 재작업판). 대기 10 · 걷기 9 · 침 던지기 8컷 · 쓰러짐 7. 캔버스 64×50 — 몸 24×48.
+FOES.dm_disc = { n:'당문 수습제자', w:64, h:50, sw:24, bh:48, school:'dangmun',
+  anim:{ idle:['idle0','idle1','idle2','idle3','idle4','idle5','idle6','idle7','idle8','idle9'], walk:['walk0','walk1','walk2','walk3','walk4','walk5','walk6','walk7','walk8'], atk:['atk0','atk1','atk2','atk3','atk4','atk5','atk6','atk7'],
+         hit:['hit'], death:['hit','death0','death1','death2','death3','death4','death5','death6'] },
+  fps:{ idle:4, walk:8, atk:7.3, hit:6, death:8 }, hp:1.1, dmg:1.0, spd:1.0, range:50 };
+// 당문 정예제자 — sheets/dm_elite2.png(v2.94.28 3.5등신 재작업판). **공격 두 벌**: atk 부채 펴고 표창 뿌리기(하늘색 표창) ·
+// atk2 부채 후리기(흰 호). 대기 10 · 걷기 5 · 공격 10씩 · 쓰러짐 9. 캔버스 64×54 — 몸 29×50.
+FOES.dm_elite = { n:'당문 정예제자', w:64, h:54, sw:29, bh:50, school:'dangmun', elite:true,
+  anim:{ idle:['idle0','idle1','idle2','idle3','idle4','idle5','idle6','idle7','idle8','idle9'], walk:['walk0','walk1','walk2','walk3','walk4'],
+         atk:['atk0','atk1','atk2','atk3','atk4','atk5','atk6','atk7','atk8','atk9'],
+         atk2:['atk2_0','atk2_1','atk2_2','atk2_3','atk2_4','atk2_5','atk2_6','atk2_7','atk2_8','atk2_9'],
+         hit:['hit'], death:['hit','death0','death1','death2','death3','death4','death5','death6','death7','death8'] },
+  fps:{ idle:4, walk:6, atk:7.3, hit:6, death:9 }, hp:1.7, dmg:1.3, spd:1.0, range:60 };
 FOES.dm_elder = { n:'당문 장로', w:186, h:62, sw:28, bh:58, school:'dangmun',
   anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'], atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
   fps:{ idle:3.5, walk:6, atk:7.3, hit:6, death:4 }, hp:1.0, dmg:1.0, spd:0.9, range:66 };
@@ -1556,7 +1563,7 @@ FOES.am_disc = { n:'아미 수습제자', w:54, h:53, sw:26, bh:50, school:'ami'
   fps:{ idle:4, walk:8, atk:7.3, hit:6, death:6 }, hp:1.1, dmg:1.0, spd:1.0, range:50 };
 // 아미 정예제자 — sheets/am_elite2.png(v2.94.28 3.5등신 재작업판). **공격 두 벌**: atk 찌르기(흰 화살 기운) ·
 // atk2 원 그리며 내려베기(연녹 고리 → 초승달). 대기 10 · 걷기 10 · 공격 10씩 · 쓰러짐 7. 캔버스 74×57 — 몸 24×50.
-FOES.am_elite = { n:'아미 정예제자', w:74, h:57, sw:24, bh:50, school:'ami', elite:true,
+FOES.am_elite = { n:'아미 정예제자', w:68, h:58, sw:24, bh:50, school:'ami', elite:true,
   anim:{ idle:['idle0','idle1','idle2','idle3','idle4','idle5','idle6','idle7','idle8','idle9'],
          walk:['walk0','walk1','walk2','walk3','walk4','walk5','walk6','walk7','walk8','walk9'],
          atk:['atk0','atk1','atk2','atk3','atk4','atk5','atk6','atk7','atk8','atk9'],
