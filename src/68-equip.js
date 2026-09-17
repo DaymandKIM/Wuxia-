@@ -205,14 +205,16 @@ function refreshEquip(){
       // 보유 효과는 한 줄로 (v2.93.5 사용자 "설명이 기니까 힘들어") — 종류별 수치 나열 대신 규칙 + 이 자리 합. 미보유면 그 줄에 얻는 법
       '<div class="zd eqhl">' + (seen
         ? '<span class="eqlab">보유</span><span class="eqhold">' + EQUIP.statName[hold[0].stat] + ' +' + hold[0].pct.toFixed(2) + '%' + (grow ? ' <i>→ +' + holdN[0].pct.toFixed(2) + '%</i>' : '') + '</span> <small>· 합 ' + codexPct(sl).toFixed(1) + '%</small>'
-        : '<span class="eqlab">보유</span><small>미보유 — 사냥 드랍이나 합성 ' + EQUIP.mergeN + '→1</small>') + '</div>' +
+        : '<span class="eqlab">보유</span><small>미보유 — 사냥 드랍이나 합성으로</small>') + '</div>' +
       '</div></div>' +
       '<div class="zst">' +
+      // 버튼은 '무엇을 할 수 있나'가 글자로 읽혀야 한다 (v2.94.18 사용자) — 장착은 '이미 장착', 강화는 살 수 있으면 색이 켜지고,
+      // 합성은 '3→1' 같은 셈을 지우고 그냥 '합성'
       (worn
-        ? (sl.k === 'weapon' ? '<button class="sb" id="eqdwear">벗기 · 맨손</button>' : '<button class="sb" disabled>착용 중</button>')
-        : '<button class="sb" id="eqdwear"' + (seen ? '' : ' disabled') + '>장착</button>') +
-      '<button class="trbuy" id="eqdlv"' + (canLevelItem(k, g) ? '' : ' disabled') + '><span>' + (lv >= cap ? '상한' : '강화 ' + fmt(lvCost(k, g))) + '</span><i>' + coin() + '</i></button>' +
-      '<button class="sb" id="eqdmerge"' + (canMerge(k, g) ? '' : ' disabled') + '>' + (g < EQUIP.grades.length - 1 ? '합성 ' + EQUIP.mergeN + '→1' : '최고 등급') + '</button>' +
+        ? (sl.k === 'weapon' ? '<button class="sb on" id="eqdwear">벗기 · 맨손</button>' : '<button class="sb" disabled>이미 장착</button>')
+        : '<button class="sb' + (seen ? ' on' : '') + '" id="eqdwear"' + (seen ? '' : ' disabled') + '>' + (seen ? '장착' : '미보유') + '</button>') +
+      '<button class="trbuy' + (canLevelItem(k, g) ? ' on' : '') + '" id="eqdlv"' + (canLevelItem(k, g) ? '' : ' disabled') + '><span>' + (lv >= cap ? '상한' : '강화 ' + fmt(lvCost(k, g))) + '</span><i>' + coin() + '</i></button>' +
+      '<button class="sb' + (canMerge(k, g) ? ' on' : '') + '" id="eqdmerge"' + (canMerge(k, g) ? '' : ' disabled') + '>' + (g < EQUIP.grades.length - 1 ? '합성' : '최고 등급') + '</button>' +
       '</div>';
     const wb = $('eqdwear'); if (wb) wb.onclick = () => {
       if (worn){ if (eqUnwear(eqWearKeyOf(k))){ toast('무기를 벗었다\n맨손 주먹·발차기'); buildEquipPanel(); } }

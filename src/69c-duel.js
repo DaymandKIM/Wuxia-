@@ -32,8 +32,8 @@ function showHqLoad(k){
   const ik = $('hqink'); if (ik){ if (ink){ ik.src = ink; ik.hidden = false; } else ik.hidden = true; }
   const nm = $('hqname'); if (nm) nm.textContent = sc.n + ' 본진';
   const hz = $('hqhan'); if (hz) hz.textContent = (ARTS.list.find(a => a.school === k && a.frag) || {}).h || '';
-  const tp = $('hqtip'); if (tp) tp.textContent = hqRank(k) + '단 · ' + (hqIsMaster(k) ? '장문인이 기다린다' : '장로가 기다린다');
-  el.style.setProperty('--hqc', sc.c);
+  const tp = $('hqtip'); if (tp) tp.textContent = (DUEL.hqDesc && DUEL.hqDesc[k]) || (hqRank(k) + '단');   // 문파 한 줄 소개 (v2.94.18)
+  if (el.style && el.style.setProperty) el.style.setProperty('--hqc', sc.c);   // sim 의 DOM 스텁엔 setProperty 가 없다
   el.hidden = false; el.classList.remove('gone');
   hqLoadT = DUEL.load.dur;
 }
