@@ -1539,9 +1539,14 @@ FOES.mg_elder = { n:'마교 장로', w:128, h:61, sw:29, bh:58, school:'magyo',
   anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'], atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
   fps:{ idle:3.5, walk:6, atk:7.3, hit:6, death:4 }, hp:1.0, dmg:1.0, spd:0.9, range:66 };
 // 아미·청죽문 3등급 (v2.94.17). bb_elite 는 시트 한 줄 안에서 대기와 걷기가 10% 다르게 그려져 칸 단위 배율(--rowref)로 맞췄다.
-FOES.am_disc = { n:'아미 수습제자', w:74, h:54, sw:20, bh:48, school:'ami',
-  anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'], atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
-  fps:{ idle:4, walk:7, atk:7.3, hit:6, death:4 }, hp:1.1, dmg:1.0, spd:1.0, range:50 };
+// 아미 수습제자 — sheets/am_disc2.png(v2.94.28 3.5등신 재작업판). 대기 10 · 걷기 10 · 장 치기 10컷 · 쓰러짐 5 — 컷을 아끼지 않는다.
+// 캔버스 54×53 — 몸 26×50.
+FOES.am_disc = { n:'아미 수습제자', w:54, h:53, sw:26, bh:50, school:'ami',
+  anim:{ idle:['idle0','idle1','idle2','idle3','idle4','idle5','idle6','idle7','idle8','idle9'],
+         walk:['walk0','walk1','walk2','walk3','walk4','walk5','walk6','walk7','walk8','walk9'],
+         atk:['atk0','atk1','atk2','atk3','atk4','atk5','atk6','atk7','atk8','atk9'],
+         hit:['hit'], death:['hit','death0','death1','death2','death3','death4'] },
+  fps:{ idle:4, walk:8, atk:7.3, hit:6, death:6 }, hp:1.1, dmg:1.0, spd:1.0, range:50 };
 FOES.am_elite = { n:'아미 정예제자', w:124, h:58, sw:25, bh:50, school:'ami', elite:true,
   anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'], atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
   fps:{ idle:4, walk:7, atk:7.3, hit:6, death:4 }, hp:1.7, dmg:1.3, spd:1.0, range:60 };
