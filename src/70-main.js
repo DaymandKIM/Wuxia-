@@ -35,7 +35,8 @@ loadImg('hero_burstkick', ASSET.burstkick);  // 도약 옆차기 (v2.47.1, 성�
 loadImg('hero_hit',   ASSET.hit);
 loadImg('hero_medit', ASSET.medit);
 for (const h of SECT.halls) for (let st = 0; st < SECT.scene.stageLv.length; st++) if (ASSET['hall_' + h.k + '_' + st]) loadImg('hall_' + h.k + '_' + st, ASSET['hall_' + h.k + '_' + st]);   // 문파 전각 단계별 그림 (v2.92.2 시트 → v2.92.7 차분, v2.92.8 5단계)
-if (ASSET[SECT.scene.bg]) loadImg(SECT.scene.bg, ASSET[SECT.scene.bg]);   // 문파 터 배경 한 장 (v2.92.6, 사용자 3/4 시점 마당 — sectbg.py)
+if (ASSET[SECT.scene.bg]) loadImg(SECT.scene.bg, ASSET[SECT.scene.bg]);
+if (SECT.discSheet) for (const b of [SECT.discSheet.walk, SECT.discSheet.train]) for (let i = 0; i < SECT.discSheet.n; i++) if (ASSET[b + i]) loadImg(b + i, ASSET[b + i]);   // 마당 제자 전용 시트 (v2.94.17)   // 문파 터 배경 한 장 (v2.92.6, 사용자 3/4 시점 마당 — sectbg.py)
 for (const k in FOES){
   if (FOES[k].heroStrip) continue;   // 주인공 스트립을 빌리는 몹(본진 제자·장로) — 파일 없음 (v2.94)
   const seen = {};

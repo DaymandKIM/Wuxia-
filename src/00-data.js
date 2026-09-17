@@ -1203,6 +1203,7 @@ const SECT = {
   // 문파 터 화면 (v2.92) — 문파 탭을 열면 전투 대신 그린다.
   // v2.92.6: 배경은 사용자 3/4 시점 마당 한 장(assets/sect_bg, sectbg.py) — 화면에 cover 로 깔고(가로 중앙·세로 중앙), 아래 자리들은
   // 전부 **그림 비율**(sectBgRect 로 화면 좌표). 그림이 없으면 화면 비율로 떨어진다(죽림 바닥+원경).
+  discSheet: { walk:'disciple_walk', train:'disciple_train', n:6, w:30, h:49, fps:{ walk:7, train:5 } },   // 마당 제자 전용 시트 (v2.94.17) — 없으면 주인공 스트립 tint
   scene: {
     bg: 'sect_bg', bgW: 572, bgH: 1024,          // 배경 키·원본 크기(비율 계산용 — 이미지가 못 뜨면 이 값으로)
     // 전각 자리 = 그림의 빈 터(맨땅) [가운데 x, 아랫변 y, 터 폭] — sectbg.py 가 잰 값. 뒷줄 장경각·객당(가운데, 돌담 계단 위)·약방 / 앞줄 연무장·산문
@@ -1434,9 +1435,30 @@ FOES.mg_elite = { n:'마교 정예제자', w:86, h:56, sw:31, bh:50, school:'mag
 FOES.mg_elder = { n:'마교 장로', w:128, h:61, sw:29, bh:58, school:'magyo',
   anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'], atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
   fps:{ idle:3.5, walk:6, atk:7.3, hit:6, death:4 }, hp:1.0, dmg:1.0, spd:0.9, range:66 };
+// 아미·청죽문 3등급 (v2.94.17). bb_elite 는 시트 한 줄 안에서 대기와 걷기가 10% 다르게 그려져 칸 단위 배율(--rowref)로 맞췄다.
+FOES.am_disc = { n:'아미 수습제자', w:74, h:54, sw:20, bh:48, school:'ami',
+  anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'], atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
+  fps:{ idle:4, walk:7, atk:7.3, hit:6, death:4 }, hp:1.1, dmg:1.0, spd:1.0, range:50 };
+FOES.am_elite = { n:'아미 정예제자', w:124, h:58, sw:25, bh:50, school:'ami', elite:true,
+  anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'], atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
+  fps:{ idle:4, walk:7, atk:7.3, hit:6, death:4 }, hp:1.7, dmg:1.3, spd:1.0, range:60 };
+FOES.am_elder = { n:'아미 장로', w:138, h:66, sw:30, bh:58, school:'ami',
+  anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'], atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
+  fps:{ idle:3.5, walk:6, atk:7.3, hit:6, death:4 }, hp:1.0, dmg:1.0, spd:0.9, range:66 };
+FOES.bb_disc = { n:'청죽문 수습제자', w:104, h:53, sw:26, bh:48, school:'bamboo',
+  anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'], atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
+  fps:{ idle:4, walk:7, atk:7.3, hit:6, death:4 }, hp:1.1, dmg:1.0, spd:1.0, range:50 };
+FOES.bb_elite = { n:'청죽문 정예제자', w:100, h:77, sw:25, bh:50, school:'bamboo', elite:true,
+  anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'], atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
+  fps:{ idle:4, walk:7, atk:7.3, hit:6, death:4 }, hp:1.7, dmg:1.3, spd:1.0, range:60 };
+FOES.bb_elder = { n:'청죽문 장로', w:146, h:63, sw:32, bh:58, school:'bamboo',
+  anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'], atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
+  fps:{ idle:3.5, walk:6, atk:7.3, hit:6, death:4 }, hp:1.0, dmg:1.0, spd:0.9, range:66 };
 DUEL.art = { gaebang:{ disc:'gb_disc', elite:'gb_elite', elder:'gb_elder' }, sorim:{ disc:'sr_disc', elite:'sr_elite', elder:'sr_elder' },
              mudang:{ disc:'md_disc', elite:'md_elite', elder:'md_elder' }, hwasan:{ disc:'hs_disc', elite:'hs_elite', elder:'hs_elder' },
-             dangmun:{ disc:'dm_disc', elite:'dm_elite', elder:'dm_elder' }, magyo:{ disc:'mg_disc', elite:'mg_elite', elder:'mg_elder' } };
+             dangmun:{ disc:'dm_disc', elite:'dm_elite', elder:'dm_elder' }, magyo:{ disc:'mg_disc', elite:'mg_elite', elder:'mg_elder' },
+             ami:{ disc:'am_disc', elite:'am_elite', elder:'am_elder' }, bamboo:{ disc:'bb_disc', elite:'bb_elite', elder:'bb_elder' } };
+
 // 본진 전용 원경·바닥 (v2.94.3, 사용자 시트 — docs/프롬프트-배경.md "본진 원경·바닥"): 에셋 bg_hq_<k>·ground_hq_<k> 가 있으면 rzone() 이 본진을 돌려주고
 // 그 땅색(hqGround)·원경·바닥으로 그린다. 없으면 이웃 사냥터를 빌린다(vis). 소품·날씨 입자는 본진엔 없다.
 DUEL.hqGround = { gaebang:'#6e6349', sorim:'#7a7368', mudang:'#6c7a7c', hwasan:'#7d6658', ami:'#647a5a', dangmun:'#5e5450', magyo:'#4a4448', bamboo:'#6a7a52' };

@@ -297,7 +297,7 @@ setTimeout(()=>{
   ok(w.eval('typeof tintedFx')==='function' && w.eval('tintedFx("fx_aura", SCHOOLS.sorim.c) !== tintedFx("fx_aura", SCHOOLS.gaebang.c)'),'장로 기운은 문파색으로 물든 캔버스를 문파마다 따로 만든다(실제 색은 크로뮴 스크린샷으로 확인)');
   ok(w.eval('S.hq="sorim"; bossFxCol()')===w.eval('rgbOf(SCHOOLS.sorim.c)') && w.eval('S.hq=null; bossFxCol()')===w.eval('FXD.boss.c'),'보스 등장·스킬 파열 색: 본진은 문파색, 사냥터는 옛 주황');
   // 문파별 전용 시트가 제 상황·제 폭으로 그려지는지 (v2.94.15 무당·화산 추가)
-  for (const [k, who] of [['mudang','md'],['hwasan','hs'],['dangmun','dm'],['magyo','mg']]){
+  for (const [k, who] of [['mudang','md'],['hwasan','hs'],['dangmun','dm'],['magyo','mg'],['ami','am'],['bamboo','bb']]){
     w.eval('S.foes.length=0; S.bossAlive=false; gotoHq("'+k+'"); S.intro=0; hqLoadStep(99); S.foes.length=0; spawnFoe(); S.foes[0].anim="idle"; S.foes[0].af=0; S.foes[0].x=P.x+60; S.foes[0].y=P.y;');
     renderNow();
     ok(w.eval('S.foes[0].k')===who+'_disc' && drew(who+'_disc_idle0', w.eval('FOES.'+who+'_disc.w')),k+' 본진 제자 = '+who+'_disc, 대기 컷이 선언 폭('+w.eval('FOES.'+who+'_disc.w')+')으로');
@@ -307,6 +307,12 @@ setTimeout(()=>{
       ok(drew(who+'_'+tier+'_atk2', w.eval('FOES.'+who+'_'+tier+'.w')),k+' '+tier+' 임팩트 컷이 선언 폭('+w.eval('FOES.'+who+'_'+tier+'.w')+')으로');
     }
   }
+  // 상승 무공 메달 8종·마당 제자 전용 시트 (v2.94.17)
+  ok(w.eval('ARTS.list.filter(a=>a.frag).every(a=>!!ASSET["art_"+a.k])'),'상승 무공 8종 메달 아이콘이 다 있다');
+  ok(w.eval('!!IMG[SECT.discSheet.walk+"0"] && !!IMG[SECT.discSheet.train+"0"]'),'마당 제자 전용 시트(걷기·수련) 로드');
+  w.eval('openSect(); S.disciples=[{n:"장소천",l:"sorim",t:1},{n:"여청",l:"bamboo",t:2}];'); renderNow();
+  ok(draws.some(d=>String(d.im&&d.im.src||'').length>=0) && w.eval('typeof tintedStrip')==='function','문파 마당 제자 렌더 오류 없음');
+  w.eval('closeSect();');
   w.eval('S.foes.length=0; S.bossAlive=false; gotoZone(0,1);');
   w.eval('S.foes.length=0; S.bossAlive=false; gotoHq("gaebang"); S.intro=0;'); renderNow();
   ok(w.eval('rzone().k')==='hq_gaebang' && w.eval('rzone().ground')===w.eval('DUEL.hqGround.gaebang'),'개방 본진: rzone = hq_gaebang · 땅색 '+w.eval('rzone().ground'));

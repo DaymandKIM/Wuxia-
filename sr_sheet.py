@@ -369,8 +369,9 @@ def main():
     rowscale = {}
     for it in (opts['rowref'].split(',') if opts.get('rowref') else []):
         rk, rr = it.split(':'); bhr = body_height(raw[rr], int(opts.get('bodymin', 12))); rowscale[rk] = body_h / bhr
-        print('  %s줄 기준 %s 몸높이 %d → 배율 %.3f' % (rk, rr, bhr, rowscale[rk]))
-    small = {k: shrink(v, rowscale.get(k.split('c')[0], scale)) for k, v in raw.items()}
+        print('  %s 기준 %s 몸높이 %d → 배율 %.3f' % (rk, rr, bhr, rowscale[rk]))
+    # 키가 'r0c4' 처럼 칸 하나면 그 칸만, 'r1' 이면 그 줄 전체 — 한 줄 안에서 대기와 걷기의 배율이 다른 시트용(청죽 정예)
+    small = {k: shrink(v, rowscale.get(k, rowscale.get(k.split('c')[0], scale))) for k, v in raw.items()}
 
     out = {}
     for i, k in enumerate(sel['idle']): out['idle%d' % i] = small[k]

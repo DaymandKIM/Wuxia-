@@ -140,8 +140,9 @@ function sceneStep(dt){
   if (sceneFlash && (sceneFlash.t -= dt) <= 0) sceneFlash = null;
 }
 // 도복만 계보색으로 — 주인공 스트립을 임시 제자로 쓴다(제자 시트가 오면 disciple_walk/train로 교체). 살·머리는 그대로
-function tintedStrip(key, col){
-  const ck = key + ':' + col; if (tintCache[ck]) return tintCache[ck];
+// wide = 마당 제자 전용 시트용 — 도복이 밝기 40~170 에 퍼져 있어 주인공 기준(110~236)으론 하이라이트만 물들어 얼룩덜룩했다 (v2.94.17)
+function tintedStrip(key, col, wide){
+  const ck = key + ':' + col + (wide ? ':w' : ''); if (tintCache[ck]) return tintCache[ck];
   const im = IMG[key]; if (!im || !im.complete || !im.naturalWidth) return null;
   const c = document.createElement('canvas'); c.width = im.naturalWidth; c.height = im.naturalHeight;
   const g = c.getContext('2d'); if (!g) return null;
@@ -152,7 +153,7 @@ function tintedStrip(key, col){
     for (let i = 0; i < p.length; i += 4){
       if (!p[i + 3]) continue;
       const r = p[i], gg = p[i + 1], b = p[i + 2], mx = Math.max(r, gg, b), mn = Math.min(r, gg, b), lum = (r * 299 + gg * 587 + b * 114) / 1000;
-      if (mx - mn < 52 && lum > 110 && lum < 236 && r >= b){          // 도복 베이지·그 그늘(따뜻한 회색) — 살(채도 93)·바지(푸른)·머리(어두움)는 제외
+      if (mx - mn < 52 && lum > (wide ? 60 : 110) && lum < (wide ? 200 : 236) && r >= b){          // 도복 베이지·그 그늘(따뜻한 회색) — 살(채도 93)·바지(푸른)·머리(어두움)는 제외
         const k = lum / 255 * 1.25;
         p[i] = Math.min(255, cr * k); p[i + 1] = Math.min(255, cg * k); p[i + 2] = Math.min(255, cb * k);
       }
@@ -226,14 +227,28 @@ function drawSectDisc(d){
   const dd = (S.disciples || [])[d.i]; if (!dd) return;
   const col = SCHOOLS[dd.l].c, sc = SECT.scene.discScale;
   const [x, y] = scenePt(d.x, d.y);
-  const walk = d.st === 'walk', key = walk ? 'hero_run' : 'hero_idle';
-  const n = walk ? ANIM.run[0] : ANIM.idle[0], fw = HFX.aw[walk ? 'run' : 'idle'] || HERO.w;
-  const src = tintedStrip(key, col) || IMG[key];
-  const fi = walk ? Math.floor(d.af) % n : 0;
-  shadow(x, y, HERO.w * sc);
+  // 마당 제자 전용 시트가 있으면 그것으로 (v2.94.17) — 없으면 옛 방식(주인공 스트립을 계보색으로)
+  const DS = SECT.discSheet, hasDS = DS && IMG[DS.walk + '0'];
+  const walk = d.st === 'walk';
+  let key, n, fw, fh, src, fi;
+  if (hasDS){
+    const base = (d.st === 'train' ? DS.train : DS.walk);
+    n = DS.n; fw = DS.w; fh = DS.h;
+    fi = Math.floor(d.af * (d.st === 'train' ? DS.fps.train : DS.fps.walk) / (walk ? ANIM.run[1] : 4)) % n;
+    if (d.st === 'idle') fi = 0;
+    key = base + fi;
+    src = tintedStrip(key, col, true) || IMG[key];
+    fi = 0;
+  } else {
+    key = walk ? 'hero_run' : 'hero_idle';
+    n = walk ? ANIM.run[0] : ANIM.idle[0]; fw = HFX.aw[walk ? 'run' : 'idle'] || HERO.w; fh = HERO.h;
+    src = tintedStrip(key, col) || IMG[key];
+    fi = walk ? Math.floor(d.af) % n : 0;
+  }
+  shadow(x, y, (hasDS ? fw : HERO.w) * sc);
   ctx.save(); ctx.translate(x, y); ctx.scale(d.dir * sc, sc);
-  if (d.st === 'train'){ ctx.rotate(Math.sin(d.af * 1.2) * 0.12); }   // 목검 휘두르기 — 시트 전엔 몸을 흔든다
-  if (src) try{ ctx.drawImage(src, fi * fw, 0, fw, HERO.h, -Math.round(fw / 2), -HERO.h, fw, HERO.h); }catch(e){}
+  if (d.st === 'train' && !hasDS){ ctx.rotate(Math.sin(d.af * 1.2) * 0.12); }   // 수련 시트가 없을 때만 몸을 흔든다
+  if (src) try{ ctx.drawImage(src, fi * fw, 0, fw, fh, -Math.round(fw / 2), -fh, fw, fh); }catch(e){}
   ctx.restore();
   // 이름·계보 점
   ctx.save(); ctx.font = '900 8px Jua,sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
