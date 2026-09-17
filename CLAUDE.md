@@ -396,7 +396,7 @@ openDeepen/closeDeepen/deepenHud로 #dbody에 그린다(옛 openArts→심화로
 **스킬 심화 특성**(v2.55) — 배운 무공에 쿨감·위력·사거리·증폭 특성을 무공점으로
 켠다. 데이터 TRAITS(00-data, 초식 cdcut·power·reach / 심법 amp), 엔진 traitBuy·
 traitMul·traitCdcut, 전투 반영은 30-combat(쿨·피해·회복·사거리)·artMul(amp),
-UI는 67-treepanel(renderTraits, 카드+칩). 배운 무공에만·되돌리기 없음. 저장
+UI는 **무공 상세창 안 특성 칩**(63-arts refreshArts .atrc — v2.93.7 사용자 "스킬 눌렀을 때 상태창에서 업글". 옛 심화창 67-treepanel renderTraits는 코드만 남음). 배운 무공에만·되돌리기 없음. 저장
 S.traits. sim spend에 특성 sink. 검증 artstest.
 **문파 무공도 접기**(v2.55.2, "심화 탭 둘 다 필요하냐 + 노드 번거롭다") —
 심화창은 **스킬 특성 하나**만. 트리(문파 무공도)는 화면·저장·sim에서 뺐고

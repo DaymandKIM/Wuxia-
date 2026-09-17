@@ -34,11 +34,9 @@ setTimeout(()=>{
   d.getElementById('tab-arts').click();
   ok(d.querySelectorAll('#atabs .askind').length===2,'무공 탭에 [초식][심법] 탭이 있다');
   ok(d.querySelectorAll('.atile').length>0,'무공 타일 그리드가 그려진다');
-  // 1b) '스킬 심화' 버튼이 심화창(스킬 특성)을 연다 — 문파 무공도는 접힘 (v2.55.2)
-  d.getElementById('adeepen').click();
-  ok(!!d.getElementById('dcontent'),'심화창(스킬 특성)이 열린다');
+  // 1b) 스킬 심화 버튼은 없다 — 특성은 무공 상세창 안에서 올린다 (v2.93.7). 문파 무공도(트리)도 접힘 (v2.55.2)
+  ok(!d.getElementById('adeepen'),'스킬 심화 버튼이 없다 (특성은 상세창으로)');
   ok(!d.getElementById('ttree'),'문파 무공도(트리)는 더 이상 뜨지 않는다');
-  w.eval("closeDeepen()");
   // 2) 경지 미달이면 코드로도 무공을 못 산다 (기연·트리 외 경로 차단)
   w.eval('S.silver=99999');
   ok(w.eval('learnArt("pagong")')===false,'경지 미달이면 파공권을 못 산다');
@@ -133,11 +131,13 @@ setTimeout(()=>{
     ok(w.eval('skillPtsLeft()')<pp0,'특성이 경지 무공점을 쓴다');
     ok(w.eval('traitMul("pagong","power")')>1,'특성이 초식 위력 배수에 반영된다');
     ok(w.eval('traitBuy("pagong","pa_pw")')===false,'같은 특성은 중복으로 못 켠다');
-    // 심화창 특성 뷰 — 배운 무공 카드에 특성 칩이 뜬다
-    w.eval('deepMode="trait"; openDeepen();');
-    ok(d.querySelectorAll('#dcontent .tcard').length>0,'특성 뷰에 배운 무공 카드가 뜬다');
-    ok(d.querySelectorAll('#dcontent .tchip.own').length>0,'켠 특성은 익힘으로 표시된다');
-    w.eval('closeDeepen()');
+    // 상세창 특성 칩 (v2.93.7) — 배운 무공을 누르면 상세에 특성 3개, 켠 것은 ✓
+    w.eval('artSel="pagong"; artTab="active"; artDetSig=""; buildArtsPanel(); refreshArts();');
+    ok(d.querySelectorAll('#adet .atrc').length===3,'파공권 상세에 특성 칩 3개');
+    ok(d.querySelectorAll('#adet .atrc.own').length===1,'켠 특성(중권)은 ✓로 표시된다');
+    const chip=[...d.querySelectorAll('#adet .atrc:not(.own)')].find(e=>!e.disabled);
+    if (chip){ const p1=w.eval('skillPtsLeft()'); chip.click(); ok(w.eval('skillPtsLeft()')<p1 && d.querySelectorAll('#adet .atrc.own').length===2,'칩을 누르면 특성이 켜지고 무공점이 준다'); }
+    else ok(true,'남은 무공점이 모자라 칩 클릭은 건너뜀');
     w.eval('S.skillManual=true; saveNow();');   // 저장 왕복 검사용으로 수동 남겨둠
     w.eval('delete S.arts.whirl; S.foes.length=0; P.anim="idle";');
     // 6) 저장 왕복

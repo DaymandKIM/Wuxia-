@@ -85,13 +85,11 @@ function buildArtsPanel(){
     '<div id="atabs">' +
       '<button class="askind" data-t="active">초식</button>' +
       '<button class="askind" data-t="passive">심법</button>' +
-      '<button id="adeepen">스킬 심화<i class="dot"></i></button>' +
-    '</div>' +
+    '</div>' +   // 스킬 심화 버튼은 뺐다 — 특성은 무공 상세창에서 바로 올린다 (v2.93.7 사용자 "스킬 눌렀을 때 상태창에서 업글")
     '<div id="agridwrap"></div>' +
     '<div class="adet" id="adet"></div>';
   for (const el of b.querySelectorAll('.askind'))
     el.onclick = () => { artTab = el.dataset.t; artDetSig = ''; drawArtGrid(); };
-  $('adeepen').onclick = () => { if (typeof openDeepen === 'function') openDeepen(); };
   // 처음엔 살 수 있는 것, 없으면 그 탭 첫 무공
   if (!artSel || !artDef(artSel)){
     const buyable = ARTS.list.find(a => canLearn(a));
@@ -174,7 +172,8 @@ function refreshArts(){
   const sig = [artSel, got, st, got ? artLv(a.k) : 0, xp >= need && need > 0, open,
                got && a.cost !== undefined && S.silver >= artLvCost(a.k),
                need > 0 && S.silver >= artBreakCost(a.k),
-               !got && open && S.silver >= a.cost].join('|');
+               !got && open && S.silver >= a.cost,
+               got && typeof traitDefs === 'function' ? traitDefs(a.k).map(t => hasTrait(a.k, t.id) ? 1 : 0).join('') + ':' + skillPtsLeft() : ''].join('|');
   if (sig === artDetSig){
     const ax = $('axp');                          // 숙련 숫자만 제자리 갱신
     if (ax) ax.textContent = Math.min(xp, need) + ' / ' + need;
@@ -214,6 +213,14 @@ function refreshArts(){
       d += '<div class="zd">숙련 ' + st + '성 — 극에 달했다</div>';
     }
   }
+  // 특성 (v2.93.7 — 옛 스킬 심화창에서 이리로): 무공점으로 켠다. 한 줄 이름 + 짧은 효과 + 값. 켠 것은 초록 ✓
+  if (got && typeof traitDefs === 'function' && traitDefs(a.k).length){
+    const pts = skillPtsLeft();
+    d += '<div class="zd atr"><span class="eqlab">특성</span>무공점 <b>' + fmt(pts) + '</b></div><div class="atrs">' +
+      traitDefs(a.k).map(t => { const own = hasTrait(a.k, t.id), pay = pts >= (t.c || 0), short = (t.d.split(' — ')[1] || t.d);
+        return '<button class="atrc' + (own ? ' own' : '') + '" data-t="' + t.id + '"' + (own || !pay ? ' disabled' : '') + '><span>' + t.n + '</span><small>' + short + '</small><i>' + (own ? '✓' : t.c + '점') + '</i></button>'; }).join('') +
+      '</div>';
+  }
   if (a.fate && !got){
     d += '<div class="zd need">기연으로만 얻는다 — 언젠가 강호에서 만난다.</div>';
   } else if (!got){
@@ -228,6 +235,7 @@ function refreshArts(){
   if (btn) btn.onclick = () => { if (learnArt(artSel)) refreshArts(); };
   const bbtn = $('abrk');
   if (bbtn) bbtn.onclick = () => { if (breakArt(artSel)) refreshArts(); };
+  $('adet').querySelectorAll('.atrc:not(.own)').forEach(el => { el.onclick = () => { if (traitBuy(a.k, el.dataset.t)){ saveNow(); artDetSig = ''; refreshArts(); } }; });
   // 연마는 꾹 누르면 연속 레벨업 — 수련과 같은 손맛 (v2.36 "하나씩 누르기 불편")
   const lbtn = $('alvl');
   if (lbtn){
@@ -254,8 +262,6 @@ function artsHud(){
   // 배울/올릴 무공이 있거나 심화에 쓸 무공점이 있으면 탭에 알림점
   if (dot && dot.classList) dot.classList.toggle('on', canLearnArt() || deepenReady());
   if (!$('apanel').classList.contains('show')) return;
-  const dd = $('adeepen') && $('adeepen').firstElementChild;   // 심화 버튼 알림점
-  if (dd && dd.classList) dd.classList.toggle('on', deepenReady());
   const xp = S.artXp[artSel] | 0;
   if (artLastSilver !== S.silver || artLastRealm !== realmLv() || artLastXp !== xp){
     artLastSilver = S.silver; artLastRealm = realmLv(); artLastXp = xp;
