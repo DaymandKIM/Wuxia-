@@ -16,7 +16,7 @@ function saveData(){
     silver: S.silver, bossDone: S.bossDone, reach: S.reach, stats: S.stats, rexp: S.rexp,
     arts: S.arts, karma: S.karma, fates: S.fates, fatebits: S.fatebits,
     artXp: S.artXp, artStar: S.artStar, artLv: S.artLv,
-    skillManual: S.skillManual, mute: S.mute, tree: S.tree, traits: S.traits, equip: S.equip,
+    skillManual: S.skillManual, autoNext: S.autoNext, autoBoss: S.autoBoss, mute: S.mute, tree: S.tree, traits: S.traits, equip: S.equip,
     itemLv: S.itemLv, inv: S.inv, codex: S.codex,
     merges: S.merges, levels: S.levels, achv: S.achv,   // 업적 (v2.90)
     halls: S.halls, fame: S.fame, sectName: S.sectName, disciples: S.disciples,   // 문파 (v2.91~92)
@@ -102,6 +102,8 @@ function applySave(d){
       S.artLv[a.k] = clamp(d.artLv[a.k] | 0, 1, artLvCap(a.k));   // 성 로드 뒤라 상한이 맞다
   }
   S.skillManual = !!d.skillManual;              // 발동 모드 (예전 저장엔 없다 → 자동)
+  S.autoNext = d.autoNext === undefined ? true : !!d.autoNext;   // 자동 진행 (옛 저장엔 없다 → 켜짐, v2.95.4)
+  S.autoBoss = d.autoBoss === undefined ? true : !!d.autoBoss;
   S.mute        = !!d.mute;                     // 효과음 끔 (v2.85, 예전 저장엔 없다 → 켬)
   S.merges = Math.max(0, d.merges | 0); S.levels = Math.max(0, d.levels | 0);   // 업적 누계 (v2.90)
   S.halls = {}; if (d.halls && typeof d.halls === 'object') for (const h of SECT.halls){ const lv = Math.max(0, d.halls[h.k] | 0); if (lv) S.halls[h.k] = lv; }   // 문파 (v2.91)

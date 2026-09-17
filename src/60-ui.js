@@ -252,10 +252,21 @@ function buildZonePanel(){
   for (let k = 1; k <= STAGES.length; k++) strip += stBtn(k, k, '');
   strip += stBtn(BOSS_STAGE, '보스', ' bs');
   strip += '</div></div>';
+  // 자동 진행 토글 (v2.95.4, 사용자 "자동으로 다음에 도전할지 보스에 도전할지 하는 버튼") —
+  // 끄면 그 단계를 계속 돌며 판다. 판은 끄고 자도 되게 저장된다.
+  strip += '<div id="zauto"><div class="zsttl">자동 진행</div><div class="zst">' +
+    '<button class="sb za' + (S.autoNext ? ' on' : '') + '" id="zanext">다음 단계로</button>' +
+    '<button class="sb za' + (S.autoBoss ? ' on' : '') + '" id="zaboss">보스에 도전</button>' +
+    '</div><div class="znote">끄면 그 단계를 계속 돌며 판다.</div></div>';
   const note = '<div class="znote">' + (TEST
       ? '테스트 모드 — 구역을 누르고 아래에서 단계를 고른다.'
       : '구역을 누르고 아래에서 단계를 고른다.') + '</div>';
   b.innerHTML = svg + strip + note;
+  { const bn = $('zanext'), bb = $('zaboss');
+    if (bn) bn.onclick = e => { e.stopPropagation(); S.autoNext = !S.autoNext; saveNow(); buildZonePanel();
+      toast(S.autoNext ? '단계를 깨면 다음으로 간다' : '이 단계를 계속 돈다'); };
+    if (bb) bb.onclick = e => { e.stopPropagation(); S.autoBoss = !S.autoBoss; saveNow(); buildZonePanel();
+      toast(S.autoBoss ? '10단계를 깨면 보스에 도전한다' : '보스 앞에서 멈춘다'); }; }
   b.querySelectorAll('.hqnode').forEach(el => { el.onclick = e => { e.stopPropagation(); const q = el.dataset.q;
     if (q === 'home'){ toast((typeof sectName === 'function' ? sectName() : SECT.name) + ' — 문파 탭에서 마당으로'); return; }
     if (typeof gotoHq === 'function') gotoHq(q); }; });   // 본진으로 이동 (v2.94)

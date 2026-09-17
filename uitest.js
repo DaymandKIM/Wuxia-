@@ -50,9 +50,28 @@ setTimeout(()=>{
     const t2=[...d.querySelectorAll('#zmap .znode[data-z]')].find(nd=>nd.dataset.z==='2'); t2.onclick();
     const sel2=[...d.querySelectorAll('.sb[data-z]')].every(b=>b.dataset.z==='2');
     console.log('동굴 노드 누름 → 단계 줄이 동굴('+sel2+') · 아직 '+w.eval('zone().n')+' '+w.eval('S.stage')+'단계 (이동 안 함: '+(w.eval('S.zi')===4)+')');
+
     console.log('가 본 단계 reach: '+JSON.stringify(w.eval('S.reach'))+' (천산 7)');
     if(!sel2||w.eval('S.zi')!==4||w.eval('S.reach[4]')!==7) errs.push('구역 선택/이동 분리 실패');
   }catch(e){ console.log('실패:',e.message); }
+  // 자동 진행 토글 (v2.95.4) — 끄면 단계를 깨도 그 자리에서 다시 돈다
+  {
+    const S=w.eval('S');
+    S.hq=null; S.zi=0; S.stage=3; S.kills=0; S.autoNext=false; S.autoBoss=true;
+    w.eval('advanceStage()');
+    console.log(S.stage===3 ? '  자동 진행 끄면 단계 그대로 (3)' : '  ★실패 자동 진행을 껐는데 단계가 '+S.stage);
+    S.autoNext=true; w.eval('advanceStage()');
+    console.log(S.stage===4 ? '  자동 진행 켜면 다음 단계로 (4)' : '  ★실패 자동 진행을 켰는데 단계가 '+S.stage);
+    S.stage=10; S.autoBoss=false; w.eval('advanceStage()');
+    console.log(S.stage===10 ? '  보스 자동 끄면 10단계에서 멈춘다' : '  ★실패 보스 앞에서 멈춰야 하는데 단계가 '+S.stage);
+    S.autoBoss=true; w.eval('advanceStage()');
+    console.log(S.stage===w.eval('BOSS_STAGE') ? '  보스 자동 켜면 보스 단계로' : '  ★실패 보스로 안 갔다 — 단계 '+S.stage);
+    // 처치 목표는 10 단위
+    let bad10=0; for(let g=1; g<=50; g++){ S.zi=Math.floor((g-1)/10); S.stage=((g-1)%10)+1; if (w.eval('stageNeed()')%10) bad10++; }
+    console.log(bad10===0 ? '  처치 목표가 전 단계에서 10 단위' : '  ★실패 10 단위가 아닌 단계 '+bad10+'개');
+    S.zi=0; S.stage=1; S.kills=0;
+  }
+
   console.log('오류:', errs.length?errs.slice(0,2):'없음');
   process.exit(0);
 },600);

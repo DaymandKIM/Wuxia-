@@ -374,12 +374,14 @@ const DIFF = {
   // 쓰러짐만 수백 번 늘렸다(Y1~Y4). 벽은 "체력이 안 깎여서 기다리는 것"이어야 했다.
   hpBase: 22,  hpGrow: 1.46,     // 적 체력 = hpBase × hpGrow^(g-1)
   dmgBase: 3.0, dmgGrow: 1.19,   // 적 피해 — 밀어붙일 때만 위험하게 (sim 쓰러짐 기준)
-  needBase: 24, needPer: 7,      // 처치 목표 = base + g×per (31 → 374)
+  needBase: 24, needPer: 7,      // 처치 목표 = base + g×per
+  needRound: 10,                 // **10 단위로 반올림한다** (v2.95.4, 사용자 "몹 단위를 10의 배수로") — 30 · 40 · … · 370
 };
 // 본진은 단(段)이 축 (v2.94) — 단 사다리와 "가 본 최고 단계 − lag" 중 높은 쪽: 사다리만 쓰면 사냥터가 앞서 나간 뒤 장로가 순삭돼
 // 상승 무공 8종이 3시간 안에 다 열렸다(sim v2.94: 24h 천산 1→6). 장로는 늘 지금 사냥터에서 몇 단계 아래의 보스급이어야 한다.
 const gstage    = ()=> S.hq ? Math.max(DUEL.gBase[S.hq] + DUEL.gPerRank * (hqRank(S.hq) - 1), ((S.best | 0) - DUEL.lag)) : S.zi * 10 + Math.min(S.stage, 10);
-const stageNeed = ()=> DIFF.needBase + gstage() * DIFF.needPer;
+const stageNeed = ()=> { const n = DIFF.needBase + gstage() * DIFF.needPer, r = DIFF.needRound || 1;
+                        return Math.max(r, Math.round(n / r) * r); };   // 10 단위 (v2.95.4)
 
 // 단계별 연출 수치 (구역 안 1~10)
 const STAGES = [];

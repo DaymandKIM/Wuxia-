@@ -488,11 +488,18 @@ function step(dt){
 }
 
 
-// 다음 단계로
+// 다음 단계로 — 자동 진행이 꺼져 있으면 그 자리에서 다시 돈다 (v2.95.4)
+// 본진(S.hq)은 단 사다리가 따로 돌아 이 토글을 안 탄다.
 function advanceStage(){
+  const hold = !S.hq && (S.stage + 1 === BOSS_STAGE ? !S.autoBoss : !S.autoNext);
   S.kills = 0;
   S.foes.length = 0;      // 파동을 벗어난 적도 여기서 사라진다
   S.shots.length = 0;
+  if (hold){                   // 같은 단계를 다시 — 판다
+    P.hp = P.hpMax;            // 단계 진입과 같은 대우(회복)
+    spawnFoe();
+    return;
+  }
   S.stage++;
   S.best = Math.max(S.best, lv());
   enterStage(isBoss());        // 보스 단계만 연출, 일반 단계는 바로 진행 (v2.33)
