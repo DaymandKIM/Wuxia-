@@ -226,7 +226,7 @@ function hurtFoe(f, dmg, crit){
               life:crit ? 0.6 : 0.42, t:crit ? 0.6 : 0.42 });
   // 맞은 방향으로 살짝 밀린다
   const d = dist(P.x,P.y,f.x,f.y) || 1;
-  f.kx = (f.x-P.x)/d; f.ky = (f.y-P.y)/d; f.kb = 0.09;
+  f.kx = (f.x-P.x)/d; f.ky = (f.y-P.y)/d; f.kb = HERO.kbT;
   if (f.hp <= 0 && !f.dead){
     f.dead = true; f.dying = 0.22;
     S.kills++; S.totalKills++;

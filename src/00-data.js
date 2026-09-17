@@ -17,6 +17,7 @@ const HERO = {
   atkDmg:10,
   atkCd:0.46,                    // 공격 간격
   hold:7,                        // 붙은 뒤 이 거리 안에선 제자리 (idle↔run 깜빡임 방지, v2.48)
+  kbT:0.07, kbSpd:90,            // 평타 넉백: 시간(초)×속도(px/s) = 6.3px — hold(7)보다 작아야 한다. 8.1px(옛 0.09)이면 타격마다 문턱을 넘어 한 컷 잰걸음이 났다 (v2.93.8)
   regen:0.8,                     // 초당 회복
 };
 
@@ -232,11 +233,11 @@ const FIST = [
 // map: 여정 지도 일러스트(assets/zone_map, 360×360 좌표) 위 노드 자리 — 그림 속 지형에 손으로 맞춤 (v2.69).
 // 구역 6 성채 자리는 [292, 52] (그림 우상단 성). 그림이 없으면 옛 지그재그 노드망으로 그린다.
 const ZONES = [
-  { k:'bamboo',  n:'죽림',   ground:'#6a7a52', boss:'대나무 마왕', map:[78, 296] },
+  { k:'bamboo',  n:'죽림',   ground:'#6a7a52', boss:'대나무 마왕', map:[90, 270] },
   { k:'village', n:'폐촌',   ground:'#6b6350', boss:'폐촌의 원혼', map:[276, 242] },   // 등장 문구·FOES.ghost와 통일
   { k:'cave',    n:'동굴',   ground:'#474d54', boss:'석암거인',   map:[100, 188] },   // v2.35 어둑·푸른끼 (몹 대비)
   { k:'snow',    n:'설산',   ground:'#a4b3c0', boss:'설산백호',   map:[280, 142] },   // v2.35 톤다운 (흰 백호 대비)
-  { k:'heaven',  n:'천산',   ground:'#7f9a86', boss:'뇌운신장',   map:[96, 86] },
+  { k:'heaven',  n:'천산',   ground:'#7f9a86', boss:'뇌운신장',   map:[95, 70] },
 ];
 const zone = ()=> ZONES[S.zi];
 

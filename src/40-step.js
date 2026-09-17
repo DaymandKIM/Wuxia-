@@ -129,6 +129,9 @@ function step(dt){
   // 시전 중(castT)에도 걷지 않는다 (v2.63.6) — 초식 동작을 펼치며 미끄러져 갔다
   // ("움직이면서 스킬을 쓰네, 미끄러지는 모션"). 다 펼친 뒤에 걷는다.
   // 경공 착지 경직(dashHold) 중에도 걷지 않는다 (v2.68.1) — 웅크린 컷으로 미끄러졌다.
+  // 공격 타이머를 이동 판정보다 먼저 줄인다 (v2.93.8) — 뒤에 줄이면 공격이 끝나는 프레임에 moving=false 로 대기 컷(폭 24)이 한 장 번쩍였다
+  if (P.atkCd > 0) P.atkCd -= dt;
+  if (P.atkT > 0){ P.atkT -= dt; heroHitCheck(); }
   if (S.sweepT <= 0 && P.dashHold <= 0 && P.atkT <= 0 && P.castT <= 0 && tgt && td > stopD + HERO.hold){
     const a = Math.atan2(tgt.y-P.y, tgt.x-P.x);
     P.x += Math.cos(a) * heroSpd() * dt;
@@ -138,9 +141,7 @@ function step(dt){
   }
 
   // 공격 — 붙은 뒤(td <= stopD)에만 시작한다. 제패 연출 중엔 안 친다(방향 파닥임 방지)
-  if (P.atkCd > 0) P.atkCd -= dt;
-  if (P.atkT > 0){ P.atkT -= dt; heroHitCheck(); }
-  else if (S.sweepT <= 0 && P.atkCd <= 0 && tgt && td <= stopD + HERO.hold + 2) heroAttack();
+  if (P.atkT <= 0 && S.sweepT <= 0 && P.atkCd <= 0 && tgt && td <= stopD + HERO.hold + 2) heroAttack();
 
   // 초식 — 제패 연출 중엔 아낀다
   if (S.sweepT <= 0) stepArts(dt);
@@ -178,8 +179,8 @@ function step(dt){
     // 넉백
     if (f.kb > 0 && !f.boss){
       f.kb -= dt;
-      f.x += f.kx * 90 * dt;
-      f.y += f.ky * 90 * dt;
+      f.x += f.kx * HERO.kbSpd * dt;
+      f.y += f.ky * HERO.kbSpd * dt;
     }
     if (f.dead){
       f.dying -= dt;
