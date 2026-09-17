@@ -1430,11 +1430,15 @@ FOES.gb_elder = {
   hp:1.0, dmg:1.0, spd:0.9, range:70,
 };
 FOES.sr_disc = {
-  // 소림 수습제자 — sheets/sr_disc.png(v2.94.6 6.5등신 재작업판). 대기 0~3 · 걷기 IoU 로 4~7 · 주먹 당김→뻗기→타격(임팩트)→회수. 캔버스 72×50 — 몸 20×48.
-  n:'소림 수습제자', w:72, h:50, sw:20, bh:48, school:'sorim',
-  anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'],
-         atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
-  fps:{ idle:4, walk:7, atk:7.3, hit:6, death:4 },
+  // 소림 수습제자 — sheets/sr_disc2.png(v2.94.27 3.5등신 재작업판, 4줄×8칸). **컷을 아끼지 않는다**(사용자 "컷을 많이 잘라서
+  // 아주 풍부한 공격 모션을") — 대기 8 · 걷기 7(r1c5 는 r1c3 과 같은 포즈라 뺐다) · 정권 8컷 시트 순서 그대로 · 쓰러짐 3컷.
+  // 공격 재생 속도는 fps.atk 가 아니라 컷 수에서 나온다(foeFps) — 8컷이 공격 시간 안에 전부 보인다. 캔버스 62×50 — 몸 22×48.
+  n:'소림 수습제자', w:62, h:50, sw:22, bh:48, school:'sorim',
+  anim:{ idle:['idle0','idle1','idle2','idle3','idle4','idle5','idle6','idle7'],
+         walk:['walk0','walk1','walk2','walk3','walk4','walk5','walk6'],
+         atk:['atk0','atk1','atk2','atk3','atk4','atk5','atk6','atk7'],
+         hit:['hit'], death:['hit','death0','death1','death2'] },
+  fps:{ idle:4, walk:7, atk:7.3, hit:6, death:5 },
   hp:1.1, dmg:1.0, spd:1.0, range:44,   // 맨손 정권 — 강도와 같은 급
 };
 FOES.sr_elite = {
