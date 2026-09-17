@@ -48,7 +48,8 @@ setTimeout(()=>{
     ok(own==='hq_gaebang' && fall==='bamboo','배경: 전용 원경이 있으면 본진('+own+'), 없으면 이웃 구역('+fall+')'); }
   // ── 2) 제자 젠·렌더
   S.foes.length=0; w.spawnFoe(); const f=S.foes[0];
-  const ZF=w.eval('ZONEFOE'); ok(ZF['hq_gaebang'].includes(f.k) && FOES[f.k].school==='gaebang' && (FOES[f.k].heroStrip || FOES[f.k].anim.idle.length===4),'젠 = '+f.k+' (계보 개방 · '+(FOES[f.k].heroStrip?'주인공 스트립 임시':'전용 시트')+')');
+  // 컷 수는 시트마다 다르다 — 재작업 시트는 대기가 8~10컷이다 (v2.94.27)
+  const ZF=w.eval('ZONEFOE'); ok(ZF['hq_gaebang'].includes(f.k) && FOES[f.k].school==='gaebang' && (FOES[f.k].heroStrip || FOES[f.k].anim.idle.length>=4),'젠 = '+f.k+' (계보 개방 · '+(FOES[f.k].heroStrip?'주인공 스트립 임시':'전용 시트')+')');
   // 전용 시트가 없는 문파는 여전히 주인공 tint (소림은 시트가 오면 바뀐다)
   { const left = Object.keys(DUEL.gBase).filter(k => !DUEL.art[k]);   // 아직 전용 시트가 없는 문파
     ok(left.every(k => ZF['hq_'+k][0]==='disc_'+k && FOES['disc_'+k].heroStrip),'전용 시트가 없는 문파는 주인공 스트립 임시 ('+(left.join(', ')||'없음 — 8문파 다 전용 시트')+')'); }

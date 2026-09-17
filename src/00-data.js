@@ -1403,12 +1403,15 @@ for (const k in DUEL.gBase){
 // 본진 전용 시트가 온 문파는 임시 주인공 tint 대신 제 그림(사용자 시트, gb_disc.py 계열 추출 — v2.94.1 개방 수습제자부터).
 // disc = 잡몹, elite = 정예(DUEL.eliteFrom 단부터 섞임, 시트 오면), elder = 보스. 항목이 있는 것만 바꾼다.
 FOES.gb_disc = {
-  // 개방 수습제자 — sheets/gb_disc.png(v2.94.6 6.5등신 재작업판). 대기·걷기는 1·2줄 0~3칸 한 자세, 공격은 2줄 4~7칸(파란 호 → 금 호).
-  // 캔버스 52×58 은 봉을 머리 위로 든 컷 높이 — 몸은 23×48 (sw/bh). 죽음 = 피격 → 넘어짐 → 누움.
-  n:'개방 수습제자', w:52, h:58, sw:23, bh:48, school:'gaebang',
-  anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'],
-         atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
-  fps:{ idle:4, walk:7, atk:7.3, hit:6, death:4 },
+  // 개방 수습제자 — sheets/gb_disc2.png(v2.94.27 3.5등신 재작업판, 4줄: 10·10·8·8칸). **컷을 아끼지 않는다**
+  // (사용자 "컷을 많이 잘라서 아주 풍부한 공격 모션을") — 대기 10 · 걷기 10 · 죽장 휘두르기 8컷 시트 순서 그대로 · 쓰러짐 3컷.
+  // 캔버스 56×50 — 몸 24×49(대기 폭 27~28 은 죽장이 옆으로 나온 것이라 sw 에서 뺐다). 죽음 = 피격 → 날아감 → 착지 → 누움.
+  n:'개방 수습제자', w:56, h:50, sw:24, bh:49, school:'gaebang',
+  anim:{ idle:['idle0','idle1','idle2','idle3','idle4','idle5','idle6','idle7','idle8','idle9'],
+         walk:['walk0','walk1','walk2','walk3','walk4','walk5','walk6','walk7','walk8','walk9'],
+         atk:['atk0','atk1','atk2','atk3','atk4','atk5','atk6','atk7'],
+         hit:['hit'], death:['hit','death0','death1','death2'] },
+  fps:{ idle:4, walk:8, atk:7.3, hit:6, death:5 },
   hp:1.1, dmg:1.0, spd:1.0, range:52,   // 봉이라 강도(44)보다 조금 길게
 };
 FOES.gb_elite = {
