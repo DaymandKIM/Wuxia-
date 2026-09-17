@@ -1346,6 +1346,9 @@ const DUEL = {
   silverMaster: 2,             // 장문인 추가 은자 = 보스 격파 은자 × 이 값
 };
 // 합성 구역 — zone()이 S.hq 일 때 돌려준다. k 는 ZONEFOE/ZONEBOSS/BOSSCRY 키, vis 는 배경을 빌릴 사냥터 index
+// 본진 이름 (v2.94.20 사용자 "본진은 빼고 무당파 아미파 마교 이런 식으로") — 문파 태그(SCHOOLS.n)는 짧게 두고 사냥터 이름만 제 이름으로
+DUEL.hqName = { sorim:'소림사', gaebang:'개방', mudang:'무당파', hwasan:'화산파', ami:'아미파', dangmun:'당문', magyo:'마교', bamboo:'청죽문' };
+
 const HQZONE = {};
 for (const k in DUEL.gBase){
   const z = ZONES[DUEL.nearZone[k]];
@@ -1485,8 +1488,6 @@ DUEL.hqGround = { gaebang:'#6e6349', sorim:'#7a7368', mudang:'#6c7a7c', hwasan:'
 // 원경 위 남는 하늘 — 시트에서 마젠타 경계 바로 아래 줄들의 중앙값(hqbg 보고). 마교만 예외: 지붕·나무가 마젠타에 바로 닿아
 // 하늘이 없다 — 경계값(#7b335a)을 쓰면 화면 위 절반이 밝은 자홍 판이 된다. 그림 윗부분 중앙값으로 어둡게.
 // 본진 로딩 화면 한 줄 소개 (v2.94.18, 사용자 "장로가 기다린다 말고 문파 설명 느낌으로")
-// 본진 이름 (v2.94.20 사용자 "본진은 빼고 무당파 아미파 마교 이런 식으로") — 문파 태그(SCHOOLS.n)는 짧게 두고 사냥터 이름만 제 이름으로
-DUEL.hqName = { sorim:'소림사', gaebang:'개방', mudang:'무당파', hwasan:'화산파', ami:'아미파', dangmun:'당문', magyo:'마교', bamboo:'청죽문' };
 DUEL.hqDesc = {
   sorim:   '천하 무공은 소림에서 나왔다 하더라',
   gaebang: '거지들의 방파 — 천하의 소문이 여기 모인다',
