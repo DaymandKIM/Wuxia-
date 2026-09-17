@@ -188,14 +188,14 @@ function refreshEquip(){
   const sel = (eqSel && eqKind(eqSel.k) && eqKind(eqSel.k).sl.k === sl.k) ? eqSel : wornAny;
   const worn0 = sel ? eqWornOf(sel.k) : null;
   if (!sel){
-    top.innerHTML = '<div class="zn"><span class="eqsl">' + sl.n + '</span> ' + (sl.k === 'weapon' ? '맨손' : '비었다') + '</div>' +
-      '<div class="zd">' + (sl.k === 'weapon' ? '주먹·발차기로 싸운다' : '적이 떨어뜨린다') + '<br><small>아래 카드를 누르면 여기에</small></div>';
+    setEqTop(top, '<div class="zn"><span class="eqsl">' + sl.n + '</span> ' + (sl.k === 'weapon' ? '맨손' : '비었다') + '</div>' +
+      '<div class="zd">' + (sl.k === 'weapon' ? '주먹·발차기로 싸운다' : '적이 떨어뜨린다') + '<br><small>아래 카드를 누르면 여기에</small></div>');
   } else {
     const { k, g } = sel, G = EQUIP.grades[g], kd = eqKind(k), n = eqInv(k)[g], lv = itemLv(k, g), cap = G.lvCap, seen = eqSeen(k, g);
     const worn = !!(worn0 && worn0.k === k && worn0.g === g);
     const cur = itemStats(k, g), nxt = itemStats(k, g, lv + 1), hold = itemStats(k, g, undefined, true), holdN = itemStats(k, g, lv + 1, true);
     const grow = seen && lv < cap;
-    top.innerHTML = '<div class="eqrow"><div class="eqico' + (worn ? ' worn' : '') + '" style="border-color:' + G.c + '"><img src="' + eqIcon(k, g) + '" alt="">' +
+    const changed = setEqTop(top, '<div class="eqrow"><div class="eqico' + (worn ? ' worn' : '') + '" style="border-color:' + G.c + '"><img src="' + eqIcon(k, g) + '" alt="">' +
         (seen ? '<b>Lv' + lv + '</b>' : '') + '</div>' +
       // 줄 수 고정 6줄 (v2.93.5 "장비마다 줄이 달라 작아졌다 커졌다"): 이름 · 상태 · 장착 3줄(빈 줄 채움) · 보유 — 버튼이 늘 같은 자리
       '<div class="trl"><div class="zn"><em style="color:' + G.c + '">' + G.n + '</em> ' + kd.n + (worn ? ' <i class="eqwornTag">착용 중</i>' : '') + '</div>' +
@@ -210,12 +210,16 @@ function refreshEquip(){
       '<div class="zst">' +
       // 버튼은 '무엇을 할 수 있나'가 글자로 읽혀야 한다 (v2.94.18 사용자) — 장착은 '이미 장착', 강화는 살 수 있으면 색이 켜지고,
       // 합성은 '3→1' 같은 셈을 지우고 그냥 '합성'
+      // 켜짐·꺼짐은 HTML 에 안 박는다 (v2.94.23) — 은자에 따라 글자가 바뀌면 그때마다 버튼이 새로 생겨 탭이 먹힌다.
+      // 모양만 여기서 만들고, 상태는 아래 eqBtnState 가 classList·disabled 로 갈아 끼운다.
       (worn
-        ? (sl.k === 'weapon' ? '<button class="sb on" id="eqdwear">벗기 · 맨손</button>' : '<button class="sb" disabled>이미 장착</button>')
-        : '<button class="sb' + (seen ? ' on' : '') + '" id="eqdwear"' + (seen ? '' : ' disabled') + '>' + (seen ? '장착' : '미보유') + '</button>') +
-      '<button class="trbuy' + (canLevelItem(k, g) ? ' on' : '') + '" id="eqdlv"' + (canLevelItem(k, g) ? '' : ' disabled') + '><span>' + (lv >= cap ? '상한' : '강화 ' + fmt(lvCost(k, g))) + '</span><i>' + coin() + '</i></button>' +
-      '<button class="sb' + (canMerge(k, g) ? ' on' : '') + '" id="eqdmerge"' + (canMerge(k, g) ? '' : ' disabled') + '>' + (g < EQUIP.grades.length - 1 ? '합성' : '최고 등급') + '</button>' +
-      '</div>';
+        ? (sl.k === 'weapon' ? '<button class="sb" id="eqdwear">벗기 · 맨손</button>' : '<button class="sb" id="eqdwear">이미 장착</button>')
+        : '<button class="sb" id="eqdwear">' + (seen ? '장착' : '미보유') + '</button>') +
+      '<button class="trbuy" id="eqdlv"><span>' + (lv >= cap ? '상한' : '강화 ' + fmt(lvCost(k, g))) + '</span><i>' + coin() + '</i></button>' +
+      '<button class="sb" id="eqdmerge">' + (g < EQUIP.grades.length - 1 ? '합성' : '최고 등급') + '</button>' +
+      '</div>');
+    eqBtnState(k, g, worn, seen, sl);
+    if (!changed) return eqCards();   // 버튼을 그대로 두면 누르는 중에 사라지지 않는다
     const wb = $('eqdwear'); if (wb) wb.onclick = () => {
       if (worn){ if (eqUnwear(eqWearKeyOf(k))){ toast('무기를 벗었다\n맨손 주먹·발차기'); buildEquipPanel(); } }
       else if (eqWear(k, g)) buildEquipPanel(); };
@@ -225,6 +229,26 @@ function refreshEquip(){
       iv = setInterval(()=>{ if (levelItem(k, g)) refreshEquip(); else stop(); }, 140); };
     lb.onpointerup = lb.onpointerleave = lb.onpointercancel = stop;
   }
+  eqCards();
+}
+// 위쪽 창 HTML 이 실제로 달라질 때만 갈아끼운다 (v2.94.23, 사용자 "장비창 버튼이 또 안 눌려") —
+// equipHud 가 은자가 바뀔 때마다 refreshEquip 을 부르는데, 문파 수익이 초당 들어오고 처치마다 은자가 는다.
+// 손가락을 대고(pointerdown) 떼기(click) 사이에 innerHTML 을 갈면 그 버튼은 사라진 셈이라 탭이 먹힌다
+// (기연 버튼이 같은 이유로 죽었던 v2.83 과 같은 사고). 돌아온 값이 false 면 버튼은 그대로 살아 있다.
+let eqTopHtml = '';
+// 버튼 세 개의 켜짐·눌림 상태만 제자리에서 갈아 끼운다 — 노드를 살려 두는 것이 목적이다
+function eqBtnState(k, g, worn, seen, sl){
+  const set = (id, on) => { const b = $(id); if (!b) return; b.classList.toggle('on', !!on); b.disabled = !on; };
+  set('eqdwear', worn ? sl.k === 'weapon' : seen);   // 이미 낀 방어구·장신구는 누를 것이 없다
+  set('eqdlv', canLevelItem(k, g));
+  set('eqdmerge', canMerge(k, g));
+}
+function setEqTop(top, html){
+  if (html === eqTopHtml && top.firstChild) return false;
+  eqTopHtml = html; top.innerHTML = html;
+  return true;
+}
+function eqCards(){
   const mc = mergeCount(); $('eqmerge').textContent = '일괄 합성' + (mc ? ' (' + mc + ')' : ''); $('eqmerge').disabled = !mc;
   $('eqmerge').classList.toggle('on', mc > 0);   // 합성할 게 있으면 호박색으로 (v2.79.1 사용자: "활성화되면 색을 바꿔 잘 보이게")
   $('eqauto').classList.toggle('on', eqBetterAny());

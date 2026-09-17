@@ -194,9 +194,9 @@ function step(dt){
     // 동작 결정 — 공격 중엔 피격으로 끊지 않는다
     const M = foeM(f);
     const na = f.dhT>0 ? 'dash'
-             : (f.skT>0 ? 'skill' : (f.atkT>0 ? 'atk' : (f.hit>0 ? 'hit' : 'walk')));
+             : (f.skT>0 ? 'skill' : (f.atkT>0 ? foeAtkAnim(f) : (f.hit>0 ? 'hit' : 'walk')));
     if (na !== f.anim){ f.anim = na; f.af = 0; }
-    f.af += dt * M.fps[f.anim];
+    f.af += dt * (M.fps[f.anim] || M.fps.atk || 6);   // atk2·atk3 는 fps 를 따로 안 주면 atk 와 같다
     const d = dist(f.x,f.y,P.x,P.y) || 1;
     f.dir = P.x >= f.x ? 1 : -1;
 
@@ -330,7 +330,7 @@ function step(dt){
           f.y += (P.y-f.y)/d * st.spd * M.spd * dt;
         }
       } else if (d <= far){
-        f.atkT = 0.78; f.hitDone = false;
+        f.atkT = 0.78; f.hitDone = false; foeAtkRoll(f);
       } else {
         f.x += (P.x-f.x)/d * st.spd * M.spd * dt;
         f.y += (P.y-f.y)/d * st.spd * M.spd * dt;
@@ -356,7 +356,7 @@ function step(dt){
         f.y += (P.y-f.y)/d * sp * dt;
       }
     } else if (d <= rng){
-      f.atkT = (f.boss ? BOSSATK.dur : FOE.dur); f.hitDone = false;
+      f.atkT = (f.boss ? BOSSATK.dur : FOE.dur); f.hitDone = false; foeAtkRoll(f);
     } else {
       const sp = st.spd * (f.boss ? BOSS.spd : foeM(f).spd);
       f.x += (P.x-f.x)/d * sp * dt;

@@ -349,6 +349,10 @@ def main():
 
     def idx(s): return s.split(',')
     sel = {'idle': idx(opts['idle']), 'walk': opts['walk'], 'atk': idx(opts['atk']), 'hit': idx(opts['hit']), 'death': idx(opts['death'])}
+    # --atk2=r3c0,... --atk3=... : 공격 모션 두·세 벌째 (v2.95.4, 사용자 "수련 1개 정예 2개 장로 3개").
+    # 게임의 FOES anim.atk2/atk3 로 들어가 공격할 때마다 골라 쓴다 — 컷 수는 atk 와 같게 맞추는 게 좋다.
+    for extra in ('atk2', 'atk3'):
+        if opts.get(extra): sel[extra] = idx(opts[extra])
     solos = (set(sel['death']) | set(idx(opts.get('solo', '')) if opts.get('solo') else [])) - set(idx(opts['nosolo']) if opts.get('nosolo') else [])
     # --nosolo=키,... : 그 컷만 solo(최대 덩어리만 남기기)를 끈다 — 쓰러짐 칸에 그림으로 그려진 조각이 따로 있을 때
     # (v2.95.3 무당 정예 넘어짐: 놓친 검이 땅에 떨어져 몸과 떨어져 있다. 반짝이가 아니라 그림이라 살린다)
@@ -384,6 +388,8 @@ def main():
         wk = idx(sel['walk']); ioumat({k: small[k] for k in wk})
     for i, k in enumerate(wk): out['walk%d' % i] = small[k]
     for i, k in enumerate(sel['atk']): out['atk%d' % i] = small[k]
+    for extra in ('atk2', 'atk3'):
+        for i, k in enumerate(sel.get(extra, [])): out['%s_%d' % (extra, i)] = small[k]
     out['hit'] = small[sel['hit'][0]]
     for i, k in enumerate(sel['death']): out['death%d' % i] = small[k]
 

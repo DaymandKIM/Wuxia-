@@ -380,7 +380,7 @@ function drawFoe(f, ox, oy){
   }
   const seq = M.anim[f.anim] || M.anim.idle;
   let fi = Math.floor(f.af);
-  fi = (f.anim==='atk' || f.anim==='death') ? Math.min(fi, seq.length-1) : (fi % seq.length);
+  fi = (f.anim.indexOf('atk')===0 || f.anim==='death') ? Math.min(fi, seq.length-1) : (fi % seq.length);   // atk·atk2·atk3 는 마지막 컷에서 멈춘다
   // 주인공 스트립을 빌려 쓰는 몹(본진 제자·장로, v2.94) — 도복만 문파색으로 물들인 캔버스, 컷은 스트립 오프셋
   const HS = M.heroStrip ? (M.heroStrip[f.anim] || M.heroStrip.idle) : null;
   let im, sx = 0, sw = 0;

@@ -118,6 +118,18 @@ setTimeout(()=>{
       ok(d3.getElementById('eqtop').textContent.includes('착용 중') && d3.querySelectorAll('.eqcard.worn').length===1,'낀 카드를 누르면 위쪽 창에 착용 중 표시');
       d3.querySelector('#etabs .askind[data-t="trinket"]').click();
       ok(d3.querySelectorAll('.eqcard.worn').length===1,'장신구 탭에서 낀 반지가 표시된다');
+      // 8) 손가락을 대고 있는 사이 은자가 들어와도 버튼이 살아 있어야 한다 (v2.94.23, 사용자 "장비창 버튼이 또 안 눌려")
+      //    equipHud 는 은자가 바뀔 때마다 refreshEquip 을 부른다 — 문파 수익이 초당 들어오니 늘 그렇다.
+      //    그때 위쪽 창을 통째로 갈면 누르던 버튼이 사라져 탭이 먹힌다.
+      d3.querySelector('#etabs .askind[data-t="weapon"]').click();
+      d3.querySelector('.eqcard.worn').click();
+      const btn0 = d3.getElementById('eqdwear');
+      let fired = 0; const prev = btn0.onclick; btn0.onclick = e => { fired++; prev && prev(e); };
+      w3.eval('S.silver += 12345'); w3.equipHud();
+      w3.eval('S.silver += 777');   w3.equipHud();
+      ok(d3.getElementById('eqdwear') === btn0, '은자가 들어와도 장비 버튼 노드가 그대로다 (탭이 안 먹히는 원인)');
+      btn0.onclick({});
+      ok(fired === 1, '그 버튼을 누르면 손잡이가 돈다');
       ok(errs.length===0,'런타임 오류 '+errs.length+(errs.length?': '+errs[0]:''));
       console.log(bad?'\n★ 실패 '+bad+'건':'\n문제 없음'); process.exit(bad?1:0);
     },1200);

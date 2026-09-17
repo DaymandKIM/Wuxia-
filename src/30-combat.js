@@ -1,4 +1,18 @@
 /* ── 적 ───────────────────────────────────────────── */
+// 공격 모션 여러 벌 (v2.94.23, 사용자 "수련은 1개 정예는 2개 장로는 3개") —
+// FOES 의 anim 에 atk2·atk3 가 있으면 공격할 때마다 하나를 골라 쓴다. 그림만 바뀌고
+// 판정·쿨은 그대로다. fps 를 따로 안 주면 atk 와 같은 속도로 돈다.
+function foeAtkCount(M){
+  return 1 + (M.anim && M.anim.atk2 ? 1 : 0) + (M.anim && M.anim.atk3 ? 1 : 0);
+}
+function foeAtkRoll(f){
+  const n = foeAtkCount(foeM(f));
+  f.av = n > 1 ? (Math.random() * n) | 0 : 0;
+}
+function foeAtkAnim(f){
+  return f.av ? 'atk' + (f.av + 1) : 'atk';
+}
+
 function spawnFoe(){
   // 옆모습 스프라이트라 좌우에서 오는 게 자연스럽다 — 세로 성분을 눌러 납작한
   // 타원으로 등장시킨다. 위아래도 오되(빈 화면 방지) 사선으로 온다 (v2.29)

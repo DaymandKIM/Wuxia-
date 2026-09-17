@@ -149,6 +149,20 @@ function artTiles(list){
   return h;
 }
 
+// 상세 칸 버튼의 눌림 상태만 제자리에서 (v2.94.23) — 노드를 살려 둬야 탭이 먹지 않는다
+function artBtnState(a){
+  const det = $('adet'); if (!det || !a) return;
+  const set = (id, on) => { const b = $(id); if (b) b.disabled = !on; };
+  set('alvl', canLevel(a));
+  set('abrk', canBreak(a));
+  set('abuy', canLearn(a));
+  const pts = typeof skillPtsLeft === 'function' ? skillPtsLeft() : 0;
+  det.querySelectorAll('.atrc').forEach(el => {
+    const own = el.classList.contains('own');
+    const t = (typeof traitDefs === 'function' ? traitDefs(a.k) : []).find(x => x.id === el.dataset.t);
+    el.disabled = own || !t || pts < (t.c || 0);
+  });
+}
 // 타일 상태와 상세 칸만 갱신 — 패널을 다시 만들지 않는다
 function refreshArts(){
   const k = realmLv();
@@ -192,14 +206,15 @@ function refreshArts(){
     const lb = $('alvl'); if (lb) lb.disabled = !canLevel(a);
     return;
   }
-  const sig = [artSel, got, st, got ? artLv(a.k) : 0, xp >= need && need > 0, open,
-               got && a.cost !== undefined && S.silver >= artLvCost(a.k),
-               need > 0 && S.silver >= artBreakCost(a.k),
-               !got && open && S.silver >= a.cost, (S.frag[a.k] | 0),
-               got && typeof traitDefs === 'function' ? traitDefs(a.k).map(t => hasTrait(a.k, t.id) ? 1 : 0).join('') + ':' + skillPtsLeft() : ''].join('|');
+  // 서명에 '은자가 되나'는 넣지 않는다 (v2.94.23) — 은자는 처치·문파 수익으로 쉴 새 없이 바뀌는데,
+  // 그때마다 상세 칸을 갈아엎으면 손가락을 대고 뗄 사이에 버튼이 사라져 탭이 먹힌다(장비창과 같은 사고).
+  // 살 수 있나 없나는 아래 artBtnState 가 버튼 자리에서 disabled 만 바꾼다.
+  const sig = [artSel, got, st, got ? artLv(a.k) : 0, xp >= need && need > 0, open, (S.frag[a.k] | 0),
+               got && typeof traitDefs === 'function' ? traitDefs(a.k).map(t => hasTrait(a.k, t.id) ? 1 : 0).join('') : ''].join('|');
   if (sig === artDetSig){
     const ax = $('axp');                          // 숙련 숫자만 제자리 갱신
     if (ax) ax.textContent = Math.min(xp, need) + ' / ' + need;
+    artBtnState(a);
     return;
   }
   artDetSig = sig;
@@ -213,9 +228,7 @@ function refreshArts(){
       const lv = artLv(a.k), cap = artLvCap(a.k);
       d += '<div class="zd">연마 Lv <span id="alvlnum">' + lv + ' / ' + cap + '</span>';
       if (lv < cap){
-        d += '</div><button class="trbuy" id="alvl"' +
-             (S.silver >= artLvCost(a.k) ? '' : ' disabled') +
-             '><span id="alvlcost">' + fmt(artLvCost(a.k)) + '</span><i>' + coin() + ' 연마</i></button>';
+        d += '</div><button class="trbuy" id="alvl"><span id="alvlcost">' + fmt(artLvCost(a.k)) + '</span><i>' + coin() + ' 연마</i></button>';
       } else {
         d += (st < MASTERY.maxStar ? ' — 성을 돌파하면 상한이 열린다' : ' — 극에 달했다') + '</div>';
       }
@@ -230,8 +243,7 @@ function refreshArts(){
       const fn = breakFragNeed(a), haveF = (S.frag[a.k] | 0);
       if (fn) d += '<div class="zd need">돌파 재료 — 비급 조각 <b style="color:' + (haveF >= fn ? '#e8c96a' : '#8b97a5') + '">' + haveF + ' / ' + fn + '</b></div>';
       if (xp >= need && lvFull)
-        d += '<button class="trbuy" id="abrk"' + (canBreak(a) ? '' : ' disabled') +
-             '><span>' + fmt(cost) + '</span><i>' + coin() + ' 돌파</i></button>';
+        d += '<button class="trbuy" id="abrk"><span>' + fmt(cost) + '</span><i>' + coin() + ' 돌파</i></button>';
       else if (xp >= need)
         d += '<div class="zd need">연마를 상한(Lv ' + artLvCap(a.k) + ')까지 채우면 돌파가 열린다</div>';
     } else {
@@ -243,7 +255,7 @@ function refreshArts(){
     const pts = skillPtsLeft();
     d += '<div class="zd atr"><span class="eqlab">특성</span>무공점 <b>' + fmt(pts) + '</b></div><div class="atrs">' +
       traitDefs(a.k).map(t => { const own = hasTrait(a.k, t.id), pay = pts >= (t.c || 0), short = (t.d.split(' — ')[1] || t.d);
-        return '<button class="atrc' + (own ? ' own' : '') + '" data-t="' + t.id + '"' + (own || !pay ? ' disabled' : '') + '><span>' + t.n + '</span><small>' + short + '</small><i>' + (own ? '✓' : t.c + '점') + '</i></button>'; }).join('') +
+        return '<button class="atrc' + (own ? ' own' : '') + '" data-t="' + t.id + '"><span>' + t.n + '</span><small>' + short + '</small><i>' + (own ? '✓' : t.c + '점') + '</i></button>'; }).join('') +
       '</div>';
   }
   if (a.fate && !got){
@@ -254,12 +266,12 @@ function refreshArts(){
          (open ? '' : '<br>' + realmName(a.need) + '에 열린다') + ' · ' + coin() + ' ' + fmt(a.cost) + '</div>';
   } else if (!got){
     d += open
-      ? '<button class="trbuy" id="abuy"' + (S.silver >= a.cost ? '' : ' disabled') +
-        '><span>' + fmt(a.cost) + '</span><i>' + coin() + ' 배우기</i></button>'
+      ? '<button class="trbuy" id="abuy"><span>' + fmt(a.cost) + '</span><i>' + coin() + ' 배우기</i></button>'
       : '<div class="zd need">' + realmName(a.need) + '에 열린다 · ' + coin() + ' ' +
         fmt(a.cost) + '</div>';
   }
   $('adet').innerHTML = d;
+  artBtnState(a);
   const btn = $('abuy');
   if (btn) btn.onclick = () => { if (learnArt(artSel)) refreshArts(); };
   const bbtn = $('abrk');
