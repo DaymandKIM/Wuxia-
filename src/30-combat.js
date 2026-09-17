@@ -12,6 +12,18 @@ function foeAtkRoll(f){
 function foeAtkAnim(f){
   return f.av ? 'atk' + (f.av + 1) : 'atk';
 }
+// 공격 스트립 재생 속도는 **컷 수에서 나온다** (v2.94.26, 사용자 "컷을 많이 잘라서 아주 풍부한 공격 모션을 만들도록 해 항상") —
+// FOES.fps.atk 를 고정해 두면 컷이 8장인 스트립은 절반만 보이고 끝난다. 몇 장이든 공격 시간(FOE.dur·BOSSATK.dur)
+// 안에 전부 돌게 나눈다. 판정(hitAt 0.55)은 그대로라 밸런스는 안 움직인다.
+function foeFps(f, M){
+  const a = f.anim || 'idle';
+  if (a.indexOf('atk') === 0){
+    const seq = M.anim[a] || M.anim.atk || [];
+    const dur = f.boss ? BOSSATK.dur : FOE.dur;
+    if (seq.length) return seq.length / dur;
+  }
+  return M.fps[a] || M.fps.idle || 6;
+}
 
 function spawnFoe(){
   // 옆모습 스프라이트라 좌우에서 오는 게 자연스럽다 — 세로 성분을 눌러 납작한

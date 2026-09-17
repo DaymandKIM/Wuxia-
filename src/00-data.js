@@ -316,6 +316,16 @@ const PROPS = {
                 pick:[ ['prophq_dangmun_0',30,2], ['prophq_dangmun_1',32,2], ['prophq_dangmun_2',44,1],
                        ['prophq_dangmun_3',18,3], ['prophq_dangmun_4',28,2], ['prophq_dangmun_5',40,1],
                        ['prophq_dangmun_6',20,3], ['prophq_dangmun_7',30,3] ] },
+  // 마교 마당 — 화로·부서진 석상·진홍 깃발·뼈 무더기·돌 제단·말뚝 해골·금 간 항아리·마른 가지 (v2.94.26)
+  hq_magyo: { kind:'sprite', dens:0.38, grid:170,
+              pick:[ ['prophq_magyo_0',30,2], ['prophq_magyo_1',44,1], ['prophq_magyo_2',44,1],
+                     ['prophq_magyo_3',22,3], ['prophq_magyo_4',32,1], ['prophq_magyo_5',40,2],
+                     ['prophq_magyo_6',30,3], ['prophq_magyo_7',26,3] ] },
+  // 청죽문 마당 — 대나무 묶음·봉 거치대·짚 인형·대통 물받이·바구니·이끼 바위·울타리·댓잎 더미 (v2.94.26)
+  hq_bamboo: { kind:'sprite', dens:0.38, grid:170,
+               pick:[ ['prophq_bamboo_0',24,3], ['prophq_bamboo_1',42,1], ['prophq_bamboo_2',44,1],
+                      ['prophq_bamboo_3',38,2], ['prophq_bamboo_4',26,3], ['prophq_bamboo_5',28,3],
+                      ['prophq_bamboo_6',32,2], ['prophq_bamboo_7',22,3] ] },
 };
 
 // 상단 원경 배경 — 화면 위쪽 h(VH 비율)에 구역별 원경 한 장을 가로 타일링, 카메라

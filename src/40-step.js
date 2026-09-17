@@ -196,7 +196,7 @@ function step(dt){
     const na = f.dhT>0 ? 'dash'
              : (f.skT>0 ? 'skill' : (f.atkT>0 ? foeAtkAnim(f) : (f.hit>0 ? 'hit' : 'walk')));
     if (na !== f.anim){ f.anim = na; f.af = 0; }
-    f.af += dt * (M.fps[f.anim] || M.fps.atk || 6);   // atk2·atk3 는 fps 를 따로 안 주면 atk 와 같다
+    f.af += dt * foeFps(f, M);   // 공격 스트립은 컷 수에 맞춰 속도가 정해진다 — 몇 장이든 다 보인다
     const d = dist(f.x,f.y,P.x,P.y) || 1;
     f.dir = P.x >= f.x ? 1 : -1;
 
