@@ -211,6 +211,12 @@ function offlineGains(awaySec, noCap){
     budget -= chunk;
   }
   silver = killSilver() * kills;   // 은자는 후하게 전부 (방침: 확실한 오프라인 보상)
+  // [테스트 전용] 보상 N일은 **실제 사냥과 같은 식**으로 준다 (v2.95.9, 사용자 "왜 365일 보상이 무한대지?
+  // 체력을 보상으로 주지는 않잖아") — 아래 평소 모델은 '시간당 승급 수'라, 날수를 키우면 승급이 3285회가 되고
+  // 경지에 지수로 묶인 체력(1.31^경지)이 Infinity 가 된다. 처치 수 × 처치당 수련치는 선형이라 안 터진다.
+  if (noCap){
+    S.rexp += kills * killExpAt();
+  } else {
   // 수련치는 시간 기준 — 약한 적을 3만 번 잡아도 경지가 폭주하지 않게.
   // 8시간 꽉 채우면 승급 약 expLv8h회 분량. 필요량이 기하라 승급 단위로 준다.
   let grant = OFFLINE.expLv8h * (sec / OFFLINE.cap);
@@ -223,6 +229,7 @@ function offlineGains(awaySec, noCap){
     if (noCap && realmLv() >= TESTGIVE.realmCap) break;   // [테스트 전용] 보상은 경지를 여기서 멈춘다 (체력 Infinity 방지, v2.95.8)
     S.rexp += need * take;
     grant -= take;
+  }
   }
   // 심법 숙련도 오프라인에도 스민다
   for (const a of ARTS.list)
