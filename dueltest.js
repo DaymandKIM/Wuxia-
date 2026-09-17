@@ -37,8 +37,13 @@ setTimeout(()=>{
   ok(w.gotoHq('gaebang')===true && S.hq==='gaebang' && w.eval("zone()").n===DUEL.hqName.gaebang && w.eval("zone()").hq==='gaebang','gotoHq → zone() = '+w.eval("zone()").n);
   ok(S.stage===BOSS_STAGE-1 && S.kills===0,'단계 '+S.stage+'(제자 젠) · 처치 0');
   { const el=w.document.getElementById('hqload'); ok(el && !el.hidden && w.document.getElementById('hqname').textContent===DUEL.hqName.gaebang && w.document.getElementById('hqtip').textContent===DUEL.hqDesc.gaebang,'진입 로딩 화면: "'+w.document.getElementById('hqname').textContent+'" · "'+w.document.getElementById('hqtip').textContent+'"');
-    for(let i=0;i<Math.ceil(DUEL.load.dur*60)+4;i++) w.hqLoadStep(1/60);
-    ok(el.hidden===true,'로딩 화면은 '+DUEL.load.dur+'초 뒤 스스로 걷힌다'); }
+    const bar=w.document.getElementById('hqbar');
+    for(let i=0;i<20;i++) w.loadStep(1/60);
+    // v2.95.6 — 바는 그 본진 그림이 준비된 만큼 찬다. jsdom 은 그림을 decode 안 하니 0 에서 멈춘다 = 안 걷힌다
+    ok(el.hidden===false && parseInt(bar.style.width||'0')<100,'바가 다 차기 전엔 안 걷힌다 (지금 '+(bar.style.width||'0%')+')');
+    ok(w.zoneLoadKeys('hq_gaebang').length>0,'기다릴 그림 '+w.zoneLoadKeys('hq_gaebang').length+'장');
+    w.loadSkip();
+    ok(el.hidden===true,'바가 다 차면 걷힌다'); }
   ok(w.eval("gstage()")===DUEL.gBase.gaebang && w.hqRank('gaebang')===1,'전역 단계 = gBase '+w.eval("gstage()")+' · 1단');
   S.intro=0; w.hud && w.hud();
   const st=w.document.getElementById('stage').textContent;

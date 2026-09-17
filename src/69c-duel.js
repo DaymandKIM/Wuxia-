@@ -20,30 +20,21 @@ function hqFragGain(k, n, quiet){
   if (!quiet && typeof toast === 'function') toast(a.n + ' 비급 조각 +' + n + '\n' + (S.frag[a.k] | 0) + ' / ' + a.frag);
   return a;
 }
-// 본진 진입 로딩 화면 (v2.94.7) — 그림이 있으면 일러스트, 없으면 문파색 바탕. 전투는 뒤에서 이미 돌아가므로
-// 이 화면은 연출일 뿐이다(막지 않는다 — sim·테스트는 DOM 이 없어도 그대로 지나간다).
-let hqLoadT = 0;
+// 본진 진입 로딩 화면 (v2.94.7 → v2.95.6 공용 로딩 화면 showLoad 로). 전투는 뒤에서 이미 돌아가므로
+// 이 화면은 가림막일 뿐이다 — 바가 다 차면(그 본진 그림이 다 준비되면) 걷힌다.
 function showHqLoad(k){
-  const el = typeof $ === 'function' && $('hqload'); if (!el) return;
+  if (typeof showLoad !== 'function') return false;   // 로딩 화면 없는 조합(옛 테스트 목록)
   const sc = SCHOOLS[k] || SCHOOLS.none;
-  const art = ASSET['hq_art_' + k], frame = ASSET.hq_load_frame, ink = ASSET.hq_load_ink;
-  const im = $('hqart'); if (im){ if (art){ im.src = art; im.hidden = false; } else im.hidden = true; }
-  const fr = $('hqframe'); if (fr){ if (frame){ fr.src = frame; fr.hidden = false; } else fr.hidden = true; }
-  const ik = $('hqink'); if (ik){ if (ink){ ik.src = ink; ik.hidden = false; } else ik.hidden = true; }
-  const nm = $('hqname'); if (nm) nm.textContent = (DUEL.hqName && DUEL.hqName[k]) || sc.n;
-  const hz = $('hqhan'); if (hz) hz.textContent = (ARTS.list.find(a => a.school === k && a.frag) || {}).h || '';
-  const tp = $('hqtip'); if (tp) tp.textContent = (DUEL.hqDesc && DUEL.hqDesc[k]) || (hqRank(k) + '단');   // 문파 한 줄 소개 (v2.94.18)
-  if (el.style && el.style.setProperty) el.style.setProperty('--hqc', sc.c);   // sim 의 DOM 스텁엔 setProperty 가 없다
-  el.hidden = false; el.classList.remove('gone');
-  hqLoadT = DUEL.load.dur;
-}
-function hqLoadStep(dt){
-  if (hqLoadT <= 0) return;
-  hqLoadT -= dt;
-  const el = typeof $ === 'function' && $('hqload'); if (!el) return;
-  const bar = $('hqbar'); if (bar) bar.style.width = Math.max(0, Math.min(100, (1 - hqLoadT/DUEL.load.dur) * 100)) + '%';
-  if (hqLoadT <= DUEL.load.fade) el.classList.add('gone');
-  if (hqLoadT <= 0){ el.hidden = true; el.classList.remove('gone'); }
+  return showLoad({
+    art:   ASSET['hq_art_' + k],
+    frame: ASSET.hq_load_frame,
+    ink:   ASSET.hq_load_ink,
+    han:   (ARTS.list.find(a => a.school === k && a.frag) || {}).h || '',
+    name:  (DUEL.hqName && DUEL.hqName[k]) || sc.n,
+    tip:   (DUEL.hqDesc && DUEL.hqDesc[k]) || (hqRank(k) + '단'),   // 문파 한 줄 소개 (v2.94.18)
+    color: sc.c,
+    keys:  typeof zoneLoadKeys === 'function' ? zoneLoadKeys('hq_' + k) : [],
+  });
 }
 // 본진으로 이동 — 단계 10(제자 젠). 사냥터로 돌아오는 건 gotoZone(S.hq=null)
 function gotoHq(k){

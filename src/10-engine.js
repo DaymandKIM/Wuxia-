@@ -43,18 +43,20 @@ function resize(){
   cv.style.left   = VIEW.x + 'px';
   cv.style.top    = VIEW.y + 'px';
 
+  // **화면판은 늘 가로 400 단위다** (v2.95.6, 사용자 "화면 크기에 따라 캐릭터 크기도 변하더라") —
+  // 옛 판은 백버퍼를 화면 px 에 맞추고 SC 를 정수로 반올림해서, 폰 390 은 VW 390 · 패드 710 은 VW 355 가 됐다.
+  // 같은 인물이 기기마다 화면의 12%도 되고 13%도 됐다는 뜻이다. 이제 VW 를 BASE_W 로 못 박고
+  // 백버퍼를 VW×SC 로 잡아 CSS 로 늘린다 — 그리기는 정수 배율이라 그대로 또렷하고(#cv image-rendering:pixelated),
+  // 화면이 크든 작든 보이는 세상의 폭이 같다.
+  VW = BASE_W;
+  VH = Math.max(1, Math.round(BASE_W * h / w));
   // 백버퍼 배율 — 화질 단계에서 나온다 (v2.95.5). 옛 판은 무조건 max(2, min(DPR,3)) 이라
   // DPR 3 폰에서 1170×2532 를 매 프레임 칠했다(11fps). 이제 기본이 2배다.
   const raw = Math.max(1, Math.min(window.devicePixelRatio || 1, qualScale()));
-  let pw = Math.round(w * raw), ph = Math.round(h * raw);
-  if (pw * ph > MAXPX){
-    const k = Math.sqrt(MAXPX / (pw * ph));
-    pw = Math.round(pw * k); ph = Math.round(ph * k);
-  }
-  cv.width = pw; cv.height = ph;
-
-  SC = Math.max(1, Math.round(pw / BASE_W));
-  VW = Math.ceil(pw / SC); VH = Math.ceil(ph / SC);
+  SC = Math.max(1, Math.round(w * raw / BASE_W));
+  if (VW * SC < w) SC++;                                 // CSS 폭보다 백버퍼가 작으면 늘려 그린 게 뭉갠다 — 한 칸 올린다
+  while (SC > 1 && VW * SC * VH * SC > MAXPX) SC--;      // iOS 캔버스 픽셀 상한
+  cv.width = VW * SC; cv.height = VH * SC;
   ctx.imageSmoothingEnabled = false;
 
   // UI도 같은 영역에 맞춘다

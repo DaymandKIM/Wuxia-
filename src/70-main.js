@@ -216,7 +216,22 @@ function closeTitle(){
   if (!titleOn) return; titleOn = false;
   const t = $('title'); t.classList.add('gone');
   setTimeout(() => { t.hidden = true; }, 520);
-  if (og) showOffline(og);           // 처치 0이어도 보여준다 — 수련치는 시간으로 쌓인다
+  startLoad();                       // 로딩 화면 — 바가 다 차면 복귀 카드 (v2.95.6)
+}
+// 시작 로딩 화면 (v2.95.6, 사용자 "그 스타일이면 게임 시작할 때도") — 입산하면 지금 구역 그림이
+// 다 준비될 때까지 가려 준다. 상단 바·글꼴·시트가 자리를 잡는 첫 프레임을 덮는 값도 있다
+// (사용자 "처음 시작할 때 버튼 이후 화면이 뜨면서 뭔가 깨지는 느낌").
+function startLoad(){
+  const z = ZONES[S.zi] || ZONES[0];
+  showLoad({
+    art:   ASSET.title_bg || ASSET[BACKDROP.keys[z.k]],
+    frame: ASSET.hq_load_frame,
+    name:  z.n,
+    tip:   LOADSCR.startTip,
+    color: LOADSCR.color,
+    keys:  zoneLoadKeys(z.k),
+    then:  () => { if (og) showOffline(og); },   // 처치 0이어도 보여준다 — 수련치는 시간으로 쌓인다
+  });
 }
 if (ASSET.title_bg && $('title')){
   titleOn = true;
@@ -224,7 +239,7 @@ if (ASSET.title_bg && $('title')){
   if (ASSET.hero_face) $('tface').src = ASSET.hero_face; else $('tface').hidden = true;
   $('title').hidden = false;
   $('title').onpointerdown = e => { e.preventDefault(); closeTitle(); };
-} else if (og) showOffline(og);
+} else startLoad();                    // 타이틀 그림이 없으면 로딩 화면부터 (v2.95.6)
 
 saveNow();
 setInterval(saveNow, SAVE.every * 1000);

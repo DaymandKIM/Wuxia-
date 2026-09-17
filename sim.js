@@ -3,7 +3,7 @@
    기본 24시간(느림, ~1분). 짧게 보려면 SIM_MIN=60 node sim.js */
 const fs=require('fs');
 const ORDER=['00-data.js','10-engine.js','15-audio.js','20-state.js','30-combat.js',
-             '40-step.js','50-render.js','60-ui.js','62-train.js','63-arts.js','65b-treedata.js','66-tree.js','68-equip.js','69-achv.js','69b-sect.js','69c-duel.js'];
+             '40-step.js','50-render.js','60-ui.js','61-load.js','62-train.js','63-arts.js','65b-treedata.js','66-tree.js','68-equip.js','69-achv.js','69b-sect.js','69c-duel.js'];
 let code=ORDER.map(f=>fs.readFileSync(__dirname+'/src/'+f,'utf8')).join('\n').replace('"use strict";','');
 const noop=()=>{};
 const ctx=new Proxy({},{get:(t,k)=>k==='canvas'?{width:1170,height:2532}:()=>{},set:()=>true});

@@ -349,6 +349,25 @@ const QUALITY = {
   name: ['높음', '보통', '낮음'],
 };
 
+// 로딩 화면 (v2.95.6, 사용자 "로딩바가 다 끝나면 화면 넘어가자 · 그 스타일이면 시작할 때랑 지역 넘어갈 때도")
+// 본진 진입에만 있던 두루마리 화면을 **시작·구역 이동·본진** 공용으로 쓴다.
+// 바는 연출이 아니라 **그 장면이 쓸 그림이 몇 장 준비됐나**를 잰다 — 다 차야 화면이 걷힌다.
+const LOADSCR = {
+  min: 0.8,        // 그림이 이미 다 있어도 이만큼은 머문다(깜빡임 방지)
+  max: 8,          // 안 오는 그림을 마냥 기다리진 않는다
+  fade: 0.45,      // 바가 다 찬 뒤 걷히는 시간
+  // 구역 한 줄 소개 — 본진 hqDesc 와 같은 자리
+  zoneTip: {
+    bamboo:  '네가 자란 대숲 — 여기서 시작한다',
+    village: '사람이 떠난 마을 — 남은 것은 원한뿐',
+    cave:    '햇빛이 닿지 않는 굴 — 발밑을 조심한다',
+    snow:    '눈이 그치지 않는 산 — 숨이 얼어붙는다',
+    heaven:  '하늘에 닿은 산 — 여기부터는 사람의 땅이 아니다',
+  },
+  startTip: '강호에 나선다',
+  color: '#d8a84a',   // 구역·시작 화면 바 색 (본진은 문파색)
+};
+
 const GROUNDTEX = {
   a: 0.9, scale: 1,
   keys: { bamboo:'ground_bamboo', village:'ground_village', cave:'ground_cave', snow:'ground_snow', heaven:'ground_heaven' },
@@ -1741,6 +1760,7 @@ DUEL.hqSky = { gaebang:'#e1b677', sorim:'#cea98c', mudang:'#c3dedd', hwasan:'#f4
 DUEL.hqGroundA = { sorim:0.8, ami:0.7, dangmun:0.8, hwasan:0.85, bamboo:0.85 };   // 대비가 센 바닥은 옅게(인물 가독성)       // 줄눈이 어두운 석판은 텍스처를 옅게(인물 가독성, GROUNDTEX.aZone)
 // 본진 진입 로딩 화면 (v2.94.7, 사용자 "해당 문파로 넘어갈 때 이미지 3장 로딩 화면에서") — 에셋이 없으면 문파색 바탕으로 뜬다.
 // 그림 키: hq_art_<문파>(세로 일러스트) · hq_load_frame(공통 두루마리 테두리) · hq_load_ink(공통 먹 번짐)
+// v2.95.6 부터 로딩 화면 수치는 공용 LOADSCR 가 쥔다 — DUEL.load 는 남겨만 둔다(옛 저장·문서 참조)
 DUEL.load = { dur:1.7, fade:0.45, ink:0.5 };   // 머무는 시간 · 걷히는 시간 · 먹 번짐이 도는 시간
 DUEL.hqGroundScale = { sorim:0.5, gaebang:0.7, mudang:0.62, hwasan:0.55, ami:0.46, dangmun:0.5, magyo:0.5, bamboo:0.6 };   // 무당·아미는 새 시트가 잘려 나와(--cut=joints) 칸이 작다   // 타일 배율 — 소림 석판 128px→64px(인물 키 47 정도), 개방 발자국·모닥불 자국   // 원경 위 남는 하늘(시트 첫 불투명 5줄 평균, hqbg.py 보고) — 없으면 땅색으로 칠해져 갈색 띠가 뜬다
 for (const k in DUEL.gBase){

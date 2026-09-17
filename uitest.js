@@ -72,6 +72,30 @@ setTimeout(()=>{
     S.zi=0; S.stage=1; S.kills=0;
   }
 
+  // 로딩 화면 (v2.95.6) — 구역을 넘으면 뜨고, 바가 다 차야 걷힌다
+  {
+    const el=w.document.getElementById('hqload'), bar=w.document.getElementById('hqbar');
+    w.loadSkip();
+    w.gotoZone(1,1);
+    const nm=w.document.getElementById('hqname').textContent, tip=w.document.getElementById('hqtip').textContent;
+    console.log(el && !el.hidden && nm==='폐촌' ? '  구역 이동 로딩 화면: "'+nm+'" · "'+tip+'"' : '  ★실패 구역 로딩 화면이 안 떴다');
+    if(!el || el.hidden || nm!=='폐촌') errs.push('구역 로딩 화면');
+    for(let i=0;i<30;i++) w.loadStep(1/60);
+    console.log(!el.hidden && parseInt(bar.style.width||'0')<100 ? '  바가 다 차기 전엔 안 걷힌다' : '  ★실패 바보다 먼저 걷혔다');
+    if(el.hidden) errs.push('로딩 화면이 바보다 먼저 걷힘');
+    const keys=w.zoneLoadKeys('village');
+    console.log('  폐촌이 기다리는 그림 '+keys.length+'장');
+    if(!keys.length) errs.push('zoneLoadKeys 비었다');
+    w.loadSkip();
+    console.log(el.hidden ? '  바가 다 차면 걷힌다' : '  ★실패 안 걷혔다');
+    // 시작도 같은 화면 (사용자 "게임 시작할 때랑 지역 넘어갈 때도")
+    w.startLoad();
+    console.log(!el.hidden && w.document.getElementById('hqtip').textContent===w.eval('LOADSCR.startTip') ? '  시작 로딩 화면도 같은 틀' : '  ★실패 시작 로딩 화면');
+    if(el.hidden) errs.push('시작 로딩 화면');
+    w.loadSkip();
+    w.gotoZone(0,1); w.loadSkip();
+  }
+
   console.log('오류:', errs.length?errs.slice(0,2):'없음');
   process.exit(0);
 },600);

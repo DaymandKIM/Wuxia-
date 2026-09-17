@@ -298,7 +298,7 @@ setTimeout(()=>{
   ok(w.eval('S.hq="sorim"; bossFxCol()')===w.eval('rgbOf(SCHOOLS.sorim.c)') && w.eval('S.hq=null; bossFxCol()')===w.eval('FXD.boss.c'),'보스 등장·스킬 파열 색: 본진은 문파색, 사냥터는 옛 주황');
   // 문파별 전용 시트가 제 상황·제 폭으로 그려지는지 (v2.94.15 무당·화산 추가)
   for (const [k, who] of [['mudang','md'],['hwasan','hs'],['dangmun','dm'],['magyo','mg'],['ami','am'],['bamboo','bb']]){
-    w.eval('S.foes.length=0; S.bossAlive=false; gotoHq("'+k+'"); S.intro=0; hqLoadStep(99); S.foes.length=0; spawnFoe(); S.foes[0].anim="idle"; S.foes[0].af=0; S.foes[0].x=P.x+60; S.foes[0].y=P.y;');
+    w.eval('S.foes.length=0; S.bossAlive=false; gotoHq("'+k+'"); S.intro=0; loadSkip(); S.foes.length=0; spawnFoe(); S.foes[0].anim="idle"; S.foes[0].af=0; S.foes[0].x=P.x+60; S.foes[0].y=P.y;');
     renderNow();
     ok(w.eval('S.foes[0].k')===who+'_disc' && drew(who+'_disc_idle0', w.eval('FOES.'+who+'_disc.w')),k+' 본진 제자 = '+who+'_disc, 대기 컷이 선언 폭('+w.eval('FOES.'+who+'_disc.w')+')으로');
     for (const tier of ['elite','elder']){
@@ -319,7 +319,7 @@ setTimeout(()=>{
   ok(w.eval('!!IMG[BACKDROP.keys[rzone().k]] && !!IMG[GROUNDTEX.keys[rzone().k]]'),'개방 원경(bg_hq_gaebang)·바닥(ground_hq_gaebang) 에셋이 로드 목록에 있다 (jsdom 은 이미지를 안 읽어 그리기는 캔버스 캐시로 간다)');
   ok(w.eval('BACKDROP.sky.hq_gaebang')===w.eval('DUEL.hqSky.gaebang'),'원경 위 하늘색 등록');
   // 본진 마당 소품 (v2.94.21) — 소품이 등록된 본진은 그 키로 그려진다
-  w.eval('gotoHq("sorim"); S.intro=0; hqLoadStep(99); S.camX=0; S.camY=0;'); renderNow();
+  w.eval('gotoHq("sorim"); S.intro=0; loadSkip(); S.camX=0; S.camY=0;'); renderNow();
   ok(w.eval('!!PROPS[rzone().k]') && draws.some(d=>String((d.im&&d.im.__key)||'').indexOf('prophq_sorim')===0 || true),'소림 본진 소품 표가 rzone 키로 잡힌다 ('+w.eval('PROPS[rzone().k].pick.length')+'종)');
   ok(w.eval('PROPS.hq_sorim.pick.every(p=>!!IMG[p[0]])'),'소림 소품 8종 로드');
   // 적 공격 이펙트 (v2.95) — FOEFX 에 적힌 결이 실제로 S.fx 조각을 만드는지. 표에만 적고 코드가 그 결을 모르면 조용히 아무것도 안 뜬다.

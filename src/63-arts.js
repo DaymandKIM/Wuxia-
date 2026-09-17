@@ -225,32 +225,38 @@ function refreshArts(){
           (got ? ' <em>익힘</em>' : (a.fate ? ' <em class="fate">기연</em>' : '')) + '</div>' +
           '<div class="zd">' + a.d + (artFxText(a) ? '<b class="trv">' + artFxLines(a) + '</b>' : '') + '</div>';
   if (got){
+    // 익힌 무공은 **왼쪽 연마 · 오른쪽 숙련** 두 칸으로 (v2.95.6, 사용자 "상세창이 아래를 너무 많이 덮음").
+    // 한 칸만 있으면 그 칸이 폭을 다 쓴다(.acol.full).
+    let colL = '', colR = '';
     // 연마 — 은자로 바로 올린다. 상한에 닿으면 돌파가 다음 문이다
     if (a.cost !== undefined){
       const lv = artLv(a.k), cap = artLvCap(a.k);
-      d += '<div class="zd">연마 Lv <span id="alvlnum">' + lv + ' / ' + cap + '</span>';
+      colL += '<div class="zd">연마 Lv <span id="alvlnum">' + lv + ' / ' + cap + '</span>';
       if (lv < cap){
-        d += '</div><button class="trbuy" id="alvl"><span id="alvlcost">' + fmt(artLvCost(a.k)) + '</span><i>' + coin() + ' 연마</i></button>';
+        colL += '</div><button class="trbuy" id="alvl"><span id="alvlcost">' + fmt(artLvCost(a.k)) + '</span><i>' + coin() + ' 연마</i></button>';
       } else {
-        d += (st < MASTERY.maxStar ? ' — 성을 돌파하면 상한이 열린다' : ' — 극에 달했다') + '</div>';
+        colL += (st < MASTERY.maxStar ? ' — 성을 돌파하면 상한이 열린다' : ' — 극에 달했다') + '</div>';
       }
     }
     if (st < MASTERY.maxStar){
       const cost = artBreakCost(a.k);
-      d += '<div class="zd">숙련 ' + st + '성 · <span id="axp">' +
-           Math.min(xp, need) + ' / ' + need + '</span>' +
-           (a.type === 'active' ? ' (시전 횟수)' : ' (처치 수)') + '</div>' +
-           '<div class="zd need">돌파하면 →<br>' + artFxLines(a, st + 1) + '</div>';
+      colR += '<div class="zd">숙련 ' + st + '성 · <span id="axp">' +
+              Math.min(xp, need) + ' / ' + need + '</span>' +
+              (a.type === 'active' ? ' (시전 횟수)' : ' (처치 수)') + '</div>' +
+              '<div class="zd need">돌파하면 →<br>' + artFxLines(a, st + 1) + '</div>';
       const lvFull = a.cost === undefined || artLv(a.k) >= artLvCap(a.k);
       const fn = breakFragNeed(a), haveF = (S.frag[a.k] | 0);
-      if (fn) d += '<div class="zd need">돌파 재료 — 비급 조각 <b style="color:' + (haveF >= fn ? '#e8c96a' : '#8b97a5') + '">' + haveF + ' / ' + fn + '</b></div>';
+      if (fn) colR += '<div class="zd need">돌파 재료 — 비급 조각 <b style="color:' + (haveF >= fn ? '#e8c96a' : '#8b97a5') + '">' + haveF + ' / ' + fn + '</b></div>';
       if (xp >= need && lvFull)
-        d += '<button class="trbuy" id="abrk"><span>' + fmt(cost) + '</span><i>' + coin() + ' 돌파</i></button>';
+        colR += '<button class="trbuy" id="abrk"><span>' + fmt(cost) + '</span><i>' + coin() + ' 돌파</i></button>';
       else if (xp >= need)
-        d += '<div class="zd need">연마를 상한(Lv ' + artLvCap(a.k) + ')까지 채우면 돌파가 열린다</div>';
+        colR += '<div class="zd need">연마를 상한(Lv ' + artLvCap(a.k) + ')까지 채우면 돌파가 열린다</div>';
     } else {
-      d += '<div class="zd">숙련 ' + st + '성 — 극에 달했다</div>';
+      colR += '<div class="zd">숙련 ' + st + '성 — 극에 달했다</div>';
     }
+    const one = !colL || !colR;
+    if (colL) d += '<div class="acol' + (one ? ' full' : '') + '">' + colL + '</div>';
+    if (colR) d += '<div class="acol' + (one ? ' full' : '') + '">' + colR + '</div>';
   }
   // 특성 (v2.93.7 — 옛 스킬 심화창에서 이리로): 무공점으로 켠다. 한 줄 이름 + 짧은 효과 + 값. 켠 것은 초록 ✓
   if (got && typeof traitDefs === 'function' && traitDefs(a.k).length){

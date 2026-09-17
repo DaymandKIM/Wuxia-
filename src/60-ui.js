@@ -21,6 +21,9 @@ function toast(msg, opt){
 
 let topH = -1;   // 상단 바 높이(px) — 시트 윗변 CSS 변수 --toph (v2.90.3)
 function hud(){
+  // 로딩 화면은 **진입 연출 중에도** 돈다 (v2.95.6) — 아래 `if (!showing) return` 뒤에 두면
+  // 시작·구역 이동 직후(S.intro > 0) 바가 0% 에 얼어 있다가 연출이 끝나며 한 번에 100% 로 튄다.
+  if (typeof loadStep === 'function') loadStep(1/60);
   // 진입 연출 중엔 HUD를 감춘다
   const showing = S.intro <= 0;
   const tbEl = $('topbar'); tbEl.style.opacity = showing ? '1' : '0';   // v2.85 상단 바(HUD·≡ 포함)
@@ -36,7 +39,6 @@ function hud(){
   const sb = $('sbar'); sb.style.opacity = bars ? '1' : '0'; sb.style.pointerEvents = bars ? '' : 'none';
   const tb = $('tbtn'); if (tb){ tb.style.opacity = bars ? '1' : '0'; tb.style.pointerEvents = bars ? '' : 'none'; }   // [테스트 전용]
   if (!showing) return;
-  if (typeof hqLoadStep === 'function') hqLoadStep(1/60);   // 본진 진입 로딩 화면 (v2.94.7)
   trainHud();                                    // 수련 탭 알림점·열린 패널 갱신
   artsHud();                                     // 무공 탭 알림점·열린 패널 갱신
   if (typeof equipHud === 'function') equipHud();  // 장비 탭 (v2.66)
@@ -166,6 +168,20 @@ function gotoZone(i, st){
   if (TEST) S.rexp = Math.max(S.rexp, seedExp(i, st));
   closeZonePanel();
   enterStage(true);            // 구역 이동은 연출한다
+  showZoneLoad(i);             // 로딩 화면 (v2.95.6, 사용자 "지역 넘어갈 때도")
+}
+// 구역 로딩 화면 — 그 구역 원경을 깔고, 그 구역이 쓸 그림이 다 준비되면 걷힌다
+function showZoneLoad(i){
+  if (typeof showLoad !== 'function') return false;
+  const z = ZONES[i]; if (!z) return false;
+  return showLoad({
+    art:   typeof ASSET !== 'undefined' ? ASSET[BACKDROP.keys[z.k]] : null,
+    frame: typeof ASSET !== 'undefined' ? ASSET.hq_load_frame : null,
+    name:  z.n,
+    tip:   LOADSCR.zoneTip[z.k] || '',
+    color: LOADSCR.color,
+    keys:  typeof zoneLoadKeys === 'function' ? zoneLoadKeys(z.k) : [],
+  });
 }
 
 // 사냥터 = 여정 지도 (v2.56) — 5구역을 지그재그 길로 잇고 구역색 원형 노드에

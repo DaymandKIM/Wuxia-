@@ -107,6 +107,7 @@ setTimeout(()=>{
   const {w:w2,errs:e2}=boot(JSON.stringify(Object.assign(d2,{at:Date.now()-3*3600*1000})));
   setTimeout(()=>{
     const S2=w2.eval('S'); w2.closeTitle();
+    if (typeof w2.loadSkip === 'function') w2.loadSkip();   // 로딩 화면이 다 찬 셈 친다 (v2.95.6 — 복귀 카드는 그 뒤에 뜬다)
     ok(w2.hallLv('gate')===5 && w2.hallLv('library')===4 && S2.fame>d.fame && w2.sectName()==='벽력문' && S2.disciples.length>=d2.disciples.length && S2.disciples[0].n===d2.disciples[0].n,'복원: 산문 5·장경각 4·이름 '+w2.sectName()+'·제자 '+S2.disciples.length+'명 · 3시간 오프라인 명성 '+Math.round(d.fame)+' → '+Math.round(S2.fame));
     ok(S2.silver>d2.silver && w2.document.getElementById('obody').innerHTML.includes('제자 수익'),'오프라인 제자 수익이 정산에 붙는다 (복귀 카드에 줄)');
     ok(e2.length===0,'런타임 오류 0 (복원)'+(e2.length?': '+e2[0]:''));

@@ -242,7 +242,7 @@
   #tbtn:active{background:#7a5238;}
   #tspd{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px;}
   /* overflow:hidden — 닫힌 시트(아래로 밀린 상태)가 컨테이너 밖 탭바 위로 삐져나오지 않게 */
-  #zpanel,#tpanel,#trpanel,#rpanel,#apanel,#dpanel,#epanel,#vpanel,#cpanel,#spanel{position:absolute;inset:var(--toph,0px) 0 var(--tabh) 0;pointer-events:none;   /* 위는 상단 바(--toph, 60-ui가 잰다) 아래부터 — 시트가 화면을 꽉 채운다 (v2.90.3) */
+  #zpanel,#tpanel,#trpanel,#rpanel,#apanel,#dpanel,#epanel,#vpanel,#cpanel,#spanel{position:absolute;inset:0 0 var(--tabh) 0;pointer-events:none;   /* 상단 바까지 덮는다 (v2.95.6, 사용자 "모든 탭은 UI 맨 위를 덮어도 됨") — 시트가 세로로 더 길게 쓴다 */
     overflow:hidden;background:rgba(6,8,11,0);transition:background .2s;display:flex;align-items:flex-end;}
   #zpanel.show,#tpanel.show,#trpanel.show,#rpanel.show,#apanel.show,#dpanel.show,#epanel.show,#vpanel.show,#cpanel.show,#spanel.show{pointer-events:auto;background:rgba(6,8,11,.72);}
   .zsheet{width:100%;background:#12161c;border-top:1.5px solid #2b333d;
@@ -350,8 +350,13 @@
   @keyframes bdp{50%{transform:scale(1.35);}}
   /* 상세·버튼은 탭 줄 아래에 붙어 있다 (v2.94.30) — 타일을 훑는 동안에도 배우기·연마 버튼이 늘 보인다 */
   .adet{position:sticky;top:34px;z-index:2;margin:10px 12px 4px;padding:10px 14px;background:#171d25;border:1.5px solid #3c6f9e;
-    border-radius:11px;scroll-margin-bottom:14px;}
-  .adet .trbuy{margin-top:8px;}
+    border-radius:11px;scroll-margin-bottom:14px;
+    /* 2열 (v2.95.6, 사용자 "스킬 배우면 상세창이 아래를 너무 많이 덮음 — 오른쪽 빈 공간도 써서 길이를 최소화") */
+    display:grid;grid-template-columns:1fr 1fr;gap:2px 12px;align-content:start;max-height:46vh;overflow:auto;}
+  .adet>.zn,.adet>.zd,.adet>.atr,.adet>.atrs,.adet>.trbuy,.adet>.acol.full{grid-column:1/-1;}
+  .acol{display:flex;flex-direction:column;justify-content:flex-start;min-width:0;}
+  .acol .zd{margin-top:2px;}
+  .adet .trbuy{margin-top:6px;}
   /* 무공 특성 칩 (v2.93.7 — 상세창 안에서 바로 올린다) */
   .atr{margin-top:6px;} .atr b{color:#9fd0ff;}
   .atrs{display:flex;gap:6px;margin-top:5px;}
