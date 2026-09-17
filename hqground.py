@@ -111,6 +111,12 @@ elif '--nopatch' not in opts:
     else: print('워터마크 못 찾음')
 if patch:
     x, y, w, h = patch
+    # 타일 가장자리에 걸치면 폭·높이를 잘라 맞춘다(청죽문 바닥에서 3px 넘쳐 터졌다)
+    w = min(w, tw - x, x); h = min(h, th - y)
+    if w <= 0 or h <= 0:
+        print('워터마크가 타일 끝에 붙어 메울 수 없다 — 그대로 둔다'); patch = None
+if patch:
+    x, y, _w, _h = patch; w, h = w, h
     if opts.get('--patch-src') == 'left':
         src = t[y:y + h, x - w:x].copy(); where = '왼쪽 띠'
     else:

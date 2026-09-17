@@ -78,9 +78,42 @@ if patch: cmd.append('--patch=%d,%d,%d,%d' % patch)
 print('$', ' '.join(cmd)); subprocess.run(cmd, check=True, cwd=R)
 cmd = [sys.executable, os.path.join(R, 'bg_fix.py'), zone] + (['--crop-top=' + opts['--crop-top']] if '--crop-top' in opts else [])
 print('$', ' '.join(cmd)); subprocess.run(cmd, check=True, cwd=R)
+out = '%s/assets/bg_%s.png' % (R, zone)
+
+# ── 3b. --defringe[=거리] : 하늘 경계에 남은 마젠타 테두리를 걷는다 (v2.94.5) ──
+# bg_extract 의 edge 규칙(r>150·b>150·g<130)은 **밝은** 마젠타 번짐만 잡는다. 옅은 하늘(무당·아미)이나
+# 어두운 잎(청죽문)에 번진 자주는 r·b 가 낮거나 g 가 높아 규칙을 빠져나가 1~5px 자주 윤곽으로 남았다
+# (청죽문 대나무 잎이 전부 보라 테두리). 하늘(투명)에 닿아 이어진 '자주 계열' 덩어리만 골라
+# 가장 가까운 성한 픽셀 색으로 메운다 — 거리 상한이 있어 안쪽 그림(마교 붉은 안개 등)은 안 건드린다.
+if '--defringe' in opts:
+    from scipy import ndimage
+    maxd = int(opts['--defringe']) if opts['--defringe'] != '1' else 14
+    arr = np.array(Image.open(out).convert('RGBA')).astype(int)
+    op = arr[:, :, 3] >= 100
+    rr, gg, bb = arr[:, :, 0], arr[:, :, 1], arr[:, :, 2]
+    cand = op & (gg < (rr + bb) / 2.0 - 10)            # 초록이 적·청 평균보다 낮다 = 자주 계열
+    lab, nn = ndimage.label(cand, np.ones((3, 3)))
+    touch = np.unique(lab[ndimage.binary_dilation(~op, np.ones((3, 3))) & cand])
+    keep = np.zeros(nn + 1, bool); keep[touch[touch > 0]] = True
+    m = keep[lab] & (ndimage.distance_transform_edt(op) <= maxd)
+    good = op & ~m
+    iy, ix = ndimage.distance_transform_edt(~good, return_indices=True)[1]
+    for c in range(3): arr[m, c] = arr[iy[m], ix[m], c]
+    # 팔레트 PNG-8 로 되저장(bg_extract·bg_fix 와 같은 규격). bg_fix.save_pal 을 그냥 부르면
+    # 색이 255개보다 적게 나온 그림에서 팔레트가 짧아져 투명 인덱스 255가 밀린다 — 765바이트로 채운다.
+    arr = arr.astype(np.uint8)
+    rows = np.where(op.any(1))[0]
+    skyc = arr[rows[0], op[rows[0]], :3].mean(0).astype(np.uint8)
+    rgbq = arr[:, :, :3].copy(); rgbq[~op] = skyc
+    q = Image.fromarray(rgbq, 'RGB').quantize(255, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.FLOYDSTEINBERG)
+    idx = np.array(q); idx[~op] = 255
+    pal = list(q.getpalette())[:255 * 3]; pal += [0] * (255 * 3 - len(pal)); pal += [int(v) for v in skyc]
+    pim = Image.fromarray(idx.astype(np.uint8), 'P'); pim.putpalette(pal)
+    pim.info['transparency'] = bytes([255] * 255 + [0])
+    pim.save(out, optimize=True, transparency=bytes([255] * 255 + [0]))
+    print('마젠타 테두리 %d px 걷음(거리 %d)' % (int(m.sum()), maxd))
 
 # ── 4. 검사 ──
-out = '%s/assets/bg_%s.png' % (R, zone)
 b = np.array(Image.open(out).convert('RGBA')).astype(int); Hb, Wb = b.shape[:2]
 al = b[:, :, 3].mean(1); L = b[:, :, :3].mean(2).mean(1)
 top = int(np.argmax(al > 200))
