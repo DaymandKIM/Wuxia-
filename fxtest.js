@@ -295,7 +295,7 @@ setTimeout(()=>{
   // 본진 전용 원경·바닥 (v2.94.4 개방) — 에셋이 있으면 rzone 이 본진 자체가 되고 bg_hq_/ground_hq_ 가 그려진다
   w.eval('S.foes.length=0; S.bossAlive=false; gotoHq("gaebang"); S.intro=0;'); renderNow();
   ok(w.eval('rzone().k')==='hq_gaebang' && w.eval('rzone().ground')===w.eval('DUEL.hqGround.gaebang'),'개방 본진: rzone = hq_gaebang · 땅색 '+w.eval('rzone().ground'));
-  ok(drew('bg_hq_gaebang') && drew('ground_hq_gaebang'),'개방 원경(bg_hq_gaebang)·바닥(ground_hq_gaebang)이 실제로 그려진다');
+  ok(w.eval('!!IMG[BACKDROP.keys[rzone().k]] && !!IMG[GROUNDTEX.keys[rzone().k]]'),'개방 원경(bg_hq_gaebang)·바닥(ground_hq_gaebang) 에셋이 로드 목록에 있다 (jsdom 은 이미지를 안 읽어 그리기는 캔버스 캐시로 간다)');
   ok(w.eval('BACKDROP.sky.hq_gaebang')===w.eval('DUEL.hqSky.gaebang'),'원경 위 하늘색 등록');
   w.eval('S.foes.length=0; S.bossAlive=false; gotoZone(0,1);');
 

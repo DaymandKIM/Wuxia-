@@ -1,3 +1,10 @@
+# v2.94.4 — 개방 본진 전용 원경·바닥 (사용자 시트, 2026-09-17)
+
+- `hqbg.py <문파>`: ✦ 워터마크 자동 검출·패치 → bg_extract --pad=48 → bg_fix(한 번) 한 줄로. `hqground.py <문파> [--contrast=0.7]`: FFT 자기상관으로 가로·세로 주기를 재 한 주기만 자르고(개방 시트는 같은 무늬 2회 반복 → 512×559),
+  워터마크 패치·약한 크로스페이드(k 16)·대비 ×0.7(휘도 std 9.7→6.8, 인물 가독성)·팔레트 디더. 검사판 review/bg_hq_gaebang.png·ground_hq_gaebang.png 이상 없음(이음새·줄·✦ 없음).
+- `DUEL.hqSky`(원경 위 하늘색 — 없으면 땅색 띠) → BACKDROP.sky. 개방 #e1b677. fxtest: rzone=hq_gaebang·땅색·에셋 로드(jsdom 은 이미지를 안 읽어 그리기 자체는 캔버스 캐시). dueltest: 전용 원경 있으면 본진, 없으면 이웃.
+- 다음 문파 시트는 `python hqground.py <키> --contrast=0.7` → `python hqbg.py <키>` → DUEL.hqSky 값만. 소림은 추출 중(v2.94.5).
+
 # v2.94.3 — 소림 3등급 전용 시트 · 본진 원경/바닥 배선 (사용자 시트, 2026-09-17)
 
 - `sr_sheet.py`(gb_disc.py 복사·확장): 컷 키 `r<줄>c<칸>`/`b<덩어리>`, 바깥 테두리 없는 시트는 가장자리 보탬, 넓은 칸은 가장 어두운 열로 쪼갬, `--blob --merge=N` 덩어리 bbox 모드(정예 시트는
