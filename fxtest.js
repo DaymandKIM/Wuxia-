@@ -285,6 +285,13 @@ setTimeout(()=>{
   ok(drew('gb_elite_atk2', 122),'개방 정예제자 봉 찌르기 컷이 캔버스 폭 122 로 그려진다');
   w.eval('S.foes.length=0; S.foes.push({k:"gb_elder",boss:true,anim:"atk",af:2,x:P.x+90,y:P.y,hp:9,hpMax:9,dir:-1,atkT:0,cd:9,hitDone:false,hit:0,dead:false,dying:0,rise:0,skT:0,skCd:9,kb:0,kx:0,ky:0}); S.bossAlive=true;'); renderNow();
   ok(drew('gb_elder_atk2', 148),'개방 장로 휘두르기(청록 호) 컷이 캔버스 폭 148 로 그려진다');
+  w.eval('S.foes.length=0; S.bossAlive=false; gotoHq("sorim"); S.intro=0; S.foes.length=0; spawnFoe(); S.foes[0].anim="idle"; S.foes[0].af=0; S.foes[0].x=P.x+60; S.foes[0].y=P.y;'); renderNow();
+  ok(w.eval('S.foes[0].k')==='sr_disc' && drew('sr_disc_idle0', 84),'소림 본진 제자 = sr_disc, 대기 컷이 캔버스 폭 84 로 그려진다');
+  w.eval('S.foes.length=0; S.foes.push({k:"sr_elite",anim:"atk",af:2,x:P.x+70,y:P.y,hp:9,hpMax:9,dir:-1,atkT:0,cd:9,hitDone:false,hit:0,dead:false,dying:0});'); renderNow();
+  ok(drew('sr_elite_atk2', 54),'소림 정예제자 내려치기 컷이 캔버스 폭 54 로 그려진다');
+  w.eval('S.foes.length=0; S.foes.push({k:"sr_elder",boss:true,anim:"atk",af:2,x:P.x+90,y:P.y,hp:9,hpMax:9,dir:-1,atkT:0,cd:9,hitDone:false,hit:0,dead:false,dying:0,rise:0,skT:0,skCd:9,kb:0,kx:0,ky:0}); S.bossAlive=true;'); renderNow();
+  ok(drew('sr_elder_atk2', 72),'소림 장로 연꽃 장풍 컷이 캔버스 폭 72 로 그려진다');
+  ok(w.eval('rzone().k')===w.eval('ZONES[HQZONE.sorim.vis].k') || w.eval('rzone().k')==='hq_sorim','본진 배경: 전용 원경이 없으면 이웃 사냥터, 있으면 본진 자체 — 지금 '+w.eval('rzone().k'));
   w.eval('S.foes.length=0; S.bossAlive=false; gotoZone(0,1);');
 
   ok(errs.length===0,'런타임 오류 0'+(errs.length?': '+errs[0]:''));

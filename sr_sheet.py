@@ -13,7 +13,7 @@ gb_disc.py 와 다른 점:
     bbox 로 자른다 — CLAUDE.md "그림을 도형으로 가정하지 마라 · 덩어리 라벨링 bbox". 번호는 review/<접두어>_blobs.png 오버레이로 확인.
   - 배율의 기준 높이는 '몸'(가로 12px 이상 차는 줄)만 — 정예는 봉이 머리 위로 솟아 전체 높이가 몸보다 크다.
   - 검은 조각 눈검사판을 review/blackcheck_<접두어>.png 로 따로 만든다(blackcheck.py 는 review/blackcheck.png 하나라 다른 에이전트와 경쟁).
-  - death 컷은 전부 solo(부유 반짝이 제거), --solo=키,... 로 더 지정.
+  - death 컷은 전부 solo(부유 반짝이 제거), --solo=키,... 로 더 지정. --decyan=키,... 는 옅은 청록 호를 지운다(정예 atk0 — 축소하면 점만 남는다).
 """
 import sys, os, glob, json
 import numpy as np
@@ -141,11 +141,16 @@ def body_height(a, minw=12):
     rows = (a[..., 3] > 0).sum(1); ys = np.where(rows >= minw)[0]
     return int(ys.max() + 1 - ys.min())
 
-def legmask(a, frac=0.3):
-    al = a[..., 3] > 0; ys = np.where(al)[0]
+def legmask(a, frac=0.3, W=160, H=160):
+    """다리(아래 30%) 마스크를 바닥·다리 무게중심 기준 공통 캔버스에 얹는다 — 컷마다 폭이 달라도 IoU 를 잴 수 있게."""
+    al = a[..., 3] > 0; ys, xs = np.where(al)
     cut_ = ys.max() - (ys.max() - ys.min()) * frac
     m = al.copy(); m[:int(cut_)] = False
-    return m
+    sel = ys >= cut_; cx = xs[sel].mean()
+    can = np.zeros((H, W), bool); dx = int(round(W / 2 - cx)); dy = H - 1 - ys.max()
+    yy, xx = np.where(m); ok = (xx + dx >= 0) & (xx + dx < W) & (yy + dy >= 0)
+    can[yy[ok] + dy, xx[ok] + dx] = True
+    return can
 
 def iou(a, b):
     return (a & b).sum() / max(1, (a | b).sum())
@@ -226,6 +231,10 @@ def main():
     def idx(s): return s.split(',')
     sel = {'idle': idx(opts['idle']), 'walk': opts['walk'], 'atk': idx(opts['atk']), 'hit': idx(opts['hit']), 'death': idx(opts['death'])}
     solos = set(sel['death']) | set(idx(opts.get('solo', '')) if opts.get('solo') else [])
+    for k in (idx(opts['decyan']) if opts.get('decyan') else []):          # 옅은 청록 호(정예 봉 휘두르기) — 축소하면 점만 남아 떠 보인다
+        a = raw[k]; r_, g_, b_ = a[..., 0].astype(int), a[..., 1].astype(int), a[..., 2].astype(int)
+        cy = (b_ > r_ + 20) & (b_ > 150) & (g_ > 120); a[cy] = 0        # 옅은 라벤더~흰 (190,180,255) 계열; raw[k] = solo(a)
+        print(' %s 청록 호 픽셀 %d 제거' % (k, cy.sum()))
     for k in solos: raw[k] = solo(raw[k])
 
     ref = opts.get('ref', sel['idle'][0])
@@ -258,7 +267,7 @@ def main():
     print('규격: 캔버스 %dx%d · 몸(대기·걷기) 폭 %d~%d 높이 %d~%d' % (W, H, min(s['w'] for s in body), max(s['w'] for s in body),
           min(s['h'] for s in body), max(s['h'] for s in body)))
     for k, s in spec.items(): print('  %-8s 그림 %3dx%3d (몸 높이 %d)' % (k, s['w'], s['h'], s['body']))
-    json.dump(dict(canvas=[W, H], frames=spec, sel=sel, scale=scale), open(os.path.join(R, 'review', prefix + '_specs.json'), 'w'), indent=1)
+    json.dump(dict(canvas=[W, H], frames=spec, sel=dict(sel, walk=wk), scale=scale), open(os.path.join(R, 'review', prefix + '_specs.json'), 'w'), indent=1)
     review(prefix, list(out))
     blackcheck(prefix, ['idle0', 'walk0', 'atk1', 'atk2', 'hit', 'death1'])
 

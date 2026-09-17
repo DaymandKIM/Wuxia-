@@ -1,6 +1,11 @@
 /* ── 그리기 ───────────────────────────────────────── */
 // 그리는 구역 — 문파 터 화면(v2.92)은 어느 구역에 있든 죽림 원경·바닥으로 그린다
-function rzone(){ return (typeof sectView !== 'undefined' && sectView) ? ZONES[0] : (S.hq ? ZONES[HQZONE[S.hq].vis] : zone()); }   // 본진은 가까운 사냥터 배경을 빌린다 (v2.94)
+// 그리기용 구역 — 문파 마당은 죽림, 본진은 전용 원경(bg_hq_<k>)이 있으면 본진 자체, 없으면 가까운 사냥터를 빌린다 (v2.94 → v2.94.3)
+function rzone(){
+  if (typeof sectView !== 'undefined' && sectView) return ZONES[0];
+  if (S.hq){ const hz = HQZONE[S.hq]; return IMG[BACKDROP.keys[hz.k]] ? hz : ZONES[hz.vis]; }
+  return zone();
+}
 function drawGround(ox, oy){
   ctx.fillStyle = rzone().ground;
   ctx.fillRect(0, 0, VW, VH);
