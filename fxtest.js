@@ -289,7 +289,7 @@ setTimeout(()=>{
   w.eval('S.foes.length=0; S.bossAlive=false; gotoHq("sorim"); S.intro=0; S.foes.length=0; spawnFoe(); S.foes[0].anim="idle"; S.foes[0].af=0; S.foes[0].x=P.x+60; S.foes[0].y=P.y;'); renderNow();
   ok(w.eval('S.foes[0].k')==='sr_disc' && drew('sr_disc_idle0', w.eval('FOES.sr_disc.w')),'소림 본진 제자 = sr_disc, 대기 컷이 선언 폭('+w.eval('FOES.sr_disc.w')+')으로 그려진다');
   w.eval('S.foes.length=0; S.foes.push({k:"sr_elite",anim:"atk",af:2,x:P.x+70,y:P.y,hp:9,hpMax:9,dir:-1,atkT:0,cd:9,hitDone:false,hit:0,dead:false,dying:0});'); renderNow();
-  ok(drew('sr_elite_atk2', 54),'소림 정예제자 내려치기 컷이 캔버스 폭 54 로 그려진다');
+  ok(drew('sr_elite_atk2', 82),'소림 정예제자 내려치기 컷이 캔버스 폭 82 로 그려진다');
   w.eval('S.foes.length=0; S.foes.push({k:"sr_elder",boss:true,anim:"atk",af:2,x:P.x+90,y:P.y,hp:9,hpMax:9,dir:-1,atkT:0,cd:9,hitDone:false,hit:0,dead:false,dying:0,rise:0,skT:0,skCd:9,kb:0,kx:0,ky:0}); S.bossAlive=true;'); renderNow();
   ok(drew('sr_elder_atk2', 98),'소림 장로 장풍 컷이 캔버스 폭 98 로 그려진다');   // v2.94.27 재작업(초승달 폭)
   ok(w.eval('rzone().k')===w.eval('ZONES[HQZONE.sorim.vis].k') || w.eval('rzone().k')==='hq_sorim','본진 배경: 전용 원경이 없으면 이웃 사냥터, 있으면 본진 자체 — 지금 '+w.eval('rzone().k'));

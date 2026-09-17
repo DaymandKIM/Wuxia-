@@ -1454,12 +1454,16 @@ FOES.sr_disc = {
   hp:1.1, dmg:1.0, spd:1.0, range:44,   // 맨손 정권 — 강도와 같은 급
 };
 FOES.sr_elite = {
-  // 소림 정예제자(봉) — sheets/sr_elite.png 는 격자가 불규칙해 덩어리 bbox(b0~3·b7~10·b11,12,17,13·b14·b16,18). 캔버스 54×55 — 몸 29×50, 봉 끝이 머리 위 4px.
-  // 공격 = 봉 휘두르기(청록 호는 축소에서 사라져 제거) → 머리 위 들기 → 내려치기+금색 불꽃 → 회수.
-  n:'소림 정예제자', w:54, h:55, sw:29, bh:50, school:'sorim', elite:true,
-  anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'],
-         atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
-  fps:{ idle:4, walk:7, atk:7.3, hit:6, death:4 },
+  // 소림 정예제자 — sheets/sr_elite2.png(v2.94.28 3.5등신 재작업판. **배경이 순마젠타가 아니라 옅은 자주** 217,85,207 이라
+  // 주황 가사가 배경으로 지워질 위험이 있었다 — 게임 바닥색 대조판으로 구멍을 확인했다).
+  // **공격 두 벌**: atk 머리 위 봉 내려찍기(금빛 섬광 9컷) · atk2 낮은 봉 쓸기(금빛 호 9컷). 대기 8 · 걷기 7 · 쓰러짐 5.
+  // 캔버스 82×55 — 몸 31×50(걷기 폭 46 은 봉이 옆으로 나온 것). DUEL.eliteFrom 단부터 섞여 나온다.
+  n:'소림 정예제자', w:82, h:55, sw:31, bh:50, school:'sorim', elite:true,
+  anim:{ idle:['idle0','idle1','idle2','idle3','idle4','idle5','idle6','idle7'], walk:['walk0','walk1','walk2','walk3','walk4','walk5','walk6'],
+         atk:['atk0','atk1','atk2','atk3','atk4','atk5','atk6','atk7','atk8'],
+         atk2:['atk2_0','atk2_1','atk2_2','atk2_3','atk2_4','atk2_5','atk2_6','atk2_7','atk2_8'],
+         hit:['hit'], death:['hit','death0','death1','death2','death3','death4'] },
+  fps:{ idle:4, walk:7, atk:7.3, hit:6, death:6 },
   hp:1.7, dmg:1.3, spd:1.0, range:60,   // 봉 내려치기 — 수호무사급 정예 스탯
 };
 FOES.sr_elder = {
