@@ -59,8 +59,14 @@ elif '--nopatch' not in opts:
     ys, xs = np.where(m)
     if len(xs) >= 30 and xs.max() - xs.min() >= 12 and ys.max() - ys.min() >= 12:
         px0, px1, py0, py1 = xs.min() + x0 - 3, xs.max() + x0 + 4, ys.min() + y0 - 3, ys.max() + y0 + 4
-        patch = (px0, py0, px1 - px0, py1 - py0)
-        print('워터마크 자동 검출: 밝은 픽셀 %d개 x %d~%d y %d~%d → --patch=%d,%d,%d,%d' % (len(xs), xs.min() + x0, xs.max() + x0, ys.min() + y0, ys.max() + y0, *patch))
+        px1 = min(px1, W); px0 = max(px0, 0)
+        pw = px1 - px0
+        if px0 - pw < 0: px0 = pw           # 왼쪽 띠를 복사하려면 왼쪽에 같은 폭이 있어야 한다(아미 시트에서 범위를 넘었다)
+        if pw > W * 0.12:                   # ✦ 치고 너무 넓으면 그림이다 — 건드리지 않는다
+            print('✦ 아님(폭 %d) — 메우지 않는다' % pw); patch = None
+        else:
+            patch = (px0, py0, px1 - px0, py1 - py0)
+            print('워터마크 자동 검출: 밝은 픽셀 %d개 → --patch=%d,%d,%d,%d' % (len(xs), *patch))
     else:
         print('워터마크 못 찾음(밝은 픽셀 %d개) — 메우지 않는다. 있으면 --patch 로' % len(xs))
 print('시트 %dx%d, 아래 균일 띠 %d줄(y %d~), 띠 평균색 #%02x%02x%02x vs 땅색 %s (차 %s)' % (
