@@ -292,6 +292,7 @@ const GROUNDTEX = {
   // (설산은 땅색 #a4b3c0보다 눈 텍스처가 훨씬 밝아 회색 띠가 보였다, v2.61.6)
   avg:  { bamboo:'#616e47', village:'#665f4c', cave:'#42474b', snow:'#dbe6f0', heaven:'#9ba994' },
   aZone: { heaven: 0.7 },                     // 밝은 얼룩이 강한 텍스처는 더 옅게(가독성)
+  scaleZone: {},                              // 구역별 타일 배율(본진 시트는 석판·발자국이 인물보다 커서 줄인다 — DUEL.hqGroundScale 이 채운다, v2.94.5)
 };
 
 const BACKDROP = {
@@ -1389,13 +1390,15 @@ DUEL.art = { gaebang:{ disc:'gb_disc', elite:'gb_elite', elder:'gb_elder' }, sor
 // 그 땅색(hqGround)·원경·바닥으로 그린다. 없으면 이웃 사냥터를 빌린다(vis). 소품·날씨 입자는 본진엔 없다.
 DUEL.hqGround = { gaebang:'#6e6349', sorim:'#7a7368', mudang:'#6c7a7c', hwasan:'#7d6658', ami:'#647a5a', dangmun:'#5e5450', magyo:'#4a4448', bamboo:'#6a7a52' };
 DUEL.hqSky = { gaebang:'#e1b677', sorim:'#cea98c' };
-DUEL.hqGroundA = { sorim:0.8 };       // 줄눈이 어두운 석판은 텍스처를 옅게(인물 가독성, GROUNDTEX.aZone)   // 원경 위 남는 하늘(시트 첫 불투명 5줄 평균, hqbg.py 보고) — 없으면 땅색으로 칠해져 갈색 띠가 뜬다
+DUEL.hqGroundA = { sorim:0.8 };       // 줄눈이 어두운 석판은 텍스처를 옅게(인물 가독성, GROUNDTEX.aZone)
+DUEL.hqGroundScale = { sorim:0.5, gaebang:0.7 };   // 타일 배율 — 소림 석판 128px→64px(인물 키 47 정도), 개방 발자국·모닥불 자국   // 원경 위 남는 하늘(시트 첫 불투명 5줄 평균, hqbg.py 보고) — 없으면 땅색으로 칠해져 갈색 띠가 뜬다
 for (const k in DUEL.gBase){
   BACKDROP.keys['hq_' + k] = 'bg_hq_' + k;
   GROUNDTEX.keys['hq_' + k] = 'ground_hq_' + k;
   if (DUEL.hqGround[k]) HQZONE[k].ground = DUEL.hqGround[k];
   if (DUEL.hqSky[k]) BACKDROP.sky['hq_' + k] = DUEL.hqSky[k];
   if (DUEL.hqGroundA[k]) GROUNDTEX.aZone['hq_' + k] = DUEL.hqGroundA[k];
+  if (DUEL.hqGroundScale[k]) GROUNDTEX.scaleZone['hq_' + k] = DUEL.hqGroundScale[k];
 }   // 문파 → {disc, elite, elder} FOES 키. 시트가 오면 여기만 채운다
 DUEL.eliteFrom = 4;            // 정예제자가 섞이기 시작하는 단
 DUEL.eliteW = [3, 1];          // 등장표 가중 [수습, 정예] — 넷 중 하나가 정예

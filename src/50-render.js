@@ -12,8 +12,9 @@ function drawGround(ox, oy){
   // 바닥 텍스처(시트) — 카메라와 1:1로 2D 타일링. 있으면 격자는 생략.
   const tex = IMG[GROUNDTEX.keys[rzone().k]];
   if (tex && tex.complete && tex.naturalWidth){
-    const tw = Math.max(1, Math.round(tex.naturalWidth * GROUNDTEX.scale));
-    const th = Math.max(1, Math.round(tex.naturalHeight * GROUNDTEX.scale));
+    const gsc = GROUNDTEX.scale * (GROUNDTEX.scaleZone[rzone().k] || 1);   // 구역별 배율 — 본진 석판이 1:1 이면 인물 세 배 크기였다 (v2.94.5)
+    const tw = Math.max(1, Math.round(tex.naturalWidth * gsc));
+    const th = Math.max(1, Math.round(tex.naturalHeight * gsc));
     const sx = -(((ox % tw) + tw) % tw), sy = -(((oy % th) + th) % th);
     ctx.save(); ctx.globalAlpha = GROUNDTEX.aZone[rzone().k] || GROUNDTEX.a;
     for (let y = sy; y < VH; y += th)
