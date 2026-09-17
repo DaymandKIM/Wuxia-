@@ -1508,7 +1508,7 @@ FOES.hs_disc  = { n:'화산 수습제자', w:56,  h:54, sw:26, bh:50, school:'hw
 // 화산 정예제자 — sheets/hs_elite2_fix.png(v2.94.28 3.5등신 재작업판 + **칼끝 손질본**). 원본 찌르기 줄은 칼끝이 칸 테두리에서
 // 평평하게 잘려 있었다(끝 3열 5·5·4 — 줄지 않고 끝난다). 온전한 컷에서 칼날을 떼어 이어 붙였다(hs_elite_fix.py).
 // **공격 두 벌**: atk 베기(흰 초승달) · atk2 찌르기(속도선). 대기 12 · 걷기 11 · 공격 12씩. 캔버스 82×58 — 몸 24×51.
-FOES.hs_elite = { n:'화산 정예제자', w:82,  h:58, sw:24, bh:51, school:'hwasan', elite:true,
+FOES.hs_elite = { n:'화산 정예제자', w:82,  h:58, sw:30, bh:52, school:'hwasan', elite:true,
   anim:{ idle:['idle0','idle1','idle2','idle3','idle4','idle5','idle6','idle7','idle8','idle9','idle10','idle11'],
          walk:['walk0','walk1','walk2','walk3','walk4','walk5','walk6','walk7','walk8','walk9','walk10'],
          atk:['atk0','atk1','atk2','atk3','atk4','atk5','atk6','atk7','atk8','atk9','atk10','atk11'],
