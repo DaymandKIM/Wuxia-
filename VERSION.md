@@ -1,3 +1,11 @@
+# v2.94.3 — 소림 3등급 전용 시트 · 본진 원경/바닥 배선 (사용자 시트, 2026-09-17)
+
+- `sr_sheet.py`(gb_disc.py 복사·확장): 컷 키 `r<줄>c<칸>`/`b<덩어리>`, 바깥 테두리 없는 시트는 가장자리 보탬, 넓은 칸은 가장 어두운 열로 쪼갬, `--blob --merge=N` 덩어리 bbox 모드(정예 시트는
+  격자가 불규칙해 이걸로), `--decyan` 축소에서 점만 남는 옅은 호 제거. 검사판 review/review-sr_*·blackcheck_sr_* 이상 없음.
+- FOES.sr_disc(84×52, 몸 23×48)·sr_elite(54×55, 몸 29×50, elite)·sr_elder(72×62, 몸 30×58). `DUEL.art.sorim`. 검증 fxtest(제 폭)·spritetest.
+- **본진 전용 원경·바닥 배선**: `DUEL.hqGround`(문파 땅색) → HQZONE.ground, BACKDROP.keys/GROUNDTEX.keys 에 `hq_<k>` → `bg_hq_<k>`/`ground_hq_<k>`. rzone() 은 그 원경 에셋이 있으면
+  본진 자체(소품·날씨 없음), 없으면 이웃 사냥터. 시트 4장(개방 원경·바닥, 소림 원경·바닥) sheets/ 에 복원 — 추출은 v2.94.4.
+
 # v2.94.2 — 개방 정예제자·장로 전용 시트 (사용자 시트, 2026-09-17)
 
 - `gb_disc.py` 보강: 두 줄 테두리(4px 안은 한 경계)·시트 끝 반쪽 줄(가장자리를 경계로)·정렬 뒤 IoU. 정예 걷기 줄은 8칸이 아니라 5칸, 장로 대기 3칸은 시트에 지팡이가 빠져 있어 제외.
