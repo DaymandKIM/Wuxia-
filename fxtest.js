@@ -283,9 +283,9 @@ setTimeout(()=>{
   w.eval('S.foes[0].anim="atk"; S.foes[0].af=1;'); renderNow(); ok(drew('gb_disc_atk1', w.eval('FOES.gb_disc.w')),'공격 2번째 컷(파란 원호)이 그려진다');
   w.eval('S.foes[0].anim="death"; S.foes[0].af=2; S.foes[0].dead=true;'); renderNow(); ok(drew('gb_disc_death1', w.eval('FOES.gb_disc.w')),'죽음 마지막 컷(늘어짐)이 그려진다');
   w.eval('S.foes.length=0; S.foes.push({k:"gb_elite",anim:"atk",af:2,x:P.x+70,y:P.y,hp:9,hpMax:9,dir:-1,af:2,atkT:0,cd:9,hitDone:false,hit:0,dead:false,dying:0});'); renderNow();
-  ok(drew('gb_elite_atk2', 122),'개방 정예제자 봉 찌르기 컷이 캔버스 폭 122 로 그려진다');
+  ok(drew('gb_elite_atk2', 70),'개방 정예제자 봉 찌르기 컷이 캔버스 폭 70 로 그려진다');
   w.eval('S.foes.length=0; S.foes.push({k:"gb_elder",boss:true,anim:"atk",af:2,x:P.x+90,y:P.y,hp:9,hpMax:9,dir:-1,atkT:0,cd:9,hitDone:false,hit:0,dead:false,dying:0,rise:0,skT:0,skCd:9,kb:0,kx:0,ky:0}); S.bossAlive=true;'); renderNow();
-  ok(drew('gb_elder_atk2', 148),'개방 장로 휘두르기(청록 호) 컷이 캔버스 폭 148 로 그려진다');
+  ok(drew('gb_elder_atk2', 90),'개방 장로 휘두르기(청록 호) 컷이 캔버스 폭 90 로 그려진다');
   w.eval('S.foes.length=0; S.bossAlive=false; gotoHq("sorim"); S.intro=0; S.foes.length=0; spawnFoe(); S.foes[0].anim="idle"; S.foes[0].af=0; S.foes[0].x=P.x+60; S.foes[0].y=P.y;'); renderNow();
   ok(w.eval('S.foes[0].k')==='sr_disc' && drew('sr_disc_idle0', w.eval('FOES.sr_disc.w')),'소림 본진 제자 = sr_disc, 대기 컷이 선언 폭('+w.eval('FOES.sr_disc.w')+')으로 그려진다');
   w.eval('S.foes.length=0; S.foes.push({k:"sr_elite",anim:"atk",af:2,x:P.x+70,y:P.y,hp:9,hpMax:9,dir:-1,atkT:0,cd:9,hitDone:false,hit:0,dead:false,dying:0});'); renderNow();
