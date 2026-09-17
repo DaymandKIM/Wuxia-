@@ -297,6 +297,8 @@ setTimeout(()=>{
   ok(w.eval('rzone().k')==='hq_gaebang' && w.eval('rzone().ground')===w.eval('DUEL.hqGround.gaebang'),'개방 본진: rzone = hq_gaebang · 땅색 '+w.eval('rzone().ground'));
   ok(w.eval('!!IMG[BACKDROP.keys[rzone().k]] && !!IMG[GROUNDTEX.keys[rzone().k]]'),'개방 원경(bg_hq_gaebang)·바닥(ground_hq_gaebang) 에셋이 로드 목록에 있다 (jsdom 은 이미지를 안 읽어 그리기는 캔버스 캐시로 간다)');
   ok(w.eval('BACKDROP.sky.hq_gaebang')===w.eval('DUEL.hqSky.gaebang'),'원경 위 하늘색 등록');
+  w.eval('gotoHq("sorim"); S.intro=0;'); renderNow();
+  ok(w.eval('rzone().k')==='hq_sorim' && w.eval('!!IMG[BACKDROP.keys[rzone().k]] && !!IMG[GROUNDTEX.keys[rzone().k]]') && w.eval('GROUNDTEX.aZone.hq_sorim')===0.8,'소림 본진: 전용 원경·바닥(석판, 텍스처 0.8)');
   w.eval('S.foes.length=0; S.bossAlive=false; gotoZone(0,1);');
 
   ok(errs.length===0,'런타임 오류 0'+(errs.length?': '+errs[0]:''));

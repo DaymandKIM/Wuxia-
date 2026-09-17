@@ -47,8 +47,17 @@ if '--patch' in opts: patch = tuple(map(int, opts['--patch'].split(',')))
 elif '--nopatch' not in opts:
     y0, y1, x0, x1 = max(0, bt - 70), bt, max(0, W - 160), W
     reg = lum[y0:y1, x0:x1]; med = np.median(reg)
-    ys, xs = np.where(reg > med + 25)
-    if len(xs) >= 30:
+    m = reg > med + 25
+    # 밝은 픽셀을 연결 성분으로 묶어 가장 큰 덩어리만 — 소림 시트에선 밝은 나무·산 조각까지 묶여 111×58 로 넓게
+    # 잡아 패치가 과했다. ✦ 는 25~50px 의 한 덩어리다.
+    try:
+        from scipy import ndimage
+        lab, nn = ndimage.label(m)
+        if nn:
+            sizes = ndimage.sum(m, lab, range(1, nn + 1)); m = lab == (int(np.argmax(sizes)) + 1)
+    except ImportError: pass
+    ys, xs = np.where(m)
+    if len(xs) >= 30 and xs.max() - xs.min() >= 12 and ys.max() - ys.min() >= 12:
         px0, px1, py0, py1 = xs.min() + x0 - 3, xs.max() + x0 + 4, ys.min() + y0 - 3, ys.max() + y0 + 4
         patch = (px0, py0, px1 - px0, py1 - py0)
         print('워터마크 자동 검출: 밝은 픽셀 %d개 x %d~%d y %d~%d → --patch=%d,%d,%d,%d' % (len(xs), xs.min() + x0, xs.max() + x0, ys.min() + y0, ys.max() + y0, *patch))

@@ -1388,12 +1388,14 @@ DUEL.art = { gaebang:{ disc:'gb_disc', elite:'gb_elite', elder:'gb_elder' }, sor
 // 본진 전용 원경·바닥 (v2.94.3, 사용자 시트 — docs/프롬프트-배경.md "본진 원경·바닥"): 에셋 bg_hq_<k>·ground_hq_<k> 가 있으면 rzone() 이 본진을 돌려주고
 // 그 땅색(hqGround)·원경·바닥으로 그린다. 없으면 이웃 사냥터를 빌린다(vis). 소품·날씨 입자는 본진엔 없다.
 DUEL.hqGround = { gaebang:'#6e6349', sorim:'#7a7368', mudang:'#6c7a7c', hwasan:'#7d6658', ami:'#647a5a', dangmun:'#5e5450', magyo:'#4a4448', bamboo:'#6a7a52' };
-DUEL.hqSky = { gaebang:'#e1b677' };   // 원경 위 남는 하늘(시트 첫 불투명 5줄 평균, hqbg.py 보고) — 없으면 땅색으로 칠해져 갈색 띠가 뜬다
+DUEL.hqSky = { gaebang:'#e1b677', sorim:'#cea98c' };
+DUEL.hqGroundA = { sorim:0.8 };       // 줄눈이 어두운 석판은 텍스처를 옅게(인물 가독성, GROUNDTEX.aZone)   // 원경 위 남는 하늘(시트 첫 불투명 5줄 평균, hqbg.py 보고) — 없으면 땅색으로 칠해져 갈색 띠가 뜬다
 for (const k in DUEL.gBase){
   BACKDROP.keys['hq_' + k] = 'bg_hq_' + k;
   GROUNDTEX.keys['hq_' + k] = 'ground_hq_' + k;
   if (DUEL.hqGround[k]) HQZONE[k].ground = DUEL.hqGround[k];
   if (DUEL.hqSky[k]) BACKDROP.sky['hq_' + k] = DUEL.hqSky[k];
+  if (DUEL.hqGroundA[k]) GROUNDTEX.aZone['hq_' + k] = DUEL.hqGroundA[k];
 }   // 문파 → {disc, elite, elder} FOES 키. 시트가 오면 여기만 채운다
 DUEL.eliteFrom = 4;            // 정예제자가 섞이기 시작하는 단
 DUEL.eliteW = [3, 1];          // 등장표 가중 [수습, 정예] — 넷 중 하나가 정예
