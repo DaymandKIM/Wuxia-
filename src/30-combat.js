@@ -37,7 +37,7 @@ function spawnFoe(){
     k, anim:'idle', af:0,
     x: P.x + Math.cos(a)*r,
     y: P.y + Math.sin(a)*r*SPAWN.flat,
-    hp: Math.round(foeHp()*M.hp), hpMax: Math.round(foeHp()*M.hp),
+    hp: Math.round(foeHp()*M.hp*sectMul(M,'hp')), hpMax: Math.round(foeHp()*M.hp*sectMul(M,'hp')),   // 문파 성격 (v2.95.2)
     boss: false,
     dir: -1,
     af: rnd(0,4),
@@ -64,9 +64,10 @@ function beginSummon(){
 }
 
 function spawnBoss(){
-  const hp = bossHp();
+  const bk = ZONEBOSS[zone().k] || (ZONEFOE[zone().k]||['bandit'])[0];
+  const hp = Math.round(bossHp() * sectMul(FOES[bk], 'hp'));   // 문파 장로도 성격을 탄다 (v2.95.2)
   S.foes.push({
-    k: ZONEBOSS[zone().k] || (ZONEFOE[zone().k]||['bandit'])[0],
+    k: bk,
     boss: true,
     anim:'idle', af:0,
     x: S.summonX || (P.x + SUMMON.side), y: S.summonY || P.y,

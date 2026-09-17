@@ -258,7 +258,7 @@ function step(dt){
         f.y += (P.y-f.y)/dd * M.dashSpd * dt;
         if (!f.dhDone && dd < (M.range||FOE.range)*0.8){
           f.dhDone = true;
-          hurtHero(foeDmg() * M.dmg * (M.dashMul||1.3));
+          hurtHero(foeDmg() * M.dmg * (M.dashMul||1.3) * sectMul(M,'dmg'));
           shake(4); sfx('punch');
           f.dhT = 0;
         }
@@ -351,13 +351,13 @@ function step(dt){
       const prog = 1 - f.atkT / AD.dur;
       if (!f.hitDone && prog >= AD.hitAt){
         f.hitDone = true;
-        if (d < rng + (f.boss?26:16)){ hurtHero(f.boss ? bossDmg() : foeDmg()*foeM(f).dmg); foeImpactFx(f); }   // 공격 결마다 다른 파열 (v2.95)
+        if (d < rng + (f.boss?26:16)){ hurtHero((f.boss ? bossDmg() : foeDmg()*M.dmg) * sectMul(M,'dmg')); foeImpactFx(f); }   // 결마다 다른 파열 (v2.95) · 문파 성격 (v2.95.2)
       }
       if (f.atkT <= 0) f.cd = FOE.cd * rnd(0.8, 1.3);
     } else if (f.cd > 0){
       f.cd -= dt;
       if (d > rng){                          // 접근
-        const sp = st.spd * (f.boss ? BOSS.spd : foeM(f).spd);
+        const sp = st.spd * (f.boss ? BOSS.spd : foeM(f).spd) * sectMul(M,'spd');
         f.mv = true;
         f.x += (P.x-f.x)/d * sp * dt;
         f.y += (P.y-f.y)/d * sp * dt;
@@ -365,7 +365,7 @@ function step(dt){
     } else if (d <= rng){
       f.atkT = (f.boss ? BOSSATK.dur : FOE.dur); f.hitDone = false; foeAtkRoll(f);
     } else {
-      const sp = st.spd * (f.boss ? BOSS.spd : foeM(f).spd);
+      const sp = st.spd * (f.boss ? BOSS.spd : foeM(f).spd) * sectMul(M,'spd');
       f.mv = true;
       f.x += (P.x-f.x)/d * sp * dt;
       f.y += (P.y-f.y)/d * sp * dt;

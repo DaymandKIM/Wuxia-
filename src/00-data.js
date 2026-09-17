@@ -476,6 +476,8 @@ const BOSSKILL = {
 };
 
 // 실제 수치 — 전부 전역 단계 g에서 나온다
+// 문파 성격 곱 — 본진 몹(school 이 있는 것)만. 사냥터 몹은 school 이 없어 1 이다 (v2.95.2)
+const sectMul = (M, k)=> (M && M.school && DUEL.sectMul && DUEL.sectMul[M.school]) ? (DUEL.sectMul[M.school][k] || 1) : 1;
 const foeHp  = ()=> Math.round(DIFF.hpBase * Math.pow(DIFF.hpGrow, gstage()-1));
 const foeDmg = ()=> DIFF.dmgBase * Math.pow(DIFF.dmgGrow, gstage()-1);
 const bossHp = ()=> Math.round(DIFF.hpBase * Math.pow(DIFF.hpGrow, S.hq ? gstage()-1 : S.zi*10+9) * BOSS.hp * (S.hq ? DUEL.elderHp : 1));   // 본진 장로는 그 단의 힘 (v2.94)
@@ -1394,6 +1396,20 @@ const OFFLINE = {
 const DUEL = {
   gBase: { bamboo:3, gaebang:5, hwasan:10, sorim:12, ami:14, mudang:16, dangmun:18, magyo:22 },   // 1단의 전역 단계 g — 개방은 죽림 중반, 마교는 천산급
   gPerRank: 2,                 // 단마다 g +2
+  // **문파마다 성격이 다르다** (v2.95.2, 사용자 "난이도를 문파별로 조절해야겠지") — 여태 사다리(gBase)만 달랐고
+  // 몹 자체는 어디서나 똑같았다(수습 hp 1.1 · 정예 1.7 · 장로 1.0). 같은 단이면 체감이 같아 문파를 바꿀 맛이 없다.
+  // 체력·피해·속도 셋을 얹어 결을 준다. 곱이라 gBase 사다리는 그대로 살아 있다.
+  // 검증: sim 의 본진 왕복이 무너지지 않는지 · 쓰러짐이 튀지 않는지.
+  sectMul: {
+    bamboo:  { hp:0.90, dmg:0.90, spd:1.00 },   // 청죽문 — 첫 본진. 가장 눅눅하다
+    gaebang: { hp:0.85, dmg:0.95, spd:1.15 },   // 개방 — 얇지만 빠르다. 취권이라 달려든다
+    hwasan:  { hp:0.90, dmg:1.15, spd:1.05 },   // 화산 — 검이 아프다. 오래 못 버틴다
+    sorim:   { hp:1.25, dmg:0.90, spd:0.90 },   // 소림 — 단단하고 느리다. 시간이 걸린다
+    ami:     { hp:1.05, dmg:0.95, spd:1.00 },   // 아미 — 무난하게 질기다
+    mudang:  { hp:1.00, dmg:1.00, spd:1.00 },   // 무당 — 기준
+    dangmun: { hp:0.75, dmg:1.30, spd:1.00 },   // 당문 — 유리 대포. 암기가 아프다
+    magyo:   { hp:1.10, dmg:1.25, spd:1.05 },   // 마교 — 마지막 본진. 전부 높다
+  },
   lag: 4,                      // 장로 전역 단계의 하한 = 가 본 최고 단계(S.best) − lag — 사냥터가 앞서도 장로가 순삭되지 않게
   masterEvery: 10,             // 이 배수 단은 장로 대신 장문인
   elderHp: 1.0,                // 장로 체력 = BOSS.hp × 이 값

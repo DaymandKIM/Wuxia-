@@ -67,7 +67,9 @@ setTimeout(()=>{
   const b=S.foes.find(x=>x.boss);
   ok(!!b && b.k===w.eval('ZONEBOSS')['hq_gaebang'],'장로 소환 = '+(b&&b.k)+' (ZONEBOSS)');
   const hpHq=w.eval("bossHp()"); S.hq=null; const hpZone=w.eval("bossHp()"); S.hq='gaebang';
-  ok(Math.abs(b.hpMax-Math.round(hpHq))<=1 && hpHq<hpZone,'장로 체력 = bossHp('+b.hpMax+') — 전역 단계 '+w.eval("gstage()")+' 기준 (죽림 보스 '+Math.round(hpZone)+'보다 낮다)');
+  // 장로 체력 = bossHp × 문파 성격 곱 (v2.95.2 — 문파마다 hp 0.75~1.25)
+  const smul=w.eval("sectMul(FOES[ZONEBOSS['hq_gaebang']],'hp')");
+  ok(Math.abs(b.hpMax-Math.round(hpHq*smul))<=1 && hpHq<hpZone,'장로 체력 = bossHp('+Math.round(hpHq)+')×개방 성격 '+smul+' = '+b.hpMax+' — 전역 단계 '+w.eval("gstage()")+' 기준 (죽림 보스 '+Math.round(hpZone)+'보다 낮다)');
   const fame0=S.fame, done0=JSON.stringify(S.bossDone), sv2=S.silver;
   b.hp=1; P.x=b.x-30; P.y=b.y; w.hurtFoe(b,10,false);
   const tt=w.document.getElementById('toast').textContent;
