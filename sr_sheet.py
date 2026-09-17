@@ -227,7 +227,9 @@ def shrink(rgba, scale):
     out[out[..., 3] == 0] = 0
     al2 = out[..., 3] > 0; rim = al2 & ~ndimage.binary_erosion(al2, iterations=1)
     r_, g_, b_ = out[..., 0].astype(int), out[..., 1].astype(int), out[..., 2].astype(int)
-    t = rim & (r_ > g_ + 15) & (b_ > g_ + 15)
+    # finish() 와 같은 가드 — |r-b| < 40 이 없으면 **진홍이 통째로 검어진다** (v2.95.5 마교 참격선·핏방울 35px 이
+    # (158,1,67) → (13,1,13) 으로 눌렸다). 축소 뒤 rim 은 1px 테두리라 작은 조각은 통째로 rim 이 된다.
+    t = rim & (r_ > g_ + 15) & (b_ > g_ + 15) & (np.abs(r_ - b_) < 40)
     out[..., 0][t] = np.minimum(r_[t], g_[t] + 12); out[..., 2][t] = np.minimum(b_[t], g_[t] + 12)
     return out
 

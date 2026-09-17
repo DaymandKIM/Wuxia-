@@ -1553,13 +1553,18 @@ FOES.dm_elder = { n:'당문 장로', w:268, h:60, sw:28, bh:58, school:'dangmun'
   fps:{ idle:3.5, walk:8, atk:7.3, hit:6, death:5 }, hp:1.0, dmg:1.0, spd:0.9, range:66 };
 // 마교 수습제자 — sheets/mg_disc2.png(v2.94.28 3.5등신 재작업판). 대기 10 · 걷기 10 · 낮은 베기 7컷(진홍 참격선) · 쓰러짐 5.
 // 캔버스 56×50 — 몸 26×48(걷기 폭 33 은 곡도가 옆으로 나온 것).
-FOES.mg_disc = { n:'마교 수습제자', w:56, h:50, sw:26, bh:48, school:'magyo',
+FOES.mg_disc = { n:'마교 수습제자', w:56, h:50, sw:22, bh:49, school:'magyo',
   anim:{ idle:['idle0','idle1','idle2','idle3','idle4','idle5','idle6','idle7','idle8','idle9'], walk:['walk0','walk1','walk2','walk3','walk4','walk5','walk6','walk7','walk8','walk9'], atk:['atk0','atk1','atk2','atk3','atk4','atk5','atk6'],
          hit:['hit'], death:['hit','death0','death1','death2','death3','death4'] },
   fps:{ idle:4, walk:8, atk:7.3, hit:6, death:6 }, hp:1.1, dmg:1.0, spd:1.0, range:50 };
-FOES.mg_elite = { n:'마교 정예제자', w:86, h:56, sw:31, bh:50, school:'magyo', elite:true,
-  anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'], atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
-  fps:{ idle:4, walk:7, atk:7.3, hit:6, death:4 }, hp:1.7, dmg:1.3, spd:1.0, range:60 };
+// 마교 정예제자 — sheets/mg_elite2.png(v2.94.28 3.5등신 재작업판). **공격 두 벌**: atk 머리 위 내려찍기(진홍 초승달) ·
+// atk2 백핸드 후리기(진홍 호). 대기 10 · 걷기 10 · 공격 9씩 · 쓰러짐 5. 캔버스 64×58 — 몸 26×51(대기 폭 34 는 칼을 가로로 든 것).
+FOES.mg_elite = { n:'마교 정예제자', w:64, h:58, sw:26, bh:51, school:'magyo', elite:true,
+  anim:{ idle:['idle0','idle1','idle2','idle3','idle4','idle5','idle6','idle7','idle8','idle9'], walk:['walk0','walk1','walk2','walk3','walk4','walk5','walk6','walk7','walk8','walk9'],
+         atk:['atk0','atk1','atk2','atk3','atk4','atk5','atk6','atk7','atk8'],
+         atk2:['atk2_0','atk2_1','atk2_2','atk2_3','atk2_4','atk2_5','atk2_6','atk2_7','atk2_8'],
+         hit:['hit'], death:['hit','death0','death1','death2','death3','death4'] },
+  fps:{ idle:4, walk:8, atk:7.3, hit:6, death:6 }, hp:1.7, dmg:1.3, spd:1.0, range:60 };
 FOES.mg_elder = { n:'마교 장로', w:128, h:61, sw:29, bh:58, school:'magyo',
   anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'], atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
   fps:{ idle:3.5, walk:6, atk:7.3, hit:6, death:4 }, hp:1.0, dmg:1.0, spd:0.9, range:66 };
