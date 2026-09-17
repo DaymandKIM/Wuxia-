@@ -69,7 +69,7 @@ setTimeout(()=>{
   ok(tt.includes('개방 1단 장로 격파'),'격파 토스트 "'+tt.replace(/\n/g,' / ')+'"');
   steps(12,()=>S.stage===BOSS_STAGE-1);
   ok(S.stage===BOSS_STAGE-1 && !S.foes.some(x=>x.boss),'격파 뒤 다시 단계 10(제자 젠) — 단계 '+S.stage+' · 처치 '+S.kills+' · 적 '+S.foes.length);
-  ok(w.eval("gstage()")===DUEL.gBase.gaebang+DUEL.gPerRank,'2단 전역 단계 = '+w.eval("gstage()"));
+  ok(w.eval("gstage()")===Math.max(DUEL.gBase.gaebang+DUEL.gPerRank,(S.best|0)-DUEL.lag),'2단 전역 단계 = max(사다리 '+(DUEL.gBase.gaebang+DUEL.gPerRank)+', 최고 단계 '+S.best+'−'+DUEL.lag+') = '+w.eval("gstage()"));
   // ── 4) 장문인
   S.duel.gaebang=DUEL.masterEvery; S.frag={}; S.ptsBonus=0; const pt0=w.eval("skillPtsTotal()");
   S.kills=w.eval("stageNeed()"); steps(8,()=>S.stage===BOSS_STAGE); tillBoss();

@@ -322,7 +322,9 @@ const DIFF = {
   dmgBase: 3.0, dmgGrow: 1.19,   // 적 피해 — 밀어붙일 때만 위험하게 (sim 쓰러짐 기준)
   needBase: 24, needPer: 7,      // 처치 목표 = base + g×per (31 → 374)
 };
-const gstage    = ()=> S.hq ? DUEL.gBase[S.hq] + DUEL.gPerRank * (hqRank(S.hq) - 1) : S.zi * 10 + Math.min(S.stage, 10);   // 본진은 단(段)이 축 (v2.94)
+// 본진은 단(段)이 축 (v2.94) — 단 사다리와 "가 본 최고 단계 − lag" 중 높은 쪽: 사다리만 쓰면 사냥터가 앞서 나간 뒤 장로가 순삭돼
+// 상승 무공 8종이 3시간 안에 다 열렸다(sim v2.94: 24h 천산 1→6). 장로는 늘 지금 사냥터에서 몇 단계 아래의 보스급이어야 한다.
+const gstage    = ()=> S.hq ? Math.max(DUEL.gBase[S.hq] + DUEL.gPerRank * (hqRank(S.hq) - 1), ((S.best | 0) - DUEL.lag)) : S.zi * 10 + Math.min(S.stage, 10);
 const stageNeed = ()=> DIFF.needBase + gstage() * DIFF.needPer;
 
 // 단계별 연출 수치 (구역 안 1~10)
@@ -1301,6 +1303,7 @@ const OFFLINE = {
 const DUEL = {
   gBase: { bamboo:3, gaebang:5, hwasan:10, sorim:12, ami:14, mudang:16, dangmun:18, magyo:22 },   // 1단의 전역 단계 g — 개방은 죽림 중반, 마교는 천산급
   gPerRank: 2,                 // 단마다 g +2
+  lag: 4,                      // 장로 전역 단계의 하한 = 가 본 최고 단계(S.best) − lag — 사냥터가 앞서도 장로가 순삭되지 않게
   masterEvery: 10,             // 이 배수 단은 장로 대신 장문인
   elderHp: 1.0,                // 장로 체력 = BOSS.hp × 이 값
   silverMob: 0.7,              // 제자 처치 은자 = 사냥터의 70% (본진이 사냥보다 못 벌게)
