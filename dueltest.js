@@ -58,7 +58,7 @@ setTimeout(()=>{
   ok(S.stage===BOSS_STAGE,'목표 '+need+' 채우면 장로 단계 '+S.stage);
   tillBoss();
   const b=S.foes.find(x=>x.boss);
-  ok(!!b && b.k==='elder_gaebang','장로 소환 = '+(b&&b.k));
+  ok(!!b && b.k===w.eval('ZONEBOSS')['hq_gaebang'],'장로 소환 = '+(b&&b.k)+' (ZONEBOSS)');
   const hpHq=w.eval("bossHp()"); S.hq=null; const hpZone=w.eval("bossHp()"); S.hq='gaebang';
   ok(Math.abs(b.hpMax-Math.round(hpHq))<=1 && hpHq<hpZone,'장로 체력 = bossHp('+b.hpMax+') — 전역 단계 '+w.eval("gstage()")+' 기준 (죽림 보스 '+Math.round(hpZone)+'보다 낮다)');
   const fame0=S.fame, done0=JSON.stringify(S.bossDone), sv2=S.silver;
@@ -76,6 +76,9 @@ setTimeout(()=>{
   S.duel.gaebang=DUEL.masterEvery; S.frag={}; S.ptsBonus=0; const pt0=w.eval("skillPtsTotal()");
   S.kills=w.eval("stageNeed()"); steps(8,()=>S.stage===BOSS_STAGE); tillBoss();
   const m=S.foes.find(x=>x.boss); ok(!!m && w.hqIsMaster('gaebang'),'10단 = 장문인');
+  // 정예제자 — eliteFrom 단부터만 섞인다
+  { const ks=new Set(); S.duel.gaebang=1; for(let i=0;i<60;i++){ S.foes.length=0; w.spawnFoe(); ks.add(S.foes[0].k); } ok(!ks.has('gb_elite') && ks.has('gb_disc'),'1단: 정예제자 안 나옴 ('+[...ks]+')');
+    ks.clear(); S.duel.gaebang=DUEL.eliteFrom; for(let i=0;i<80;i++){ S.foes.length=0; w.spawnFoe(); ks.add(S.foes[0].k); } ok(ks.has('gb_elite') && ks.has('gb_disc'),DUEL.eliteFrom+'단: 정예제자 섞임 ('+[...ks]+')'); S.foes.length=0; S.foes.push(m); S.duel.gaebang=DUEL.masterEvery; }
   const sv3=S.silver, expM=w.eval("killSilver()*SILVER.bossKill")*(1+DUEL.silverMaster); m.hp=1; P.x=m.x-30; P.y=m.y; w.hurtFoe(m,10,false);
   fr=Object.keys(S.frag).reduce((s,k)=>s+S.frag[k],0);
   ok(fr===DUEL.frag.master && S.ptsBonus===DUEL.pts.master && w.eval("skillPtsTotal()")===pt0+DUEL.pts.master,'장문인: 조각 +'+fr+' · 무공점 +'+S.ptsBonus+' (skillPtsTotal '+pt0+'→'+w.eval("skillPtsTotal()")+')');

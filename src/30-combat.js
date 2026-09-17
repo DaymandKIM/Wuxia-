@@ -3,7 +3,8 @@ function spawnFoe(){
   // 옆모습 스프라이트라 좌우에서 오는 게 자연스럽다 — 세로 성분을 눌러 납작한
   // 타원으로 등장시킨다. 위아래도 오되(빈 화면 방지) 사선으로 온다 (v2.29)
   const a = rnd(0, Math.PI*2), r = rnd(SPAWN.rMin, SPAWN.rMax);
-  const list = ZONEFOE[zone().k] || ['bandit'];
+  let list = ZONEFOE[zone().k] || ['bandit'];
+  if (S.hq && hqRank(S.hq) < DUEL.eliteFrom){ const l2 = list.filter(x => !FOES[x].elite); if (l2.length) list = l2; }   // 본진 정예제자는 eliteFrom 단부터 (v2.94.2)
   const k = list[Math.floor(Math.random()*list.length)];
   const M = FOES[k];
   S.foes.push({

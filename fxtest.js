@@ -281,7 +281,11 @@ setTimeout(()=>{
   ok(w.eval('S.foes[0].k')==='gb_disc' && drew('gb_disc_idle0', 82),'개방 본진 제자 = gb_disc, 대기 컷이 캔버스 폭 82 로 그려진다');
   w.eval('S.foes[0].anim="atk"; S.foes[0].af=1;'); renderNow(); ok(drew('gb_disc_atk1', 82),'공격 2번째 컷(파란 원호)이 그려진다');
   w.eval('S.foes[0].anim="death"; S.foes[0].af=2; S.foes[0].dead=true;'); renderNow(); ok(drew('gb_disc_death1', 82),'죽음 마지막 컷(늘어짐)이 그려진다');
-  w.eval('gotoZone(0,1);');
+  w.eval('S.foes.length=0; S.foes.push({k:"gb_elite",anim:"atk",af:2,x:P.x+70,y:P.y,hp:9,hpMax:9,dir:-1,af:2,atkT:0,cd:9,hitDone:false,hit:0,dead:false,dying:0});'); renderNow();
+  ok(drew('gb_elite_atk2', 122),'개방 정예제자 봉 찌르기 컷이 캔버스 폭 122 로 그려진다');
+  w.eval('S.foes.length=0; S.foes.push({k:"gb_elder",boss:true,anim:"atk",af:2,x:P.x+90,y:P.y,hp:9,hpMax:9,dir:-1,atkT:0,cd:9,hitDone:false,hit:0,dead:false,dying:0,rise:0,skT:0,skCd:9,kb:0,kx:0,ky:0}); S.bossAlive=true;'); renderNow();
+  ok(drew('gb_elder_atk2', 148),'개방 장로 휘두르기(청록 호) 컷이 캔버스 폭 148 로 그려진다');
+  w.eval('S.foes.length=0; S.bossAlive=false; gotoZone(0,1);');
 
   ok(errs.length===0,'런타임 오류 0'+(errs.length?': '+errs[0]:''));
   console.log(bad?('\n★ 실패 '+bad+'건'):'\n문제 없음');

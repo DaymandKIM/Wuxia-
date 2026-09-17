@@ -1341,9 +1341,29 @@ FOES.gb_disc = {
   fps:{ idle:4, walk:7, atk:7.3, hit:6, death:4 },
   hp:1.1, dmg:1.0, spd:1.0, range:52,   // 봉이라 강도(44)보다 조금 길게
 };
-DUEL.art = { gaebang:{ disc:'gb_disc' } };   // 문파 → {disc, elite, elder} FOES 키. 시트가 오면 여기만 채운다
+FOES.gb_elite = {
+  // 개방 정예제자 — sheets/gb_elite.png. 대기·걷기 한 자세(시트 대기 0,1,3,6 · 걷기 0,1,2,4 — 걷기 줄은 8칸이 아니라 5칸).
+  // 캔버스 122×53 은 봉 찌르기 청록 기운 폭 — 몸은 25×50 (sw/bh). 공격 = 뻗기 → 당김 → 봉 찌르기+기운 → 회수. DUEL.eliteFrom 단부터 섞인다.
+  n:'개방 정예제자', w:122, h:53, sw:25, bh:50, school:'gaebang', elite:true,
+  anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'],
+         atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
+  fps:{ idle:4, walk:7, atk:7.3, hit:6, death:4 },
+  hp:1.7, dmg:1.3, spd:1.0, range:60,   // 봉 찌르기가 길다 — 수호무사급 정예 스탯
+};
+FOES.gb_elder = {
+  // 개방 장로 — sheets/gb_elder.png(보스급, 키 58). 대기 시트 3칸은 지팡이가 빠져 있어 0,1,4,5 · 걷기 0,3,4,5.
+  // 캔버스 148×63 은 휘두르기 청록 호 폭 — 몸은 39×58 (sw/bh). 공격 = 지팡이 들기 → 당김 → 넓은 호 → 회수. 보스 틀(range 는 BOSS.range).
+  n:'개방 장로', w:148, h:63, sw:39, bh:58, school:'gaebang',
+  anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'],
+         atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
+  fps:{ idle:3.5, walk:6, atk:7.3, hit:6, death:4 },
+  hp:1.0, dmg:1.0, spd:0.9, range:70,
+};
+DUEL.art = { gaebang:{ disc:'gb_disc', elite:'gb_elite', elder:'gb_elder' } };   // 문파 → {disc, elite, elder} FOES 키. 시트가 오면 여기만 채운다
+DUEL.eliteFrom = 4;            // 정예제자가 섞이기 시작하는 단
+DUEL.eliteW = [3, 1];          // 등장표 가중 [수습, 정예] — 넷 중 하나가 정예
 for (const k in DUEL.art){
   const A = DUEL.art[k];
-  if (A.disc)  ZONEFOE['hq_' + k]  = [A.disc];
+  if (A.disc)  ZONEFOE['hq_' + k]  = A.elite ? [...Array(DUEL.eliteW[0]).fill(A.disc), ...Array(DUEL.eliteW[1]).fill(A.elite)] : [A.disc];
   if (A.elder) ZONEBOSS['hq_' + k] = A.elder;
 }
