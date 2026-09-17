@@ -345,7 +345,7 @@ function step(dt){
       const prog = 1 - f.atkT / AD.dur;
       if (!f.hitDone && prog >= AD.hitAt){
         f.hitDone = true;
-        if (d < rng + (f.boss?26:16)) hurtHero(f.boss ? bossDmg() : foeDmg()*foeM(f).dmg);
+        if (d < rng + (f.boss?26:16)){ hurtHero(f.boss ? bossDmg() : foeDmg()*foeM(f).dmg); foeImpactFx(f); }   // 공격 결마다 다른 파열 (v2.95)
       }
       if (f.atkT <= 0) f.cd = FOE.cd * rnd(0.8, 1.3);
     } else if (f.cd > 0){

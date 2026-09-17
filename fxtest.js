@@ -322,6 +322,31 @@ setTimeout(()=>{
   w.eval('gotoHq("sorim"); S.intro=0; hqLoadStep(99); S.camX=0; S.camY=0;'); renderNow();
   ok(w.eval('!!PROPS[rzone().k]') && draws.some(d=>String((d.im&&d.im.__key)||'').indexOf('prophq_sorim')===0 || true),'소림 본진 소품 표가 rzone 키로 잡힌다 ('+w.eval('PROPS[rzone().k].pick.length')+'종)');
   ok(w.eval('PROPS.hq_sorim.pick.every(p=>!!IMG[p[0]])'),'소림 소품 8종 로드');
+  // 적 공격 이펙트 (v2.95) — FOEFX 에 적힌 결이 실제로 S.fx 조각을 만드는지. 표에만 적고 코드가 그 결을 모르면 조용히 아무것도 안 뜬다.
+  {
+    const keys = w.eval('JSON.stringify(Object.keys(FOEFX))') && JSON.parse(w.eval('JSON.stringify(Object.keys(FOEFX))'));
+    const kinds = {};   // 결 이름 → 만들어진 fx 종류
+    let dead = [];
+    for (const key of keys){
+      const [fk, ak] = key.split('.');
+      const av = ak === 'atk' ? 0 : (+ak.slice(3) - 1);
+      w.eval('S.fx.length=0; S.foes.length=0; S.foes.push({k:"'+fk+'",anim:"'+ak+'",av:'+av+',af:0,x:P.x-40,y:P.y,hp:9,hpMax:9,dir:1,atkT:0.3,cd:9,hitDone:false,hit:0,dead:false,dying:0}); foeImpactFx(S.foes[0]);');
+      const n = w.eval('S.fx.length');
+      if (!n) dead.push(key);
+      else kinds[w.eval('FOEFX["'+key+'"]')] = w.eval('S.fx.map(e=>e.k).join("+")');
+    }
+    ok(dead.length === 0, 'FOEFX ' + keys.length + '개 공격이 전부 이펙트를 만든다' + (dead.length ? ' — 빈 것: ' + dead.slice(0,4).join(', ') : ''));
+    ok(!!kinds.ripple && kinds.ripple.indexOf('ripple') >= 0, '새 결 ripple 이 바닥 파문 조각을 만든다');
+    ok(!!kinds.cloud && kinds.cloud.indexOf('cloud') >= 0, '새 결 cloud 가 독무 덩이를 만든다');
+    ok(!!kinds.cut3 && kinds.cut3.split('+').length === 3, '갈퀴(cut3)는 참격선 셋을 겹친다');
+    // 렌더까지 — createRadialGradient 같은 걸 쓰면 여기서 터진다
+    w.eval('S.fx.length=0; foeImpactFx(S.foes[0]);');
+    w.eval('S.fx.push({k:"ripple",x:P.x,y:P.y,c:"190,255,200",life:0.4,t:0.4});');
+    w.eval('S.fx.push({k:"cloud",x:P.x,y:P.y,dir:1,c:"201,239,162",life:0.7,t:0.7});');
+    renderNow();
+    ok(true, '새 결 두 가지가 렌더를 통과한다 (오류는 마지막 검사에서 확인)');
+    w.eval('S.fx.length=0; S.foes.length=0;');
+  }
   // 공격이 여러 벌인 몹은 스트립이 전부 로드돼야 한다 (v2.94.27) — atk2·atk3 를 데이터에만 적고 파일을 안 넣는 사고를 막는다
   w.eval("Object.keys(FOES).filter(k=>FOES[k].anim&&(FOES[k].anim.atk2||FOES[k].anim.atk3))").forEach(k => {
     const n = w.eval("['atk','atk2','atk3'].filter(a=>FOES['"+k+"'].anim[a]).length");

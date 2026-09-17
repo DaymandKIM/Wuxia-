@@ -348,7 +348,8 @@
   .atile .bd.can{display:block;color:#6fd3a8;}
   .atile .bd.lv{display:block;color:#69a8dd;}
   @keyframes bdp{50%{transform:scale(1.35);}}
-  .adet{margin:10px 12px 4px;padding:10px 14px;background:#171d25;border:1.5px solid #3c6f9e;
+  /* 상세·버튼은 탭 줄 아래에 붙어 있다 (v2.94.30) — 타일을 훑는 동안에도 배우기·연마 버튼이 늘 보인다 */
+  .adet{position:sticky;top:34px;z-index:2;margin:10px 12px 4px;padding:10px 14px;background:#171d25;border:1.5px solid #3c6f9e;
     border-radius:11px;scroll-margin-bottom:14px;}
   .adet .trbuy{margin-top:8px;}
   /* 무공 특성 칩 (v2.93.7 — 상세창 안에서 바로 올린다) */

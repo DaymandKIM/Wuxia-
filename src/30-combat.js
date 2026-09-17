@@ -207,6 +207,58 @@ function heroImpactFx(f, iy, crit){
   }
 }
 
+// 적 공격 임팩트 (v2.95, docs/설계-적이펙트.md) — 주인공의 heroImpactFx 와 같은 틀.
+// 닿는 자리(주인공 몸 앞)에 FOEFX 가 정한 결을 하나 얹는다. 표에 없는 몹은 아무것도 안 뜬다(옛 몹은 그대로).
+function foeImpactFx(f){
+  const key = f.k + '.' + foeAtkAnim(f);
+  const st = FOEFX[key]; if (!st) return;
+  const M = foeM(f), sc = SCHOOLS[M.school] || SCHOOLS.none;
+  const c = FOEFXC[key] || rgbOf(sc.c);
+  const dir = f.x <= P.x ? 1 : -1;                    // 적이 주인공을 향하는 쪽
+  const x = P.x - dir * HERO.w * 0.25, iy = P.y - HERO.h * 0.45, sd = (Math.random()*2-1);
+  if (st === 'impact'){
+    const D = FXD.impact;
+    fxPush({ k:'rays', x, y:iy, r:D.r, n:D.n, len:D.len, c, sd:Math.random()*6.28, life:D.life, t:D.life });
+    fxPush({ k:'wave', x, y:iy, r:D.r + 6, c, life:D.life*1.4, t:D.life*1.4 });
+  } else if (st === 'rise'){
+    const D = FXD.rise;
+    fxPush({ k:'streak', x, y:iy - D.len*0.4, ang:-Math.PI/2, len:D.len, w:D.w, c, life:D.life, t:D.life });
+    fxPush({ k:'sparks', x, y:iy, c, up:1, sd:(Math.random()*89)|0, life:FXD.spark.life, t:FXD.spark.life });
+  } else if (st === 'qi'){
+    fxBlast(x, iy, FXD.qi.r, c, true);
+  } else if (st === 'flash'){                          // 손끝 작렬 — 섬광 + 고리
+    fxPush({ k:'flash', x, y:iy, c, life:FXD.flash.life, t:FXD.flash.life });
+    fxPush({ k:'wave', x, y:iy, r:18, c, life:0.3, t:0.3 });
+  } else if (st === 'cut' || st === 'cutdown' || st === 'pierce' || st === 'cut3'){
+    const D = FXD[st === 'cut3' ? 'cut' : st];
+    const n = st === 'cut3' ? 3 : 1;                   // 갈퀴 — 참격선 셋을 어긋나게 겹친다
+    for (let i = 0; i < n; i++){
+      const ang = D.ang * dir + (sd + i*0.6 - (n-1)*0.3) * 0.18;
+      fxPush({ k:'streak', x, y:iy + (i - (n-1)/2) * 7, ang:dir < 0 && st === 'pierce' ? Math.PI : ang,
+               len:D.len, w:D.w, c, life:D.life, t:D.life });
+    }
+    if (st === 'cutdown') fxPush({ k:'stepdust', x, y:P.y, dir, sd:(Math.random()*89)|0, life:FXD.stepdust.life, t:FXD.stepdust.life });
+  } else if (st === 'spin'){
+    const D = FXD.spin;
+    fxPush({ k:'wave', x, y:P.y, r:D.r, c, life:D.life, t:D.life });
+    fxPush({ k:'wave', x, y:P.y, r:D.r*0.6, c, life:D.life*0.7, t:D.life*0.7 });
+  } else if (st === 'blunt'){
+    const D = FXD.blunt;
+    fxPush({ k:'wave', x, y:iy, r:D.r, c, life:D.life, t:D.life });
+    fxPush({ k:'stepdust', x, y:P.y, dir:-dir, sd:(Math.random()*89)|0, life:FXD.stepdust.life, t:FXD.stepdust.life });
+  } else if (st === 'petal'){
+    const D = FXD.petal;
+    fxPush({ k:'petals', x, y:iy, dir, n:D.n, spd:D.spd, c, sd:(Math.random()*89)|0, life:D.life, t:D.life });
+  } else if (st === 'sparks'){                         // 암기 — 여러 갈래로 튄다
+    fxPush({ k:'sparks', x, y:iy, c, sd:(Math.random()*89)|0, life:FXD.spark.life, t:FXD.spark.life });
+    fxPush({ k:'rays', x, y:iy, r:6, n:5, len:12, c, sd:Math.random()*6.28, life:0.18, t:0.18 });
+  } else if (st === 'ripple'){                         // 바닥 파문 — 발밑에서
+    fxPush({ k:'ripple', x, y:P.y, c, life:FXD.ripple.life, t:FXD.ripple.life });
+  } else if (st === 'cloud'){                          // 독무 — 몸을 감싸며 퍼진다
+    fxPush({ k:'cloud', x, y:iy, dir, c, life:FXD.cloud.life, t:FXD.cloud.life });
+  }
+}
+
 // 공격 판정 — 지정 프레임에 한 번만
 function heroHitCheck(){
   if (P.hitDone) return;

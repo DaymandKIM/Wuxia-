@@ -161,7 +161,9 @@ function buildEquipPanel(){
   h += '<div class="zrow eqtop" id="eqtop"></div>';
   h += '<div class="eqbtns"><button class="sb" id="eqmerge"></button><button class="sb" id="eqauto">자동 장착</button></div></div>';
   // 아이템 카드 — 등급 줄
-  for (let g = 0; g < EQUIP.grades.length; g++){                    // 일반이 위(v2.70.2, 사용자: "등급 낮은 게 위에서부터")
+  // **상위 등급이 위**(v2.94.30, 사용자: "더 상위 등급이 위에 보이게 하자, 내려가기 귀찮다") — 옛 v2.70.2 의 반대다.
+  // 후반엔 쓰는 게 전부 위쪽 등급이라 매번 끝까지 스크롤해야 했다.
+  for (let g = EQUIP.grades.length - 1; g >= 0; g--){
     const G = EQUIP.grades[g];
     h += '<div class="eqsec" style="color:' + G.c + '">' + G.n + ' <i>장착 ' + G.base + '% · Lv 상한 ' + G.lvCap + '</i></div><div class="eqcards">';
     for (const kd of eqKinds(sl)){ const w0 = eqWornOf(kd[0]); const worn = w0 && w0.k === kd[0] && w0.g === g; h += eqCard(kd[0], g, worn); }

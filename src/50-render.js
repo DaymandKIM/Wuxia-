@@ -480,6 +480,33 @@ function drawFx(ox, oy){
       ctx.lineWidth = (FXD.wave.w + a*3) * 2.6;
       ctx.beginPath(); ctx.ellipse(x, y, r*0.86, r*0.86/HERO.atkFlat, 0, 0, Math.PI*2); ctx.stroke();
       ctx.restore();
+    } else if (e.k === 'ripple'){
+      // 바닥 파문 — 납작한 고리 두 겹이 서로 다른 속도로 자란다 (아미 장로 석장 내려꽂기·청죽 장로 발구르기)
+      const D = FXD.ripple;
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.strokeStyle = 'rgb(' + (e.c || '190,255,200') + ')';
+      for (let i = 0; i < 2; i++){
+        const rr = (i ? D.r2 : D.r) * (1 - a*a);
+        ctx.globalAlpha = a * (i ? 0.35 : 0.75);
+        ctx.lineWidth = D.w + a * (i ? 1 : 2);
+        ctx.beginPath(); ctx.ellipse(x, y, rr, rr * D.sq, 0, 0, Math.PI*2); ctx.stroke();
+      }
+      ctx.restore();
+    } else if (e.k === 'cloud'){
+      // 독무 — 반투명 덩이 여럿이 저마다 다른 속도로 커지며 옅어진다 (당문 장로 장풍·독환)
+      const D = FXD.cloud, p = 1 - a;
+      ctx.save();
+      ctx.fillStyle = 'rgb(' + (e.c || '201,239,162') + ')';
+      for (let i = 0; i < D.n; i++){
+        const h1 = ambHash(i, 11), h2 = ambHash(i, 23);
+        ctx.globalAlpha = a * D.a * (0.5 + h1 * 0.5);
+        const rr = D.r + p * D.grow * (0.6 + h2 * 0.8);
+        const dx = (h1 - 0.5) * D.grow * p * 1.4 * (e.dir || 1);
+        const dy = (h2 - 0.5) * D.r * 1.2;
+        ctx.beginPath(); ctx.ellipse(x + dx, y + dy, rr, rr * 0.7, 0, 0, Math.PI*2); ctx.fill();
+      }
+      ctx.restore();
     } else if (e.k === 'rays'){
       // 방사 속도선 — 큰 순간의 "번쩍". 바깥으로 쏘아지며 사라진다
       const p = 1 - a;

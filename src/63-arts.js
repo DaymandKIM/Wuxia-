@@ -95,8 +95,10 @@ function buildArtsPanel(){
       '<button class="askind" data-t="active">초식</button>' +
       '<button class="askind" data-t="passive">심법</button>' +
     '</div>' +   // 스킬 심화 버튼은 뺐다 — 특성은 무공 상세창에서 바로 올린다 (v2.93.7 사용자 "스킬 눌렀을 때 상태창에서 업글")
-    '<div id="agridwrap"></div>' +
-    '<div class="adet" id="adet"></div>';
+    // 상세·버튼 칸을 **타일 표 위**로 올렸다 (v2.94.30, 사용자: "스킬 배우기가 너무 아래 있어서 불편, 업그레이드 할 때도")
+    // — 옛 판은 무공이 스무 개 넘게 깔린 아래에 있어 배우려면 매번 끝까지 내려가야 했다.
+    '<div class="adet" id="adet"></div>' +
+    '<div id="agridwrap"></div>';
   for (const el of b.querySelectorAll('.askind'))
     el.onclick = () => { artTab = el.dataset.t; artDetSig = ''; drawArtGrid(); };
   // 처음엔 살 수 있는 것, 없으면 그 탭 첫 무공
@@ -127,7 +129,7 @@ function drawArtGrid(){
   $('agridwrap').innerHTML = h;
   $('agridwrap').querySelectorAll('.atile').forEach(el => {
     el.onclick = () => { artSel = el.dataset.k; artDetSig = ''; refreshArts();
-      const det = $('adet'); if (det && det.scrollIntoView) det.scrollIntoView({ block:'nearest', behavior:'smooth' }); };
+      const b2 = $('abody'); if (b2) b2.scrollTop = 0; };   // 상세가 위에 있으니 맨 위로 (v2.94.30)
   });
   // 선택 무공이 이 탭에 없으면 이 탭 첫 무공으로
   if (!artSel || !all.some(a => a.k === artSel)) artSel = (all[0] || ARTS.list[0]).k;

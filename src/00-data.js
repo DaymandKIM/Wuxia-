@@ -142,6 +142,8 @@ const FXD = {
   spin:    { r:32, life:0.4, c:'200,240,255' },                     // 회전 — 발밑 큰 원형 충격파
   blunt:   { r:15, life:0.26, c:'255,220,170' },                    // 봉 — 둔탁한 충격 고리 + 흙 튐
   petal:   { n:5, spd:70, life:0.5, c:'190,255,230' },              // 부채 — 흩날리는 청록 잎 조각
+  ripple:  { r:14, r2:28, sq:0.34, w:2, life:0.42 },                // 땅 짚기 — 바닥에 퍼지는 납작한 고리 두 겹 (v2.95)
+  cloud:   { n:5, r:9, grow:26, life:0.7, a:0.5 },                  // 독무 — 뭉게뭉게 퍼지는 반투명 덩이 (v2.95)
   stepdust:{ n:3, life:0.32, r:3.2, c:'170,158,128' },              // 공격 들어갈 때 발밑 흙먼지(가산 아님)
   // 운기조식 연출 (v2.78) — 몸 뒤 온기 후광 · 발밑 광륜(숨 쉬듯 맥동) · 6컷 루프에 맞춰 퍼지는 호흡 고리 · 반짝이는 빛알
   meditFx: {
@@ -816,6 +818,35 @@ const FOES = {
   },
 };
 // 구역별 등장 목록
+// 적 공격 이펙트 (v2.95, docs/설계-적이펙트.md — 사용자 "각 모션에 맞는 스킬 이펙트도 구상해 놔, 네가 직접 넣을 거")
+// '<몹키>.<공격키>' → 결 이름. 주인공의 FXD.moveFx 와 같은 틀이고, 결 자체도 주인공 것을 다시 쓴다(ripple·cloud 만 새로).
+// 색은 문파색(SCHOOLS[school].c)에서 뽑되, 시트에 그려진 이펙트 색이 다르면 FOEFXC 로 덮는다.
+// **표에 없는 몹·공격은 아무 이펙트도 안 뜬다** — 옛 몹(강도·낭인 등)은 그대로다.
+const FOEFX = {
+  'sr_disc.atk':'impact',   'sr_elite.atk':'cutdown',  'sr_elite.atk2':'blunt',
+  'sr_elder.atk':'flash',   'sr_elder.atk2':'rise',    'sr_elder.atk3':'qi',
+  'gb_disc.atk':'blunt',    'gb_elite.atk':'pierce',   'gb_elite.atk2':'spin',
+  'gb_elder.atk':'blunt',   'gb_elder.atk2':'cutdown', 'gb_elder.atk3':'pierce',
+  'md_disc.atk':'cut',      'md_elite.atk':'spin',     'md_elite.atk2':'cut',
+  'md_elder.atk':'spin',    'md_elder.atk2':'pierce',  'md_elder.atk3':'qi',
+  'hs_disc.atk':'cut',      'hs_elite.atk':'cut',      'hs_elite.atk2':'pierce',
+  'hs_elder.atk':'cut',     'hs_elder.atk2':'petal',   'hs_elder.atk3':'cutdown',
+  'am_disc.atk':'impact',   'am_elite.atk':'pierce',   'am_elite.atk2':'cut',
+  'am_elder.atk':'blunt',   'am_elder.atk2':'ripple',  'am_elder.atk3':'flash',
+  'dm_disc.atk':'pierce',   'dm_elite.atk':'sparks',   'dm_elite.atk2':'cut',
+  'dm_elder.atk':'cloud',   'dm_elder.atk2':'sparks',  'dm_elder.atk3':'cloud',
+  'mg_disc.atk':'cut',      'mg_elite.atk':'cutdown',  'mg_elite.atk2':'spin',
+  'mg_elder.atk':'qi',      'mg_elder.atk2':'cut3',    'mg_elder.atk3':'flash',
+  'bb_disc.atk':'pierce',   'bb_elite.atk':'petal',    'bb_elite.atk2':'cutdown',
+  'bb_elder.atk':'pierce',  'bb_elder.atk2':'petal',   'bb_elder.atk3':'ripple',
+};
+// 시트에 그려진 색이 문파색과 다른 것만 (나머지는 문파색)
+const FOEFXC = {
+  'hs_elder.atk2':'255,248,236', 'gb_elder.atk2':'240,238,228', 'hs_elder.atk3':'240,238,228',
+  'md_elder.atk2':'240,248,255', 'mg_elder.atk2':'255,240,244', 'mg_elder.atk3':'255,226,150',
+  'sr_elder.atk':'255,226,150',  'am_elder.atk3':'200,255,206', 'dm_elder.atk':'201,239,162',
+  'dm_elder.atk3':'201,239,162', 'dm_elite.atk':'180,236,255',
+};
 const ZONEFOE = {
   bamboo:  ['bandit','thug','wisp','wasp','panther','panther','shaman','frog','frog',
             'beetle','soldier','stalker','snake'],   // 죽림 확장 — v2.25~27 (13칸)
