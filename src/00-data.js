@@ -312,6 +312,7 @@ const BACKDROP = {
   // 그림 84px)에서 그림의 3/4를 녹여 집·나무 아랫도리가 다 잘려 보였다("아래쪽이 다 짤려").
   // 이제 아래 14%만 녹인다 — 집 주춧돌만 땅에 스민다.
   fadeR: 0.14, fadeMin: 8, fadeSteps: 48, fadePow: 1.0,   // 계단 48(≈1px) — 설산 넓은 눈밭 띠(120px)에서 16단은 줄무늬가 보였다
+  mirror: { hq_bamboo:1 },                      // 좌우가 안 이어지는 시트는 한 장 걸러 뒤집어 깐다 (v2.94.14 — 청죽문 원경은 왼쪽이 먼 안개 대숲, 오른쪽이 코앞 대나무라 수직으로 끊겼다)
   fadePad: 16,                                  // v2.87.4 "원경 아래 선": 시트 아래 균일 띠(bg_extract --pad)가 디졸브보다 높으면 띠 윗변이 불투명한 선으로 남는다(천산 44px > 35px)
                                                 //   → 디졸브 길이 = max(fadeR×높이, 띠 높이 + fadePad). 띠 높이는 backdropScaled가 축소 캔버스에서 잰다(bdBand)
   cull: 0.5,                                    // 지평선 위(fade의 이 비율 지점부터) 소품 안 세움
@@ -1398,7 +1399,9 @@ DUEL.art = { gaebang:{ disc:'gb_disc', elite:'gb_elite', elder:'gb_elder' }, sor
 // 본진 전용 원경·바닥 (v2.94.3, 사용자 시트 — docs/프롬프트-배경.md "본진 원경·바닥"): 에셋 bg_hq_<k>·ground_hq_<k> 가 있으면 rzone() 이 본진을 돌려주고
 // 그 땅색(hqGround)·원경·바닥으로 그린다. 없으면 이웃 사냥터를 빌린다(vis). 소품·날씨 입자는 본진엔 없다.
 DUEL.hqGround = { gaebang:'#6e6349', sorim:'#7a7368', mudang:'#6c7a7c', hwasan:'#7d6658', ami:'#647a5a', dangmun:'#5e5450', magyo:'#4a4448', bamboo:'#6a7a52' };
-DUEL.hqSky = { gaebang:'#e1b677', sorim:'#cea98c' };
+// 원경 위 남는 하늘 — 시트에서 마젠타 경계 바로 아래 줄들의 중앙값(hqbg 보고). 마교만 예외: 지붕·나무가 마젠타에 바로 닿아
+// 하늘이 없다 — 경계값(#7b335a)을 쓰면 화면 위 절반이 밝은 자홍 판이 된다. 그림 윗부분 중앙값으로 어둡게.
+DUEL.hqSky = { gaebang:'#e1b677', sorim:'#cea98c', mudang:'#c3dedd', hwasan:'#f4dec5', ami:'#c9d1cc', dangmun:'#607168', magyo:'#401a2a', bamboo:'#5c7263' };
 DUEL.hqGroundA = { sorim:0.8, ami:0.7, dangmun:0.8, hwasan:0.85, bamboo:0.85 };   // 대비가 센 바닥은 옅게(인물 가독성)       // 줄눈이 어두운 석판은 텍스처를 옅게(인물 가독성, GROUNDTEX.aZone)
 // 본진 진입 로딩 화면 (v2.94.7, 사용자 "해당 문파로 넘어갈 때 이미지 3장 로딩 화면에서") — 에셋이 없으면 문파색 바탕으로 뜬다.
 // 그림 키: hq_art_<문파>(세로 일러스트) · hq_load_frame(공통 두루마리 테두리) · hq_load_ink(공통 먹 번짐)

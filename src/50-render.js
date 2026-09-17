@@ -77,16 +77,28 @@ function drawBackdrop(ox){
   const skyTo = y0 + backdropClear(zk, sw, sh);
   if (skyTo > 0) ctx.fillRect(0, 0, VW, skyTo + 1);
   const F = backdropFade(zk, sw, sh), solid = sh - F, n = BACKDROP.fadeSteps;
-  for (let x = off; x < VW; x += sw)                               // 위쪽 불투명부
-    ctx.drawImage(src, 0, 0, sw, solid, Math.round(x), y0, sw, solid);
+  // 좌우가 안 이어지는 시트는 한 장 걸러 뒤집어 깐다 (v2.94.14) — 거울이라 이음새가 반드시 맞는다.
+  // 타일 인덱스는 카메라 오프셋(off)이 한 장 넘어갈 때마다 바뀌어야 하므로 스크롤 거리에서 센다.
+  const mir = BACKDROP.mirror && BACKDROP.mirror[zk];
+  const t0 = mir ? Math.floor((((ox * BACKDROP.par) % (sw*2)) + sw*2) % (sw*2) / sw) : 0;
+  const tile = (sy, th, dy) => {
+    for (let x = off, ti = 0; x < VW; x += sw, ti++){
+      const flip = mir && ((ti + t0) & 1);
+      if (flip){
+        ctx.save(); ctx.translate(Math.round(x) + sw, 0); ctx.scale(-1, 1);
+        ctx.drawImage(src, 0, sy, sw, th, 0, dy, sw, th);
+        ctx.restore();
+      } else ctx.drawImage(src, 0, sy, sw, th, Math.round(x), dy, sw, th);
+    }
+  };
+  tile(0, solid, y0);                                                            // 위쪽 불투명부
   // 띠 경계는 정수로 잘라 겹치지 않게 — 겹친 반투명 띠가 알파를 쌓아 가로 줄무늬가 됐다
   const nb = Math.min(n, F);
   for (let i = 0; i < nb; i++){                                    // 아래 디졸브 계단
     ctx.globalAlpha = Math.pow(1 - (i + 0.5) / nb, BACKDROP.fadePow);   // 아래로 갈수록 빨리 빠진다
     const a0 = solid + Math.round(i * F / nb), a1 = solid + Math.round((i + 1) * F / nb);
     if (a1 <= a0) continue;
-    for (let x = off; x < VW; x += sw)
-      ctx.drawImage(src, 0, a0, sw, a1 - a0, Math.round(x), y0 + a0, sw, a1 - a0);
+    tile(a0, a1 - a0, y0 + a0);
   }
   ctx.restore();
 }
