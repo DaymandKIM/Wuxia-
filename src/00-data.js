@@ -1497,9 +1497,14 @@ FOES.md_elder = { n:'무당 장로',     w:76, h:64, sw:30, bh:58, school:'mudan
          atk:['atk0','atk1','atk2','atk3'], atk2:['atk2_0','atk2_1','atk2_2','atk2_3'], atk3:['atk3_0','atk3_1','atk3_2','atk3_3'],
          hit:['hit'], death:['hit','death0','death1'] },
   fps:{ idle:3.5, walk:6, atk:7.3, hit:6, death:4 }, hp:1.0, dmg:1.0, spd:0.9, range:70 };
-FOES.hs_disc  = { n:'화산 수습제자', w:66,  h:58, sw:27, bh:48, school:'hwasan',
-  anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'], atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
-  fps:{ idle:4, walk:7, atk:7.3, hit:6, death:4 }, hp:1.1, dmg:1.0, spd:1.0, range:48 };
+// 화산 수습제자 — sheets/hs_disc2.png(v2.94.27 3.5등신 재작업판, 4줄×8칸 균등). 대기 8 · 걷기 6(IoU 0.9 넘는 두 칸을 뺐다) ·
+// 베어 올리기 8컷 시트 순서 그대로 · 쓰러짐 3. **걷기 컷만 검이 없다** — 시트가 그렇게 그려져 있어 재작업 없이는 못 고친다.
+FOES.hs_disc  = { n:'화산 수습제자', w:56,  h:54, sw:26, bh:50, school:'hwasan',
+  anim:{ idle:['idle0','idle1','idle2','idle3','idle4','idle5','idle6','idle7'],
+         walk:['walk0','walk1','walk2','walk3','walk4','walk5'],
+         atk:['atk0','atk1','atk2','atk3','atk4','atk5','atk6','atk7'],
+         hit:['hit'], death:['hit','death0','death1','death2'] },
+  fps:{ idle:4, walk:7, atk:7.3, hit:6, death:5 }, hp:1.1, dmg:1.0, spd:1.0, range:48 };
 FOES.hs_elite = { n:'화산 정예제자', w:60,  h:53, sw:23, bh:50, school:'hwasan', elite:true,
   anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'], atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
   fps:{ idle:4, walk:7, atk:7.3, hit:6, death:4 }, hp:1.7, dmg:1.3, spd:1.0, range:60 };
