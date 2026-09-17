@@ -1483,22 +1483,28 @@ FOES.sr_elder = {
 };
 // 무당·화산 3등급 (v2.94.15, 사용자 시트 — sr_sheet.py). 캔버스가 넓은 것은 이펙트 폭이다(drawFoe 가 좌우 중앙 정렬):
 // md_disc 는 목검을 머리 위로 든 컷이라 높이 72, md_elite 는 검 끝 파란 고리, md_elder 는 청록 소용돌이, hs_elder 는 크림 초승달.
-FOES.md_disc  = { n:'무당 수습제자', w:42,  h:72, sw:22, bh:48, school:'mudang',
-  anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'], atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
+// 무당 수습제자 — sheets/md_disc3.png(v2.94.29 새 시트, 3줄x8칸. 둘째 줄이 앞 4칸 걷기 + 뒤 4칸 공격이라 칸 단위로 갈랐다).
+// 대기 11(셋째 줄 대기 변형 셋을 합쳤다) · 걷기 4 · 목검 내려베기 4(파란 호) · 쓰러짐 3. 캔버스 44x54 — 몸 22x48.
+FOES.md_disc  = { n:'무당 수습제자', w:44,  h:54, sw:22, bh:48, school:'mudang',
+  anim:{ idle:['idle0','idle1','idle2','idle3','idle4','idle5','idle6','idle7','idle8','idle9','idle10'], walk:['walk0','walk1','walk2','walk3'], atk:['atk0','atk1','atk2','atk3'],
+         hit:['hit'], death:['hit','death0','death1','death2'] },
   fps:{ idle:4, walk:7, atk:7.3, hit:6, death:4 }, hp:1.1, dmg:1.0, spd:1.0, range:52 };
-// 무당 정예 — 3.5등신 재작업 시트 2장(대기·공격 + 질주·피격)을 세로로 붙여 뽑았다 (v2.94.24, sheets/md_elite2.png).
-// **공격이 두 벌**(사용자 "정예는 2개"): atk = 원호 휘두르기, atk2 = 도약 초승달 → 파란 구체 찌르기. 캔버스 138 은 검·호 폭이다.
-FOES.md_elite = { n:'무당 정예제자', w:138, h:54, sw:27, bh:50, school:'mudang', elite:true,
+// 무당 정예제자 — sheets/md_elite3b.png(v2.94.29 새 시트, 4줄x8칸). **공격 두 벌**: atk 파란 소용돌이(기 모음 → 몸 두르는 호 →
+// 검 끝 구체 찌르기 8컷) · atk2 금빛 초승달(7컷). 작은 파란 나선이 사라져 --minblob=8·--nodeclutter 가 필요했다.
+// 검이 사라진 칸 넷은 뺐다. 캔버스 68x54 — 몸 24x50.
+FOES.md_elite = { n:'무당 정예제자', w:68, h:54, sw:24, bh:50, school:'mudang', elite:true,
   anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'],
-         atk:['atk0','atk1','atk2','atk3'], atk2:['atk2_0','atk2_1','atk2_2','atk2_3'],
-         hit:['hit'], death:['hit','death0','death1'] },
-  fps:{ idle:4, walk:7, atk:7.3, hit:6, death:4 }, hp:1.7, dmg:1.3, spd:1.0, range:60 };
-// 무당 장로 — 같은 시트에서 공격 **세 벌**을 뽑았다 (v2.94.25, 사용자 "장로는 3개"):
-// atk 불진 휘두르기(흰 원호) · atk2 손가락 지법(흰 섬광) · atk3 장풍(푸른 기운 구체 → 밀기).
-// 인물 없는 파란 나선 단독 칸은 뺐다 — 쓰면 몸이 한 컷 사라져 보인다. 걷기 4칸만 9% 크게 그려져 칸 단위 --rowref 로 눌렀다.
-FOES.md_elder = { n:'무당 장로',     w:76, h:64, sw:30, bh:58, school:'mudang',
-  anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'],
-         atk:['atk0','atk1','atk2','atk3'], atk2:['atk2_0','atk2_1','atk2_2','atk2_3'], atk3:['atk3_0','atk3_1','atk3_2','atk3_3'],
+         atk:['atk0','atk1','atk2','atk3','atk4','atk5','atk6','atk7'],
+         atk2:['atk2_0','atk2_1','atk2_2','atk2_3','atk2_4','atk2_5','atk2_6'],
+         hit:['hit'], death:['hit','death0','death1','death2','death3'] },
+  fps:{ idle:4, walk:7, atk:7.3, hit:6, death:5 }, hp:1.7, dmg:1.3, spd:1.0, range:60 };
+// 무당 장로 — sheets/md_elder.png 에서 컷을 늘려 다시 뽑았다(v2.94.29 — 옛 23컷에서 28컷으로).
+// **공격 세 벌**: atk 불진 휘두르기(흰 원호 → 붉은 섬광 찌르기 8컷) · atk2 손가락 지법(4컷) · atk3 장풍(4컷).
+// **줄마다 그려진 크기가 다르다** — 걷기는 9퍼센트 크고 공격 두 줄은 5퍼센트 작다. 칸·줄 단위 --rowref 로 키를 58~60 으로 눌렀다.
+// 인물 없는 파란 나선 단독 칸 둘은 뺐고 assets/fx_swirl·fx_swirl2 로 남겼다. 캔버스 82x69 — 몸 30x58.
+FOES.md_elder = { n:'무당 장로',     w:82, h:69, sw:30, bh:58, school:'mudang',
+  anim:{ idle:['idle0','idle1','idle2','idle3','idle4'], walk:['walk0','walk1','walk2','walk3'],
+         atk:['atk0','atk1','atk2','atk3','atk4','atk5','atk6','atk7'], atk2:['atk2_0','atk2_1','atk2_2','atk2_3'], atk3:['atk3_0','atk3_1','atk3_2','atk3_3'],
          hit:['hit'], death:['hit','death0','death1'] },
   fps:{ idle:3.5, walk:6, atk:7.3, hit:6, death:4 }, hp:1.0, dmg:1.0, spd:0.9, range:70 };
 // 화산 수습제자 — sheets/hs_disc2.png(v2.94.27 3.5등신 재작업판, 4줄×8칸 균등). 대기 8 · 걷기 6(IoU 0.9 넘는 두 칸을 뺐다) ·
