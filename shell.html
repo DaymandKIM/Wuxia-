@@ -233,6 +233,7 @@
   @keyframes sktap{0%,100%{box-shadow:inset 0 0 0 2px currentColor,0 0 7px 1px rgba(255,255,255,.2),0 2px 6px rgba(0,0,0,.5);}
     50%{box-shadow:inset 0 0 0 2px currentColor,0 0 16px 4px rgba(255,255,255,.5),0 2px 6px rgba(0,0,0,.5);}}
   @media (prefers-reduced-motion: reduce){.sk.tap{animation:none;}}
+  #tgive{flex-wrap:wrap;justify-content:flex-end;gap:5px;}   /* [테스트 전용] 보상 N일 — 8칸이라 줄바꿈 (v2.95.7) */
   #tbtn{position:absolute;left:10px;top:50%;transform:translateY(-50%);transition:opacity .22s;   /* v2.68.1 화면 가운데 왼쪽 — 패널·스킬창과 안 겹치게 */
     pointer-events:auto;background:rgba(32,24,20,.92);border:1.5px solid #5a4438;
     border-radius:10px;color:#e0c8a8;font:900 13px/1 inherit;padding:11px 16px;letter-spacing:.05em;
@@ -701,13 +702,17 @@
         <div id="tspd"></div>
       </div>
       <div class="zrow">
+        <div class="zn">보상</div>
+        <div id="tgive" class="zst"></div>
+      </div>
+      <div class="zrow">
         <div class="zn">동작</div>
         <div class="zst">
           <button class="sb" id="tdown" style="padding:6px 10px">강제 쓰러짐</button>
           <button class="sb bs" id="treset" style="padding:6px 10px">저장 초기화</button>
         </div>
       </div>
-      <div class="znote">테스트 전용 — TEST를 끄면 이 패널과 시험 버튼이 사라진다.</div>
+      <div class="znote">테스트 전용 — TEST를 끄면 이 패널과 시험 버튼이 사라진다.<br>보상은 그만큼 자리를 비운 셈 친다 — 8시간 상한을 건너뛴다.</div>
     </div>
   </div>
 

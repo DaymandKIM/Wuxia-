@@ -175,6 +175,20 @@ if (TEST){
   $('tpanel').onclick = e => { if (e.target.id === 'tpanel') $('tpanel').classList.remove('show'); };
   $('tdown').onclick  = () => { if (!P.dead && S.intro <= 0) downHero(); };
   $('treset').onclick = resetSave;
+  // 보상 N일 (v2.95.7, 사용자 "테스트 모드에 보상 1/3/7/15/30/100/200/365일 넣어") —
+  // 그만큼 자리를 비운 셈 치고 오프라인 정산을 그대로 돌린다. **8시간 상한은 건너뛴다**(그래야 날수가 의미가 있다).
+  const gv = $('tgive');
+  if (gv) for (const d of TESTGIVE){
+    const b = document.createElement('button');
+    b.className = 'sb'; b.style.padding = '6px 9px'; b.textContent = d + '일';
+    b.onclick = () => {
+      const g = offlineGains(d * 86400, true);
+      saveNow();
+      $('tpanel').classList.remove('show');
+      showOffline(g);
+    };
+    gv.appendChild(b);
+  }
   const sp = $('tspd');
   for (const m of [1, 2, 3, 5, 10, 100]){
     const b = document.createElement('button');

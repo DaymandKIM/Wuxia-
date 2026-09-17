@@ -186,14 +186,16 @@ function offKillTime(){
 // 자리 비운 시간만큼 정산한다. 보고용 {sec, kills, silver, fate}를 준다.
 // 단계는 넘어가지 않는다(사용자 확정) — 지금 단계에서 제자리 사냥으로
 // 은자·수련치·인연만 쌓는다. 진행은 돌아와서 직접 본다.
-function offlineGains(awaySec){
-  const sec = Math.min(awaySec, OFFLINE.cap);
+// noCap = true 면 8시간 상한을 건너뛴다 — **[테스트 전용]** 시험 패널의 "보상 N일" 뿐이다 (v2.95.7)
+function offlineGains(awaySec, noCap){
+  const sec = noCap ? awaySec : Math.min(awaySec, OFFLINE.cap);
   const rexp0 = S.rexp;
   let budget = sec * OFFLINE.rate;
   let kills = 0, silver = 0;
+  const kt = offKillTime();          // 루프 안에서 안 변한다 — 한 번만 잰다 (365일 정산이 0.8초 걸렸다, v2.95.7)
   while (budget > 0){
     const chunk = Math.min(budget, 600);
-    kills += Math.floor(chunk / offKillTime());
+    kills += Math.floor(chunk / kt);
     budget -= chunk;
   }
   silver = killSilver() * kills;   // 은자는 후하게 전부 (방침: 확실한 오프라인 보상)
@@ -202,7 +204,11 @@ function offlineGains(awaySec){
   let grant = OFFLINE.expLv8h * (sec / OFFLINE.cap);
   while (grant > 0){
     const take = Math.min(1, grant);
-    S.rexp += realmNeed(realmLv()) * take;
+    // 승급 필요량이 기하라 날수를 키우면 수련치가 넘친다 — [테스트 전용] 보상 365일이 Infinity 를 만들었다 (v2.95.7).
+    // 넘치기 직전에 멈춘다: 저장·표기·경지 계산이 NaN 으로 깨지는 것보다 낫다.
+    const need = realmNeed(realmLv());
+    if (!isFinite(need) || !isFinite(S.rexp + need * take) || S.rexp + need * take > 1e300) break;
+    S.rexp += need * take;
     grant -= take;
   }
   // 심법 숙련도 오프라인에도 스민다
@@ -223,7 +229,8 @@ function offlineGains(awaySec){
 
 /* ── 돌아온 화면 ──────────────────────────────────── */
 function fmtDur(sec){
-  const h = Math.floor(sec/3600), m = Math.floor(sec%3600/60);
+  const d = Math.floor(sec/86400), h = Math.floor(sec%86400/3600), m = Math.floor(sec%3600/60);
+  if (d) return d + '일 ' + h + '시간';        // 상한이 8시간이라 평소엔 안 나온다 — [테스트 전용] 보상 카드용 (v2.95.7)
   if (h) return h + '시간 ' + m + '분';
   if (m) return m + '분';
   return Math.floor(sec) + '초';

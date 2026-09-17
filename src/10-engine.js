@@ -91,6 +91,8 @@ const $ = id => document.getElementById(id);
 const FMTU = [[1e16,'경'],[1e12,'조'],[1e8,'억'],[1e4,'만']];
 function fmt(n){
   n = Math.round(n);
+  if (!isFinite(n)) return '∞';
+  if (n >= 1e21) return n.toExponential(1).replace('e+', '×10^');   // 경을 넘는 자리는 지수로 (테스트 보상·후반 수련치, v2.95.7)
   if (n < 10000) return n.toLocaleString();
   for (const [u, s] of FMTU){
     if (n >= u){
