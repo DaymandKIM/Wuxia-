@@ -1607,13 +1607,19 @@ FOES.am_elder = { n:'아미 장로', w:114, h:67, sw:32, bh:62, school:'ami',
   fps:{ idle:3.5, walk:7, atk:7.3, hit:6, death:5 }, hp:1.0, dmg:1.0, spd:0.9, range:66 };
 // 청죽문 수습제자 — sheets/bb_disc2.png(v2.94.28 3.5등신 재작업판). 대기 10 · 걷기 10 · 봉 찌르기 7컷 · 쓰러짐 5.
 // 캔버스 58×51 — 몸 26×48(걷기 폭 32~34 는 어깨에 걸친 봉까지다).
-FOES.bb_disc = { n:'청죽문 수습제자', w:58, h:51, sw:26, bh:48, school:'bamboo',
+FOES.bb_disc = { n:'청죽문 수습제자', w:58, h:51, sw:22, bh:48, school:'bamboo',
   anim:{ idle:['idle0','idle1','idle2','idle3','idle4','idle5','idle6','idle7','idle8','idle9'], walk:['walk0','walk1','walk2','walk3','walk4','walk5','walk6','walk7','walk8','walk9'], atk:['atk0','atk1','atk2','atk3','atk4','atk5','atk6'],
          hit:['hit'], death:['hit','death0','death1','death2','death3','death4'] },
   fps:{ idle:4, walk:8, atk:7.3, hit:6, death:6 }, hp:1.1, dmg:1.0, spd:1.0, range:50 };
-FOES.bb_elite = { n:'청죽문 정예제자', w:100, h:77, sw:25, bh:50, school:'bamboo', elite:true,
-  anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'], atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
-  fps:{ idle:4, walk:7, atk:7.3, hit:6, death:4 }, hp:1.7, dmg:1.3, spd:1.0, range:60 };
+// 청죽문 정예제자 — sheets/bb_elite2.png(v2.94.28 3.5등신 재작업판. **배경이 순마젠타가 아니라 옅은 자주** 188,72,168 인데
+// 초록 승복·살색은 색상 방향이 반대라 구멍이 안 뚫렸다). **공격 두 벌**: atk 낮은 쓸기(댓잎 8컷) · atk2 머리 위 내려치기(흰 잔상 8컷).
+// 댓잎은 --minblob=8 + --nodeclutter 가 있어야 산다. 캔버스 78×58 — 몸 24×50.
+FOES.bb_elite = { n:'청죽문 정예제자', w:78, h:58, sw:24, bh:50, school:'bamboo', elite:true,
+  anim:{ idle:['idle0','idle1','idle2','idle3','idle4','idle5','idle6','idle7'], walk:['walk0','walk1','walk2','walk3','walk4','walk5','walk6'],
+         atk:['atk0','atk1','atk2','atk3','atk4','atk5','atk6','atk7'],
+         atk2:['atk2_0','atk2_1','atk2_2','atk2_3','atk2_4','atk2_5','atk2_6','atk2_7'],
+         hit:['hit'], death:['hit','death0','death1','death2','death3','death4','death5'] },
+  fps:{ idle:4, walk:7, atk:7.3, hit:6, death:7 }, hp:1.7, dmg:1.3, spd:1.0, range:60 };
 // 청죽문 장로 — sheets/bb_elder2.png(v2.94.28 3.5등신 재작업판). **공격 세 벌**: atk 봉 찌르기(연녹 기운 8컷) ·
 // atk2 회전 방어(댓잎 고리 8컷) · atk3 후리기(연녹 호 9컷). 대기 9 · 걷기 9. 캔버스 140×66 은 이펙트 폭 — 몸 30×62.
 FOES.bb_elder = { n:'청죽문 장로', w:140, h:66, sw:33, bh:62, school:'bamboo',
