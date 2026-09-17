@@ -34,15 +34,15 @@ setTimeout(()=>{
   const tillBoss=()=>{ for(let n=0;n<4;n++){ S.intro=0; if(steps(6,()=>S.foes.some(x=>x.boss&&x.rise<=0))) return true; } return false; };
   // ── 1) 이동
   S.rexp=w.seedExp(2,5); S.hp=P.hpMax=w.eval('heroHpMax()'); P.hp=P.hpMax;
-  ok(w.gotoHq('gaebang')===true && S.hq==='gaebang' && w.eval("zone()").n==='개방 본진' && w.eval("zone()").hq==='gaebang','gotoHq → zone() = '+w.eval("zone()").n);
+  ok(w.gotoHq('gaebang')===true && S.hq==='gaebang' && w.eval("zone()").n===DUEL.hqName.gaebang && w.eval("zone()").hq==='gaebang','gotoHq → zone() = '+w.eval("zone()").n);
   ok(S.stage===BOSS_STAGE-1 && S.kills===0,'단계 '+S.stage+'(제자 젠) · 처치 0');
-  { const el=w.document.getElementById('hqload'); ok(el && !el.hidden && w.document.getElementById('hqname').textContent==='개방 본진' && w.document.getElementById('hqtip').textContent===DUEL.hqDesc.gaebang,'진입 로딩 화면: "'+w.document.getElementById('hqname').textContent+'" · "'+w.document.getElementById('hqtip').textContent+'"');
+  { const el=w.document.getElementById('hqload'); ok(el && !el.hidden && w.document.getElementById('hqname').textContent===DUEL.hqName.gaebang && w.document.getElementById('hqtip').textContent===DUEL.hqDesc.gaebang,'진입 로딩 화면: "'+w.document.getElementById('hqname').textContent+'" · "'+w.document.getElementById('hqtip').textContent+'"');
     for(let i=0;i<Math.ceil(DUEL.load.dur*60)+4;i++) w.hqLoadStep(1/60);
     ok(el.hidden===true,'로딩 화면은 '+DUEL.load.dur+'초 뒤 스스로 걷힌다'); }
   ok(w.eval("gstage()")===DUEL.gBase.gaebang && w.hqRank('gaebang')===1,'전역 단계 = gBase '+w.eval("gstage()")+' · 1단');
   S.intro=0; w.hud && w.hud();
   const st=w.document.getElementById('stage').textContent;
-  ok(/개방 본진 1단/.test(st),'HUD "'+st+'"');
+  ok(/개방 1단/.test(st),'HUD "'+st+'"');
   { const own=w.eval("rzone().k");
     const fall=w.eval("const _t=IMG.bg_hq_gaebang; delete IMG.bg_hq_gaebang; const _k=rzone().k; IMG.bg_hq_gaebang=_t; _k");   // 원경 에셋이 없을 때만 이웃을 빌린다
     ok(own==='hq_gaebang' && fall==='bamboo','배경: 전용 원경이 있으면 본진('+own+'), 없으면 이웃 구역('+fall+')'); }
@@ -120,7 +120,7 @@ setTimeout(()=>{
   const {w:w2,errs:e2}=boot(JSON.stringify(d));
   setTimeout(()=>{
     const S2=w2.eval('S');
-    ok(S2.hq==='gaebang' && w2.hqRank('gaebang')===11 && S2.frag[a.k]===2 && S2.ptsBonus===DUEL.pts.master && S2.stage>=BOSS_STAGE-1 && w2.eval("zone()").n==='개방 본진','복원: 본진·11단·조각·무공점·단계 '+S2.stage);
+    ok(S2.hq==='gaebang' && w2.hqRank('gaebang')===11 && S2.frag[a.k]===2 && S2.ptsBonus===DUEL.pts.master && S2.stage>=BOSS_STAGE-1 && w2.eval("zone()").n==='개방','복원: 본진·11단·조각·무공점·단계 '+S2.stage);
     const k0=S2.totalKills, r0=w2.hqRank('gaebang'), fr0=JSON.stringify(S2.frag);
     const g=w2.offlineGains(3600);
     ok(g.kills>0 && S2.totalKills===k0+g.kills && w2.hqRank('gaebang')===r0 && JSON.stringify(S2.frag)===fr0,'오프라인 1시간: 처치 '+g.kills+' · 단·조각 그대로');

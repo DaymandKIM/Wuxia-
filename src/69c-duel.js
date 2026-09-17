@@ -30,7 +30,7 @@ function showHqLoad(k){
   const im = $('hqart'); if (im){ if (art){ im.src = art; im.hidden = false; } else im.hidden = true; }
   const fr = $('hqframe'); if (fr){ if (frame){ fr.src = frame; fr.hidden = false; } else fr.hidden = true; }
   const ik = $('hqink'); if (ik){ if (ink){ ik.src = ink; ik.hidden = false; } else ik.hidden = true; }
-  const nm = $('hqname'); if (nm) nm.textContent = sc.n + ' 본진';
+  const nm = $('hqname'); if (nm) nm.textContent = (DUEL.hqName && DUEL.hqName[k]) || sc.n;
   const hz = $('hqhan'); if (hz) hz.textContent = (ARTS.list.find(a => a.school === k && a.frag) || {}).h || '';
   const tp = $('hqtip'); if (tp) tp.textContent = (DUEL.hqDesc && DUEL.hqDesc[k]) || (hqRank(k) + '단');   // 문파 한 줄 소개 (v2.94.18)
   if (el.style && el.style.setProperty) el.style.setProperty('--hqc', sc.c);   // sim 의 DOM 스텁엔 setProperty 가 없다
@@ -83,7 +83,7 @@ function hqKill(f){
   S.hqDone[k] = Math.max(S.hqDone[k] | 0, r);
   S.duel[k] = r + 1;
   if (typeof toast === 'function')
-    toast(SCHOOLS[k].n + ' ' + r + '단 ' + (master ? '장문인' : '장로') + ' 격파' + (a ? '\n' + a.n + ' 조각 +' + n : '') + (pts ? '\n무공점 +' + pts : '') +
+    toast(((DUEL.hqName && DUEL.hqName[k]) || SCHOOLS[k].n) + ' ' + r + '단 ' + (master ? '장문인' : '장로') + ' 격파' + (a ? '\n' + a.n + ' 조각 +' + n : '') + (pts ? '\n무공점 +' + pts : '') +
           (joined ? '\n' + joined.n + '이(가) 제자로 따라왔다' : ''), { color: SCHOOLS[k].c, sec: 3.2 });
   return bonus;
 }

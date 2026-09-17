@@ -1343,7 +1343,8 @@ const DUEL = {
 const HQZONE = {};
 for (const k in DUEL.gBase){
   const z = ZONES[DUEL.nearZone[k]];
-  HQZONE[k] = { k:'hq_' + k, hq:k, n:SCHOOLS[k].n + ' 본진', ground:z.ground, boss:SCHOOLS[k].n + ' 장로', vis:DUEL.nearZone[k] };
+  const hn = (DUEL.hqName && DUEL.hqName[k]) || SCHOOLS[k].n;
+  HQZONE[k] = { k:'hq_' + k, hq:k, n:hn, ground:z.ground, boss:hn + ' 장로', vis:DUEL.nearZone[k] };
   // 제자·장로 — 주인공 스트립을 문파색으로 물들여 쓴다(heroStrip: anim → [스트립 키, HFX.aw 키]). anim 배열은 컷 수만 맞춘 더미. 제자 시트가 오면 교체
   const HSTRIP = { idle:['hero_idle','idle'], walk:['hero_run','run'], atk:['hero_punch','punch'], hit:['hero_hit','hit'], death:['hero_hit','hit'], skill:['hero_punch','punch'] };
   const ANIMD = { idle:['s'], walk:['s','s','s','s','s','s'], atk:['s','s','s','s'], hit:['s'], death:['s'], skill:['s','s','s','s'] };
@@ -1353,7 +1354,7 @@ for (const k in DUEL.gBase){
                          fps:{ idle:1, walk:10, atk:6, hit:6, death:5, skill:3 }, hp:1.0, dmg:1.0, spd:0.9, range:44 };
   ZONEFOE['hq_' + k]  = ['disc_' + k];
   ZONEBOSS['hq_' + k] = 'elder_' + k;
-  BOSSCRY['hq_' + k]  = SCHOOLS[k].n + ' 장로가 나선다';
+  BOSSCRY['hq_' + k]  = ((DUEL.hqName && DUEL.hqName[k]) || SCHOOLS[k].n) + ' 장로가 나선다';
 }
 // 본진 전용 시트가 온 문파는 임시 주인공 tint 대신 제 그림(사용자 시트, gb_disc.py 계열 추출 — v2.94.1 개방 수습제자부터).
 // disc = 잡몹, elite = 정예(DUEL.eliteFrom 단부터 섞임, 시트 오면), elder = 보스. 항목이 있는 것만 바꾼다.
@@ -1478,6 +1479,8 @@ DUEL.hqGround = { gaebang:'#6e6349', sorim:'#7a7368', mudang:'#6c7a7c', hwasan:'
 // 원경 위 남는 하늘 — 시트에서 마젠타 경계 바로 아래 줄들의 중앙값(hqbg 보고). 마교만 예외: 지붕·나무가 마젠타에 바로 닿아
 // 하늘이 없다 — 경계값(#7b335a)을 쓰면 화면 위 절반이 밝은 자홍 판이 된다. 그림 윗부분 중앙값으로 어둡게.
 // 본진 로딩 화면 한 줄 소개 (v2.94.18, 사용자 "장로가 기다린다 말고 문파 설명 느낌으로")
+// 본진 이름 (v2.94.20 사용자 "본진은 빼고 무당파 아미파 마교 이런 식으로") — 문파 태그(SCHOOLS.n)는 짧게 두고 사냥터 이름만 제 이름으로
+DUEL.hqName = { sorim:'소림사', gaebang:'개방', mudang:'무당파', hwasan:'화산파', ami:'아미파', dangmun:'당문', magyo:'마교', bamboo:'청죽문' };
 DUEL.hqDesc = {
   sorim:   '천하 무공은 소림에서 나왔다 하더라',
   gaebang: '거지들의 방파 — 천하의 소문이 여기 모인다',
