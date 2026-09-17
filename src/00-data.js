@@ -1454,11 +1454,18 @@ FOES.sr_elite = {
   hp:1.7, dmg:1.3, spd:1.0, range:60,   // 봉 내려치기 — 수호무사급 정예 스탯
 };
 FOES.sr_elder = {
-  // 소림 장로 — sheets/sr_elder.png(보스급, 키 58). 대기 0~3 · 걷기 IoU 로 1,2,5,6 · 장풍 0~3(3번째 금색 연꽃 = 임팩트). 캔버스 72×62 는 연꽃 폭 — 몸 30×58. 보스 틀(range 는 BOSS.range).
-  n:'소림 장로', w:72, h:62, sw:30, bh:58, school:'sorim',
-  anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'],
-         atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
-  fps:{ idle:3.5, walk:6, atk:7.3, hit:6, death:4 },
+  // 소림 장로 — sheets/sr_elder2.png(v2.94.27 3.5등신 재작업판, 6줄×10칸. 칸 폭이 균등하지 않아 --colsat 으로 줄마다 경계를 줬다).
+  // **공격 세 벌**(사용자 "장로는 3개"): atk 장풍(금빛 구체 9컷) · atk2 승룡권(머리 위 금빛 후광 10컷) · atk3 쌍장(금빛 초승달 10컷).
+  // 장풍 줄의 **금빛 연꽃 단독 칸은 뺐고**(몸이 한 컷 사라져 보인다) 따로 assets/fx_lotus 로 보관한다 — 초식 이펙트 후보(사용자).
+  // 쓰러짐 줄 한 칸은 인물이 둘 겹쳐 그려진 불량 칸이라 뺐다. 캔버스 98×66 은 초승달 폭 — 몸 36×60. 보스 틀(range 는 BOSS.range).
+  n:'소림 장로', w:98, h:66, sw:36, bh:60, school:'sorim',
+  anim:{ idle:['idle0','idle1','idle2','idle3','idle4','idle5','idle6','idle7','idle8','idle9'],
+         walk:['walk0','walk1','walk2','walk3','walk4','walk5','walk6','walk7','walk8'],
+         atk:['atk0','atk1','atk2','atk3','atk4','atk5','atk6','atk7','atk8'],
+         atk2:['atk2_0','atk2_1','atk2_2','atk2_3','atk2_4','atk2_5','atk2_6','atk2_7','atk2_8','atk2_9'],
+         atk3:['atk3_0','atk3_1','atk3_2','atk3_3','atk3_4','atk3_5','atk3_6','atk3_7','atk3_8','atk3_9'],
+         hit:['hit'], death:['hit','death0','death1','death2'] },
+  fps:{ idle:3.5, walk:7, atk:7.3, hit:6, death:5 },
   hp:1.0, dmg:1.0, spd:0.9, range:64,
 };
 // 무당·화산 3등급 (v2.94.15, 사용자 시트 — sr_sheet.py). 캔버스가 넓은 것은 이펙트 폭이다(drawFoe 가 좌우 중앙 정렬):

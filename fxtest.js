@@ -291,7 +291,7 @@ setTimeout(()=>{
   w.eval('S.foes.length=0; S.foes.push({k:"sr_elite",anim:"atk",af:2,x:P.x+70,y:P.y,hp:9,hpMax:9,dir:-1,atkT:0,cd:9,hitDone:false,hit:0,dead:false,dying:0});'); renderNow();
   ok(drew('sr_elite_atk2', 54),'소림 정예제자 내려치기 컷이 캔버스 폭 54 로 그려진다');
   w.eval('S.foes.length=0; S.foes.push({k:"sr_elder",boss:true,anim:"atk",af:2,x:P.x+90,y:P.y,hp:9,hpMax:9,dir:-1,atkT:0,cd:9,hitDone:false,hit:0,dead:false,dying:0,rise:0,skT:0,skCd:9,kb:0,kx:0,ky:0}); S.bossAlive=true;'); renderNow();
-  ok(drew('sr_elder_atk2', 72),'소림 장로 연꽃 장풍 컷이 캔버스 폭 72 로 그려진다');
+  ok(drew('sr_elder_atk2', 98),'소림 장로 장풍 컷이 캔버스 폭 98 로 그려진다');   // v2.94.27 재작업(초승달 폭)
   ok(w.eval('rzone().k')===w.eval('ZONES[HQZONE.sorim.vis].k') || w.eval('rzone().k')==='hq_sorim','본진 배경: 전용 원경이 없으면 이웃 사냥터, 있으면 본진 자체 — 지금 '+w.eval('rzone().k'));
   // 본진 전용 원경·바닥 (v2.94.4 개방) — 에셋이 있으면 rzone 이 본진 자체가 되고 bg_hq_/ground_hq_ 가 그려진다
   ok(w.eval('typeof tintedFx')==='function' && w.eval('tintedFx("fx_aura", SCHOOLS.sorim.c) !== tintedFx("fx_aura", SCHOOLS.gaebang.c)'),'장로 기운은 문파색으로 물든 캔버스를 문파마다 따로 만든다(실제 색은 크로뮴 스크린샷으로 확인)');
@@ -322,6 +322,12 @@ setTimeout(()=>{
   w.eval('gotoHq("sorim"); S.intro=0; hqLoadStep(99); S.camX=0; S.camY=0;'); renderNow();
   ok(w.eval('!!PROPS[rzone().k]') && draws.some(d=>String((d.im&&d.im.__key)||'').indexOf('prophq_sorim')===0 || true),'소림 본진 소품 표가 rzone 키로 잡힌다 ('+w.eval('PROPS[rzone().k].pick.length')+'종)');
   ok(w.eval('PROPS.hq_sorim.pick.every(p=>!!IMG[p[0]])'),'소림 소품 8종 로드');
+  // 공격이 여러 벌인 몹은 스트립이 전부 로드돼야 한다 (v2.94.27) — atk2·atk3 를 데이터에만 적고 파일을 안 넣는 사고를 막는다
+  w.eval("Object.keys(FOES).filter(k=>FOES[k].anim&&(FOES[k].anim.atk2||FOES[k].anim.atk3))").forEach(k => {
+    const n = w.eval("['atk','atk2','atk3'].filter(a=>FOES['"+k+"'].anim[a]).length");
+    ok(w.eval("['atk','atk2','atk3'].every(a=>!FOES['"+k+"'].anim[a]||FOES['"+k+"'].anim[a].every(f=>!!IMG['"+k+"_'+f]))"),
+       k+' 공격 '+n+'벌 스트립이 전부 로드된다');
+  });
   // 본진 소품이 들어온 문파는 전부 로드·높이 검사 (v2.94.24) — 사람 키 48 을 넘으면 마당이 소품에 먹힌다
   w.eval("Object.keys(PROPS).filter(k=>k.indexOf('hq_')===0)").forEach(k => {
     ok(w.eval("PROPS['"+k+"'].pick.every(p=>!!IMG[p[0]])"), k+' 소품 '+w.eval("PROPS['"+k+"'].pick.length")+'종 로드');
