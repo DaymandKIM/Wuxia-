@@ -138,7 +138,7 @@ review/            검사판 PNG (생성물)
 | `hero_kick3.py` | `sheets/hero_kick3.png` | **현행** (v2.76.1 — 발차기 3종, gridless. 기준 컷은 곧게 선 (0,0)으로 hero_punch4와 배율 일치) |
 | `hero_kick2.py` | `sheets/hero_kick2.png` | 옛 발차기(v2.71) — **v2.76.2부터 kickside2·kickround2·kickhigh2 동작으로 되살림**(raw/kick2_old = 원본). hero_pose2 피격·경공 컷도 여기서 |
 | `hero_medit2.py` | `sheets/hero_medit2.png` | **현행** (v2.77 — 운기조식 6컷 루프, gridless + skinmatch) |
-| `hero_run2.py` | `sheets/hero_run2.png` | 돌아간다 (v2.71.1 질주 6컷 → v2.76.8 scale_mul 1.02 키 46. **톤의 기준 컷** — skinmatch 안 돌린다) |
+| `hero_run2.py` | `sheets/hero_run2.png` | 돌아간다 (v2.71.1 질주 6컷 → v2.76.8 scale_mul 1.02 키 46. **톤의 기준 컷** — skinmatch 안 돌린다. **v2.93.10: 1줄 6칸은 1·2·5·6이 같은 포즈라 사이클이 안 됐다** — 3줄 2·4·5 + 1줄 3·4 + 3줄 3 순으로 재구성. 시트 한 줄을 그대로 믿지 말고 다리 위치(IoU)로 사이클을 확인한다) |
 | `hero_punch4.py` | `sheets/hero_punch4.png` | **현행** (v2.76 — 주먹 3종 정권·연환권·승룡권, gridless. 잔상 컷은 마젠타라 폐기) |
 | `hero_punch3.py` | `sheets/hero_fx.png` 2·3줄 | 권기 정권 두 판 → qipunch·qipunchb(순환 맨 끝 마무리 일격). scale_mul 0.94 — 키 44~45로 다른 동작과 통일(v2.76.8) |
 | `hero_punch2.py` | `sheets/hero_punch2.png` | 대기·피격 컷(hero_pose2)에만 쓴다. 정권으로는 안 쓴다 |

@@ -228,6 +228,17 @@ function buildZonePanel(){
       svg += '<text x="' + x + '" y="' + (y+r+26) + '" text-anchor="middle" font-family="' + FONT +
              '" font-weight="700" font-size="11" fill="' + (art ? '#7a2e1e' : col) + '"' + halo + ' style="pointer-events:none">▶ 수련 중</text>';
   }
+  // 문파 표식 (v2.93.9 "지도에 문파도 표기") — 그림 지도에만. 작은 인장 + 이름. 본진 비무(v2.94) 전까진 누르면 안내만
+  if (art && typeof SECT !== 'undefined' && SECT.hq){
+    const hr = SECT.hqR;
+    for (const q of SECT.hq){
+      const home = q.k === 'home', sc = home ? null : SCHOOLS[q.k], col = home ? '#e8c96a' : sc.c, nm = home ? (typeof sectName === 'function' ? sectName() : SECT.name) : sc.n;
+      const [x, y] = q.map;
+      svg += '<circle class="hqnode" data-q="' + q.k + '" cx="' + x + '" cy="' + y + '" r="' + hr + '" fill="' + col + '" stroke="' + (home ? '#7a2e1e' : '#12161c') + '" stroke-width="' + (home ? 2.5 : 1.5) + '" style="cursor:pointer"/>' +
+             (home ? '<text x="' + x + '" y="' + (y + 1) + '" text-anchor="middle" dominant-baseline="central" font-family="' + FONT + '" font-weight="700" font-size="9" fill="#7a2e1e" style="pointer-events:none">門</text>' : '') +
+             '<text class="hqlab" data-q="' + q.k + '" x="' + x + '" y="' + (y + hr + 10) + '" text-anchor="middle" font-family="' + FONT + '" font-weight="700" font-size="10" fill="' + (home ? '#7a2e1e' : '#2a2418') + '" stroke="#f3e9d2" stroke-width="3" paint-order="stroke" style="cursor:pointer">' + nm + '</text>';
+    }
+  }
   svg += '</svg>';
   // 단계 줄 — 고른 구역의 단계. 가 본 단계까지만 고를 수 있다(TEST는 전부). 여기서 골라야 이동한다.
   const zi = zoneSel, reach = stageReach(zi), zopen = TEST || zi < S.unlocked;
@@ -243,6 +254,8 @@ function buildZonePanel(){
       ? '테스트 모드 — 구역을 누르고 아래에서 단계를 고른다.'
       : '구역을 누르고 아래에서 단계를 고른다.') + '</div>';
   b.innerHTML = svg + strip + note;
+  b.querySelectorAll('.hqnode, .hqlab').forEach(el => { el.onclick = () => { const q = el.dataset.q;
+    toast(q === 'home' ? (typeof sectName === 'function' ? sectName() : SECT.name) + ' — 문파 탭에서 마당으로' : SCHOOLS[q].n + ' 본진\n비무는 곧 열린다'); }; });
   b.querySelectorAll('.znode[data-z], .zn[data-z]').forEach(el => {
     el.onclick = () => { const i = parseInt(el.dataset.z, 10); if (!TEST && i >= S.unlocked) return; zoneSel = i; buildZonePanel(); };   // 선택만 — 이동은 단계 줄에서
   });

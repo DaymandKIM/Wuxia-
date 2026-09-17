@@ -204,7 +204,7 @@ function refreshEquip(){
         (grow ? ' <i>→ +' + nxt[i].pct.toFixed(1) + '%</i>' : '') : '&nbsp;').join('<br>') + '</div>' +
       // 보유 효과는 한 줄로 (v2.93.5 사용자 "설명이 기니까 힘들어") — 종류별 수치 나열 대신 규칙 + 이 자리 합. 미보유면 그 줄에 얻는 법
       '<div class="zd eqhl">' + (seen
-        ? '<span class="eqlab">보유</span><span class="eqhold">' + EQUIP.statName[hold[0].stat] + ' +' + hold[0].pct.toFixed(2) + '%' + (grow ? ' <i>→ +' + holdN[0].pct.toFixed(2) + '%</i>' : '') + '</span> <small>· 이 자리 합 ' + EQUIP.statName[sl.stat] + ' +' + codexPct(sl).toFixed(1) + '%</small>'
+        ? '<span class="eqlab">보유</span><span class="eqhold">' + EQUIP.statName[hold[0].stat] + ' +' + hold[0].pct.toFixed(2) + '%' + (grow ? ' <i>→ +' + holdN[0].pct.toFixed(2) + '%</i>' : '') + '</span> <small>· 합 ' + codexPct(sl).toFixed(1) + '%</small>'
         : '<span class="eqlab">보유</span><small>미보유 — 사냥 드랍이나 합성 ' + EQUIP.mergeN + '→1</small>') + '</div>' +
       '</div></div>' +
       '<div class="zst">' +
@@ -212,7 +212,7 @@ function refreshEquip(){
         ? (sl.k === 'weapon' ? '<button class="sb" id="eqdwear">벗기 · 맨손</button>' : '<button class="sb" disabled>착용 중</button>')
         : '<button class="sb" id="eqdwear"' + (seen ? '' : ' disabled') + '>장착</button>') +
       '<button class="trbuy" id="eqdlv"' + (canLevelItem(k, g) ? '' : ' disabled') + '><span>' + (lv >= cap ? '상한' : '강화 ' + fmt(lvCost(k, g))) + '</span><i>' + coin() + '</i></button>' +
-      '<button class="sb" id="eqdmerge"' + (canMerge(k, g) ? '' : ' disabled') + '>합성 ' + EQUIP.mergeN + '→1' + (g < EQUIP.grades.length - 1 ? '' : ' (최고)') + '</button>' +
+      '<button class="sb" id="eqdmerge"' + (canMerge(k, g) ? '' : ' disabled') + '>' + (g < EQUIP.grades.length - 1 ? '합성 ' + EQUIP.mergeN + '→1' : '최고 등급') + '</button>' +
       '</div>';
     const wb = $('eqdwear'); if (wb) wb.onclick = () => {
       if (worn){ if (eqUnwear(eqWearKeyOf(k))){ toast('무기를 벗었다\n맨손 주먹·발차기'); buildEquipPanel(); } }

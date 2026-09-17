@@ -115,12 +115,12 @@
   #ssilver{margin-left:auto;margin-right:8px;font-size:13px;color:#e8c96a;}
   #sedit{font-size:14px;color:#7f8b99;padding:2px 6px;margin-left:2px;}
   /* 문파 터 화면 (v2.92) — 시트는 아래 절반만, 위엔 마당이 보인다 */
-  #spanel{background:rgba(6,8,11,0) !important;}
+  #spanel{background:rgba(6,8,11,0) !important;z-index:25;}   /* v2.93.10 감사: 시트가 명성·제자 배지(#sover z20) 밑에 깔려 이름 입력칸을 못 눌렀다 */
   #spanel .zsheet{height:36%;}   /* v2.92.1 전각 카드가 팝업으로 나가 시트는 얇게 — 마당이 더 보인다 */
   /* 문파 마당 오버레이 (v2.92.4, 사용자 "여전히 아래 탭이 열리네") — 탭을 열면 시트 없이 마당만. 현판(이름·✎·✕)과 배지 둘(명성·제자), 배지를 누르면 시트 */
   #sover{position:absolute;inset:var(--toph,0px) 0 var(--tabh) 0;pointer-events:none;z-index:20;}
   #sover[hidden]{display:none;}
-  #splaque{position:absolute;left:50%;top:10px;transform:translateX(-50%);display:flex;align-items:center;gap:6px;pointer-events:auto;
+  #splaque{position:absolute;left:50%;top:10px;transform:translateX(-50%);display:flex;align-items:center;gap:6px;pointer-events:auto;width:max-content;max-width:calc(100% - 20px);white-space:nowrap;   /* v2.93.10 감사: left:50% 가용 폭 절반 → 8자 이름이 두 줄 */
     background:linear-gradient(#3a2a1c,#241a10);border:2px solid #d9a066;border-radius:8px;padding:5px 10px 5px 14px;box-shadow:0 3px 10px rgba(0,0,0,.6);}
   #splaque b{font-family:var(--fw);font-size:17px;color:#f0e2b8;letter-spacing:.06em;}
   #splaque small{font-family:'Nanum Myeongjo',serif;font-size:11px;color:#c9a66b;}
@@ -190,10 +190,10 @@
   #stip b{font-family:var(--fw);font-size:14px;color:#eaf3ff;letter-spacing:.04em;}
   #stip i{font-style:normal;color:#8b97a5;font-size:11px;}
   #stip .stfx{color:#9fd0ff;margin-top:2px;}
-  #sbar{position:absolute;right:10px;bottom:calc(var(--tabh) + 10px);display:flex;gap:7px;
+  #sbar{position:absolute;left:10px;right:10px;justify-content:flex-end;flex-wrap:wrap;bottom:calc(var(--tabh) + 10px);display:flex;gap:6px;   /* v2.93.10 감사: 360폭에서 슬롯 6개+토글이 왼쪽 밖으로 나갔다 → 넘치면 줄바꿈 */
     align-items:flex-end;transition:opacity .22s;pointer-events:none;}
   /* 오토/수동 토글 — 스킬창 왼쪽 끝. 패널이 감춰도 늘 누를 수 있다 (v2.51 단장) */
-  #sbar .smode{pointer-events:auto;align-self:flex-end;height:40px;padding:0 13px;
+  #sbar .smode{pointer-events:auto;align-self:flex-end;height:40px;padding:0 13px;white-space:nowrap;flex:none;
     display:flex;align-items:center;gap:6px;border-radius:20px;
     border:1.5px solid rgba(120,140,165,.32);background:linear-gradient(#1b232e,#12161c);
     color:#a9bccf;font:800 12px/1 inherit;letter-spacing:.04em;cursor:pointer;
@@ -294,7 +294,7 @@
   .eqlab{display:inline-block;width:34px;color:#8b97a5;font-size:11px;}
   .eqhold{color:#e8c96a;}
   .eqdet .zd small{color:#6b7683;}
-  #eqtop .eqrow{align-items:flex-start;} #eqtop .trl{height:118px;overflow:hidden;} #eqtop .trl .zn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:20px;} #eqtop .trl .zd{line-height:17px;white-space:nowrap;overflow:hidden;}   /* v2.93.5 "장비마다 줄이 달라 작아졌다 커졌다": 글 칸 높이를 고정해 장착·강화·합성 버튼이 한자리에 있다 */
+  #eqtop .eqrow{align-items:flex-start;} #eqtop .trl{height:118px;overflow:hidden;} #eqtop .trl .zn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:20px;} #eqtop .trl .zd{line-height:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}   /* v2.93.5 "장비마다 줄이 달라 작아졌다 커졌다": 글 칸 높이를 고정해 장착·강화·합성 버튼이 한자리에 있다 */
   .eqdet .zst .sb{padding:8px 12px;font-size:12.5px;}
   .eqdet .zst .trbuy{min-width:0;padding:6px 12px;}
   .zn em{font-style:normal;}
@@ -306,7 +306,7 @@
   .trl{flex:1;min-width:0;}
   .tico{width:36px;height:36px;flex:none;margin-right:8px;image-rendering:pixelated;filter:drop-shadow(0 1px 0 rgba(0,0,0,.5));}
   .trv{display:block;margin-top:3px;color:#9fd0ff;font-weight:900;font-variant-numeric:tabular-nums;}
-  .trv i{font-style:normal;color:#6b7683;font-weight:700;font-size:11px;}
+  .trv i{font-style:normal;color:#6b7683;font-weight:700;font-size:11px;white-space:nowrap;}
   .trbuy{flex:0 0 auto;min-width:78px;background:#23303e;border:1.5px solid #3c6f9e;
     border-radius:9px;color:#cfe4f8;font:900 13.5px/1.35 var(--fb);padding:8px 10px;
     letter-spacing:.03em;font-variant-numeric:tabular-nums;}
@@ -448,6 +448,7 @@
   .zn{font-family:var(--fw);font-size:16px;color:#e8eef6;letter-spacing:.03em;}
   .zn em{font-style:normal;font-size:10px;color:#69a8dd;font-weight:800;margin-left:5px;}
   .zd{font-size:12.5px;color:#9aa7b5;margin-top:4px;line-height:1.5;}
+  .zd,#ftext,#stip,.znote{word-break:keep-all;overflow-wrap:anywhere;}   /* v2.93.10 감사: 한글 낱말 중간 줄바꿈('받아들인|다') 방지 — 어절 단위로 꺾는다 */
   .zst{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px;}
   .sb{flex:0 0 auto;min-width:30px;background:#1e252e;border:1px solid #2c3540;
     border-radius:6px;color:#9fb0c2;font:800 11px/1 inherit;padding:6px 0;}
@@ -673,7 +674,7 @@
   </div>
   <div id="vpanel">
     <div class="zsheet">
-      <div class="zhd">업적<span id="vcnt"></span><button id="vall">모두 받기</button><button id="vclose">✕</button></div>
+      <div class="zhd">업적<span id="vcnt" style="margin-left:8px"></span><button id="vall">모두 받기</button><button id="vclose">✕</button></div>
       <div id="vbody"></div>
     </div>
   </div>
