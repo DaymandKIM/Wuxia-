@@ -1545,9 +1545,17 @@ FOES.am_disc = { n:'아미 수습제자', w:74, h:54, sw:20, bh:48, school:'ami'
 FOES.am_elite = { n:'아미 정예제자', w:124, h:58, sw:25, bh:50, school:'ami', elite:true,
   anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'], atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
   fps:{ idle:4, walk:7, atk:7.3, hit:6, death:4 }, hp:1.7, dmg:1.3, spd:1.0, range:60 };
-FOES.am_elder = { n:'아미 장로', w:138, h:66, sw:30, bh:58, school:'ami',
-  anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'], atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
-  fps:{ idle:3.5, walk:6, atk:7.3, hit:6, death:4 }, hp:1.0, dmg:1.0, spd:0.9, range:66 };
+// 아미 장로 — sheets/am_elder2.png(v2.94.28 3.5등신 재작업판). **공격 세 벌**: atk 석장 휩쓸기(연녹 초승달) ·
+// atk2 석장 내려꽂기(연녹 파문) · atk3 두 손 장 밀기(연녹 연꽃). 대기 12 · 걷기 12 · 공격 10씩 — 컷을 아끼지 않는다.
+// 캔버스 114×67 은 이펙트 폭 — 몸 32×62(대기 폭 46~48 은 세운 석장까지다).
+FOES.am_elder = { n:'아미 장로', w:114, h:67, sw:32, bh:62, school:'ami',
+  anim:{ idle:['idle0','idle1','idle2','idle3','idle4','idle5','idle6','idle7','idle8','idle9','idle10','idle11'],
+         walk:['walk0','walk1','walk2','walk3','walk4','walk5','walk6','walk7','walk8','walk9','walk10','walk11'],
+         atk:['atk0','atk1','atk2','atk3','atk4','atk5','atk6','atk7','atk8','atk9'],
+         atk2:['atk2_0','atk2_1','atk2_2','atk2_3','atk2_4','atk2_5','atk2_6','atk2_7','atk2_8','atk2_9'],
+         atk3:['atk3_0','atk3_1','atk3_2','atk3_3','atk3_4','atk3_5','atk3_6','atk3_7','atk3_8','atk3_9'],
+         hit:['hit'], death:['hit','death0','death1','death2'] },
+  fps:{ idle:3.5, walk:7, atk:7.3, hit:6, death:5 }, hp:1.0, dmg:1.0, spd:0.9, range:66 };
 FOES.bb_disc = { n:'청죽문 수습제자', w:104, h:53, sw:26, bh:48, school:'bamboo',
   anim:{ idle:['idle0','idle1','idle2','idle3'], walk:['walk0','walk1','walk2','walk3'], atk:['atk0','atk1','atk2','atk3'], hit:['hit'], death:['hit','death0','death1'] },
   fps:{ idle:4, walk:7, atk:7.3, hit:6, death:4 }, hp:1.1, dmg:1.0, spd:1.0, range:50 };
