@@ -91,7 +91,8 @@ if '--defringe' in opts:
     arr = np.array(Image.open(out).convert('RGBA')).astype(int)
     op = arr[:, :, 3] >= 100
     rr, gg, bb = arr[:, :, 0], arr[:, :, 1], arr[:, :, 2]
-    cand = op & (gg < (rr + bb) / 2.0 - 10)            # 초록이 적·청 평균보다 낮다 = 자주 계열
+    # 초록이 적·청 **둘 다**보다 낮아야 마젠타 계열 — 평균으로 재면 화산의 붉은 바위(적>초>청)까지 걷는다
+    cand = op & (gg < rr - 10) & (gg < bb - 10)
     lab, nn = ndimage.label(cand, np.ones((3, 3)))
     touch = np.unique(lab[ndimage.binary_dilation(~op, np.ones((3, 3))) & cand])
     keep = np.zeros(nn + 1, bool); keep[touch[touch > 0]] = True
