@@ -34,7 +34,7 @@ const ANIM = {
 };
 // 눈에 보이는 성장 — 경지가 오르면 기운이 돌고 정권에 권기가 붙는다 (v2.3)
 const HFX = {
-  castFps: 12,                   // 시전 재생 속도 — 16은 컷이 씹혀 보였고(v2.3) 10은 늘어졌다(v2.95.10 "후딜이 길다")
+  castFps: 14,                   // 시전 재생 속도 — 16은 컷이 씹혀 보였고(v2.3) 10~12는 늘어졌다(v2.95.10~11 "후딜이 길다")
   shotT: 0.28,                   // 권기 탄 비행 시간 (구 streak과 동일)
   fadeT: 0.22,                   // 탄 소멸 연출
   aw: { aidle: 50, katk: 70, punch: 54, punchdbl: 56, punchup: 54, qipunch: 74, qipunchb: 74, kickside2: 56, kickround2: 58, kickhigh2: 52, swordthrust: 90, swordslash: 74, swordspin: 56, fansweep: 58, fanspin: 56, fanstrike: 60, saberslash: 60, sabersmash: 60, saberspin: 60, spearthrust: 58, spearsweep: 58, spearspin: 58, staffswing: 58, staffsweep: 56, staffspin: 56, kickside: 70, kickround: 72, kickhigh: 70, flykick: 44, firekick: 44, cresckick: 46, burstkick: 46, run: 34, idle: 24, hit: 34, medit: 46 },   // 특수 동작 프레임 폭 (v2.73 — 주인공 시트는 hero_sheet가 그림에 맞춰 재고 review/hero_specs.json에 적는다. idle·hit도 v2.73.2부터 새 시트. 주먹 3종은 v2.76 hero_punch4, 발차기 3종은 v2.76.1 hero_kick3)
@@ -1061,7 +1061,7 @@ const SCHOOLS = {
 // cancel — 시전 스트립의 **뒤 이만큼은 취소 가능**. 앞 (1-cancel) 은 못 끊는다.
 //          액션 게임의 회수 동작(후딜)처럼, 거두는 컷은 다음 행동이 덮어쓴다.
 //          이걸 안 두면 선풍퇴 0.9초 내내 못 움직이고, 그 사이 평타가 몰래 나가 쿨만 태웠다.
-const CASTQ = { gap: 0.35, cancel: 0.4 };
+const CASTQ = { gap: 0.35, cancel: 0.5 };   // v2.95.11 (사용자 "다른 장풍이나 스킬들 모두 후딜이 있음") — 0.4 → 0.5, 뒤 절반은 끊는다
 
 const ARTS = { list: [
   // ── 초식 (자동 시전) ──────────────────────────────
@@ -1790,7 +1790,7 @@ for (const k in DUEL.gBase){
   if (DUEL.hqGroundA[k]) GROUNDTEX.aZone['hq_' + k] = DUEL.hqGroundA[k];
   if (DUEL.hqGroundScale[k]) GROUNDTEX.scaleZone['hq_' + k] = DUEL.hqGroundScale[k];
 }   // 문파 → {disc, elite, elder} FOES 키. 시트가 오면 여기만 채운다
-DUEL.eliteFrom = 4;            // 정예제자가 섞이기 시작하는 단
+DUEL.eliteFrom = 2;            // 정예제자가 섞이기 시작하는 단 (v2.95.11 사용자 "2단으로 내리고" — 4단은 장로를 셋 깨야 해서 못 보고 지나쳤다)
 DUEL.eliteW = [3, 1];          // 등장표 가중 [수습, 정예] — 넷 중 하나가 정예
 for (const k in DUEL.art){
   const A = DUEL.art[k];
