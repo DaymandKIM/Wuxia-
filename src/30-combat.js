@@ -151,6 +151,8 @@ function fxBlast(x, y, r, c, big){
 
 /* ── 주인공 공격 (맨손 정권) ───────────────────────── */
 function heroAttack(){
+  // 시전 꼬리(거두는 컷)는 여기서 끊는다 (v2.95.10) — 다음 동작이 바로 이어져 후딜이 사라진다
+  if (P.castT > 0) P.castT = 0;
   // 가장 가까운 적 — 거리는 조준·판정과 같은 눌린 척도로 잰다 (v2.29.1)
   // 평면 거리로 재면 위아래로 어긋났을 때 "조준은 됐는데 공격은 안 나가는" 틈이 생긴다
   let best=null, bd=1e9;
@@ -447,7 +449,11 @@ function beginCast(k){
   const c = HFX.cast[k];
   if (!c) return;
   P.castK = k; P.castT = castN(k) / HFX.castFps / (1 + tBonus('castSpd')/100); P.anim = 'cast'; P.af = 0;
+  P.castDur = P.castT;                     // 취소 가능 구간을 재는 기준 (v2.95.10)
 }
+/* 시전이 아직 못 끊는 구간인가 (v2.95.10) — 스트립 뒤 CASTQ.cancel 만큼은 다음 행동이 덮는다.
+   이걸로 걷기·평타 게이트를 건다. 안 걸면 시전 내내 굳어 "모션이 유지되면서 서 있는" 느낌이 된다. */
+const castBusy = ()=> P.castT > (P.castDur || 0) * CASTQ.cancel;
 // 시전 성공 여부를 돌려준다 — 대상이 없으면 쿨을 아낀다
 function castArt(a){
   // 활인기공 — 위태로울 때만

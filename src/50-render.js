@@ -247,6 +247,22 @@ function glowBall(x, y, g, r, alpha){
   }
   ctx.restore();
 }
+/* 빔 발광 (v2.95.10) — 축(회전 뒤 x) 방향으로 긴 띠를 가산으로 겹쳐 레이저처럼 보이게.
+   탄 스프라이트가 이미 얇은 빔이라(assets/bshot 140×49) 구슬을 얹으면 그게 정체가 된다. */
+function beamGlow(len, g, alpha){
+  const B = FXD.beam;
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  ctx.fillStyle = 'rgb(' + g.c + ')';
+  for (let i = 0; i < B.w.length; i++){
+    ctx.globalAlpha = alpha * B.a[i];
+    const l = Math.round(len * B.len[i]), h = B.w[i];
+    ctx.fillRect(-Math.round(l/2), -Math.round(h/2), l, h);
+  }
+  ctx.globalAlpha = alpha * B.headA;          // 촉끝 — 구슬이 아니라 점
+  ctx.beginPath(); ctx.arc(Math.round(len*0.46), 0, B.head, 0, Math.PI*2); ctx.fill();
+  ctx.restore();
+}
 // 시전 중 손끝(또는 발밑) 발광 — 작은 스프라이트 점이 안 보인다는 피드백
 // v2.61: FXD.castGlow 배율로 반경·알파를 키우고 바깥에 얇은 네온 테를 두른다
 function drawCastGlow(ox, oy){
@@ -711,8 +727,11 @@ function drawFx(ox, oy){
       draw(IMG[e.k], fi*bw, 0, bw, bh, -Math.round(bw/2), -Math.round(bh/2), bw, bh);
       // 무공 색 빛무리 — 파공권은 몸통, 지풍은 촉끝. 어두운 탄이 배경에 묻히지 않게
       const gk = HFX.glow[pa ? 'pagong' : 'baekbo'];
-      if (gk) glowBall(pa ? 0 : Math.round(bw * 0.4), 0, gk,
-                       bh * 0.5, (el < HFX.shotT ? 1 : a) * 0.55);
+      const ga = (el < HFX.shotT ? 1 : a);
+      if (gk){
+        if (pa) glowBall(0, 0, gk, bh * 0.5, ga * 0.55);   // 권기 주먹은 덩어리라 동심원이 맞다
+        else beamGlow(bw, gk, ga);                          // 지풍은 레이저 (v2.95.10)
+      }
       ctx.restore();
     } else if (e.k === 'imgburst'){
       // 그림 파열 — 명중 지점에서 먼지 등이 퍼지며 사라진다

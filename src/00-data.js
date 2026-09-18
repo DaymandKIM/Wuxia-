@@ -34,7 +34,7 @@ const ANIM = {
 };
 // 눈에 보이는 성장 — 경지가 오르면 기운이 돌고 정권에 권기가 붙는다 (v2.3)
 const HFX = {
-  castFps: 10,                   // 시전 재생 속도 — 16은 컷이 씹혀 보였다 (4성 0.6~0.9초)
+  castFps: 12,                   // 시전 재생 속도 — 16은 컷이 씹혀 보였고(v2.3) 10은 늘어졌다(v2.95.10 "후딜이 길다")
   shotT: 0.28,                   // 권기 탄 비행 시간 (구 streak과 동일)
   fadeT: 0.22,                   // 탄 소멸 연출
   aw: { aidle: 50, katk: 70, punch: 54, punchdbl: 56, punchup: 54, qipunch: 74, qipunchb: 74, kickside2: 56, kickround2: 58, kickhigh2: 52, swordthrust: 90, swordslash: 74, swordspin: 56, fansweep: 58, fanspin: 56, fanstrike: 60, saberslash: 60, sabersmash: 60, saberspin: 60, spearthrust: 58, spearsweep: 58, spearspin: 58, staffswing: 58, staffsweep: 56, staffspin: 56, kickside: 70, kickround: 72, kickhigh: 70, flykick: 44, firekick: 44, cresckick: 46, burstkick: 46, run: 34, idle: 24, hit: 34, medit: 46 },   // 특수 동작 프레임 폭 (v2.73 — 주인공 시트는 hero_sheet가 그림에 맞춰 재고 review/hero_specs.json에 적는다. idle·hit도 v2.73.2부터 새 시트. 주먹 3종은 v2.76 hero_punch4, 발차기 3종은 v2.76.1 hero_kick3)
@@ -114,6 +114,10 @@ const FXD = {
   hitstop:  { crit:0.04, max:0.08 },
   // 탄 잔상 — 진행 반대쪽에 고스트 n개(lighter·감소 알파). gap 간격(px) · a 첫 고스트 알파 · shrink 고스트당 축소
   trail:    { n:3, gap:7, a:0.34, shrink:0.1 },
+  // 지풍 빔 발광 (v2.95.10, 사용자 "암향지 느낌은 레이저 느낌이지 구 느낌이 아님") —
+  // 축을 따라 긴 띠 세 겹(가산)+촉끝 점. 옛 판은 동심원 빛무리(glowBall)라 자주 구슬이 앞에 떠 있었다.
+  // w 띠 두께(px) · a 겹별 알파 · len 탄 길이 대비 띠 길이 · head 촉끝 점 반경
+  beam:     { w:[9, 4, 2], a:[0.18, 0.38, 0.85], len:[0.86, 0.96, 1.02], head:3, headA:0.85 },
   // 피해 숫자 — 등장 스케일 팝(pop→1, popT초) · 크기 · 네온 외곽선 굵기
   dmgpop:   { pop:1.4, popT:0.14, size:7.5, critSize:12, stroke:2.4, critStroke:3.2,
               c:'#f0f6ff', cc:'#ffd95e', glow:'255,214,90', glowA:0.35 },
@@ -1052,7 +1056,12 @@ const SCHOOLS = {
 // 초식 시전 규칙 — 동시 시전 금지 (사용자 확정).
 // 시전 중엔 다음 초식이 기다리고, 동작이 끝나도 gap 만큼 숨을 고른 뒤에 나간다.
 // 쿨다운은 기다리는 동안에도 돈다 — 잃는 건 시전 타이밍뿐이다.
-const CASTQ = { gap: 0.35 };
+// 초식 시전 흐름 (v2.95.10, 사용자 "스킬 사용 후에 후딜이 길다, 모션이 유지되면서 서 있는 느낌")
+// gap    — 시전 사이 숨 고르기(동시 시전 금지)
+// cancel — 시전 스트립의 **뒤 이만큼은 취소 가능**. 앞 (1-cancel) 은 못 끊는다.
+//          액션 게임의 회수 동작(후딜)처럼, 거두는 컷은 다음 행동이 덮어쓴다.
+//          이걸 안 두면 선풍퇴 0.9초 내내 못 움직이고, 그 사이 평타가 몰래 나가 쿨만 태웠다.
+const CASTQ = { gap: 0.35, cancel: 0.4 };
 
 const ARTS = { list: [
   // ── 초식 (자동 시전) ──────────────────────────────

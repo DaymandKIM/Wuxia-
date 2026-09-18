@@ -103,7 +103,7 @@ function step(dt){
     return;                              // 비행은 짧아(0.1~0.5초) 적은 잠깐 멈춰도 티 안 난다
   }
   // 경공 발동 — 절정+ · 쿨 참 · 가장 가까운 적이 멀 때 (원거리·후방 견제)
-  if (S.sweepT <= 0 && P.dashHold <= 0 && P.atkT <= 0 && P.castT <= 0 &&
+  if (S.sweepT <= 0 && P.dashHold <= 0 && P.atkT <= 0 && !castBusy() &&
       realmLv() >= DASH.realm && P.dashCd <= 0 && tgt && td > DASH.min){
     const a0 = Math.atan2(tgt.y - P.y, tgt.x - P.x);
     const land = (foeM(tgt).range || FOE.range) * 0.7 + foeRad(tgt);   // 적 코앞에 내려선다
@@ -134,7 +134,7 @@ function step(dt){
   // 공격 타이머를 이동 판정보다 먼저 줄인다 (v2.93.8) — 뒤에 줄이면 공격이 끝나는 프레임에 moving=false 로 대기 컷(폭 24)이 한 장 번쩍였다
   if (P.atkCd > 0) P.atkCd -= dt;
   if (P.atkT > 0){ P.atkT -= dt; heroHitCheck(); }
-  if (S.sweepT <= 0 && P.dashHold <= 0 && P.atkT <= 0 && P.castT <= 0 && tgt && td > stopD + HERO.hold){
+  if (S.sweepT <= 0 && P.dashHold <= 0 && P.atkT <= 0 && !castBusy() && tgt && td > stopD + HERO.hold){
     const a = Math.atan2(tgt.y-P.y, tgt.x-P.x);
     P.x += Math.cos(a) * heroSpd() * dt;
     P.y += Math.sin(a) * heroSpd() * dt;
@@ -143,7 +143,9 @@ function step(dt){
   }
 
   // 공격 — 붙은 뒤(td <= stopD)에만 시작한다. 제패 연출 중엔 안 친다(방향 파닥임 방지)
-  if (P.atkT <= 0 && S.sweepT <= 0 && P.atkCd <= 0 && tgt && td <= stopD + HERO.hold + 2) heroAttack();
+  // 시전 중엔 치지 않는다 (v2.95.10) — 옛 판은 castT 를 안 봐서 시전 0.9초 동안 평타가 두 번 몰래 나갔다
+  // (cast 컷이 위라 안 보이고, 쿨만 태워 시전이 끝난 뒤 멈춰 서 있었다). 꼬리 구간에선 친다(후딜 취소).
+  if (P.atkT <= 0 && S.sweepT <= 0 && P.atkCd <= 0 && !castBusy() && tgt && td <= stopD + HERO.hold + 2) heroAttack();
 
   // 초식 — 제패 연출 중엔 아낀다
   if (S.sweepT <= 0) stepArts(dt);

@@ -75,6 +75,7 @@ const P = {
   anim: 'idle', af: 0,
   atkT: 0,                       // >0 이면 공격 동작 중
   castT: 0,                      // >0 이면 초식 시전 동작 중
+  castDur: 0,                    // 그 시전의 전체 길이 — 뒤 CASTQ.cancel 만큼은 취소 가능 (v2.95.10)
   castK: 'pagong',               // 시전 중인 초식 키 (스트립 선택)
   castGapT: 0,                   // 시전 사이 숨 고르기 — 동시 시전 금지 (CASTQ.gap)
   atkCd: 0,

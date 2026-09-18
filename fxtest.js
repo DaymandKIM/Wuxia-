@@ -73,6 +73,13 @@ setTimeout(()=>{
   renderNow();
   ok(drew('pashot'),'권기 탄 그림이 그려진다');
   ok(drew('bshot'),'지풍 빔 그림이 그려진다');
+  // 지풍은 레이저다 (v2.95.10, 사용자 "암향지 느낌은 레이저 느낌이지 구 느낌이 아님") —
+  // 옛 판은 탄 위에 동심원 빛무리(반경 bh/2 = 24)를 얹어 자주 구슬이 떠 있었다.
+  // 지풍만 남기고 다시 그려, 큰 원이 안 그려지는지 본다(촉끝 점 하나만 허용).
+  w.eval('S.fx = S.fx.filter(e=>e.k==="bshot"); P.castT=0; P.anim="idle";');   // 시전 손끝 발광(그건 구슬이 맞다)은 끄고 탄만 본다
+  renderNow();
+  { const big = arcs.filter(a=>a.r > w.eval('FXD.beam.head') + 1);
+    ok(big.length===0,'지풍에 구슬(큰 원)이 없다 — 큰 원 '+big.length+'개'+(big.length?' 반경 '+big.map(a=>Math.round(a.r)).join(','):'')); }
 
   // 2.5) 네온 타격감 (v2.61) — 평타 명중에 참격 호·피격 브라이튼, 치명타에 바닥 링·미세 경직
   w.eval(`S.fx.length=0; hitstopT=0; P.castT=0; P.castGapT=0; P.anim="idle"; P.dir=1;
