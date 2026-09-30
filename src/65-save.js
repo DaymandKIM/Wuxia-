@@ -21,7 +21,7 @@ function saveData(){
     merges: S.merges, levels: S.levels, achv: S.achv,   // 업적 (v2.90)
     halls: S.halls, fame: S.fame, sectName: S.sectName, disciples: S.disciples,   // 문파 (v2.91~92)
     hq: S.hq, duel: S.duel, frag: S.frag, hqDone: S.hqDone, ptsBonus: S.ptsBonus,      // 본진 비무 (v2.94)
-    jade: S.jade, ad: S.ad,                                                           // 영옥·광고 (v2.96)
+    jade: S.jade, ad: S.ad, pity: S.pity, summons: S.summons,                          // 영옥·광고·소환 (v2.96~.1)
   };
 }
 function saveNow(){
@@ -86,6 +86,7 @@ function applySave(d){
   S.frag = {}; if (d.frag && typeof d.frag === 'object') for (const k in d.frag) if (ARTS.list.some(a => a.k === k) && (d.frag[k] | 0) > 0) S.frag[k] = d.frag[k] | 0;
   S.ptsBonus = Math.max(0, d.ptsBonus | 0);
   S.jade = Math.max(0, d.jade | 0);                                   // 영옥 (v2.96)
+  S.pity = Math.max(0, d.pity | 0); S.summons = Math.max(0, d.summons | 0);   // 소환 천장·누계 (v2.96.1)
   S.ad = (d.ad && typeof d.ad === 'object' && d.ad.d) ? { d: d.ad.d, n: Math.max(0, d.ad.n | 0), s: (d.ad.s && typeof d.ad.s === 'object') ? d.ad.s : {}, L: Math.max(0, d.ad.L | 0) } : null;
   if (S.hq) S.stage = clamp(S.stage, BOSS_STAGE - 1, BOSS_STAGE);
   S.stats = {};

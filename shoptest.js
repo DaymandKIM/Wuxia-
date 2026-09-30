@@ -1,4 +1,4 @@
-/* 상점 1층 검증 — 영옥·보상형 광고·하루치 사다리 (v2.96)
+/* 상점 검증 — 영옥·보상형 광고·하루치 사다리 (v2.96) + 장비 소환 (v2.96.1)
    1) 영옥 가감 — 음수·모자람은 거절
    2) 광고 자리 하루 횟수 — 다 쓰면 거절, 날짜가 바뀌면 다시 찬다
    3) 모의 광고는 3초 뒤에 then() 을 부른다 (adStep 으로 시간을 돌린다)
@@ -6,6 +6,7 @@
    5) 오프라인 정산·장로 격파·업적이 영옥을 준다
    6) 저장 왕복 (영옥·광고 기록)
    7) 상점 시트가 열리고 사다리 줄이 그려진다
+   8) 장비 소환 — 값·10연 할인·등급 범위·천장·주머니 반영·저장·화면
 */
 const fs=require('fs');const {JSDOM}=require('jsdom');
 const html=fs.readFileSync(process.env.WUXIA_OUT || __dirname+'/dist/wuxia.html','utf8');
@@ -121,6 +122,48 @@ setTimeout(()=>{
   ok(slots===Object.keys(w.eval('BM.slots')).length, '광고 자리 '+slots+'칸');
   w.document.getElementById('gclose').click();
   ok(!w.document.getElementById('gpanel').classList.contains('show'), '✕ 로 닫힌다');
+
+  // ── 8) 장비 소환 (v2.96.1) ─────────────────────
+  w.eval('S.jade = 0; S.pity = 0; S.summons = 0');
+  ok(w.eval('eqSummon(1)')===null, '영옥이 없으면 못 뽑는다');
+  w.eval('S.jade = BM.summon.cost');
+  const one = w.eval('JSON.stringify(eqSummon(1))');
+  ok(one && one!=='null' && JSON.parse(one).length===1, '1회 소환 → '+one);
+  ok(w.eval('S.jade')===0, '1회 값만큼 빠진다');
+  w.eval('S.jade = BM.summon.cost10');
+  const ten = JSON.parse(w.eval('JSON.stringify(eqSummon(BM.summon.n10))'));
+  ok(ten && ten.length===w.eval('BM.summon.n10'), '10연 → '+(ten?ten.length:0)+'개');
+  ok(w.eval('S.jade')===0 && w.eval('BM.summon.cost10') < w.eval('BM.summon.cost * BM.summon.n10'), '10연이 낱개보다 싸다');
+  ok(w.eval('S.summons')===1+w.eval('BM.summon.n10'), '소환 누계 '+w.eval('S.summons'));
+  // 등급 범위 — 일반(0)·초월(6)은 안 나온다
+  w.eval('S.jade = BM.summon.cost * 300; window.__gs = {}');
+  w.eval('for (let i=0;i<300;i++){ const o = eqSummon(1); if(o) for(const it of o) window.__gs[it.g]=(window.__gs[it.g]|0)+1; }');
+  const gs = JSON.parse(w.eval('JSON.stringify(window.__gs)'));
+  ok(!gs['0'] && !gs['6'], '300회에 일반·초월은 안 나온다 (등급 분포 '+JSON.stringify(gs)+')');
+  // 천장 — 영웅 이상 없이 pity 를 넘길 수 없다
+  w.eval('S.jade = 1e9; S.pity = BM.summon.pity - 1');
+  const forced = JSON.parse(w.eval('JSON.stringify(eqSummon(1))'));
+  ok(forced[0].g >= w.eval('BM.summon.pityG'), '천장 직전 1회는 '+w.eval('EQUIP.grades[BM.summon.pityG].n')+' 이상 (나온 등급 '+forced[0].g+')');
+  ok(w.eval('S.pity')===0, '영웅 이상이 나오면 천장이 0 으로');
+  let maxPity = 0;
+  w.eval('S.pity = 0; window.__mp = 0; for (let i=0;i<400;i++){ eqSummon(1); if (S.pity > window.__mp) window.__mp = S.pity; }');
+  maxPity = w.eval('window.__mp');
+  ok(maxPity < w.eval('BM.summon.pity'), '400회 동안 천장 카운터가 '+w.eval('BM.summon.pity')+' 에 닿지 않는다 (최대 '+maxPity+')');
+  // 주머니로 들어가 도감이 받는다
+  const before = w.eval('codexCount()');
+  w.eval('S.jade = BM.summon.cost10; eqSummon(BM.summon.n10)');
+  ok(w.eval('codexCount()') >= before, '뽑은 것이 주머니·도감으로 간다 ('+before+' → '+w.eval('codexCount()')+')');
+  // 저장 왕복
+  w.eval('S.pity = 4; S.summons = 77; saveNow()');
+  const d2 = JSON.parse(w.localStorage.getItem('wuxia1'));
+  ok(d2.pity===4 && d2.summons===77, '천장·누계가 저장된다');
+  // 시트에 소환 구역이 그려지는가
+  w.eval('S.jade = 5000'); w.document.getElementById('shopb').click();
+  ok(w.document.querySelectorAll('#gbody .gsb').length===2, '소환 버튼 둘 (1회·10연)');
+  ok(/\uBC88 \uC548\uC5D0/.test(w.document.querySelector('#gbody .gpity').textContent), '천장을 글자로 보여 준다: '+w.document.querySelector('#gbody .gpity').textContent);
+  w.document.querySelectorAll('#gbody .gsb')[0].click();
+  ok(w.document.querySelectorAll('#gbody .gres .gitem').length===1, '뽑으면 결과 칸이 늘어선다');
+  w.document.getElementById('gclose').click();
 
   ok(errs.length===0, '런타임 오류 0'+(errs.length?': '+errs[0]:''));
   console.log(bad? '\n★ 실패 '+bad+'건' : '\n전부 통과');

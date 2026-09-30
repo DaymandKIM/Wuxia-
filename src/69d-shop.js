@@ -86,6 +86,68 @@ function ladderClaim(){
   return st;
 }
 
+
+/* ── 장비 소환 (v2.96.1) ────────────────────────────────
+   사용자 확정 "장비도 뽑기로 가는게 좋을듯". 지속 전투에는 매 판 능력을 고르는 순간이 없다 —
+   그 순간을 **뽑고 · 보고 · 끼는** 자리에 만든다. 판을 멈춰 세우지 않으니 코어(자동 전투 구경)는 안 다친다.
+   나온 것은 주머니로 들어가 기존 합성·강화·도감이 그대로 받는다. 처치 드랍은 그대로 — 뽑기는 속도를 판다. */
+const pityLeft = () => Math.max(0, BM.summon.pity - (S.pity | 0));
+// 한 번 굴린다 — 천장에 닿으면 영웅 이상으로 올린다
+function summonRoll(){
+  const sl = EQUIP.slots[Math.floor(Math.random() * EQUIP.slots.length)];
+  const ks = eqKinds(sl); if (!ks.length) return null;
+  const kind = ks[Math.floor(Math.random() * ks.length)][0];
+  const w = BM.summon.w;
+  let r = Math.random() * w.reduce((a, b) => a + b, 0), g = 0;
+  for (let i = 0; i < w.length; i++){ r -= w[i]; if (r < 0){ g = i; break; } }
+  if (pityLeft() <= 1) g = Math.max(g, BM.summon.pityG);        // 천장 — 이번이 마지막이면 영웅 이상
+  S.pity = (g >= BM.summon.pityG) ? 0 : (S.pity | 0) + 1;       // 영웅 이상이 나오면 다시 센다
+  return { k: kind, g };
+}
+/* n 번 뽑는다. 영옥이 모자라면 null.
+   1회는 cost, 10연은 cost10 (낱개보다 싸다). 결과는 [{k,g,first}] — 화면이 그대로 늘어놓는다. */
+function eqSummon(n){
+  n = (n === BM.summon.n10) ? BM.summon.n10 : 1;
+  const cost = n === 1 ? BM.summon.cost : BM.summon.cost10;
+  if (!jadeSpend(cost)) return null;
+  const out = [];
+  for (let i = 0; i < n; i++){
+    const it = summonRoll(); if (!it) continue;
+    it.first = !eqSeen(it.k, it.g);
+    eqGain(it.k, it.g, 1);
+    out.push(it);
+  }
+  S.summons = (S.summons | 0) + n;
+  if (typeof eqLogPush === 'function') for (const it of out) eqLogPush(itemLabel(it.k, it.g) + ' 소환');
+  return out;
+}
+// 방금 뽑은 것 (화면에 늘어놓는다 — 저장 안 함)
+let summonLast = null;
+function summonTap(n){
+  const out = eqSummon(n);
+  if (!out){ if (typeof toast === 'function') toast(BM.jade + '이 모자라다'); return false; }
+  summonLast = out;
+  const best = out.reduce((a, b) => (b.g > a.g ? b : a), out[0]);
+  if (best && typeof toast === 'function')
+    toast(itemLabel(best.k, best.g) + (out.length > 1 ? ' 외 ' + (out.length - 1) : '') + ' 획득',
+          { icon: eqIcon(best.k, best.g), color: EQUIP.grades[best.g].c, sec: 2.4 });
+  shopHud(true);
+  return true;
+}
+
+// 방금 뽑은 것을 칸으로 늘어놓는다 (레퍼런스 Reward 화면)
+function summonResultHtml(){
+  if (!summonLast || !summonLast.length) return '';
+  let h = '<div class="gres">';
+  for (const it of summonLast){
+    const G = EQUIP.grades[it.g], ic = eqIcon(it.k, it.g);
+    h += '<div class="gitem' + (it.first ? ' new' : '') + '" style="--gc:' + G.c + '">' +
+         (ic ? '<img src="' + ic + '" alt="">' : '<span>' + G.n.charAt(0) + '</span>') +
+         '<b>' + G.n + '</b></div>';
+  }
+  return h + '</div>';
+}
+
 /* ── 상점 시트 ── */
 function openShop(){ const el = $('gpanel'); if (!el) return; el.classList.add('show'); shopHud(true); }
 function closeShop(){ const el = $('gpanel'); if (el) el.classList.remove('show'); }
@@ -93,10 +155,17 @@ let shopSig = '';
 function shopHud(force){
   const el = $('gpanel'); if (!el || (!force && !el.classList.contains('show'))) return;
   const a = adState();
-  const sig = [S.jade | 0, a.n, a.L, a.d].join('|');
+  const sig = [S.jade | 0, a.n, a.L, a.d, S.pity | 0, summonLast ? summonLast.length + ':' + summonLast.map(x=>x.k+x.g).join() : ''].join('|');
   if (!force && sig === shopSig) return; shopSig = sig;
   const jn = $('gjade'); if (jn) jn.textContent = fmt(S.jade | 0);
-  let h = '<div class="gsec">오늘 본 광고 <b>' + a.n + '</b> 편</div>';
+  let h = '<div class="gsec">장비 소환</div>' +
+    '<div class="gsum">' +
+      '<div class="gpity">' + pityLeft() + '번 안에 <b>' + EQUIP.grades[BM.summon.pityG].n + ' 이상</b></div>' +
+      '<div class="gsbtns">' +
+        '<button class="gsb" data-n="1">소환<i>靈' + BM.summon.cost + '</i></button>' +
+        '<button class="gsb" data-n="' + BM.summon.n10 + '">소환 ×' + BM.summon.n10 + '<i>靈' + BM.summon.cost10 + '</i></button>' +
+      '</div>' + summonResultHtml() + '</div>' +
+    '<div class="gsec">오늘 본 광고 <b>' + a.n + '</b> 편</div>';
   for (let i = 0; i < BM.ladder.length; i++){
     const st = BM.ladder[i], got = (a.L | 0) > i, can = !got && a.n >= st.n;
     const p = Math.min(1, a.n / st.n);
@@ -115,6 +184,8 @@ function shopHud(force){
   b.innerHTML = h;
   const btns = b.querySelectorAll ? b.querySelectorAll('.gclaim') : [];
   for (const btn of btns) btn.onclick = () => { ladderClaim(); shopHud(true); };
+  const sbs = b.querySelectorAll ? b.querySelectorAll('.gsb') : [];
+  for (const btn of sbs) btn.onclick = () => summonTap(btn.dataset.n | 0);
 }
 // ≡·HUD 알림점 — 받을 계단이 있으면 켠다
 function shopDot(){ const d = $('shopdot'); if (d) d.classList.toggle('on', ladderReady()); }
