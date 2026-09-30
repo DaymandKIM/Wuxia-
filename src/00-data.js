@@ -1797,3 +1797,41 @@ for (const k in DUEL.art){
   if (A.disc)  ZONEFOE['hq_' + k]  = A.elite ? [...Array(DUEL.eliteW[0]).fill(A.disc), ...Array(DUEL.eliteW[1]).fill(A.elite)] : [A.disc];
   if (A.elder) ZONEBOSS['hq_' + k] = A.elder;
 }
+
+/* ── BM — 영옥·광고·상점 (v2.96) ──────────────────────────
+   설계는 docs/설계-BM.md. 레퍼런스(Epic Idle Journey)의 구조를 우리 방침에 맞게 옮겼다.
+   지키는 선: 강제 전면 광고 없음 · 일일 숙제 없음 · 타이머 압박 없음 ·
+   **경지·무공 습득 조건·연마 상한·단계 진행은 팔지 않는다**(무과금 곡선의 뼈).
+   아티팩트는 iframe 이라 광고 SDK 를 못 붙인다 — 지금은 자리·횟수·보상·모의 대기까지만 만든다(adMock).
+   스토어 빌드에선 adPlay() 한 곳만 실제 SDK 로 갈아끼운다. */
+const BM = {
+  jade: '영옥', jadeHan: '靈玉',
+  adMock: true,                  // true 면 진짜 광고 대신 3초 모의 대기
+  adSec: 3,
+  // 영옥 수급 — 무과금도 상점을 쓸 수 있어야 한다(레퍼런스는 방치로 시간당 10)
+  gain: {
+    offPerHour: 10,              // 오프라인 정산 — 시간당
+    offZone: 0.25,               // 도달 구역마다 +25%
+    elder: 5, master: 15,        // 본진 장로 / 장문인 격파
+    boss: 20,                    // 구역 보스 첫 격파
+    achvBase: 8, achvGrow: 2.2,  // 업적 단계 t → achvBase × achvGrow^t (올림)
+    achvCap: 400,
+  },
+  // 보상형 광고 자리 — 하루 횟수. 여기선 은자·배수만 준다(영옥은 사다리 끝에서만)
+  slots: {
+    fate:   { n: 3, t: '기연 다시 뽑기' },
+    off2x:  { n: 2, t: '정산 두 배' },
+    offNow: { n: 3, t: '즉시 정산' },
+    boss2x: { n: 9, t: '첫 격파 두 배' },
+  },
+  // 하루치 광고 사다리 — 자리와 무관하게 "오늘 본 광고 수" 하나가 계단을 연다 (레퍼런스 Daily Gifts)
+  // 마지막 계단이 압도적이어야 3편 본 사람이 6편까지 간다
+  ladder: [
+    { n: 1, frag: 3,   t: '비급 조각 3' },
+    { n: 2, silver: 0, box: 1, t: '장비 상자 1' },
+    { n: 3, pts: 1,    t: '무공점 1' },
+    { n: 6, jade: 300, t: '영옥 300' },
+  ],
+  boxGrade: 2,                   // 사다리 장비 상자 최소 등급 (희귀)
+  shopTip: '영옥은 방치 정산·장로 격파·업적·광고로 모인다.',
+};

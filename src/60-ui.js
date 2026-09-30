@@ -62,6 +62,7 @@ function hud(){
   }
   $('hpt').textContent = fmt(Math.ceil(P.hp)) + ' / ' + fmt(P.hpMax);
   $('silvern').textContent = fmt(S.silver);
+  if (typeof adStep === 'function'){ adStep(1/60); $('jaden').textContent = fmt(S.jade | 0); shopDot(); }   // 영옥·모의 광고 (v2.96)
   const ri = realmInfo();
   $('realm').textContent = ri.name + ' · ' + Math.floor(ri.cur / ri.need * 100) + '%';
   $('hp').firstElementChild.style.width = (P.hp/P.hpMax*100).toFixed(1) + '%';

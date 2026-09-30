@@ -21,6 +21,7 @@ function saveData(){
     merges: S.merges, levels: S.levels, achv: S.achv,   // 업적 (v2.90)
     halls: S.halls, fame: S.fame, sectName: S.sectName, disciples: S.disciples,   // 문파 (v2.91~92)
     hq: S.hq, duel: S.duel, frag: S.frag, hqDone: S.hqDone, ptsBonus: S.ptsBonus,      // 본진 비무 (v2.94)
+    jade: S.jade, ad: S.ad,                                                           // 영옥·광고 (v2.96)
   };
 }
 function saveNow(){
@@ -84,6 +85,8 @@ function applySave(d){
   S.hqDone = {}; if (d.hqDone && typeof d.hqDone === 'object') for (const k in DUEL.gBase) if (d.hqDone[k]) S.hqDone[k] = Math.max(0, d.hqDone[k] | 0);
   S.frag = {}; if (d.frag && typeof d.frag === 'object') for (const k in d.frag) if (ARTS.list.some(a => a.k === k) && (d.frag[k] | 0) > 0) S.frag[k] = d.frag[k] | 0;
   S.ptsBonus = Math.max(0, d.ptsBonus | 0);
+  S.jade = Math.max(0, d.jade | 0);                                   // 영옥 (v2.96)
+  S.ad = (d.ad && typeof d.ad === 'object' && d.ad.d) ? { d: d.ad.d, n: Math.max(0, d.ad.n | 0), s: (d.ad.s && typeof d.ad.s === 'object') ? d.ad.s : {}, L: Math.max(0, d.ad.L | 0) } : null;
   if (S.hq) S.stage = clamp(S.stage, BOSS_STAGE - 1, BOSS_STAGE);
   S.stats = {};
   if (d.stats && typeof d.stats === 'object')
@@ -244,7 +247,9 @@ function offlineGains(awaySec, noCap){
   S.silver += sect;
   if (typeof fameAdd === 'function') fameAdd(kills * killFame());   // 명성도 쌓인다 (v2.91) — 단계가 오르면 제자가 합류한다(돌아온 뒤부터 수익)
   if (S.karma >= karmaNeed()) S.fatePending = 1;
-  return { sec, kills, silver, sect, exp: Math.round(S.rexp - rexp0), fate: S.fatePending };
+  const jade = (typeof jadeOffline === 'function') ? jadeOffline(sec) : 0;   // 영옥 — 방치 수급이 무과금의 상점 밑천이다 (v2.96)
+  if (jade) S.jade = (S.jade | 0) + jade;
+  return { sec, kills, silver, sect, jade, exp: Math.round(S.rexp - rexp0), fate: S.fatePending };
 }
 
 /* ── 돌아온 화면 ──────────────────────────────────── */
@@ -263,6 +268,7 @@ function showOffline(g){
   let h = '<div class="orow"><span>처치</span><b>' + fmt(g.kills) + '</b></div>';
   if (g.silver) h += '<div class="orow"><span>' + coin() + ' 은자</span><b>+' + fmt(g.silver) + '</b></div>';
   if (g.sect)   h += '<div class="orow"><span>제자 수익</span><b>+' + fmt(g.sect) + '</b></div>';   // v2.92
+  if (g.jade)   h += '<div class="orow"><span>靈 영옥</span><b>+' + fmt(g.jade) + '</b></div>';
   if (g.exp)    h += '<div class="orow"><span>수련치</span><b>+' + fmt(g.exp) + '</b></div>';
   if (g.fate)   h += '<div class="orow"><span>✦ 기연</span><b>기다리고 있다</b></div>';
   $('obody').innerHTML = h;
