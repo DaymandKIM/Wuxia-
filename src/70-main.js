@@ -58,6 +58,8 @@ loadImg('pashot',    ASSET.pashot);          // 파공권 권기 탄
 loadImg('bshot',     ASSET.bshot);           // 암향지 지풍 빔
 loadImg('gshield',   ASSET.gshield);         // 건곤이형 태극 원반
 $('coinhud').src = ASSET.silver;             // HUD 은자 아이콘
+if (ASSET.jade){ $('jadehud').src = ASSET.jade;   // HUD·시트 머리글 영옥 아이콘 (v2.97.4)
+  for (const id of ['gjadeic', 'pjadeic']){ const e = $(id); if (e) e.src = ASSET.jade; } }
 // 탭바 아이콘 (v2.63.4) — 에셋 없으면 글자만
 for (const [id, k] of [['tab-arts','tab_arts'],['tab-train','tab_train'],['tab-equip','tab_equip'],['tab-sect','tab_sect'],['tab-zone','tab_zone']]){
   const im = $(id).querySelector('.ti'); if (!im) continue;

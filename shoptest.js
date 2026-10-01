@@ -66,7 +66,7 @@ setTimeout(()=>{
   // ── 3) 모의 광고는 시간이 지나야 끝난다 ────────
   w.eval('S.ad = null; adState(); window.__f2 = 0');
   w.eval('adShow("off2x", () => { window.__f2++; })');
-  ok(w.eval('adBusy()')===true && w.eval('window.__f2')===0, '광고 중엔 아직 보상이 없다');
+  ok(w.eval('adBusy()')===true && w.eval('window.__f2')===0, '광고 중엔 아직 보상이 없다 (모의 '+w.eval('BM.adSec')+'초)');
   w.eval('adStep(BM.adSec * 0.5)');
   ok(w.eval('window.__f2')===0, '절반 지나도 아직');
   w.eval('adStep(BM.adSec)');
@@ -240,6 +240,15 @@ setTimeout(()=>{
   w.eval('fateReroll()'); w.eval('adStep(BM.adSec + 0.1)');
   ok(!!w.eval('fateEv'), '다시 뽑아도 카드는 남아 있다');
   ok(w.eval('adLeft("fate")')===w.eval('BM.slots.fate.n - 1'), '기연 자리 횟수가 줄었다 (뽑기 전 '+beforeK+')');
+  // 광고를 보는 동안엔 자동 수령 타이머가 멈춰야 한다 (v2.97.4 "기연 광고 봐도 안 바뀜")
+  w.eval('S.ad = null; adState(); S.karma = 1e9; S.fatePending = true; fateEv = null; maybeFate()');
+  const kBefore = w.eval('fateEv.k');
+  w.eval('fateReroll()');
+  w.eval('stepFate(FATE.autoSec + 2)');                       // 광고 중엔 이만큼 흘러도 안 받아져야 한다
+  ok(!!w.eval('fateEv'), '광고 보는 동안 카드가 저절로 받아지지 않는다');
+  w.eval('adStep(BM.adSec + 0.1)');
+  ok(!!w.eval('fateEv'), '광고가 끝나도 카드가 남아 있다');
+  ok(w.eval('fateEv.k') !== kBefore, '다시 뽑으면 **다른 종류**가 나온다 ('+kBefore+' → '+w.eval('fateEv.k')+')');
   w.eval('applyFate()');
   ok(w.document.getElementById('fad').hidden===true, '카드를 받으면 버튼이 숨는다');
   // 복귀 정산 두 배

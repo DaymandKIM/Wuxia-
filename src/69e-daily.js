@@ -113,7 +113,7 @@ function questHud(force){
     for (let i = 0; i < DAILY.login.length; i++){
       const got = (g.n | 0) > i, can = !got && (g.n | 0) === i && loginReady();
       h += '<div class="qday' + (got ? ' done' : '') + (can ? ' can' : '') + (i === DAILY.login.length - 1 ? ' last' : '') + '">' +
-           '<b>' + (i + 1) + '일차</b><span>' + DAILY.login[i].t + '</span>' + (got ? '<i>✓</i>' : '') + '</div>';
+           '<b>' + (i + 1) + '일차</b><span>' + rewardIcons(DAILY.login[i]) + '</span>' + (got ? '<i>✓</i>' : '') + '</div>';
     }
     h += '</div>' + (loginReady() ? '<button class="qclaim big" data-c="login">오늘 것 받기</button>' : '');
   } else {
@@ -123,7 +123,7 @@ function questHud(force){
          '<span>' + pts + ' 점</span></div><div class="qlad">';
     for (let i = 0; i < lad.length; i++){
       const got = L > i, can = !got && pts >= lad[i].p;
-      h += '<div class="qstep' + (got ? ' done' : '') + '"><b>' + lad[i].p + '점</b><span>' + rewardText(lad[i]) + '</span>' +
+      h += '<div class="qstep' + (got ? ' done' : '') + '"><b>' + lad[i].p + '점</b><span>' + rewardIcons(lad[i]) + '</span>' +
            (got ? '<i>✓</i>' : can ? '<button class="qclaim" data-c="' + (weekly ? 'week' : 'day') + '">받기</button>' : '<i class="lk">🔒</i>') + '</div>';
     }
     h += '</div><div class="qsec">' + (weekly ? '이번 주' : '오늘') + ' — 놀다 보면 채워진다</div>';
@@ -148,6 +148,49 @@ function rewardText(r){
   if (r.jade) out.push('靈 ' + r.jade);
   if (r.silverMin) out.push('은자 ' + r.silverMin + '분 치');
   if (r.frag) out.push('조각 ' + r.frag);
+  if (r.pts) out.push('무공점 ' + r.pts);
   if (r.box) out.push(r.boxG !== undefined ? EQUIP.grades[r.boxG].n + ' 장비' : '장비 상자');
   return out.join(' · ');
+}
+/* 같은 보상을 **아이콘 칩**으로 (v2.97.4 사용자 "상점이 너무 다 텍스트라 보기 안 좋다").
+   글자만 늘어놓으면 뭘 주는지 한눈에 안 들어온다 — 재화마다 아이콘이 이미 있으니 그걸 쓴다. */
+function rewardIcons(r){
+  let h = '';
+  const chip = (ic, txt, col) => '<span class="rchip"' + (col ? ' style="--rc:' + col + '"' : '') + '>' + ic + '<b>' + txt + '</b></span>';
+  if (r.jade) h += chip(jadeIc('ic'), r.jade, '#9fe4ff');
+  if (r.silverMin) h += chip(coin(), r.silverMin + '분', '#f0d078');
+  if (r.silver) h += chip(coin(), fmt(r.silver), '#f0d078');
+  if (r.frag) h += chip(fragIcon(), r.frag, '#c9b4ff');
+  if (r.pts) h += chip('<span class="ricx">✦</span>', r.pts, '#8fd6a8');
+  if (r.box){
+    const g = r.boxG !== undefined ? r.boxG : BM.boxGrade;
+    h += chip(boxIcon(g), (r.box > 1 ? r.box : '') + EQUIP.grades[g].n, EQUIP.grades[g].c);
+  }
+  return h || '<span class="rchip"><b>—</b></span>';
+}
+// 조각 아이콘 — 지금 문파의 상승 무공 메달이 있으면 그걸, 없으면 아무 메달
+function fragIcon(){
+  const k = (typeof fragSchool === 'function') ? fragSchool() : null;
+  const a = (k && typeof hqFragArt === 'function') ? hqFragArt(k) : null;
+  const src = a && ASSET['art_' + a.k];
+  return src ? '<img class="ic" src="' + src + '" alt="">' : '<span class="ricx">書</span>';
+}
+// 상자 아이콘 — 그 등급 장비 하나의 아이콘
+function boxIcon(g){
+  for (const sl of EQUIP.slots) for (const kd of eqKinds(sl)){
+    const src = (typeof eqIcon === 'function') && eqIcon(kd[0], g);
+    if (src) return '<img class="ic" src="' + src + '" alt="">';
+  }
+  return '<span class="ricx">◆</span>';
+}
+// 비급함 카드에 메달 몇 개를 늘어놓는다 — 뭐가 나오는지 그림으로 보인다
+function fragIconRow(){
+  const out = [];
+  for (const a of ARTS.list){
+    if (!a.frag) continue;
+    const src = ASSET['art_' + a.k]; if (!src) continue;
+    out.push('<img class="gfi" src="' + src + '" alt="' + a.n + '">');
+    if (out.length >= 6) break;
+  }
+  return out.length ? '<div class="gfrow">' + out.join('') + '</div>' : '';
 }

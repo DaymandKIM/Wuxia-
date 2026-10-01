@@ -311,6 +311,7 @@ function offDouble(){
 // 매 프레임 — 복귀 카드도 잠시 뒤 스스로 닫힌다 (팝업 피로 방지)
 function stepOffline(dt){
   if (!$('opanel').classList.contains('show')) return;
+  if (typeof adBusy === 'function' && adBusy()) return;   // 광고 중엔 자동 닫힘을 멈춘다 (v2.97.4, 기연과 같은 사고)
   offAutoT -= dt;
   $('obtn').textContent = '수련 계속 (' + Math.max(1, Math.ceil(offAutoT)) + ')';
   if (offAutoT <= 0) closeOffline();

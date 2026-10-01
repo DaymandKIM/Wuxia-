@@ -122,7 +122,7 @@ function payHud(force){
   h += '<div class="pcard' + (payOwn('starter') ? ' own' : '') + '"><div class="phd">' + S1.n +
        '<i>3일에 나눠 받는다</i></div>';
   for (let i = 0; i < S1.days.length; i++)
-    h += '<div class="prow' + ((p.starter | 0) > i ? ' done' : '') + '"><b>' + (i + 1) + '일차</b><span>' + S1.days[i].t + '</span></div>';
+    h += '<div class="prow' + ((p.starter | 0) > i ? ' done' : '') + '"><b>' + (i + 1) + '일차</b><span>' + rewardIcons(S1.days[i]) + '</span></div>';
   h += payOwn('starter')
      ? '<div class="pown">' + ((p.starter | 0) >= S1.days.length ? '다 받았다' : '내일 ' + ((p.starter | 0) + 1) + '일차') + '</div>'
      : '<button class="pbuy" data-k="starter"><s>' + won(S1.was) + '</s>' + won(S1.won) + '</button>';
@@ -130,23 +130,23 @@ function payHud(force){
   // 월간 옥패
   const M = PAY.monthly, ml = subLeft('monthly');
   h += '<div class="pcard hot' + (subOn('monthly') ? ' own' : '') + '"><div class="phd">' + M.n + '<i>매일 받는다</i></div>' +
-       '<div class="prow"><b>매일</b><span>靈 ' + M.daily + ' × ' + M.days + '일</span></div>' +
-       '<div class="prow"><b>즉시</b><span>靈 ' + M.now + '</span></div>' +
+       '<div class="prow"><b>매일</b><span>' + rewardIcons({ jade: M.daily }) + ' × ' + M.days + '일</span></div>' +
+       '<div class="prow"><b>즉시</b><span>' + rewardIcons({ jade: M.now }) + '</span></div>' +
        '<div class="prow"><b>특전</b><span>방치 상한 ' + M.offHour + '시간 · 광고 자리 바로 수령</span></div>' +
        (subOn('monthly') ? '<div class="pown">' + ml + '일 남음</div>'
                          : '<button class="pbuy" data-k="monthly">' + won(M.won) + '</button>') + '</div>';
   // 광고 제거
   const A = PAY.adfree;
   h += '<div class="pcard' + (payOwn('adfree') ? ' own' : '') + '"><div class="phd">' + A.n + '<i>영구</i></div>' +
-       '<div class="prow"><b>즉시</b><span>靈 ' + A.now + '</span></div>' +
-       '<div class="prow"><b>매일</b><span>靈 ' + A.daily + ' (영구)</span></div>' +
+       '<div class="prow"><b>즉시</b><span>' + rewardIcons({ jade: A.now }) + '</span></div>' +
+       '<div class="prow"><b>매일</b><span>' + rewardIcons({ jade: A.daily }) + ' 영구</span></div>' +
        '<div class="prow"><b>특전</b><span>광고 자리를 안 보고 받는다</span></div>' +
        (payOwn('adfree') ? '<div class="pown">보유 중</div>' : '<button class="pbuy" data-k="adfree">' + won(A.won) + '</button>') + '</div>';
   // 성장 꾸러미 — 도달형
   const G = PAY.growth;
   if ((S.zi | 0) >= G.needZone || payOwn('growth')){
     h += '<div class="pcard"><div class="phd">' + G.n + '<i>한 번만 · 안 닫힌다</i></div>' +
-         '<div class="prow"><b>내용</b><span>靈 ' + G.jade + ' · 은자 ' + G.silverMin + '분 치 · 조각 ' + G.frag + ' · 전설 장비 ' + G.box + '</span></div>' +
+         '<div class="prow"><b>내용</b><span>' + rewardIcons(G) + '</span></div>' +
          (payOwn('growth') ? '<div class="pown">받았다</div>'
           : '<button class="pbuy" data-k="growth"><s>' + won(G.was) + '</s>' + won(G.won) + '<em>' + G.mul + '배</em></button>') + '</div>';
   }
@@ -156,8 +156,8 @@ function payHud(force){
   for (let i = 0; i < PS.steps.length; i++){
     const st = PS.steps[i], got = passDone() > i, can = !got && prog >= st.need;
     h += '<div class="prow pass' + (got ? ' done' : '') + '"><b>' + st.need + '</b>' +
-         '<span>' + rewardText(st.free) + '</span>' +
-         '<span class="paid' + (payOwn('pass') ? ' on' : '') + '">' + rewardText(st.paid) + '</span>' +
+         '<span>' + rewardIcons(st.free) + '</span>' +
+         '<span class="paid' + (payOwn('pass') ? ' on' : '') + '">' + rewardIcons(st.paid) + '</span>' +
          (got ? '<i>✓</i>' : can ? '<button class="qclaim" data-p="1">받기</button>' : '<i class="lk">🔒</i>') + '</div>';
   }
   h += payOwn('pass') ? '<div class="pown">유료 열림</div>'
@@ -166,7 +166,7 @@ function payHud(force){
   h += '</div>';
   // 영옥 낱개
   h += '<div class="gsec">' + BM.jade + ' 묶음</div><div class="gpacks">' +
-    PAY.jadePacks.map(j => '<button class="gpack pj" data-j="' + j.k + '"><b>靈 ' + fmt(j.jade) + '</b><span>' + won(j.won) + '</span></button>').join('') +
+    PAY.jadePacks.map((j, i) => '<button class="gpack pj s' + Math.min(2, i >> 1) + '" data-j="' + j.k + '"><em>' + jadeIc('ic2') + '</em><b>' + fmt(j.jade) + '</b><span>' + won(j.won) + '</span></button>').join('') +
     '</div>';
   h += '<div class="znote">' + (PAY.mock ? '지금 결제는 <b>모의</b>다 — 누르면 스토어 없이 그대로 들어온다.' : '') + '</div>';
   const b = $('pbody'); if (!b) return;

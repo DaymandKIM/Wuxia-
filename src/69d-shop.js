@@ -250,34 +250,38 @@ function shopHud(force){
   let h = '';
   // 무료 칸 — 맨 앞에 (레퍼런스 Shop 과 같은 자리)
   h += '<div class="gfree' + (freeTaken() ? ' done' : '') + '">' +
-       '<div class="gflab">오늘의 선물<i>靈' + BM.free.jade + ' · 은자 ' + BM.free.silverMin + '분 치</i></div>' +
+       '<div class="gflab">오늘의 선물<i>' + jadeIc('ic') + BM.free.jade + ' &nbsp;' + coin() + ' ' + BM.free.silverMin + '분 치</i></div>' +
        (freeTaken() ? '<span class="gok">받음</span>' : '<button class="gfb">무료로 받기</button>') +
        '</div>';
   h += '<div class="gsec">장비 소환</div>' +
     '<div class="gsum">' +
       '<div class="gpity">' + pityLeft() + '번 안에 <b>' + EQUIP.grades[BM.summon.pityG].n + ' 이상</b></div>' +
+      '<div class="godds">' + BM.summon.w.map((v, g) => v > 0
+        ? '<span style="--gc:' + EQUIP.grades[g].c + '">' + EQUIP.grades[g].n + '<b>' + Math.round(v / BM.summon.w.reduce((a,b)=>a+b,0) * 100) + '%</b></span>' : '').join('') + '</div>' +
       '<div class="gsbtns">' +
-        '<button class="gsb" data-n="1">소환<i>靈' + BM.summon.cost + '</i></button>' +
-        '<button class="gsb" data-n="' + BM.summon.n10 + '">소환 ×' + BM.summon.n10 + '<i>靈' + BM.summon.cost10 + '</i></button>' +
+        '<button class="gsb" data-n="1">소환<i>' + jadeIc('ic') + BM.summon.cost + '</i></button>' +
+        '<button class="gsb" data-n="' + BM.summon.n10 + '">소환 ×' + BM.summon.n10 + '<i>' + jadeIc('ic') + BM.summon.cost10 + '</i></button>' +
       '</div>' + summonResultHtml() + '</div>' +
     '<div class="gsec">비급함 — 무공 조각</div>' +
     '<div class="gsum">' +
       '<div class="gpity">한 함에 조각 ' + BM.fragBox.n[0] + '~' + BM.fragBox.n[1] + '개 · 본진에서 가 본 문파</div>' +
+      fragIconRow() +
       '<div class="gsbtns">' +
-        '<button class="gsb gfr" data-t="0">비급함<i>靈' + BM.fragBox.jade + '</i></button>' +
-        '<button class="gsb gfr" data-t="1">비급함 ×' + BM.fragBox.n10 + '<i>靈' + BM.fragBox.jade10 + '</i></button>' +
+        '<button class="gsb gfr" data-t="0">비급함<i>' + jadeIc('ic') + BM.fragBox.jade + '</i></button>' +
+        '<button class="gsb gfr" data-t="1">비급함 ×' + BM.fragBox.n10 + '<i>' + jadeIc('ic') + BM.fragBox.jade10 + '</i></button>' +
       '</div></div>' +
     '<div class="gsec">은자 묶음 <b>지금 분당 ' + fmt(Math.round(silverPerMin())) + '</b></div>' +
     '<div class="gpacks">' +
-      BM.silverPack.map(p => '<button class="gpack" data-k="' + p.k + '">' +
-        '<b>' + p.n + '</b><span>' + fmt(packSilver(p)) + '</span><i>靈' + p.jade + ' · ' + p.min + '분 치</i></button>').join('') +
+      BM.silverPack.map((p, i) => '<button class="gpack s' + i + '" data-k="' + p.k + '">' +
+        '<b>' + p.n + '</b><em>' + coin() + '</em><span>' + fmt(packSilver(p)) + '</span>' +
+        '<i>' + jadeIc('ic') + p.jade + '</i></button>').join('') +
     '</div>' +
     '<div class="gsec">오늘 본 광고 <b>' + a.n + '</b> 편</div>';
   for (let i = 0; i < BM.ladder.length; i++){
     const st = BM.ladder[i], got = (a.L | 0) > i, can = !got && a.n >= st.n;
     const p = Math.min(1, a.n / st.n);
     h += '<div class="grow' + (got ? ' done' : '') + '">' +
-         '<div class="glab">광고 ' + st.n + '편 · ' + st.t + '</div>' +
+         '<div class="glab"><em>' + st.n + '편</em>' + rewardIcons(st) + '</div>' +
          '<div class="gbar"><i style="width:' + Math.round(p * 100) + '%"></i>' +
          '<span>' + Math.min(a.n, st.n) + ' / ' + st.n + '</span></div>' +
          (got ? '<span class="gok">받음</span>'

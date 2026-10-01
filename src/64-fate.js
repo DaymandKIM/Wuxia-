@@ -62,9 +62,13 @@ function fateAdBtn(){
 }
 function fateReroll(){
   if (!fateEv || typeof adShow !== 'function') return false;
+  const was = fateEv.k;
   return adShow('fate', () => {
     if (!fateEv) return;
-    fateEv = rollFate();
+    // **다른 것이 나와야 다시 뽑은 보람이 있다** — 종류가 다섯뿐이라 그냥 굴리면 같은 게 자주 나온다
+    let ev = rollFate();
+    for (let i = 0; i < 12 && ev.k === was; i++) ev = rollFate();
+    fateEv = ev;
     fateAutoT = FATE.autoSec;
     const fa = ASSET['fate_' + FATE.art[fateEv.k]]; $('fart').src = fa || ''; $('fart').style.display = fa ? '' : 'none';
     $('ftitle').textContent = fateEv.n;
@@ -76,6 +80,10 @@ function fateReroll(){
 // 매 프레임 — 손대지 않아도 잠시 뒤 스스로 받아들인다 (팝업 누르기 귀찮다는 피드백)
 function stepFate(dt){
   if (!fateEv) return;
+  // 광고를 보는 동안엔 자동 수령 타이머를 멈춘다 (v2.97.4 "기연 광고 봐도 안 바뀜") —
+  // 안 멈추면 3초짜리 광고를 보는 사이 5초 타이머가 다 흘러 카드가 저절로 받아지고,
+  // 광고가 끝났을 땐 fateEv 가 이미 null 이라 다시 뽑기가 아무 일도 안 했다.
+  if (typeof adBusy === 'function' && adBusy()) return;
   fateAutoT -= dt;
   // 카운트다운은 초가 바뀔 때 <i>의 글자만 바꾼다 (v2.83 "기연 버튼이 동작 안 함") — 매 프레임 innerHTML을 갈아끼우면
   // 손가락이 닿은 <span>이 떼기 전에 DOM에서 사라져 click이 안 살아난다.

@@ -1807,7 +1807,7 @@ for (const k in DUEL.art){
 const BM = {
   jade: '영옥', jadeHan: '靈玉',
   adMock: true,                  // true 면 진짜 광고 대신 3초 모의 대기
-  adSec: 3,
+  adSec: 1,                      // 모의 광고 대기 (v2.97.4 사용자 "가짜 광고 1초로")
   // 영옥 수급 — 무과금도 상점을 쓸 수 있어야 한다(레퍼런스는 방치로 시간당 10)
   gain: {
     offPerHour: 10,              // 오프라인 정산 — 시간당

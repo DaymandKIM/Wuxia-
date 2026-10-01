@@ -1,6 +1,8 @@
 /* ── HUD ──────────────────────────────────────────── */
 // 은자 아이콘 — "글자 말고 아이콘으로" (사용자). 은원보 그림을 인라인으로 쓴다
 const coin = () => '<img class="coin" src="' + ASSET.silver + '" alt="은자">';
+// 영옥 아이콘 (v2.97.4 사용자 "상점이 너무 다 텍스트라 보기 안 좋다") — 은자와 같은 급으로 쓴다
+const jadeIc = (cls) => ASSET.jade ? '<img class="' + (cls || 'coin') + '" src="' + ASSET.jade + '" alt="영옥">' : '靈';
 let toastT = 0;
 // opt {icon, color, sec} — 아이콘이 있으면 그림 + 글자(v2.86, 사용자: "장비 얻을 때 팝업에 이미지를 넣자"), 테두리는 color
 function toast(msg, opt){
