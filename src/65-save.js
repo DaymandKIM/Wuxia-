@@ -24,6 +24,7 @@ function saveData(){
     jade: S.jade, ad: S.ad, pity: S.pity, summons: S.summons,                          // 영옥·광고·소환 (v2.96~.1)
     clears: S.clears, elders: S.elders, dq: S.dq, wq: S.wq, login: S.login,            // 과제·접속 (v2.97.2)
     pay: S.pay,                                                                        // 현금 상품 소유·정기권 (v2.97.3)
+    spdT: S.spdT,                                                                      // 배속권 남은 초 (v2.98)
   };
 }
 function saveNow(){
@@ -93,6 +94,7 @@ function applySave(d){
   S.dq = (d.dq && d.dq.d) ? d.dq : null; S.wq = (d.wq && d.wq.w !== undefined) ? d.wq : null;
   S.login = (d.login && typeof d.login === 'object') ? { n: Math.max(0, d.login.n | 0), d: String(d.login.d || '') } : null;
   S.pay = (d.pay && typeof d.pay === 'object') ? d.pay : null;                       // 현금 상품 (v2.97.3)
+  S.spdT = Math.max(0, Math.min(BM.speed.capMin * 60, +d.spdT || 0));                // 배속권 (v2.98)
   S.ad = (d.ad && typeof d.ad === 'object' && d.ad.d) ? { d: d.ad.d, n: Math.max(0, d.ad.n | 0), s: (d.ad.s && typeof d.ad.s === 'object') ? d.ad.s : {}, L: Math.max(0, d.ad.L | 0) } : null;
   if (S.hq) S.stage = clamp(S.stage, BOSS_STAGE - 1, BOSS_STAGE);
   S.stats = {};

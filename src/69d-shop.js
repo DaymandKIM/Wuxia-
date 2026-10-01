@@ -91,6 +91,35 @@ function ladderClaim(){
 
 
 
+
+/* ── 배속권 (v2.98) ─────────────────────────────────
+   사용자 "배속권 만들어". 영옥으로 사는 **시간제 배속**이고 **화면을 보는 동안에만 닳는다** —
+   방치 중에도 줄면 사 놓고 자리를 비우는 게 손해가 되어 방치형과 어긋난다.
+   배속은 같은 dt 로 step 을 여러 번 밟는 것(70-main loop)이라 물리·밸런스가 안 깨진다.
+   **전투가 그만큼 빨라지는 것이지 수입에 곱이 붙는 게 아니다** — 곡선 모양은 그대로. */
+const speedMul = () => (S.spdT > 0) ? ((typeof subOn === 'function' && subOn('monthly')) ? BM.speed.mulSub : BM.speed.mul) : 1;
+const speedLeft = () => Math.max(0, S.spdT || 0);
+// 남은 시간을 더한다 (상한까지)
+function speedAdd(minutes){
+  const cap = BM.speed.capMin * 60;
+  S.spdT = Math.min(cap, (S.spdT || 0) + minutes * 60);
+  if (typeof toast === 'function') toast('배속 ×' + speedMul() + '\n남은 시간 ' + fmtMin(speedLeft()));
+  return S.spdT;
+}
+// 매 프레임 (70-main loop) — **화면을 보는 동안에만** 줄어든다
+function speedStep(dt){ if (S.spdT > 0) S.spdT = Math.max(0, S.spdT - dt); }
+const fmtMin = sec => sec >= 3600 ? Math.floor(sec / 3600) + '시간 ' + Math.floor(sec % 3600 / 60) + '분'
+                    : sec >= 60 ? Math.floor(sec / 60) + '분' : Math.ceil(sec) + '초';
+function buySpeed(){
+  if (!jadeSpend(BM.speed.jade)){ if (typeof toast === 'function') toast(BM.jade + '이 모자라다'); return false; }
+  speedAdd(BM.speed.min); shopHud(true); return true;
+}
+// 광고로 받는 짧은 배속
+function adSpeed(){
+  if (adLeft('speed') <= 0) return false;
+  return adShow('speed', () => speedAdd(BM.speed.adMin));
+}
+
 /* ── 광고 자리 넷 (v2.97.1) ─────────────────────────────
    **전투를 끊지 않는 자리에만 붙인다.** 보스 첫 격파는 그 순간 카드를 띄우면 구경을 끊으므로,
    "두 배로 받을 수 있는 몫"을 상점에 쌓아 두고(S.ad.pend) 거기서 받게 한다. */
@@ -244,7 +273,7 @@ let shopSig = '';
 function shopHud(force){
   const el = $('gpanel'); if (!el || (!force && !el.classList.contains('show'))) return;
   const a = adState();
-  const sig = [S.jade | 0, a.n, a.L, a.d, a.f | 0, a.pend | 0, Math.round(S.silver), S.pity | 0, summonLast ? summonLast.length + ':' + summonLast.map(x=>x.k+x.g).join() : ''].join('|');
+  const sig = [S.jade | 0, a.n, a.L, a.d, a.f | 0, a.pend | 0, Math.ceil(speedLeft() / 10), Math.round(S.silver), S.pity | 0, summonLast ? summonLast.length + ':' + summonLast.map(x=>x.k+x.g).join() : ''].join('|');
   if (!force && sig === shopSig) return; shopSig = sig;
   const jn = $('gjade'); if (jn) jn.textContent = fmt(S.jade | 0);
   let h = '';
@@ -253,14 +282,23 @@ function shopHud(force){
        '<div class="gflab">오늘의 선물<i>' + jadeIc('ic') + BM.free.jade + ' &nbsp;' + coin() + ' ' + BM.free.silverMin + '분 치</i></div>' +
        (freeTaken() ? '<span class="gok">받음</span>' : '<button class="gfb">무료로 받기</button>') +
        '</div>';
+  // 배속권 — 지금 켜져 있으면 남은 시간을 크게
+  h += '<div class="gsec">배속' + (speedLeft() > 0 ? ' <b>×' + speedMul() + ' · ' + fmtMin(speedLeft()) + ' 남음</b>' : '') + '</div>' +
+    '<div class="gspd' + (speedLeft() > 0 ? ' on' : '') + '">' +
+      '<div class="gspdn">×' + ((typeof subOn === 'function' && subOn('monthly')) ? BM.speed.mulSub : BM.speed.mul) + '</div>' +
+      '<div class="gspdl">전투가 그만큼 빨라진다<i>화면을 보는 동안에만 닳는다 · 최대 ' + (BM.speed.capMin / 60) + '시간</i></div>' +
+      '<div class="gspdb">' +
+        '<button class="gsb gspdbuy">' + BM.speed.min + '분<i>' + jadeIc('ic') + BM.speed.jade + '</i></button>' +
+        '<button class="gad gspdad"' + (adLeft('speed') > 0 ? '' : ' disabled') + '>🎬 ' + BM.speed.adMin + '분 · ' + adLeft('speed') + '</button>' +
+      '</div></div>';
   h += '<div class="gsec">장비 소환</div>' +
     '<div class="gsum">' +
       '<div class="gpity">' + pityLeft() + '번 안에 <b>' + EQUIP.grades[BM.summon.pityG].n + ' 이상</b></div>' +
       '<div class="godds">' + BM.summon.w.map((v, g) => v > 0
         ? '<span style="--gc:' + EQUIP.grades[g].c + '">' + EQUIP.grades[g].n + '<b>' + Math.round(v / BM.summon.w.reduce((a,b)=>a+b,0) * 100) + '%</b></span>' : '').join('') + '</div>' +
       '<div class="gsbtns">' +
-        '<button class="gsb" data-n="1">소환<i>' + jadeIc('ic') + BM.summon.cost + '</i></button>' +
-        '<button class="gsb" data-n="' + BM.summon.n10 + '">소환 ×' + BM.summon.n10 + '<i>' + jadeIc('ic') + BM.summon.cost10 + '</i></button>' +
+        '<button class="gsb gsmn" data-n="1">소환<i>' + jadeIc('ic') + BM.summon.cost + '</i></button>' +
+        '<button class="gsb gsmn" data-n="' + BM.summon.n10 + '">소환 ×' + BM.summon.n10 + '<i>' + jadeIc('ic') + BM.summon.cost10 + '</i></button>' +
       '</div>' + summonResultHtml() + '</div>' +
     '<div class="gsec">비급함 — 무공 조각</div>' +
     '<div class="gsum">' +
@@ -311,7 +349,11 @@ function shopHud(force){
   if (fb) fb.onclick = () => { freeClaim(); shopHud(true); };
   const pks = b.querySelectorAll ? b.querySelectorAll('.gpack') : [];
   for (const btn of pks) btn.onclick = () => buySilver(btn.dataset.k);
-  const ads = b.querySelectorAll ? b.querySelectorAll('.gad') : [];
+  const sp = b.querySelector ? b.querySelector('.gspdbuy') : null;
+  if (sp) sp.onclick = () => buySpeed();
+  const spa = b.querySelector ? b.querySelector('.gspdad') : null;
+  if (spa) spa.onclick = () => adSpeed();
+  const ads = b.querySelectorAll ? b.querySelectorAll('.gad:not(.gspdad)') : [];
   for (const btn of ads) btn.onclick = () => { if (btn.dataset.a === 'offNow') offNowTake(); else bossBonusTake(); };
 }
 // ≡·HUD 알림점 — 받을 계단이 있으면 켠다

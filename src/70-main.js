@@ -312,9 +312,11 @@ function loop(now){
     qualWatch((now - (qLast || now))); qLast = now;
     // 미세 경직 (v2.61) — 치명타 순간 step만 멈추고 render는 계속한다.
     // 배속 중엔 그만큼 빨리 풀려 배속과 충돌하지 않는다.
-    if (hitstopT > 0) hitstopT -= dt * (TEST ? TESTSPEED : 1);
-    // [테스트 전용] 배속 — 같은 dt로 여러 번 밟아야 물리가 안 깨진다
-    else for (let i = 0; i < (TEST ? TESTSPEED : 1); i++) step(dt);
+    // 배속권 (v2.98) — 상품 배속과 [테스트 전용] 배속을 곱해 쓴다. 같은 dt로 여러 번 밟아야 물리가 안 깨진다
+    const spd = (typeof speedMul === 'function' ? speedMul() : 1) * (TEST ? TESTSPEED : 1);
+    if (typeof speedStep === 'function') speedStep(dt);   // **화면을 보는 동안에만** 닳는다
+    if (hitstopT > 0) hitstopT -= dt * spd;
+    else for (let i = 0; i < spd; i++) step(dt);
     render();
     hud();
     if (toastT > 0){ toastT -= dt; if (toastT <= 0) $('toast').classList.remove('show'); }

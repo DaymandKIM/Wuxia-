@@ -160,9 +160,9 @@ setTimeout(()=>{
   ok(d2.pity===4 && d2.summons===77, '천장·누계가 저장된다');
   // 시트에 소환 구역이 그려지는가
   w.eval('S.jade = 5000'); w.document.getElementById('shopb').click();
-  ok(w.document.querySelectorAll('#gbody .gsb:not(.gfr)').length===2, '소환 버튼 둘 (1회·10연)');
+  ok(w.document.querySelectorAll('#gbody .gsmn').length===2, '소환 버튼 둘 (1회·10연)');
   ok(/\uBC88 \uC548\uC5D0/.test(w.document.querySelector('#gbody .gpity').textContent), '천장을 글자로 보여 준다: '+w.document.querySelector('#gbody .gpity').textContent);
-  w.document.querySelectorAll('#gbody .gsb:not(.gfr)')[0].click();
+  w.document.querySelectorAll('#gbody .gsmn')[0].click();
   ok(w.document.querySelectorAll('#gbody .gres .gitem').length===1, '뽑으면 결과 칸이 늘어선다');
   w.document.getElementById('gclose').click();
 
@@ -264,6 +264,51 @@ setTimeout(()=>{
   w.eval('offNowTake()');
   ok(w.eval('bossBonusTake()')===false, '광고를 보는 중엔 다른 자리가 안 열린다');
   w.eval('adStep(BM.adSec + 0.1)');
+
+  // ── 11) 배속권 (v2.98) ────────────────────────
+  w.eval('S.spdT = 0; S.pay = null; payState()');
+  ok(w.eval('speedMul()')===1, '안 샀으면 배속 1배');
+  w.eval('S.jade = 0');
+  ok(w.eval('buySpeed()')===false, '영옥이 없으면 못 산다');
+  w.eval('S.jade = BM.speed.jade');
+  ok(w.eval('buySpeed()')===true && w.eval('S.jade')===0, '배속권 구매');
+  ok(Math.round(w.eval('speedLeft()'))===w.eval('BM.speed.min * 60'), '남은 시간 '+Math.round(w.eval('speedLeft()'))+'초');
+  ok(w.eval('speedMul()')===w.eval('BM.speed.mul'), '켜지면 ×'+w.eval('speedMul()'));
+  // 월간 옥패가 있으면 한 단 더
+  w.eval('buyProduct("monthly")');
+  ok(w.eval('speedMul()')===w.eval('BM.speed.mulSub'), '월간 옥패면 ×'+w.eval('speedMul()'));
+  w.eval('S.pay = null; payState()');
+  // 화면을 보는 동안에만 닳는다
+  const t0 = w.eval('speedLeft()');
+  w.eval('speedStep(10)');
+  ok(Math.abs(w.eval('speedLeft()') - (t0 - 10)) < 0.01, 'speedStep 으로만 줄어든다 ('+Math.round(w.eval('speedLeft()'))+'초)');
+  // 오프라인 정산은 배속을 안 깎는다 — 사 놓고 자리를 비워도 손해가 없어야 한다
+  const t1 = w.eval('speedLeft()');
+  w.eval('offlineGains(3600)');
+  ok(Math.abs(w.eval('speedLeft()') - t1) < 0.01, '방치해도 배속이 안 닳는다');
+  // 상한
+  w.eval('S.spdT = 0; speedAdd(BM.speed.capMin * 10)');
+  ok(Math.round(w.eval('speedLeft()'))===w.eval('BM.speed.capMin * 60'), '쌓기 상한 '+(w.eval('BM.speed.capMin')/60)+'시간');
+  // 다 쓰면 1배로
+  w.eval('S.spdT = 1; speedStep(2)');
+  ok(w.eval('speedLeft()')===0 && w.eval('speedMul()')===1, '다 쓰면 1배로 돌아온다');
+  // 광고로 받는 짧은 배속
+  w.eval('S.ad = null; adState(); S.spdT = 0');
+  ok(w.eval('adSpeed()')===true, '광고 배속 시작');
+  w.eval('adStep(BM.adSec + 0.1)');
+  ok(Math.round(w.eval('speedLeft()'))===w.eval('BM.speed.adMin * 60'), '광고 → '+w.eval('BM.speed.adMin')+'분');
+  // 저장 왕복
+  w.eval('S.spdT = 600; saveNow()');
+  const ds = JSON.parse(w.localStorage.getItem('wuxia1'));
+  ok(ds.spdT===600, '배속 남은 시간이 저장된다');
+  w.eval('S.spdT = 0; applySave(' + JSON.stringify({}) + ')');
+  ok(w.eval('S.spdT')===0, '없는 저장은 0');
+  // 화면
+  w.eval('S.jade = 9999; S.spdT = 300'); w.document.getElementById('shopb').click();
+  ok(!!w.document.querySelector('#gbody .gspd'), '상점에 배속 카드');
+  ok(w.document.querySelector('#gbody .gspd').className.indexOf('on') >= 0, '켜져 있으면 강조된다');
+  ok(!!w.document.querySelector('#gbody .gspdbuy') && !!w.document.querySelector('#gbody .gspdad'), '사기·광고 버튼 둘');
+  w.document.getElementById('gclose').click();
 
   ok(errs.length===0, '런타임 오류 0'+(errs.length?': '+errs[0]:''));
   console.log(bad? '\n★ 실패 '+bad+'건' : '\n전부 통과');

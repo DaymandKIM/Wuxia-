@@ -67,6 +67,7 @@ const S = {
   dq: null, wq: null,            // 일일·주간 과제 { d/w, base:누계 스냅샷, L:받은 계단 }
   login: null,                   // 접속 보상 { n:받은 칸, d:마지막 받은 날 }
   pay: null,                     // 현금 상품 { own:{}, sub:{구매시각}, claim:{날짜}, pass, starter } (v2.97.3)
+  spdT: 0,                       // 배속권 남은 초 (v2.98) — 화면을 보는 동안에만 줄어든다
   ptsBonus: 0,                   // 본진에서 얻은 무공점 (skillPtsTotal 에 더한다)
   achvNote: {},                  // 업적 { k: 알린 단계 수 } — 달성 토스트 중복 방지 (저장 안 함)
   fatePending: 0,                // >0 이면 기연이 기다린다
