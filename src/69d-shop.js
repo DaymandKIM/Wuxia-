@@ -97,7 +97,13 @@ function ladderClaim(){
    방치 중에도 줄면 사 놓고 자리를 비우는 게 손해가 되어 방치형과 어긋난다.
    배속은 같은 dt 로 step 을 여러 번 밟는 것(70-main loop)이라 물리·밸런스가 안 깨진다.
    **전투가 그만큼 빨라지는 것이지 수입에 곱이 붙는 게 아니다** — 곡선 모양은 그대로. */
-const speedMul = () => (S.spdT > 0) ? ((typeof subOn === 'function' && subOn('monthly')) ? BM.speed.mulSub : BM.speed.mul) : 1;
+// 지금 배수 — ×3 시간제가 켜져 있으면 그것, 아니면 공짜 ×2 토글, 아니면 1
+function speedMul(){
+  if (S.spdT > 0) return (typeof subOn === 'function' && subOn('monthly')) ? BM.speed.mulSub : BM.speed.mul;
+  return S.spd2 ? BM.speed.free : 1;
+}
+const speedBoost = () => S.spdT > 0;                      // ×3 시간제가 켜져 있나
+function speedToggle(){ S.spd2 = !S.spd2; if (typeof saveNow === 'function') saveNow(); return S.spd2; }
 const speedLeft = () => Math.max(0, S.spdT || 0);
 // 남은 시간을 더한다 (상한까지)
 function speedAdd(minutes){
@@ -286,7 +292,7 @@ function shopHud(force){
   h += '<div class="gsec">배속' + (speedLeft() > 0 ? ' <b>×' + speedMul() + ' · ' + fmtMin(speedLeft()) + ' 남음</b>' : '') + '</div>' +
     '<div class="gspd' + (speedLeft() > 0 ? ' on' : '') + '">' +
       '<div class="gspdn">×' + ((typeof subOn === 'function' && subOn('monthly')) ? BM.speed.mulSub : BM.speed.mul) + '</div>' +
-      '<div class="gspdl">전투가 그만큼 빨라진다<i>화면을 보는 동안에만 닳는다 · 최대 ' + (BM.speed.capMin / 60) + '시간</i></div>' +
+      '<div class="gspdl">×' + BM.speed.free + ' 까지는 그냥 쓴다 — 그 위<i>화면을 보는 동안에만 닳는다 · 최대 ' + (BM.speed.capMin / 60) + '시간</i></div>' +
       '<div class="gspdb">' +
         '<button class="gsb gspdbuy">' + BM.speed.min + '분<i>' + jadeIc('ic') + BM.speed.jade + '</i></button>' +
         '<button class="gad gspdad"' + (adLeft('speed') > 0 ? '' : ' disabled') + '>🎬 ' + BM.speed.adMin + '분 · ' + adLeft('speed') + '</button>' +

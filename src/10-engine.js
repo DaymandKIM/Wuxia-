@@ -62,10 +62,18 @@ function resize(){
   // UI도 같은 영역에 맞춘다
   const ui = document.getElementById('ui');
   if (ui){
-    ui.style.width  = w + 'px';
-    ui.style.height = h + 'px';
-    ui.style.left   = VIEW.x + 'px';
-    ui.style.top    = VIEW.y + 'px';
+    /* **UI 배율** (v2.99) — 캔버스는 가로 400 기준이라 화면이 커지면 인물이 같이 커지는데,
+       HTML UI 는 px 고정이라 안 커져서 "따로 논다"는 제보가 왔다. 같은 기준으로 zoom 한다.
+       zoom 은 레이아웃까지 같이 확대하므로(transform 과 달리) 자리가 안 틀어진다.
+       대신 zoom 안에서는 px 가 z 배로 보이니 **UI 크기는 화면 px 를 z 로 나눠** 준다. */
+    const z = Math.max(UIZOOM.min, Math.min(UIZOOM.max, w / UIZOOM.base));
+    ui.style.zoom   = z;
+    ui.style.width  = (w / z) + 'px';
+    ui.style.height = (h / z) + 'px';
+    ui.style.left   = (VIEW.x / z) + 'px';
+    ui.style.top    = (VIEW.y / z) + 'px';
+    // 노치 여백도 같은 척도로 (zoom 안에서 env() 가 z 배로 커진다)
+    document.documentElement.style.setProperty('--uiz', String(z));
   }
 }
 addEventListener('resize', resize);

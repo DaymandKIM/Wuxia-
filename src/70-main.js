@@ -171,6 +171,13 @@ $('qpanel').onclick  = e => { if (e.target.id === 'qpanel') closeQuest(); };
 $('mach').onclick    = () => { closeSheets(); openAchv(); };   // 업적 (v2.90)
 $('vclose').onclick  = closeAchv;
 $('vpanel').onclick  = e => { if (e.target.id === 'vpanel') closeAchv(); };
+$('spdbtn').onclick  = () => {                                  // 전투 화면 배속 (v2.99)
+  if (speedBoost()) return;                                    // ×3 이 도는 중엔 손대지 않는다
+  if (!S.spd2){ speedToggle(); return; }                       // ×1 → ×2 (공짜)
+  // ×2 에서 또 누르면 ×3 — 광고가 남았으면 보고, 아니면 상점으로
+  if (typeof adLeft === 'function' && adLeft('speed') > 0) adSpeed();
+  else { speedToggle(); closeSheets(); openShop(); }            // ×1 로 돌리고 상점을 연다
+};
 $('shopb').onclick   = () => { closeSheets(); openShop(); };   // 상점 — 재화 옆 + (v2.96)
 $('fad').onclick     = () => fateReroll();     // 기연 다시 뽑기 🎬 (v2.97.1)
 $('oad').onclick     = () => offDouble();      // 복귀 정산 두 배 🎬

@@ -267,13 +267,21 @@ setTimeout(()=>{
 
   // ── 11) 배속권 (v2.98) ────────────────────────
   w.eval('S.spdT = 0; S.pay = null; payState()');
-  ok(w.eval('speedMul()')===1, '안 샀으면 배속 1배');
+  w.eval('S.spd2 = false');
+  ok(w.eval('speedMul()')===1, '아무것도 안 켜면 1배');
+  w.eval('speedToggle()');
+  ok(w.eval('speedMul()')===w.eval('BM.speed.free'), '×' + w.eval('BM.speed.free') + ' 는 **공짜 토글** (v2.99)');
+  ok(w.eval('speedBoost()')===false, '공짜 배속은 시간이 안 닳는다');
+  w.eval('speedStep(99999)');
+  ok(w.eval('speedMul()')===w.eval('BM.speed.free'), '시간이 흘러도 ×2 는 그대로');
+  w.eval('speedToggle()');
+  ok(w.eval('speedMul()')===1, '다시 누르면 1배');
   w.eval('S.jade = 0');
   ok(w.eval('buySpeed()')===false, '영옥이 없으면 못 산다');
   w.eval('S.jade = BM.speed.jade');
   ok(w.eval('buySpeed()')===true && w.eval('S.jade')===0, '배속권 구매');
   ok(Math.round(w.eval('speedLeft()'))===w.eval('BM.speed.min * 60'), '남은 시간 '+Math.round(w.eval('speedLeft()'))+'초');
-  ok(w.eval('speedMul()')===w.eval('BM.speed.mul'), '켜지면 ×'+w.eval('speedMul()'));
+  ok(w.eval('speedMul()')===w.eval('BM.speed.mul') && w.eval('speedBoost()')===true, '영옥으로 켜면 ×'+w.eval('speedMul()')+' (시간제)');
   // 월간 옥패가 있으면 한 단 더
   w.eval('buyProduct("monthly")');
   ok(w.eval('speedMul()')===w.eval('BM.speed.mulSub'), '월간 옥패면 ×'+w.eval('speedMul()'));
@@ -290,8 +298,9 @@ setTimeout(()=>{
   w.eval('S.spdT = 0; speedAdd(BM.speed.capMin * 10)');
   ok(Math.round(w.eval('speedLeft()'))===w.eval('BM.speed.capMin * 60'), '쌓기 상한 '+(w.eval('BM.speed.capMin')/60)+'시간');
   // 다 쓰면 1배로
+  const S2spd2 = w.eval('!!S.spd2');
   w.eval('S.spdT = 1; speedStep(2)');
-  ok(w.eval('speedLeft()')===0 && w.eval('speedMul()')===1, '다 쓰면 1배로 돌아온다');
+  ok(w.eval('speedLeft()')===0 && w.eval('speedMul()')===(S2spd2 ? w.eval('BM.speed.free') : 1), '다 쓰면 공짜 단계로 돌아온다');
   // 광고로 받는 짧은 배속
   w.eval('S.ad = null; adState(); S.spdT = 0');
   ok(w.eval('adSpeed()')===true, '광고 배속 시작');

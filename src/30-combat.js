@@ -344,7 +344,9 @@ function hurtFoe(f, dmg, crit){
       if (typeof bossBonusPend === 'function') bossBonusPend(bonus);
     }
     S.silver += sv;
-    if (typeof rollDrop === 'function') rollDrop(f.boss);   // 장비 드랍 (v2.66)
+    if (typeof rollDrop === 'function') rollDrop(f.boss);   // 장비 드랍 (v2.66) — v2.99 에 확률 0 (뽑기로만)
+    // 처치 영옥 (v2.99) — 장비 대신 뽑기 재화를 떨군다. 토스트는 안 띄운다(매 처치라 시끄럽다)
+    if (typeof jadeAdd === 'function') jadeAdd(f.boss ? BM.gain.bossKill : BM.gain.kill);
     // 본진: 장로 격파 보상·단 상승, 제자 조각 1% (v2.94) — 드랍 토스트 **뒤에** 불러야 장로 격파 토스트가 남는다(토스트는 큐가 없다)
     if (S.hq && typeof hqKill === 'function') S.silver += hqKill(f);
     fxPush({ k:'burst', x:f.x, y:f.y - (foeM(f).bh||foeM(f).h)*0.4, life:0.3, t:0.3 });
@@ -413,6 +415,7 @@ function stepArts(dt){
   if (P.castGapT > 0) P.castGapT -= dt;
   for (const a of ARTS.list){
     if (a.type !== 'active' || !S.arts[a.k]) continue;
+    if (typeof artOn === 'function' && !artOn(a.k)) continue;   // 장착한 초식만 쓴다 (v2.99)
     if (a.ref){                                    // 반격형(건곤이형) — 쿨만 돌고 피격 때 발동
       if (P.artCd[a.k] === undefined) P.artCd[a.k] = 0;
       if (P.artCd[a.k] > 0) P.artCd[a.k] -= dt;

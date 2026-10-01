@@ -151,7 +151,43 @@ setTimeout(()=>{
       ok(w2.eval('artLv("chulwoo")')===2,'연마 레벨도 저장된다 (청죽공 Lv2)');
       ok(w2.eval('S.skillManual===true'),'발동 모드(수동)도 저장된다');
       ok(w2.eval('hasTrait("pagong","pa_pw")===true'),'심화 특성도 저장·복원된다');
-      ok(errs.length===0,'런타임 오류 0'+(errs.length?': '+errs[0]:''));
+      // ── 초식 장착 칸 (v2.99) ──────────────────────
+  w.eval('S.artSlots = null; S.rexp = 0');
+  const maxSlot = w.eval('artSlotMax()');
+  ok(maxSlot===w.eval('ARTSLOT.base'), '시작 칸 '+maxSlot);
+  w.eval('S.rexp = 1e9');
+  ok(w.eval('artSlotMax()') > maxSlot && w.eval('artSlotMax()') <= w.eval('ARTSLOT.max'), '경지가 오르면 칸이 는다 → '+w.eval('artSlotMax()')+' (상한 '+w.eval('ARTSLOT.max')+')');
+  w.eval('S.rexp = 0');
+  // 익힌 걸 전부 넣어도 칸 수까지만 자동 장착된다
+  w.eval('for (const a of ARTS.list) if (a.type==="active" && !a.fate) S.arts[a.k]=1; S.artSlots = null');
+  ok(w.eval('artEquipped().length')===w.eval('artSlotMax()'), '손 안 댄 상태면 칸 수만큼 자동 장착 ('+w.eval('artEquipped().length')+')');
+  const first = w.eval('artEquipped()[0]');
+  ok(w.eval('artOn("'+first+'")')===true, '장착된 것은 artOn true');
+  // 내리면 그대로 유지된다 (자동이 다시 안 올린다)
+  w.eval('artToggle("'+first+'")');
+  ok(w.eval('artOn("'+first+'")')===false, '내리면 내려간 채로 남는다');
+  ok(w.eval('artEquipped().length')===w.eval('artSlotMax()')-1, '빈 칸이 생긴다');
+  w.eval('artToggle("'+first+'")');
+  ok(w.eval('artOn("'+first+'")')===true, '다시 올릴 수 있다');
+  // 칸이 꽉 찬 채로 새로 올리면 가장 오래된 것이 밀린다
+  const cur = JSON.parse(w.eval('JSON.stringify(artEquipped())'));
+  const off = w.eval('ARTS.list.filter(a=>a.type==="active"&&S.arts[a.k]&&artEquipped().indexOf(a.k)<0).map(a=>a.k)[0]');
+  if (off){
+    const oldest = cur[0];
+    w.eval('artToggle("'+off+'")');
+    ok(w.eval('artOn("'+off+'")')===true && w.eval('artOn("'+oldest+'")')===false, '꽉 찼으면 가장 오래된 것이 밀린다 ('+oldest+' → '+off+')');
+    ok(w.eval('artEquipped().length')===w.eval('artSlotMax()'), '칸 수를 안 넘는다');
+  }
+  // 장착 안 한 초식은 자동 시전되지 않는다
+  w.eval('S.artSlots = []; P.artCd = {}; P.castT = 0; P.castGapT = 0; S.skillManual = false');
+  w.eval('for (let i=0;i<200;i++) stepArts(0.1)');
+  ok(w.eval('P.castT')===0, '장착 0 이면 아무 초식도 안 나간다');
+  // 저장 왕복
+  w.eval('S.artSlots = [ARTS.list.find(a=>a.type==="active").k]; saveNow()');
+  const dA = JSON.parse(w.localStorage.getItem('wuxia1'));
+  ok(Array.isArray(dA.artSlots) && dA.artSlots.length===1, '장착이 저장된다');
+
+  ok(errs.length===0,'런타임 오류 0'+(errs.length?': '+errs[0]:''));
       console.log(bad?('\n★ 실패 '+bad+'건'):'\n문제 없음');
       process.exit(bad?1:0);
     },1200);

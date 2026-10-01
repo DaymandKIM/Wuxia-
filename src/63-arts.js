@@ -1,3 +1,51 @@
+
+/* ── 초식 장착 (v2.99) ──────────────────────────────
+   사용자 "액티브는 몇 개 선정해서 사용". 익힌 초식 전부가 아니라 **장착한 것만** 자동 시전된다.
+   칸은 경지로 늘고(돈으로 안 판다), 배우면 빈 칸에 저절로 들어간다 — 고르기 전까지 약해지지 않게.
+   심법은 칸을 안 쓴다(상시 % 라 고를 게 없다). */
+const artSlotMax = () => Math.min(ARTSLOT.max, ARTSLOT.base + Math.floor((typeof realmLv === 'function' ? realmLv() : 0) / ARTSLOT.perRealm));
+function artEquipped(){
+  // **아직 손대지 않았으면(null) 빈 칸을 저절로 채운다** — 배우자마자 약해지지 않게.
+  // 한 번이라도 직접 장착·해제하면 배열이 되고, 그때부터는 고른 대로 둔다(내린 걸 다시 안 올린다).
+  if (!Array.isArray(S.artSlots)){
+    const auto = [], max = artSlotMax();
+    for (const a of ARTS.list){
+      if (auto.length >= max) break;
+      if (a.type === 'active' && S.arts[a.k]) auto.push(a.k);
+    }
+    return auto;                       // S.artSlots 는 null 로 둔다 — 손댈 때 비로소 굳는다
+  }
+  // 안 배운 것·중복·액티브 아닌 것은 걸러내고 칸 수로 자른다
+  const seen = {};
+  S.artSlots = S.artSlots.filter(k => {
+    const a = artDef(k);
+    if (!a || a.type !== 'active' || !S.arts[k] || seen[k]) return false;
+    seen[k] = 1; return true;
+  }).slice(0, artSlotMax());
+  return S.artSlots;
+}
+const artOn = k => artEquipped().indexOf(k) >= 0;
+// 빈 칸이 있으면 배운 초식을 저절로 채운다 (습득 직후·불러오기 뒤)
+function artAutoSlot(){
+  if (!Array.isArray(S.artSlots)) return artEquipped();   // 아직 자동이면 그대로 둔다
+  const cur = artEquipped(), max = artSlotMax();
+  if (cur.length >= max) return cur;
+  for (const a of ARTS.list){
+    if (cur.length >= max) break;
+    if (a.type === 'active' && S.arts[a.k] && cur.indexOf(a.k) < 0) cur.push(a.k);
+  }
+  S.artSlots = cur; return cur;
+}
+// 장착/해제 — 칸이 꽉 찼으면 가장 오래된 것을 민다
+function artToggle(k){
+  const a = artDef(k); if (!a || a.type !== 'active' || !S.arts[k]) return false;
+  const cur = artEquipped().slice(), i = cur.indexOf(k);   // 자동 상태면 지금 목록을 굳히고 시작한다
+  if (i >= 0){ cur.splice(i, 1); }
+  else { cur.push(k); while (cur.length > artSlotMax()) cur.shift(); }
+  S.artSlots = cur;
+  if (typeof saveNow === 'function') saveNow();
+  return true;
+}
 /* ── 무공 — 경지에 닿으면 은자로 익힌다 ─────────────
    표는 문파별 섹션 + 아이콘 타일 그리드 — 전 무공이 한눈에 보인다.
    타일을 누르면 위 상세 칸에 설명·조건·구매가 뜬다.
@@ -55,6 +103,7 @@ function learnArt(k){
   S.silver -= a.cost;
   if (a.frag) S.frag[k] = (S.frag[k] | 0) - a.frag;   // 조각 소모 (v2.94)
   S.arts[k] = 1;
+  if (a.type === 'active') artAutoSlot();   // 빈 칸이 있으면 바로 장착 (v2.99) — 고르기 전까지 약해지지 않게
   toast(a.n + '을(를) 익혔다');
   sfx('down');
   return true;
@@ -95,10 +144,12 @@ function buildArtsPanel(){
       '<button class="askind" data-t="active">초식</button>' +
       '<button class="askind" data-t="passive">심법</button>' +
     '</div>' +   // 스킬 심화 버튼은 뺐다 — 특성은 무공 상세창에서 바로 올린다 (v2.93.7 사용자 "스킬 눌렀을 때 상태창에서 업글")
-    // 상세·버튼 칸을 **타일 표 위**로 올렸다 (v2.94.30, 사용자: "스킬 배우기가 너무 아래 있어서 불편, 업그레이드 할 때도")
-    // — 옛 판은 무공이 스무 개 넘게 깔린 아래에 있어 배우려면 매번 끝까지 내려가야 했다.
-    '<div class="adet" id="adet"></div>' +
-    '<div id="agridwrap"></div>';
+    // **타일 위 · 설명 아래** (v2.99, 사용자 "스킬을 위에 설명을 아래에").
+    // v2.94.30 에 상세를 위로 올렸던 건 "배우려면 끝까지 내려가야 한다"는 불편 때문이었는데,
+    // 그 불편은 순서가 아니라 **상세가 스크롤에 사라지는 것**이 문제였다 →
+    // 순서는 사용자 말대로 되돌리고 상세를 **아래에 sticky** 로 붙인다(.adet 가 bottom:0).
+    '<div id="agridwrap"></div>' +
+    '<div class="adet" id="adet"></div>';
   for (const el of b.querySelectorAll('.askind'))
     el.onclick = () => { artTab = el.dataset.t; artDetSig = ''; drawArtGrid(); };
   // 처음엔 살 수 있는 것, 없으면 그 탭 첫 무공
@@ -174,6 +225,7 @@ function refreshArts(){
     const got = !!S.arts[a.k];
     const open = !a.fate && k >= a.need;
     el.classList.toggle('got', got);
+    el.classList.toggle('eqon', got && a.type === 'active' && typeof artOn === 'function' && artOn(a.k));   // 장착 표시 (v2.99)
     el.classList.toggle('lock', !got && !open && !a.fate);
     el.classList.toggle('sel', el.dataset.k === artSel);
     // 익힌 무공은 문파색 테두리 + 옅은 문파색 바탕 — 안 익힌 것과 확실히 갈린다
@@ -278,8 +330,17 @@ function refreshArts(){
       : '<div class="zd need">' + realmName(a.need) + '에 열린다 · ' + coin() + ' ' +
         fmt(a.cost) + '</div>';
   }
+  // 장착 버튼 — 익힌 초식만 (v2.99 "액티브는 몇 개 선정해서 사용")
+  if (got && a.type === 'active'){
+    const on = artOn(a.k), full = artEquipped().length >= artSlotMax();
+    d += '<button class="trbuy aeq' + (on ? ' on' : '') + '" id="aeq">' +
+         '<span>' + (on ? '내린다' : '장착') + '</span>' +
+         '<i>' + artEquipped().length + ' / ' + artSlotMax() + ' 칸' + (!on && full ? ' · 가장 오래된 것이 내려간다' : '') + '</i></button>';
+  }
   $('adet').innerHTML = d;
   artBtnState(a);
+  const eqb = $('aeq');
+  if (eqb) eqb.onclick = () => { if (artToggle(a.k)){ artDetSig = ''; refreshArts(); } };
   const btn = $('abuy');
   if (btn) btn.onclick = () => { if (learnArt(artSel)) refreshArts(); };
   const bbtn = $('abrk');

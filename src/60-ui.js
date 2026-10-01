@@ -35,11 +35,12 @@ function hud(){
   $('tabs').style.opacity = showing ? '1' : '0';
   // 스킬창·시험 버튼은 패널이 열리면 감춘다 — 패널 위로 떠서 스탯 줄·무공
   // 칸을 가린다는 피드백(v2.33). 어느 시트든 열려 있으면 숨긴다.
-  const panelOpen = ['zpanel','trpanel','apanel','dpanel','rpanel','tpanel','opanel','fpanel','epanel','mpanel','vpanel','cpanel','spanel']   // epanel 누락 → 장비 탭 위로 스킬창 쿨이 비쳤다(v2.70.4)
+  const panelOpen = ['zpanel','trpanel','apanel','dpanel','rpanel','tpanel','opanel','fpanel','epanel','mpanel','vpanel','cpanel','spanel','gpanel','qpanel','ppanel']   // epanel 누락 → 장비 탭 위로 스킬창 쿨이 비쳤다(v2.70.4). v2.99 에 상점·과제·상품 추가
     .some(id => $(id) && $(id).classList.contains('show'));
   const bars = showing && !panelOpen && !(typeof sectView !== 'undefined' && sectView);   // 문파 마당에서도 스킬창·시험 버튼은 숨긴다 (v2.92.4)
   const sb = $('sbar'); sb.style.opacity = bars ? '1' : '0'; sb.style.pointerEvents = bars ? '' : 'none';
   const tb = $('tbtn'); if (tb){ tb.style.opacity = bars ? '1' : '0'; tb.style.pointerEvents = bars ? '' : 'none'; }   // [테스트 전용]
+  const spb = $('spdbtn'); if (spb){ spb.style.opacity = bars ? '1' : '0'; spb.style.pointerEvents = bars ? '' : 'none'; }   // 배속 버튼 (v2.99)
   if (!showing) return;
   trainHud();                                    // 수련 탭 알림점·열린 패널 갱신
   artsHud();                                     // 무공 탭 알림점·열린 패널 갱신
@@ -66,7 +67,14 @@ function hud(){
   $('silvern').textContent = fmt(S.silver);
   if (typeof adStep === 'function'){ adStep(1/60); $('jaden').textContent = fmt(S.jade | 0); shopDot(); }   // 영옥·모의 광고 (v2.96)
   if (typeof speedLeft === 'function'){ const sb = $('spdhud');   // 배속권 (v2.98)
-    if (sb){ const on = speedLeft() > 0; sb.classList.toggle('on', on); if (on) sb.textContent = '×' + speedMul() + ' ' + fmtMin(speedLeft()); } }
+    if (sb){ const on = speedLeft() > 0; sb.classList.toggle('on', on); if (on) sb.textContent = '×' + speedMul() + ' ' + fmtMin(speedLeft()); }
+    const bt = $('spdbtn');                                      // 전투 화면 버튼 (v2.99)
+    if (bt){ const m = speedMul(), boost = speedBoost();
+      bt.classList.toggle('on', !boost && m > 1); bt.classList.toggle('boost', boost);
+      const nb = bt.firstElementChild, sub = bt.lastElementChild;
+      if (nb && nb.textContent !== '×' + m) nb.textContent = '×' + m;
+      const txt = boost ? fmtMin(speedLeft()) : (m > 1 ? '눌러 ×' + BM.speed.mul : '눌러 ×' + BM.speed.free);
+      if (sub && sub.textContent !== txt) sub.textContent = txt; } }
   if (typeof questHud === 'function'){ questHud(); const qd = $('qdot2'); if (qd) qd.classList.toggle('on', dqAnyReady()); }   // 과제 (v2.97.2)
   if (typeof payHud === 'function'){ payHud(); const pd = $('pdot'); if (pd) pd.classList.toggle('on', payAnyReady()); const pj = $('pjade'); if (pj) pj.textContent = fmt(S.jade | 0); }   // 상품 (v2.97.3)
   const ri = realmInfo();
@@ -86,7 +94,7 @@ function hud(){
 let sbarSig = '';
 const sbarEls = {};
 function skillHud(){
-  const arts = ARTS.list.filter(a => a.type === 'active' && S.arts[a.k]);
+  const arts = ARTS.list.filter(a => a.type === 'active' && S.arts[a.k] && (typeof artOn !== 'function' || artOn(a.k)));   // 장착한 것만 (v2.99)
   const sig = arts.map(a => a.k).join(',');
   if (sig !== sbarSig){                       // 익힌 목록이 바뀔 때만 다시 만든다
     sbarSig = sig;
@@ -346,6 +354,10 @@ function showSkillTip(a, el){
   t.innerHTML = '<b>' + a.n + '</b> <i>' + a.h + (star > 1 ? ' · ' + star + '성' : '') + '</i>' +
     '<div>' + a.d + '</div>' +
     '<div class="stfx">' + (fx ? fx : (a.ref ? '피격 시 발동' : '쿨 ' + a.cd + '초')) + '</div>';   // 효과 문구에 쿨이 이미 있다
+  // 스킬창 **실제 높이** 위로 올린다 (v2.99 "스킬 설명이 스킬 버튼에 묻힘") —
+  // 옛 판은 bottom 이 58px 고정이라 슬롯이 두 줄로 줄바꿈되면 툴팁이 버튼을 덮었다.
+  const bar = $('sbar');
+  if (bar) t.style.bottom = 'calc(var(--tabh) + ' + Math.round((bar.offsetHeight || 40) + 18) + 'px)';
   t.classList.add('show');
 }
 function hideSkillTip(){ const t = $('stip'); if (t) t.classList.remove('show'); }

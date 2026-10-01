@@ -25,6 +25,7 @@ function saveData(){
     clears: S.clears, elders: S.elders, dq: S.dq, wq: S.wq, login: S.login,            // 과제·접속 (v2.97.2)
     pay: S.pay,                                                                        // 현금 상품 소유·정기권 (v2.97.3)
     spdT: S.spdT,                                                                      // 배속권 남은 초 (v2.98)
+    artSlots: S.artSlots, spd2: S.spd2,                                                // 초식 장착·×2 배속 (v2.99)
   };
 }
 function saveNow(){
@@ -95,6 +96,8 @@ function applySave(d){
   S.login = (d.login && typeof d.login === 'object') ? { n: Math.max(0, d.login.n | 0), d: String(d.login.d || '') } : null;
   S.pay = (d.pay && typeof d.pay === 'object') ? d.pay : null;                       // 현금 상품 (v2.97.3)
   S.spdT = Math.max(0, Math.min(BM.speed.capMin * 60, +d.spdT || 0));                // 배속권 (v2.98)
+  S.artSlots = Array.isArray(d.artSlots) ? d.artSlots.slice(0, 8) : null;            // 초식 장착 (v2.99)
+  S.spd2 = !!d.spd2;
   S.ad = (d.ad && typeof d.ad === 'object' && d.ad.d) ? { d: d.ad.d, n: Math.max(0, d.ad.n | 0), s: (d.ad.s && typeof d.ad.s === 'object') ? d.ad.s : {}, L: Math.max(0, d.ad.L | 0) } : null;
   if (S.hq) S.stage = clamp(S.stage, BOSS_STAGE - 1, BOSS_STAGE);
   S.stats = {};
@@ -256,7 +259,7 @@ function offlineGains(awaySec, noCap){
   S.silver += sect;
   if (typeof fameAdd === 'function') fameAdd(kills * killFame());   // 명성도 쌓인다 (v2.91) — 단계가 오르면 제자가 합류한다(돌아온 뒤부터 수익)
   if (S.karma >= karmaNeed()) S.fatePending = 1;
-  const jade = (typeof jadeOffline === 'function') ? jadeOffline(sec) : 0;   // 영옥 — 방치 수급이 무과금의 상점 밑천이다 (v2.96)
+  const jade = (typeof jadeOffline === 'function') ? jadeOffline(sec) + Math.floor(kills * BM.gain.kill * OFFLINE.rate) : 0;   // 영옥 — 시간당 + **처치당**(v2.99, 장비 드랍 대체)
   if (jade) S.jade = (S.jade | 0) + jade;
   return { sec, kills, silver, sect, jade, exp: Math.round(S.rexp - rexp0), fate: S.fatePending };
 }

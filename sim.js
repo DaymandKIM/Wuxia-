@@ -23,7 +23,7 @@ const R=new Function(code+`;return {S,P,step:dt=>step(dt),zone:()=>zone(),lv:()=
   TREE,treeNodes:s=>treeNodes(s),treeAvail:(s,n)=>treeAvail(s,n),
   treeAlloc:(s,id)=>treeAlloc(s,id),skillPtsLeft:()=>skillPtsLeft(),
   traitDefs:k=>traitDefs(k),hasTrait:(k,id)=>hasTrait(k,id),traitBuy:(k,id)=>traitBuy(k,id),
-  EQUIP,eqMergeAll:()=>eqMergeAll(),eqAutoEquipAll:()=>eqAutoEquipAll(),lvCost:(k,g)=>lvCost(k,g),canLevelItem:(k,g)=>canLevelItem(k,g),levelItem:(k,g)=>levelItem(k,g),achvClaimAll:()=>achvClaimAll(),SECT,hallLv:k=>hallLv(k),hallCost:k=>hallCost(k),hallCap:()=>hallCap(),canBuildHall:k=>canBuildHall(k),buildHall:k=>buildHall(k),fameTier:()=>fameTier(),
+  EQUIP,BM,eqSummon:n=>eqSummon(n),eqMergeAll:()=>eqMergeAll(),eqAutoEquipAll:()=>eqAutoEquipAll(),lvCost:(k,g)=>lvCost(k,g),canLevelItem:(k,g)=>canLevelItem(k,g),levelItem:(k,g)=>levelItem(k,g),achvClaimAll:()=>achvClaimAll(),SECT,hallLv:k=>hallLv(k),hallCost:k=>hallCost(k),hallCap:()=>hallCap(),canBuildHall:k=>canBuildHall(k),buildHall:k=>buildHall(k),fameTier:()=>fameTier(),
   // 본진 비무 (v2.94) — 본진 이동·단·복귀. gotoZone 은 TEST 게이트라 자유롭게 부를 수 있다
   DUEL,ZONES,SCHOOLS,realmLv:()=>realmLv(),gotoHq:k=>gotoHq(k),hqRank:k=>hqRank(k),gotoZone:(i,st)=>gotoZone(i,st)};`)();
 const {S,P}=R;
@@ -98,6 +98,14 @@ function spend(){
     }
     if(!best)break;
     R.traitBuy(best.k,best.id);
+  }
+  /* 장비 소환 (v2.99) — **드랍이 폐지돼 여기가 장비의 유일한 입구다.**
+     영옥이 10연 값을 넘으면 10연, 아니면 1회씩. 무과금 기준선이라 광고·결제는 안 흉내 낸다
+     (영옥은 방치 정산·장로·업적으로만 들어온다). 안 넣으면 장비 축이 통째로 죽어 곡선이 느려진다. */
+  for(let n=0;n<3;n++){
+    if(S.jade>=R.BM.summon.cost10) R.eqSummon(R.BM.summon.n10);
+    else if(S.jade>=R.BM.summon.cost) R.eqSummon(1);
+    else break;
   }
   // 장비 (v2.70 표준형) — 일괄 합성·자동 장착 버튼을 누르는 셈, 그다음 낀 아이템부터 싼 강화 3회
   R.eqMergeAll(); R.eqAutoEquipAll();
