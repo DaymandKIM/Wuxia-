@@ -503,6 +503,7 @@ function advanceStage(){
     return;
   }
   S.stage++;
+  S.clears = (S.clears | 0) + 1;     // 단계 넘김 누계 — 일일/주간 과제가 본다 (v2.97.2)
   S.best = Math.max(S.best, lv());
   enterStage(isBoss());        // 보스 단계만 연출, 일반 단계는 바로 진행 (v2.33)
 }

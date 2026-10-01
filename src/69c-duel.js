@@ -70,6 +70,7 @@ function hqKill(f){
   if (pts) S.ptsBonus = (S.ptsBonus | 0) + pts;
   // 영옥 — 본진 장로는 반복 가능한 상시 수급처다 (v2.96, docs/설계-BM.md §8a)
   if (typeof jadeAdd === 'function') jadeAdd(master ? BM.gain.master : BM.gain.elder);
+  S.elders = (S.elders | 0) + 1;      // 장로 격파 누계 — 과제가 본다 (v2.97.2)
   // 은자 보너스는 이긴 단 기준으로 먼저 잰다(단이 오르면 killSilver 가 커진다) → 단 상승·기록
   const bonus = master ? Math.round(killSilver() * SILVER.bossKill * DUEL.silverMaster) : 0;
   if (!S.duel) S.duel = {}; if (!S.hqDone) S.hqDone = {};

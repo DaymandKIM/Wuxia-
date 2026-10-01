@@ -339,6 +339,9 @@ function hurtFoe(f, dmg, crit){
       const bonus = killSilver() * SILVER.firstMul;
       sv += bonus;
       toast(zone().boss + ' 첫 격파\n은자 +' + fmt(bonus));
+      // 같은 몫을 상점에 쌓아 둔다 — 광고를 보면 두 배가 된다 (v2.97.1).
+      // 그 순간 카드를 띄우면 자동 전투 구경을 끊으므로 전투 밖에서 받게 한다.
+      if (typeof bossBonusPend === 'function') bossBonusPend(bonus);
     }
     S.silver += sv;
     if (typeof rollDrop === 'function') rollDrop(f.boss);   // 장비 드랍 (v2.66)

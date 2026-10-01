@@ -89,7 +89,7 @@ for (const z in BOSSFACE){ const k = BOSSFACE[z]; if (ASSET[k]) loadImg(k, ASSET
 for (const z in GROUNDTEX.keys){ const k = GROUNDTEX.keys[z]; if (ASSET[k]) loadImg(k, ASSET[k]); }
 
 // 하단 탭 — 같은 탭 재클릭이면 닫고, 다른 패널은 접는다
-function closeSheets(){ closeZonePanel(); closeTrain(); closeArts(); closeRealmPanel(); closeEquip(); closeMenu(); closeAchv(); closeCode(); closeSect(); closeShop();
+function closeSheets(){ closeZonePanel(); closeTrain(); closeArts(); closeRealmPanel(); closeEquip(); closeMenu(); closeAchv(); closeCode(); closeSect(); closeShop(); closeQuest(); closePay();
   if (typeof closeDeepen === 'function') closeDeepen();
   const tp = $('tpanel'); if (tp) tp.classList.remove('show'); }   // [테스트 전용] 시험 패널이 DOM 뒤라 열린 채면 다른 패널을 덮어 못 눌렀다(v2.70.4)
 $('tab-zone').onclick = () => {
@@ -159,10 +159,19 @@ $('ccopy').onclick   = copyCode;
 $('cload').onclick   = pasteCode;
 $('cclose').onclick  = closeCode;
 $('cpanel').onclick  = e => { if (e.target.id === 'cpanel') closeCode(); };
+$('mquest').onclick  = () => { closeSheets(); openQuest(); };  // 과제 (v2.97.2)
+$('mpay').onclick    = () => { closeSheets(); openPay(); };    // 상품 (v2.97.3)
+$('mrestore').onclick= () => { closeMenu(); restorePurchases(); };
+$('pclose').onclick  = closePay;
+$('ppanel').onclick  = e => { if (e.target.id === 'ppanel') closePay(); };
+$('qclose').onclick  = closeQuest;
+$('qpanel').onclick  = e => { if (e.target.id === 'qpanel') closeQuest(); };
 $('mach').onclick    = () => { closeSheets(); openAchv(); };   // 업적 (v2.90)
 $('vclose').onclick  = closeAchv;
 $('vpanel').onclick  = e => { if (e.target.id === 'vpanel') closeAchv(); };
 $('shopb').onclick   = () => { closeSheets(); openShop(); };   // 상점 — 재화 옆 + (v2.96)
+$('fad').onclick     = () => fateReroll();     // 기연 다시 뽑기 🎬 (v2.97.1)
+$('oad').onclick     = () => offDouble();      // 복귀 정산 두 배 🎬
 $('gclose').onclick  = closeShop;
 $('gpanel').onclick  = e => { if (e.target.id === 'gpanel') closeShop(); };
 $('mstat').onclick   = () => { toast('처치 ' + fmt(S.totalKills) + '\n쓰러짐 ' + S.downs + '\n기연 ' + (S.fates|0)); };

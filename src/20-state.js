@@ -62,6 +62,11 @@ const S = {
   ad: null,                      // 광고 기록 { d:날짜, n:오늘 본 수, s:{자리:횟수}, L:받은 계단 } — adState()가 만든다
   pity: 0,                       // 장비 소환 천장 카운터 — 영웅 이상이 나오면 0 (v2.96.1)
   summons: 0,                    // 소환 누계
+  clears: 0,                     // 단계 넘김 누계 (v2.97.2 과제)
+  elders: 0,                     // 본진 장로 격파 누계
+  dq: null, wq: null,            // 일일·주간 과제 { d/w, base:누계 스냅샷, L:받은 계단 }
+  login: null,                   // 접속 보상 { n:받은 칸, d:마지막 받은 날 }
+  pay: null,                     // 현금 상품 { own:{}, sub:{구매시각}, claim:{날짜}, pass, starter } (v2.97.3)
   ptsBonus: 0,                   // 본진에서 얻은 무공점 (skillPtsTotal 에 더한다)
   achvNote: {},                  // 업적 { k: 알린 단계 수 } — 달성 토스트 중복 방지 (저장 안 함)
   fatePending: 0,                // >0 이면 기연이 기다린다

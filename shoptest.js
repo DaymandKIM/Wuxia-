@@ -29,6 +29,7 @@ function boot(){
   return {w:dom.window,errs};
 }
 let bad=0;
+const fmtn=n=>String(Math.round(n));
 const ok=(c,m)=>{ console.log((c?'  ':'  ★실패 ')+m); if(!c)bad++; };
 
 const {w,errs}=boot();
@@ -116,7 +117,7 @@ setTimeout(()=>{
   // ── 7) 상점 시트 ─────────────────────────────
   w.document.getElementById('shopb').click();
   ok(w.document.getElementById('gpanel').classList.contains('show'), 'HUD + 를 누르면 상점이 열린다');
-  const rows = w.document.querySelectorAll('#gbody .grow').length;
+  const rows = w.document.querySelectorAll('#gbody .grow:not(.gadrow)').length;
   ok(rows===w.eval('BM.ladder.length'), '사다리 줄 '+rows+'개 (계단 '+w.eval('BM.ladder.length')+')');
   const slots = w.document.querySelectorAll('#gbody .gslot').length;
   ok(slots===Object.keys(w.eval('BM.slots')).length, '광고 자리 '+slots+'칸');
@@ -159,11 +160,101 @@ setTimeout(()=>{
   ok(d2.pity===4 && d2.summons===77, '천장·누계가 저장된다');
   // 시트에 소환 구역이 그려지는가
   w.eval('S.jade = 5000'); w.document.getElementById('shopb').click();
-  ok(w.document.querySelectorAll('#gbody .gsb').length===2, '소환 버튼 둘 (1회·10연)');
+  ok(w.document.querySelectorAll('#gbody .gsb:not(.gfr)').length===2, '소환 버튼 둘 (1회·10연)');
   ok(/\uBC88 \uC548\uC5D0/.test(w.document.querySelector('#gbody .gpity').textContent), '천장을 글자로 보여 준다: '+w.document.querySelector('#gbody .gpity').textContent);
-  w.document.querySelectorAll('#gbody .gsb')[0].click();
+  w.document.querySelectorAll('#gbody .gsb:not(.gfr)')[0].click();
   ok(w.document.querySelectorAll('#gbody .gres .gitem').length===1, '뽑으면 결과 칸이 늘어선다');
   w.document.getElementById('gclose').click();
+
+  // ── 9) 상점 2층 — 무료 칸·은자 묶음·비급함 (v2.97) ──
+  w.eval('S.ad = null; adState(); S.jade = 0; S.silver = 0');
+  ok(w.eval('freeTaken()')===false, '무료 칸은 하루 한 번 열려 있다');
+  const fr = JSON.parse(w.eval('JSON.stringify(freeClaim())'));
+  ok(fr && fr.jade===w.eval('BM.free.jade') && fr.silver>0, '무료 수령 → 영옥 '+fr.jade+' · 은자 '+fr.silver);
+  ok(w.eval('freeTaken()')===true && w.eval('freeClaim()')===null, '같은 날 두 번은 안 된다');
+  w.eval('S.ad.d = "1999-1-1"');
+  ok(w.eval('freeTaken()')===false, '날짜가 바뀌면 무료 칸이 다시 열린다');
+  // 은자 묶음 — 분당 수입에 비례해야 한다 (절대값이면 지수 곡선이 부서진다)
+  const spm0 = w.eval('silverPerMin()');
+  ok(spm0>0, '분당 전투 수입 '+Math.round(spm0));
+  const pk = w.eval('JSON.stringify(BM.silverPack[0])');
+  const amt0 = w.eval('packSilver(BM.silverPack[0])');
+  ok(Math.abs(amt0 - spm0*w.eval('BM.silverPack[0].min')) < 2, '작은 주머니 = 분당 수입 × '+w.eval('BM.silverPack[0].min')+'분 ('+amt0+')');
+  // 단계가 올라 수입이 커지면 묶음도 같이 커진다 — 이게 핵심이다
+  w.eval('S.zi = 3; S.stage = 8; S.rexp = 1e7');
+  const amt1 = w.eval('packSilver(BM.silverPack[0])');
+  ok(amt1 > amt0, '진행하면 묶음도 같이 커진다 ('+amt0+' → '+amt1+')');
+  w.eval('S.zi = 0; S.stage = 1; S.rexp = 0');
+  w.eval('S.jade = 0; S.silver = 0');
+  ok(w.eval('buySilver("s")')===null && w.eval('S.silver')===0, '영옥이 없으면 은자 묶음을 못 산다');
+  w.eval('S.jade = BM.silverPack[0].jade');
+  const bought = w.eval('buySilver("s")');
+  ok(bought>0 && w.eval('S.jade')===0 && Math.round(w.eval('S.silver'))===bought, '은자 묶음 구매 +'+fmtn(bought));
+  ok(w.eval('buySilver("없는묶음")')===null, '없는 묶음 키는 거절');
+  // 역방향 금지 — 은자로 영옥을 사는 길이 없어야 한다
+  ok(w.eval('typeof buyJade')==='undefined', '은자 → 영옥 환전 함수는 없다 (역방향 금지)');
+  // 비급함
+  w.eval('S.jade = 0; S.frag = {}');
+  ok(w.eval('buyFrag(false)')===null, '영옥이 없으면 비급함을 못 연다');
+  w.eval('S.jade = BM.fragBox.jade');
+  const f1 = w.eval('buyFrag(false)');
+  ok(f1 >= w.eval('BM.fragBox.n[0]') && f1 <= w.eval('BM.fragBox.n[1]'), '비급함 1개 → 조각 '+f1+' (범위 '+w.eval('BM.fragBox.n.join("~")')+')');
+  ok(w.eval('Object.keys(S.frag).length')>0, '조각이 S.frag 에 쌓인다');
+  w.eval('S.jade = BM.fragBox.jade10');
+  const f10 = w.eval('buyFrag(true)');
+  ok(f10 >= w.eval('BM.fragBox.n[0] * BM.fragBox.n10'), '10연 → 조각 '+f10);
+  ok(w.eval('BM.fragBox.jade10') < w.eval('BM.fragBox.jade * BM.fragBox.n10'), '비급함 10연도 낱개보다 싸다');
+  // 화면
+  w.eval('S.jade = 9999; S.ad.d = "1999-1-1"'); w.document.getElementById('shopb').click();
+  ok(!!w.document.querySelector('#gbody .gfb'), '무료 칸이 시트 맨 앞에 있다');
+  ok(w.document.querySelectorAll('#gbody .gpack').length===w.eval('BM.silverPack.length'), '은자 묶음 '+w.eval('BM.silverPack.length')+'칸');
+  ok(w.document.querySelectorAll('#gbody .gsb.gfr').length===2, '비급함 버튼 둘');
+  w.document.querySelector('#gbody .gfb').click();
+  ok(!w.document.querySelector('#gbody .gfb'), '무료를 받으면 버튼이 사라진다');
+  w.document.getElementById('gclose').click();
+
+  // ── 10) 광고 자리 넷 실장 (v2.97.1) ───────────
+  w.eval('S.ad = null; adState(); S.silver = 0');
+  // 보스 첫 격파 — 같은 몫이 상점에 쌓이고, 광고를 보면 받는다 (전투를 안 끊는다)
+  ok(w.eval('bossPend()')===0, '쌓인 첫 격파 몫 없음');
+  w.eval('bossBonusPend(1234)');
+  ok(w.eval('bossPend()')===1234, '첫 격파 보너스가 상점에 쌓인다');
+  ok(w.eval('bossBonusTake()')===true, '광고 자리가 열려 있으면 받기 시작');
+  w.eval('adStep(BM.adSec + 0.1)');
+  ok(w.eval('S.silver')===1234 && w.eval('bossPend()')===0, '광고 뒤 두 배분 지급 → 은자 '+w.eval('S.silver'));
+  ok(w.eval('bossBonusTake()')===false, '쌓인 몫이 없으면 못 받는다');
+  // 날짜가 바뀌어도 쌓인 몫은 남는다
+  w.eval('bossBonusPend(500); S.ad.d = "1999-1-1"');
+  ok(w.eval('bossPend()')===500, '날짜가 바뀌어도 쌓인 몫은 남는다');
+  // 즉시 정산
+  w.eval('S.ad = null; adState(); S.silver = 0');
+  ok(w.eval('offNowTake()')===true, '즉시 정산 광고 시작');
+  w.eval('adStep(BM.adSec + 0.1)');
+  ok(w.eval('S.silver')>0, '즉시 정산 → 은자 +'+fmtn(w.eval('S.silver')));
+  ok(w.eval('adLeft("offNow")')===w.eval('BM.slots.offNow.n - 1'), '즉시 정산 횟수가 줄었다');
+  // 기연 다시 뽑기
+  w.eval('S.karma = 1e9; S.fatePending = true; maybeFate()');
+  ok(!!w.eval('fateEv'), '기연 카드가 떴다');
+  ok(w.document.getElementById('fad').hidden===false, '카드에 다시 뽑기 버튼이 보인다');
+  const beforeK = w.eval('fateEv.k');
+  w.eval('fateReroll()'); w.eval('adStep(BM.adSec + 0.1)');
+  ok(!!w.eval('fateEv'), '다시 뽑아도 카드는 남아 있다');
+  ok(w.eval('adLeft("fate")')===w.eval('BM.slots.fate.n - 1'), '기연 자리 횟수가 줄었다 (뽑기 전 '+beforeK+')');
+  w.eval('applyFate()');
+  ok(w.document.getElementById('fad').hidden===true, '카드를 받으면 버튼이 숨는다');
+  // 복귀 정산 두 배
+  w.eval('S.silver = 0; S.rexp = 0');
+  w.eval('showOffline({ sec: 3600, kills: 100, silver: 5000, sect: 0, jade: 10, exp: 20, fate: false })');
+  ok(w.document.getElementById('oad').hidden===false, '복귀 카드에 정산 두 배 버튼이 보인다');
+  w.eval('offDouble()'); w.eval('adStep(BM.adSec + 0.1)');
+  ok(w.eval('S.silver')===5000 && w.eval('S.rexp')===20, '두 배분이 한 번 더 들어온다 (은자 '+w.eval('S.silver')+')');
+  ok(w.document.getElementById('oad').hidden===true, '한 번 받으면 버튼이 사라진다');
+  w.eval('closeOffline()');
+  // 광고 중엔 다른 자리를 못 연다
+  w.eval('S.ad = null; adState()');
+  w.eval('offNowTake()');
+  ok(w.eval('bossBonusTake()')===false, '광고를 보는 중엔 다른 자리가 안 열린다');
+  w.eval('adStep(BM.adSec + 0.1)');
 
   ok(errs.length===0, '런타임 오류 0'+(errs.length?': '+errs[0]:''));
   console.log(bad? '\n★ 실패 '+bad+'건' : '\n전부 통과');

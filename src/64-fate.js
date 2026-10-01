@@ -48,7 +48,29 @@ function maybeFate(){
   $('ftitle').textContent = fateEv.n;
   $('ftext').innerHTML = fateEv.d + '<br><b>' + fateEv.r + '</b>';
   $('fpanel').classList.add('show');
+  fateAdBtn();
   sfx('down');
+}
+
+/* 기연 다시 뽑기 (v2.97.1) — 레퍼런스의 레벨업 퍽 `Refresh 🎬` 자리.
+   카드가 떠 있는 동안에만 보이고, 하루 횟수를 다 쓰면 사라진다. */
+function fateAdBtn(){
+  const b = $('fad'); if (!b) return;
+  const left = (typeof adLeft === 'function') ? adLeft('fate') : 0;
+  b.hidden = !(fateEv && left > 0);
+  if (!b.hidden) b.textContent = '다시 뽑기 🎬 ' + left;
+}
+function fateReroll(){
+  if (!fateEv || typeof adShow !== 'function') return false;
+  return adShow('fate', () => {
+    if (!fateEv) return;
+    fateEv = rollFate();
+    fateAutoT = FATE.autoSec;
+    const fa = ASSET['fate_' + FATE.art[fateEv.k]]; $('fart').src = fa || ''; $('fart').style.display = fa ? '' : 'none';
+    $('ftitle').textContent = fateEv.n;
+    $('ftext').innerHTML = fateEv.d + '<br><b>' + fateEv.r + '</b>';
+    fateAdBtn();
+  });
 }
 
 // 매 프레임 — 손대지 않아도 잠시 뒤 스스로 받아들인다 (팝업 누르기 귀찮다는 피드백)
@@ -69,6 +91,7 @@ function stepFate(dt){
 
 function applyFate(){
   if (!fateEv) return;
+  { const b = $('fad'); if (b) b.hidden = true; }
   const ev = fateEv;
   if (ev.k === 'scroll'){
     S.silver += ev.sv;

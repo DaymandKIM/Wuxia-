@@ -10,7 +10,7 @@
 function bmDay(){ const d = new Date(); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
 // 광고 기록 { d:날짜, n:오늘 본 수, s:{자리:횟수}, L:받은 계단 수 }
 function adState(){
-  if (!S.ad || S.ad.d !== bmDay()) S.ad = { d: bmDay(), n: 0, s: {}, L: 0 };
+  if (!S.ad || S.ad.d !== bmDay()){ const pend = (S.ad && S.ad.pend) | 0; S.ad = { d: bmDay(), n: 0, s: {}, L: 0, pend }; }   // 대기 중인 첫 격파 보너스는 날짜가 바뀌어도 남는다
   return S.ad;
 }
 const adLeft = k => (BM.slots[k] ? Math.max(0, BM.slots[k].n - (adState().s[k] | 0)) : 0);
@@ -36,6 +36,8 @@ function jadeAchv(t){ return Math.min(BM.gain.achvCap, Math.ceil(BM.gain.achvBas
 // 실제 재생 — 지금은 모의(3초 대기). 스토어 빌드에선 여기만 SDK 로 바꾼다.
 let adT = 0, adCB = null;
 function adPlay(then){
+  // 월간 옥패·광고 제거를 샀으면 안 보고 바로 받는다 (v2.97.3)
+  if (typeof adSkip === 'function' && adSkip()){ if (then) then(); return; }
   if (!BM.adMock || typeof $ !== 'function' || !$('adv')){ if (then) then(); return; }
   adCB = then; adT = BM.adSec;
   $('advn').textContent = adT.toFixed(0);
@@ -86,6 +88,93 @@ function ladderClaim(){
   return st;
 }
 
+
+
+
+/* ── 광고 자리 넷 (v2.97.1) ─────────────────────────────
+   **전투를 끊지 않는 자리에만 붙인다.** 보스 첫 격파는 그 순간 카드를 띄우면 구경을 끊으므로,
+   "두 배로 받을 수 있는 몫"을 상점에 쌓아 두고(S.ad.pend) 거기서 받게 한다. */
+// 보스 첫 격파 보너스를 대기시킨다 (30-combat 이 부른다)
+function bossBonusPend(n){ const a = adState(); a.pend = (a.pend | 0) + Math.round(n); }
+const bossPend = () => adState().pend | 0;
+// 광고 보고 대기분을 받는다 (= 첫 격파 보너스가 두 배가 된 셈)
+function bossBonusTake(){
+  const n = bossPend(); if (n <= 0 || adLeft('boss2x') <= 0) return false;
+  return adShow('boss2x', () => {
+    const a = adState(); const got = a.pend | 0; a.pend = 0;
+    S.silver += got;
+    if (typeof toast === 'function') toast('첫 격파 보너스 두 배\n은자 +' + fmt(got));
+  });
+}
+// 즉시 정산 — 방치 N시간 치를 그 자리에서 (레퍼런스 Quick Explore)
+function offNowTake(){
+  if (adLeft('offNow') <= 0) return false;
+  return adShow('offNow', () => {
+    const g = offlineGains(BM.offNowHour * 3600, true);
+    if (typeof toast === 'function')
+      toast('즉시 정산 ' + BM.offNowHour + '시간\n은자 +' + fmt(g.silver) + ' · 처치 ' + fmt(g.kills));
+  });
+}
+
+/* ── 분당 전투 수입 ─────────────────────────────────
+   은자 묶음은 **절대값으로 팔면 안 된다** — 지수 곡선이라 24h 구간의 분당 수입은 초반의 수만 배다.
+   "지금 분당 수입 × N분"으로 팔면 언제 사도 "몇 분 벌어 준 것"이라 곡선이 안 밀린다
+   (docs/QA-밸런스.md 의 "잔고는 분당수입으로 나눠 본다"와 같은 척도). */
+function silverPerMin(){
+  const t = (typeof offKillTime === 'function') ? offKillTime() : 3;   // 한 마리 잡는 데 걸리는 초
+  if (!(t > 0)) return killSilver() * 20;
+  return Math.max(1, killSilver() * (60 / t));
+}
+const packSilver = p => Math.max(1, Math.round(silverPerMin() * p.min));
+
+/* ── 하루 한 번 무료 ── */
+function freeTaken(){ const a = adState(); return !!a.f; }
+function freeClaim(){
+  const a = adState(); if (a.f) return null;
+  a.f = 1;
+  const sv = Math.max(1, Math.round(silverPerMin() * BM.free.silverMin));
+  S.silver += sv; jadeAdd(BM.free.jade);
+  if (typeof toast === 'function') toast('오늘의 선물\n' + BM.jade + ' +' + BM.free.jade + ' · 은자 +' + fmt(sv));
+  return { jade: BM.free.jade, silver: sv };
+}
+
+/* ── 은자 묶음 ── */
+function buySilver(key){
+  const p = BM.silverPack.find(x => x.k === key); if (!p) return null;
+  if (!jadeSpend(p.jade)) { if (typeof toast === 'function') toast(BM.jade + '이 모자라다'); return null; }
+  const sv = packSilver(p);
+  S.silver += sv;
+  if (typeof toast === 'function') toast(p.n + '\n은자 +' + fmt(sv) + ' (' + p.min + '분 치)');
+  shopHud(true);
+  return sv;
+}
+
+/* ── 비급함 — 무공 조각 ── */
+// 조각을 받을 문파: 지금 본진 > 가 본 문파 중 하나 > 첫 문파
+function fragSchool(){
+  if (S.hq) return S.hq;
+  const been = Object.keys(S.duel || {}).filter(k => DUEL.gBase[k] !== undefined);
+  const all = been.length ? been : Object.keys(DUEL.art);
+  return all[Math.floor(Math.random() * all.length)];
+}
+function buyFrag(ten){
+  const cost = ten ? BM.fragBox.jade10 : BM.fragBox.jade;
+  if (!jadeSpend(cost)) { if (typeof toast === 'function') toast(BM.jade + '이 모자라다'); return null; }
+  const rolls = ten ? BM.fragBox.n10 : 1;
+  const got = {};
+  let total = 0;
+  for (let i = 0; i < rolls; i++){
+    const k = fragSchool(); if (!k) continue;
+    const lo = BM.fragBox.n[0], hi = BM.fragBox.n[1];
+    const n = lo + Math.floor(Math.random() * (hi - lo + 1));
+    const a = (typeof hqFragGain === 'function') ? hqFragGain(k, n, true) : null;
+    if (a){ got[a.n] = (got[a.n] | 0) + n; total += n; }
+  }
+  if (total && typeof toast === 'function')
+    toast('비급함\n' + Object.keys(got).map(n => n + ' 조각 +' + got[n]).join('\n'));
+  shopHud(true);
+  return total;
+}
 
 /* ── 장비 소환 (v2.96.1) ────────────────────────────────
    사용자 확정 "장비도 뽑기로 가는게 좋을듯". 지속 전투에는 매 판 능력을 고르는 순간이 없다 —
@@ -155,16 +244,34 @@ let shopSig = '';
 function shopHud(force){
   const el = $('gpanel'); if (!el || (!force && !el.classList.contains('show'))) return;
   const a = adState();
-  const sig = [S.jade | 0, a.n, a.L, a.d, S.pity | 0, summonLast ? summonLast.length + ':' + summonLast.map(x=>x.k+x.g).join() : ''].join('|');
+  const sig = [S.jade | 0, a.n, a.L, a.d, a.f | 0, a.pend | 0, Math.round(S.silver), S.pity | 0, summonLast ? summonLast.length + ':' + summonLast.map(x=>x.k+x.g).join() : ''].join('|');
   if (!force && sig === shopSig) return; shopSig = sig;
   const jn = $('gjade'); if (jn) jn.textContent = fmt(S.jade | 0);
-  let h = '<div class="gsec">장비 소환</div>' +
+  let h = '';
+  // 무료 칸 — 맨 앞에 (레퍼런스 Shop 과 같은 자리)
+  h += '<div class="gfree' + (freeTaken() ? ' done' : '') + '">' +
+       '<div class="gflab">오늘의 선물<i>靈' + BM.free.jade + ' · 은자 ' + BM.free.silverMin + '분 치</i></div>' +
+       (freeTaken() ? '<span class="gok">받음</span>' : '<button class="gfb">무료로 받기</button>') +
+       '</div>';
+  h += '<div class="gsec">장비 소환</div>' +
     '<div class="gsum">' +
       '<div class="gpity">' + pityLeft() + '번 안에 <b>' + EQUIP.grades[BM.summon.pityG].n + ' 이상</b></div>' +
       '<div class="gsbtns">' +
         '<button class="gsb" data-n="1">소환<i>靈' + BM.summon.cost + '</i></button>' +
         '<button class="gsb" data-n="' + BM.summon.n10 + '">소환 ×' + BM.summon.n10 + '<i>靈' + BM.summon.cost10 + '</i></button>' +
       '</div>' + summonResultHtml() + '</div>' +
+    '<div class="gsec">비급함 — 무공 조각</div>' +
+    '<div class="gsum">' +
+      '<div class="gpity">한 함에 조각 ' + BM.fragBox.n[0] + '~' + BM.fragBox.n[1] + '개 · 본진에서 가 본 문파</div>' +
+      '<div class="gsbtns">' +
+        '<button class="gsb gfr" data-t="0">비급함<i>靈' + BM.fragBox.jade + '</i></button>' +
+        '<button class="gsb gfr" data-t="1">비급함 ×' + BM.fragBox.n10 + '<i>靈' + BM.fragBox.jade10 + '</i></button>' +
+      '</div></div>' +
+    '<div class="gsec">은자 묶음 <b>지금 분당 ' + fmt(Math.round(silverPerMin())) + '</b></div>' +
+    '<div class="gpacks">' +
+      BM.silverPack.map(p => '<button class="gpack" data-k="' + p.k + '">' +
+        '<b>' + p.n + '</b><span>' + fmt(packSilver(p)) + '</span><i>靈' + p.jade + ' · ' + p.min + '분 치</i></button>').join('') +
+    '</div>' +
     '<div class="gsec">오늘 본 광고 <b>' + a.n + '</b> 편</div>';
   for (let i = 0; i < BM.ladder.length; i++){
     const st = BM.ladder[i], got = (a.L | 0) > i, can = !got && a.n >= st.n;
@@ -177,6 +284,13 @@ function shopHud(force){
               : '<button class="gclaim" data-i="' + i + '"' + (can ? '' : ' disabled') + '>' + (can ? '받기' : '잠김') + '</button>') +
          '</div>';
   }
+  // 여기서 바로 볼 수 있는 광고 자리 둘
+  h += '<div class="gsec">광고 보상</div>';
+  h += '<div class="grow gadrow"><div class="glab">즉시 정산 · 방치 ' + BM.offNowHour + '시간 치</div>' +
+       '<button class="gad" data-a="offNow"' + (adLeft('offNow') > 0 ? '' : ' disabled') + '>🎬 ' + adLeft('offNow') + '</button></div>';
+  h += '<div class="grow gadrow' + (bossPend() > 0 ? '' : ' done') + '"><div class="glab">첫 격파 보너스 두 배' +
+       (bossPend() > 0 ? '<i style="color:#f0d078;font-style:normal"> +' + fmt(bossPend()) + '</i>' : ' — 쌓인 몫 없음') + '</div>' +
+       '<button class="gad" data-a="boss2x"' + (bossPend() > 0 && adLeft('boss2x') > 0 ? '' : ' disabled') + '>🎬 ' + adLeft('boss2x') + '</button></div>';
   h += '<div class="gsec">광고 자리 — 오늘 남은 횟수</div><div class="gslots">';
   for (const k in BM.slots) h += '<div class="gslot"><span>' + BM.slots[k].t + '</span><b>' + adLeft(k) + ' / ' + BM.slots[k].n + '</b></div>';
   h += '</div><div class="znote">' + BM.shopTip + (BM.adMock ? ' 지금 광고는 <b>모의</b>다 — 3초 기다리면 본 것으로 친다.' : '') + '</div>';
@@ -185,7 +299,16 @@ function shopHud(force){
   const btns = b.querySelectorAll ? b.querySelectorAll('.gclaim') : [];
   for (const btn of btns) btn.onclick = () => { ladderClaim(); shopHud(true); };
   const sbs = b.querySelectorAll ? b.querySelectorAll('.gsb') : [];
-  for (const btn of sbs) btn.onclick = () => summonTap(btn.dataset.n | 0);
+  for (const btn of sbs){
+    if (btn.classList && btn.classList.contains('gfr')) btn.onclick = () => buyFrag((btn.dataset.t | 0) === 1);
+    else btn.onclick = () => summonTap(btn.dataset.n | 0);
+  }
+  const fb = b.querySelector ? b.querySelector('.gfb') : null;
+  if (fb) fb.onclick = () => { freeClaim(); shopHud(true); };
+  const pks = b.querySelectorAll ? b.querySelectorAll('.gpack') : [];
+  for (const btn of pks) btn.onclick = () => buySilver(btn.dataset.k);
+  const ads = b.querySelectorAll ? b.querySelectorAll('.gad') : [];
+  for (const btn of ads) btn.onclick = () => { if (btn.dataset.a === 'offNow') offNowTake(); else bossBonusTake(); };
 }
 // ≡·HUD 알림점 — 받을 계단이 있으면 켠다
-function shopDot(){ const d = $('shopdot'); if (d) d.classList.toggle('on', ladderReady()); }
+function shopDot(){ const d = $('shopdot'); if (d) d.classList.toggle('on', ladderReady() || !freeTaken()); }

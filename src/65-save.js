@@ -22,6 +22,8 @@ function saveData(){
     halls: S.halls, fame: S.fame, sectName: S.sectName, disciples: S.disciples,   // 문파 (v2.91~92)
     hq: S.hq, duel: S.duel, frag: S.frag, hqDone: S.hqDone, ptsBonus: S.ptsBonus,      // 본진 비무 (v2.94)
     jade: S.jade, ad: S.ad, pity: S.pity, summons: S.summons,                          // 영옥·광고·소환 (v2.96~.1)
+    clears: S.clears, elders: S.elders, dq: S.dq, wq: S.wq, login: S.login,            // 과제·접속 (v2.97.2)
+    pay: S.pay,                                                                        // 현금 상품 소유·정기권 (v2.97.3)
   };
 }
 function saveNow(){
@@ -87,6 +89,10 @@ function applySave(d){
   S.ptsBonus = Math.max(0, d.ptsBonus | 0);
   S.jade = Math.max(0, d.jade | 0);                                   // 영옥 (v2.96)
   S.pity = Math.max(0, d.pity | 0); S.summons = Math.max(0, d.summons | 0);   // 소환 천장·누계 (v2.96.1)
+  S.clears = Math.max(0, d.clears | 0); S.elders = Math.max(0, d.elders | 0);        // 과제 누계 (v2.97.2)
+  S.dq = (d.dq && d.dq.d) ? d.dq : null; S.wq = (d.wq && d.wq.w !== undefined) ? d.wq : null;
+  S.login = (d.login && typeof d.login === 'object') ? { n: Math.max(0, d.login.n | 0), d: String(d.login.d || '') } : null;
+  S.pay = (d.pay && typeof d.pay === 'object') ? d.pay : null;                       // 현금 상품 (v2.97.3)
   S.ad = (d.ad && typeof d.ad === 'object' && d.ad.d) ? { d: d.ad.d, n: Math.max(0, d.ad.n | 0), s: (d.ad.s && typeof d.ad.s === 'object') ? d.ad.s : {}, L: Math.max(0, d.ad.L | 0) } : null;
   if (S.hq) S.stage = clamp(S.stage, BOSS_STAGE - 1, BOSS_STAGE);
   S.stats = {};
@@ -204,7 +210,7 @@ function fixRealmOverflow(){
 
 // noCap = true 면 8시간 상한을 건너뛴다 — **[테스트 전용]** 시험 패널의 "보상 N일" 뿐이다 (v2.95.7)
 function offlineGains(awaySec, noCap){
-  const sec = noCap ? awaySec : Math.min(awaySec, OFFLINE.cap);
+  const sec = noCap ? awaySec : Math.min(awaySec, (typeof offCap === 'function') ? offCap() : OFFLINE.cap);   // 월간 옥패면 24시간 (v2.97.3)
   const rexp0 = S.rexp;
   let budget = sec * OFFLINE.rate;
   let kills = 0, silver = 0;
@@ -273,9 +279,34 @@ function showOffline(g){
   if (g.exp)    h += '<div class="orow"><span>수련치</span><b>+' + fmt(g.exp) + '</b></div>';
   if (g.fate)   h += '<div class="orow"><span>✦ 기연</span><b>기다리고 있다</b></div>';
   $('obody').innerHTML = h;
+  offLast = g;                                   // 두 배 광고가 같은 몫을 한 번 더 준다 (v2.97.1)
+  offAdBtn();
   $('opanel').classList.add('show');
 }
-function closeOffline(){ $('opanel').classList.remove('show'); maybeFate(); }
+function closeOffline(){ const b = $('oad'); if (b) b.hidden = true; $('opanel').classList.remove('show'); maybeFate(); }
+
+/* 복귀 정산 두 배 (v2.97.1) — 레퍼런스 VICTORY 의 `Get x2 🎬` 와 같은 자리.
+   이미 받은 몫을 한 번 더 준다(두 배). 카드가 닫히면 사라진다. */
+let offLast = null;
+function offAdBtn(){
+  const b = $('oad'); if (!b) return;
+  const left = (typeof adLeft === 'function') ? adLeft('off2x') : 0;
+  b.hidden = !(offLast && left > 0);
+  if (!b.hidden) b.textContent = '정산 두 배 🎬 ' + left;
+}
+function offDouble(){
+  if (!offLast || typeof adShow !== 'function') return false;
+  return adShow('off2x', () => {
+    const g = offLast; if (!g) return;
+    S.silver += g.silver | 0;
+    if (g.sect) S.silver += g.sect | 0;
+    if (g.exp) S.rexp += g.exp;
+    if (g.jade && typeof jadeAdd === 'function') jadeAdd(g.jade);
+    offLast = null;
+    offAdBtn();
+    toast('정산 두 배\n은자 +' + fmt((g.silver | 0) + (g.sect | 0)) + (g.exp ? '\n수련치 +' + fmt(g.exp) : ''));
+  });
+}
 
 // 매 프레임 — 복귀 카드도 잠시 뒤 스스로 닫힌다 (팝업 피로 방지)
 function stepOffline(dt){

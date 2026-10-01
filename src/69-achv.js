@@ -47,7 +47,7 @@ function achvHud(dt){
     const r = achvReached(a), noted = S.achvNote[a.k] | 0;
     if (r > noted){ S.achvNote[a.k] = r; if (typeof toast === 'function') toast('업적 달성 · ' + a.n + ' ' + r + '단계'); }   // 안내 줄("≡ 메뉴에서 받는다")은 뺐다 — 사용자 "다들 알아"(v2.93.2)
   }
-  const dot = $('menudot'); if (dot) dot.classList.toggle('on', achvClaimableAll() > 0);
+  const dot = $('menudot'); if (dot) dot.classList.toggle('on', achvClaimableAll() > 0 || (typeof dqAnyReady === 'function' && dqAnyReady()) || (typeof payAnyReady === 'function' && payAnyReady()));
 }
 /* ── 패널 ── */
 function achvCard(a){
