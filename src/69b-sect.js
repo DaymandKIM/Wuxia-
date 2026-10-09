@@ -418,5 +418,6 @@ function sectHud(){
   const tab = $('tab-sect'); if (!tab) return;
   const dot = tab.querySelector('.dot'); if (dot && dot.classList) dot.classList.toggle('on', canBuildAny());
   if (!sectView) return;
+  if (typeof uiBusy === 'function' && uiBusy()) return;   // 손가락이 닿은 직후엔 다시 만들지 않는다 (v3.0)
   if (sectLastSilver !== S.silver || sectLastFame !== S.fame){ sectLastSilver = S.silver; sectLastFame = S.fame; refreshOverlay(); refreshHallPop(); if ($('spanel').classList.contains('show')) refreshSect(); }
 }

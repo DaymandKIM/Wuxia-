@@ -62,6 +62,7 @@ python review.py       # 눈으로 볼 대조 PNG → review/review-<종류>.png
 python blackcheck.py [이름...]  # 검은 막대·부유 조각 눈검사판(흰 배경 확대) → review/blackcheck.png
 python skinmatch.py [키...]     # 스트립의 살·옷·도복을 질주 톤으로 (기본 목록=주먹4·발차기3·부채3·운기조식 계열. 질주·cast* 빼고 전부 돌려도 안전 — 다시 뽑으면 다시 돌린다)
 node test.js           # jsdom으로 실제 실행 (오류 0 이어야 한다)
+node taptest.js        # **크로뮴 실기** 느린 탭(300ms) — pointer-events·패널 재생성으로 탭이 먹히는지 (NOHOLD=1 로 가드 끄고 비교)
 node sim.js            # 24시간 진행 시뮬 (소비 전략 포함, SIM_MIN=분 으로 단축)
 node animtest.js       # 공격 동작이 피격에 끊기는지
 node hittest.js        # 방향별 명중
@@ -91,7 +92,7 @@ node heaventest.js     # 천산 (수리 급강하, 수호무사 초승달 검기
 python castshot.py     # 주술사 두 동작 미리보기 그림
 ```
 
-`npm i` 한 번 필요하다 (jsdom).
+`npm i` 한 번 필요하다 (jsdom · taptest 용 playwright-core).
 빌드 경로를 바꾸려면 `WUXIA_OUT=/어디/wuxia.html python build.py` (분리 빌드는 `WUXIA_WEB=/어디`).
 **아티팩트 게시는 dist/web/index.html + files(game.js·assets*.json)** — 한 페이지 16MB 한도를 피한다(v2.93.4). 단일 파일은 file:// 로 열리지만 분리 빌드는 fetch 라 서버·아티팩트에서만 돈다.
 
@@ -336,6 +337,21 @@ P.dashT(비행)·dashHold(착지 경직)·dashCd. drawHero의 dashfly/dashland �
 커짐" 제보, v2.53) — 렌더 규격만 줄여 대기/질주 컷과 인물 크기를 맞췄다
 (DASH.fw/fh/lw/lh 축소, lift 낮춤). 재추출이 아니라 그리는 배율만 바꾼 것.
 거리 고정으로 재는 zone 테스트는 DASH.min=1e9로 경공을 끈다.
+**`#ui` 는 `pointer-events:none` 이다 — 떠 있는 단추엔 `pointer-events:auto` 를 꼭 준다**(v3.0): 안 주면 캔버스가 탭을 먹어
+**아예 안 눌린다**(#spdbtn 이 v2.99 한 판 내내 그랬다). 인라인으로 토글할 때도 `''`(상속=none) 말고 `'auto'` 를 넣는다.
+jsdom 에선 안 잡히니 크로뮴 실기(`page.click` 이 "canvas intercepts pointer events" 로 거절)로 확인하고, uitest 의 pointer-events 검사에 줄을 더한다.
+
+**패널 갱신이 탭을 먹는다**(v3.0 "뭔가 버튼이 안눌릴때가 많은거같음") — 패널 갱신은 전부 `innerHTML` 통째 교체이고
+갱신 조건이 **은자**(수련·무공·장비·문파·상점)나 **처치 수**(과제·유람첩)라, 자동 전투가 도는 동안(분당 40~75 처치)
+초마다 다시 만들어진다. `pointerdown` 과 `click` 사이에 노드가 바뀌면 **그 click 은 영원히 안 온다**(v2.83 의 기연 버튼 사고가 전 패널로 번져 있었다).
+`uiBusy()`(60-ui)가 손가락이 닿은 뒤 `UITAP.hold`(0.55초) 동안 갱신을 미룬다 — 늦은 갱신은 hud 가 매 프레임 따라잡고 `force`(사용자 조작)는 안 막는다.
+**새 패널을 더하면 갱신 함수 맨 위에 `if (uiBusy()) return;` 을 넣는다.**
+
+**배속은 눌러 고른다**(v3.0 "속도버튼 누르면 속도를 변화해서 선택가능하게" · "4배속도 내눈엔 빠르다") — `BM.speed.opts [0.5, 1, 2]` 를
+돌고, 끝에서 한 번 더 누르면 ×3(광고·영옥). **×1 보다 느린 칸이 있어야 한다** — 한 마리가 ×1 에서 0.8~2.6초 사니(실측) ×4 면 0.2초다.
+1 보다 작은 칸은 밟는 횟수가 아니라 `dt` 를 줄인다(`step(dt*rest)`). 고른 배수는 `S.spdSel`, 배속권은 **고른 동안에만** 닳는다.
+**기본 박자(`HERO.atkCd`·`DIFF`)로 체감 속도를 고치지 마라** — 그건 곡선 전체(1시간 동굴1·24시간 천산5)를 미는 일이다.
+
 **느리면 화질부터 본다**(v2.95.5 "화면이 느리게 굴러간다") — 프레임 값의 대부분은 JS 가 아니라 **캔버스 백버퍼 배율**이다.
 DPR 3 폰은 1170×2532(3M 픽셀)를 매 프레임 칠한다 — 3배 11fps · 1배 59fps 인데 JS 는 6.5ms 뿐이었다. `QUALITY`(기본 2배) ·
 `qualScale()` 이 `resize()` 의 백버퍼 배율을 정하고, 느리면 `qualWatch`(70-main)가 한 칸 내린다. ≡ 메뉴 '화질'로 손수 고르면

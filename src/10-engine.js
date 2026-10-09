@@ -73,7 +73,7 @@ function resize(){
     ui.style.left   = (VIEW.x / z) + 'px';
     ui.style.top    = (VIEW.y / z) + 'px';
     // 노치 여백도 같은 척도로 (zoom 안에서 env() 가 z 배로 커진다)
-    document.documentElement.style.setProperty('--uiz', String(z));
+    const de = document.documentElement; if (de && de.style) de.style.setProperty('--uiz', String(z));   // sim 스텁엔 documentElement 가 없다
   }
 }
 addEventListener('resize', resize);

@@ -273,6 +273,7 @@ function equipHud(){
   const dot = $('tab-equip') && $('tab-equip').querySelector('.dot');
   if (dot && dot.classList) dot.classList.toggle('on', canEquipAny());
   if (!$('epanel') || !$('epanel').classList.contains('show')) return;
+  if (typeof uiBusy === 'function' && uiBusy()) return;   // 손가락이 닿은 직후엔 다시 만들지 않는다 (v3.0)
   const sig = (S.eqLog[0] || '') + '|' + mergeCount();
   if (eqLastSilver !== S.silver || eqLastSig !== sig){ eqLastSilver = S.silver; eqLastSig = sig; refreshEquip(); }
 }

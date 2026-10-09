@@ -168,12 +168,15 @@
   .atile.eqon::after{content:'장착';position:absolute;left:3px;top:3px;padding:1px 4px;border-radius:5px;
     background:#e8c96a;color:#241a06;font-size:8.5px;font-weight:900;letter-spacing:.02em;}
   /* 전투 화면 배속 버튼 (v2.99 사용자 "싸움화면에서 바로 보이게") — 스킬창 위 오른쪽 */
-  #spdbtn{position:absolute;right:10px;top:calc(var(--toph, 64px) + 8px);z-index:6;min-width:52px;
+  /* #ui 는 pointer-events:none 이라 **auto 를 안 주면 캔버스가 탭을 먹는다** (v3.0 — v2.99 부터 아예 안 눌렸다) */
+  #spdbtn{position:absolute;right:10px;top:calc(var(--toph, 64px) + 8px);z-index:6;min-width:52px;pointer-events:auto;
     padding:6px 10px;border-radius:12px;cursor:pointer;line-height:1.1;text-align:center;
     border:1.5px solid rgba(120,140,165,.34);background:linear-gradient(#1b232e,#12161c);
     color:#a9bccf;font-family:var(--fw);font-size:15px;transition:opacity .22s;}
   #spdbtn.on{border-color:#c8622f;background:linear-gradient(#c8622f,#9c4620);color:#fff;}
   #spdbtn.boost{border-color:#e8c96a;background:linear-gradient(#e2b451,#bc8a26);color:#241a06;}
+  /* ×1 보다 느린 칸 (v3.0) — 구경하려고 누른 것이니 차갑게 */
+  #spdbtn.slow{border-color:#4f86a8;background:linear-gradient(#1d3744,#15232c);color:#a8dcf2;}
   #spdbtn i{display:block;font-style:normal;font-size:9px;font-weight:900;opacity:.85;margin-top:1px;}
   /* 배속권 카드 (v2.98) */
   .gspd{display:flex;align-items:center;gap:10px;padding:11px;border-radius:11px;
@@ -226,7 +229,8 @@
   .gitem.new::after{content:'NEW';position:absolute;top:-6px;right:-4px;padding:1px 3px;border-radius:4px;
     background:#e8503a;color:#fff;font-size:8px;font-weight:900;letter-spacing:.02em;}
   /* 모의 광고 덮개 — 실제 SDK 가 붙으면 통째로 빠진다 */
-  #adv{position:absolute;inset:0;z-index:48;display:none;align-items:center;justify-content:center;
+  /* 모의 광고는 화면을 **막는다** — #ui 가 pointer-events:none 이라 auto 를 명시해야 한다 (v3.0) */
+  #adv{position:absolute;inset:0;z-index:48;display:none;align-items:center;justify-content:center;pointer-events:auto;
     background:rgba(4,6,9,.94);color:#e9f1fa;text-align:center;}
   #adv.show{display:flex;}
   #adv .advb{font-family:var(--fw);font-size:17px;letter-spacing:.04em;}

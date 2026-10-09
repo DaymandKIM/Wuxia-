@@ -267,15 +267,38 @@ setTimeout(()=>{
 
   // ── 11) 배속권 (v2.98) ────────────────────────
   w.eval('S.spdT = 0; S.pay = null; payState()');
-  w.eval('S.spd2 = false');
+  w.eval('S.spdSel = 1');
   ok(w.eval('speedMul()')===1, '아무것도 안 켜면 1배');
   w.eval('speedToggle()');
-  ok(w.eval('speedMul()')===w.eval('BM.speed.free'), '×' + w.eval('BM.speed.free') + ' 는 **공짜 토글** (v2.99)');
+  ok(w.eval('speedMul()')===w.eval('BM.speed.free'), '×' + w.eval('BM.speed.free') + ' 는 공짜');
   ok(w.eval('speedBoost()')===false, '공짜 배속은 시간이 안 닳는다');
   w.eval('speedStep(99999)');
   ok(w.eval('speedMul()')===w.eval('BM.speed.free'), '시간이 흘러도 ×2 는 그대로');
   w.eval('speedToggle()');
   ok(w.eval('speedMul()')===1, '다시 누르면 1배');
+  /* 배속 칸 고르기 (v3.0 사용자 "속도버튼 누르면 속도를 변화해서 선택가능하게")
+     누를 때마다 다음 칸. 공짜 칸에 **×1 보다 느린 칸**이 있어야 한다 — ×4 는 한 마리가 0.2초라 못 본다. */
+  ok(w.eval('Math.min.apply(null, BM.speed.opts)') < 1, '공짜 칸에 ×1 보다 느린 칸이 있다 (×'+w.eval('Math.min.apply(null, BM.speed.opts)')+')');
+  ok(w.eval('BM.speed.opts[0]')===1, '순환은 ×1 에서 시작한다');
+  ok(w.eval('BM.speed.opts[1]')===w.eval('BM.speed.free'), '×1 다음은 공짜 최고 ×'+w.eval('BM.speed.free'));
+  // 광고 자리를 다 쓴 상태로 돌린다 — 안 그러면 마지막 칸에서 모의 광고가 뜬다(그게 정상 동선)
+  w.eval('S.ad = null; adState().s.speed = BM.slots.speed.n');
+  w.eval('S.spdT = 0; S.spdSel = BM.speed.opts[0]');
+  const cyc = [];
+  for (let i = 0; i < w.eval('BM.speed.opts.length'); i++){ cyc.push(w.eval('speedMul()')); w.eval('speedCycle()'); }
+  ok(cyc.join(',')===w.eval('BM.speed.opts.join(",")'), '칸을 순서대로 돈다 ('+cyc.join(' → ')+')');
+  ok(w.eval('speedMul()')===w.eval('BM.speed.opts[0]'), '한 바퀴 돌면 제자리 (×1)');
+  ok(w.eval("$('gpanel').classList.contains('show')")===true, '그때 상점이 열린다 (×3 권하기)');
+  w.eval('closeShop()');
+  // 느린 칸은 dt 를 줄여 느리게 한다 — step 을 0 번 밟으면 멈춰 버린다
+  w.eval('S.spdSel = 0.5');
+  ok(w.eval('speedMul()')===0.5, '느린 칸을 고르면 ×0.5');
+  ok(w.eval('speedCycle()')===1, '×0.5 다음은 ×1');
+  // 권이 남아 있으면 ×2 에서 바로 ×3, 그 다음은 느린 칸
+  w.eval('S.spdT = 600; S.spdSel = BM.speed.free');
+  ok(w.eval('speedCycle()')===w.eval('BM.speed.mul'), '권이 있으면 ×2 → ×'+w.eval('BM.speed.mul')+' (광고 없이)');
+  ok(w.eval('speedCycle()') < 1, '×'+w.eval('BM.speed.mul')+' 다음은 느린 칸');
+  w.eval('S.spdT = 0; S.spdSel = 1');
   w.eval('S.jade = 0');
   ok(w.eval('buySpeed()')===false, '영옥이 없으면 못 산다');
   w.eval('S.jade = BM.speed.jade');
@@ -298,9 +321,13 @@ setTimeout(()=>{
   w.eval('S.spdT = 0; speedAdd(BM.speed.capMin * 10)');
   ok(Math.round(w.eval('speedLeft()'))===w.eval('BM.speed.capMin * 60'), '쌓기 상한 '+(w.eval('BM.speed.capMin')/60)+'시간');
   // 다 쓰면 1배로
-  const S2spd2 = w.eval('!!S.spd2');
-  w.eval('S.spdT = 1; speedStep(2)');
-  ok(w.eval('speedLeft()')===0 && w.eval('speedMul()')===(S2spd2 ? w.eval('BM.speed.free') : 1), '다 쓰면 공짜 단계로 돌아온다');
+  w.eval('S.spdSel = BM.speed.mul; S.spdT = 1; speedStep(2)');
+  ok(w.eval('speedLeft()')===0 && w.eval('speedMul()')===w.eval('BM.speed.free'), '다 쓰면 공짜 최고(×'+w.eval('BM.speed.free')+')로 내려온다');
+  // 권은 **고른 동안에만** 닳는다 (v3.0) — ×1 로 보는 중에 줄면 느리게 볼 수가 없다
+  w.eval('S.spdT = 600; S.spdSel = 1; speedStep(30)');
+  ok(w.eval('speedLeft()')===600, '×1 로 보는 동안엔 권이 안 닳는다');
+  w.eval('S.spdSel = BM.speed.mul; speedStep(30)');
+  ok(Math.abs(w.eval('speedLeft()') - 570) < 0.01, '×3 을 고른 동안에만 닳는다');
   // 광고로 받는 짧은 배속
   w.eval('S.ad = null; adState(); S.spdT = 0');
   ok(w.eval('adSpeed()')===true, '광고 배속 시작');
@@ -312,11 +339,26 @@ setTimeout(()=>{
   ok(ds.spdT===600, '배속 남은 시간이 저장된다');
   w.eval('S.spdT = 0; applySave(' + JSON.stringify({}) + ')');
   ok(w.eval('S.spdT')===0, '없는 저장은 0');
+  // 고른 칸도 저장된다 · 옛 저장의 spd2 는 ×2 로 이월
+  w.eval('S.spdSel = 0.5; saveNow()');
+  ok(JSON.parse(w.localStorage.getItem('wuxia1')).spdSel===0.5, '고른 배속이 저장된다');
+  w.eval('applySave(' + JSON.stringify({spd2:true}) + ')');
+  ok(w.eval('S.spdSel')===w.eval('BM.speed.free'), '옛 spd2 저장은 ×2 로 이월');
   // 화면
   w.eval('S.jade = 9999; S.spdT = 300'); w.document.getElementById('shopb').click();
   ok(!!w.document.querySelector('#gbody .gspd'), '상점에 배속 카드');
   ok(w.document.querySelector('#gbody .gspd').className.indexOf('on') >= 0, '켜져 있으면 강조된다');
   ok(!!w.document.querySelector('#gbody .gspdbuy') && !!w.document.querySelector('#gbody .gspdad'), '사기·광고 버튼 둘');
+  /* 탭이 먹히던 것 (v3.0 사용자 "뭔가 버튼이 안눌릴때가 많은거같음")
+     패널 갱신이 innerHTML 통째 교체라, pointerdown 과 click 사이에 다시 만들어지면 그 click 은 안 온다.
+     손가락이 닿은 뒤 UITAP.hold 동안은 **다시 만들지 않는다**. force 는 막지 않는다. */
+  const sig0 = w.eval('shopSig');
+  w.eval("document.dispatchEvent(new Event('pointerdown', {bubbles:true}))");
+  ok(w.eval('uiBusy()')===true, '손가락이 닿으면 uiBusy');
+  w.eval('S.jade = 12345; shopHud()');
+  ok(w.eval('shopSig')===sig0, '그동안엔 패널을 다시 만들지 않는다');
+  w.eval('shopHud(true)');
+  ok(w.eval('shopSig')!==sig0, 'force(사용자 조작)는 막지 않는다');
   w.document.getElementById('gclose').click();
 
   ok(errs.length===0, '런타임 오류 0'+(errs.length?': '+errs[0]:''));

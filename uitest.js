@@ -96,6 +96,18 @@ setTimeout(()=>{
     w.gotoZone(0,1); w.loadSkip();
   }
 
+  /* #ui 는 pointer-events:none 이라 **떠 있는 단추는 auto 를 줘야 한다** (v3.0)
+     안 주면 캔버스가 탭을 먹는다 — #spdbtn 이 v2.99 내내 아예 안 눌렸다(크로뮴 실기로 잡았다).
+     새로 #ui 바로 밑에 단추를 달면 여기에 줄을 더한다. */
+  for (const id of ['spdbtn', 'menubtn', 'tabs', 'adv']){
+    const el = w.document.getElementById(id);
+    if (!el){ errs.push('없는 요소 ' + id); continue; }
+    el.style.pointerEvents = '';          // hud() 가 넣은 인라인을 걷고 **CSS 규칙**을 본다
+    const pe = w.getComputedStyle(el).pointerEvents;
+    console.log('  ' + id + ' pointer-events: ' + (pe || '(빈값)') + (pe === 'auto' ? '' : ' ★실패'));
+    if (pe !== 'auto') errs.push(id + ' pointer-events 가 auto 가 아니다 (캔버스가 탭을 먹는다)');
+  }
+
   console.log('오류:', errs.length?errs.slice(0,2):'없음');
   process.exit(0);
 },600);

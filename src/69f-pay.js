@@ -112,6 +112,7 @@ const won = n => '₩' + n.toLocaleString('en-US');
 let paySig = '';
 function payHud(force){
   const el = $('ppanel'); if (!el || (!force && !el.classList.contains('show'))) return;
+  if (!force && typeof uiBusy === 'function' && uiBusy()) return;   // 손가락이 닿은 직후엔 다시 만들지 않는다 (v3.0)
   const p = payState();
   const sig = [S.jade | 0, JSON.stringify(p.own), JSON.stringify(p.claim), p.pass, p.starter, passProgress(), S.zi].join('|');
   if (!force && sig === paySig) return; paySig = sig;

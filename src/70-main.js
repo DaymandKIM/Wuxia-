@@ -171,13 +171,8 @@ $('qpanel').onclick  = e => { if (e.target.id === 'qpanel') closeQuest(); };
 $('mach').onclick    = () => { closeSheets(); openAchv(); };   // 업적 (v2.90)
 $('vclose').onclick  = closeAchv;
 $('vpanel').onclick  = e => { if (e.target.id === 'vpanel') closeAchv(); };
-$('spdbtn').onclick  = () => {                                  // 전투 화면 배속 (v2.99)
-  if (speedBoost()) return;                                    // ×3 이 도는 중엔 손대지 않는다
-  if (!S.spd2){ speedToggle(); return; }                       // ×1 → ×2 (공짜)
-  // ×2 에서 또 누르면 ×3 — 광고가 남았으면 보고, 아니면 상점으로
-  if (typeof adLeft === 'function' && adLeft('speed') > 0) adSpeed();
-  else { speedToggle(); closeSheets(); openShop(); }            // ×1 로 돌리고 상점을 연다
-};
+// 전투 화면 배속 — 누를 때마다 다음 칸 (v3.0 사용자 "눌러서 속도를 선택")
+$('spdbtn').onclick  = () => speedCycle();
 $('shopb').onclick   = () => { closeSheets(); openShop(); };   // 상점 — 재화 옆 + (v2.96)
 $('fad').onclick     = () => fateReroll();     // 기연 다시 뽑기 🎬 (v2.97.1)
 $('oad').onclick     = () => offDouble();      // 복귀 정산 두 배 🎬
@@ -323,7 +318,12 @@ function loop(now){
     const spd = (typeof speedMul === 'function' ? speedMul() : 1) * (TEST ? TESTSPEED : 1);
     if (typeof speedStep === 'function') speedStep(dt);   // **화면을 보는 동안에만** 닳는다
     if (hitstopT > 0) hitstopT -= dt * spd;
-    else for (let i = 0; i < spd; i++) step(dt);
+    else {
+      // 1 보다 작은 칸(×0.5)은 밟는 횟수가 아니라 **dt 를 줄여서** 느리게 한다 (v3.0)
+      const n = Math.floor(spd), rest = spd - n;
+      for (let i = 0; i < n; i++) step(dt);
+      if (rest > 0.001) step(dt * rest);
+    }
     render();
     hud();
     if (toastT > 0){ toastT -= dt; if (toastT <= 0) $('toast').classList.remove('show'); }

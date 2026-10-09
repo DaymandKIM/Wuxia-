@@ -68,6 +68,7 @@ function renderDeepen(){
 // 사용자 조작(노드·탭·특성 구매)은 그 자리에서 renderDeepen을 직접 부른다.
 let _artsPts = null;
 function deepenHud(){
+  if (typeof uiBusy === 'function' && uiBusy()) return;   // 손가락이 닿은 직후엔 다시 만들지 않는다 (v3.0)
   if ($('dpanel').classList.contains('show')){
     const p = skillPtsLeft();
     if (p !== _artsPts){ _artsPts = p; renderDeepen(); }

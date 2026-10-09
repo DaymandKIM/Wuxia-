@@ -372,6 +372,7 @@ function artsHud(){
   // 배울/올릴 무공이 있거나 심화에 쓸 무공점이 있으면 탭에 알림점
   if (dot && dot.classList) dot.classList.toggle('on', canLearnArt() || deepenReady());
   if (!$('apanel').classList.contains('show')) return;
+  if (typeof uiBusy === 'function' && uiBusy()) return;   // 손가락이 닿은 직후엔 다시 만들지 않는다 (v3.0)
   const xp = S.artXp[artSel] | 0;
   if (artLastSilver !== S.silver || artLastRealm !== realmLv() || artLastXp !== xp){
     artLastSilver = S.silver; artLastRealm = realmLv(); artLastXp = xp;

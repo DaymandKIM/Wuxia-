@@ -119,5 +119,6 @@ function trainHud(){
   const dot = $('tab-train').querySelector('.dot');   // 아이콘이 앞에 있어 firstElementChild가 아니다 (v2.63.4)
   if (dot && dot.classList) dot.classList.toggle('on', canTrain());
   if (!$('trpanel').classList.contains('show')) return;
+  if (typeof uiBusy === 'function' && uiBusy()) return;   // 손가락이 닿은 직후엔 다시 만들지 않는다 (v3.0)
   if (trLastSilver !== S.silver){ trLastSilver = S.silver; refreshTrain(); }
 }

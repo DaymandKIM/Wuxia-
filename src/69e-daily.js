@@ -99,6 +99,7 @@ function closeQuest(){ const el = $('qpanel'); if (el) el.classList.remove('show
 let qSig = '';
 function questHud(force){
   const el = $('qpanel'); if (!el || (!force && !el.classList.contains('show'))) return;
+  if (!force && typeof uiBusy === 'function' && uiBusy()) return;   // 손가락이 닿은 직후엔 다시 만들지 않는다 (v3.0)
   const t = dqTotals();
   const sig = [dqTab, dqDone(false), dqDone(true), loginState().n, loginState().d, t.kill, t.stage, t.merge, t.level, t.summon, t.elder].join('|');
   if (!force && sig === qSig) return; qSig = sig;

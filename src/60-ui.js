@@ -1,4 +1,18 @@
 /* ── HUD ──────────────────────────────────────────── */
+/* 탭이 먹히던 것 (v3.0, 사용자 "뭔가 버튼이 안눌릴때가 많은거같음")
+   패널 갱신은 innerHTML 통째 교체이고 그 조건이 은자·처치 수라, 자동 전투가 도는 동안
+   초마다 다시 만들어진다. pointerdown 뒤 click 이 오기 전에 노드가 바뀌면 그 click 은 안 온다.
+   그래서 손가락이 닿은 직후 UITAP.hold 동안은 **아무 패널도 다시 만들지 않는다**.
+   force(사용자 조작으로 부른 갱신)는 막지 않는다 — 탭 전환·구매 반영은 즉시여야 한다. */
+let uiTapT = -99;
+const uiBusy = () => (uiTapT > 0) && (Date.now() - uiTapT) < UITAP.hold * 1000;
+if (typeof document !== 'undefined' && document.addEventListener){
+  const mark = () => { uiTapT = Date.now(); };
+  document.addEventListener('pointerdown', mark, true);
+  document.addEventListener('touchstart', mark, true);
+  document.addEventListener('mousedown', mark, true);
+}
+
 // 은자 아이콘 — "글자 말고 아이콘으로" (사용자). 은원보 그림을 인라인으로 쓴다
 const coin = () => '<img class="coin" src="' + ASSET.silver + '" alt="은자">';
 // 영옥 아이콘 (v2.97.4 사용자 "상점이 너무 다 텍스트라 보기 안 좋다") — 은자와 같은 급으로 쓴다
@@ -40,7 +54,8 @@ function hud(){
   const bars = showing && !panelOpen && !(typeof sectView !== 'undefined' && sectView);   // 문파 마당에서도 스킬창·시험 버튼은 숨긴다 (v2.92.4)
   const sb = $('sbar'); sb.style.opacity = bars ? '1' : '0'; sb.style.pointerEvents = bars ? '' : 'none';
   const tb = $('tbtn'); if (tb){ tb.style.opacity = bars ? '1' : '0'; tb.style.pointerEvents = bars ? '' : 'none'; }   // [테스트 전용]
-  const spb = $('spdbtn'); if (spb){ spb.style.opacity = bars ? '1' : '0'; spb.style.pointerEvents = bars ? '' : 'none'; }   // 배속 버튼 (v2.99)
+  // 배속 버튼 (v2.99) — **'auto' 를 명시해야 한다**: #ui 가 pointer-events:none 이라 '' 로 비우면 캔버스가 탭을 먹었다 (v3.0)
+  const spb = $('spdbtn'); if (spb){ spb.style.opacity = bars ? '1' : '0'; spb.style.pointerEvents = bars ? 'auto' : 'none'; }
   if (!showing) return;
   trainHud();                                    // 수련 탭 알림점·열린 패널 갱신
   artsHud();                                     // 무공 탭 알림점·열린 패널 갱신
@@ -67,13 +82,18 @@ function hud(){
   $('silvern').textContent = fmt(S.silver);
   if (typeof adStep === 'function'){ adStep(1/60); $('jaden').textContent = fmt(S.jade | 0); shopDot(); }   // 영옥·모의 광고 (v2.96)
   if (typeof speedLeft === 'function'){ const sb = $('spdhud');   // 배속권 (v2.98)
-    if (sb){ const on = speedLeft() > 0; sb.classList.toggle('on', on); if (on) sb.textContent = '×' + speedMul() + ' ' + fmtMin(speedLeft()); }
-    const bt = $('spdbtn');                                      // 전투 화면 버튼 (v2.99)
+    // 권이 남았어도 **안 고른 동안엔** 안 닳으니 배수 대신 '권'으로 적는다 (v3.0)
+    if (sb){ const on = speedLeft() > 0; sb.classList.toggle('on', on);
+      if (on) sb.textContent = (speedBoost() ? '×' + speedMul() : '권') + ' ' + fmtMin(speedLeft()); }
+    const bt = $('spdbtn');                                      // 전투 화면 버튼 (v2.99 → v3.0 칸 고르기)
     if (bt){ const m = speedMul(), boost = speedBoost();
       bt.classList.toggle('on', !boost && m > 1); bt.classList.toggle('boost', boost);
+      bt.classList.toggle('slow', m < 1);                        // ×1 보다 느린 칸 (v3.0)
       const nb = bt.firstElementChild, sub = bt.lastElementChild;
-      if (nb && nb.textContent !== '×' + m) nb.textContent = '×' + m;
-      const txt = boost ? fmtMin(speedLeft()) : (m > 1 ? '눌러 ×' + BM.speed.mul : '눌러 ×' + BM.speed.free);
+      const mt = '×' + m;
+      if (nb && nb.textContent !== mt) nb.textContent = mt;
+      const nx = speedAtTop() ? '🎬 ×' + BM.speed.mul : '눌러 ×' + speedNext();
+      const txt = boost ? fmtMin(speedLeft()) : nx;
       if (sub && sub.textContent !== txt) sub.textContent = txt; } }
   if (typeof questHud === 'function'){ questHud(); const qd = $('qdot2'); if (qd) qd.classList.toggle('on', dqAnyReady()); }   // 과제 (v2.97.2)
   if (typeof payHud === 'function'){ payHud(); const pd = $('pdot'); if (pd) pd.classList.toggle('on', payAnyReady()); const pj = $('pjade'); if (pj) pj.textContent = fmt(S.jade | 0); }   // 상품 (v2.97.3)

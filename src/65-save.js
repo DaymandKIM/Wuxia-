@@ -25,7 +25,7 @@ function saveData(){
     clears: S.clears, elders: S.elders, dq: S.dq, wq: S.wq, login: S.login,            // 과제·접속 (v2.97.2)
     pay: S.pay,                                                                        // 현금 상품 소유·정기권 (v2.97.3)
     spdT: S.spdT,                                                                      // 배속권 남은 초 (v2.98)
-    artSlots: S.artSlots, spd2: S.spd2,                                                // 초식 장착·×2 배속 (v2.99)
+    artSlots: S.artSlots, spdSel: S.spdSel,                                            // 초식 장착·고른 배속 (v2.99 → v3.0)
   };
 }
 function saveNow(){
@@ -97,7 +97,8 @@ function applySave(d){
   S.pay = (d.pay && typeof d.pay === 'object') ? d.pay : null;                       // 현금 상품 (v2.97.3)
   S.spdT = Math.max(0, Math.min(BM.speed.capMin * 60, +d.spdT || 0));                // 배속권 (v2.98)
   S.artSlots = Array.isArray(d.artSlots) ? d.artSlots.slice(0, 8) : null;            // 초식 장착 (v2.99)
-  S.spd2 = !!d.spd2;
+  // 고른 배속 (v3.0) — 옛 저장의 spd2(×2 토글)는 그 배수로 이월
+  S.spdSel = +d.spdSel || (d.spd2 ? BM.speed.free : 1);
   S.ad = (d.ad && typeof d.ad === 'object' && d.ad.d) ? { d: d.ad.d, n: Math.max(0, d.ad.n | 0), s: (d.ad.s && typeof d.ad.s === 'object') ? d.ad.s : {}, L: Math.max(0, d.ad.L | 0) } : null;
   if (S.hq) S.stage = clamp(S.stage, BOSS_STAGE - 1, BOSS_STAGE);
   S.stats = {};

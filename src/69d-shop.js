@@ -97,23 +97,62 @@ function ladderClaim(){
    방치 중에도 줄면 사 놓고 자리를 비우는 게 손해가 되어 방치형과 어긋난다.
    배속은 같은 dt 로 step 을 여러 번 밟는 것(70-main loop)이라 물리·밸런스가 안 깨진다.
    **전투가 그만큼 빨라지는 것이지 수입에 곱이 붙는 게 아니다** — 곡선 모양은 그대로. */
-// 지금 배수 — ×3 시간제가 켜져 있으면 그것, 아니면 공짜 ×2 토글, 아니면 1
-function speedMul(){
-  if (S.spdT > 0) return (typeof subOn === 'function' && subOn('monthly')) ? BM.speed.mulSub : BM.speed.mul;
-  return S.spd2 ? BM.speed.free : 1;
+/* 배수를 **골라 가며** 돈다 (v3.0 사용자 "속도버튼 누르면 속도를 변화해서 선택가능하게")
+   순환 순서는 `BM.speed.opts` = [1, 2, 0.5] — **기본 ×1 에서 시작**하고, ×2 다음에 ×3(광고·영옥)을 권하고
+   그 뒤가 ×0.5 다. 느린 칸을 1 앞에 두면 가장 흔한 ×1→×2 가 한 칸 멀어진다.
+   권은 **고른 동안에만** 닳는다 — ×1 로 느긋하게 보는 중에도 줄면 사 놓고 느리게 볼 수가 없다. */
+const speedTop = () => (typeof subOn === 'function' && subOn('monthly')) ? BM.speed.mulSub : BM.speed.mul;
+// 고른 배수 — 권 칸을 골라 뒀으면 **지금의 권 배수**(옥패면 ×4), 권이 끝나면 공짜 최고로 내려온다
+function speedSel(){
+  const v = +S.spdSel || 1;
+  if (v > BM.speed.free) return S.spdT > 0 ? speedTop() : BM.speed.free;
+  return BM.speed.opts.indexOf(v) >= 0 ? v : 1;
 }
-const speedBoost = () => S.spdT > 0;                      // ×3 시간제가 켜져 있나
-function speedToggle(){ S.spd2 = !S.spd2; if (typeof saveNow === 'function') saveNow(); return S.spd2; }
+const speedMul = () => speedSel();
+const speedBoost = () => S.spdT > 0 && speedSel() > BM.speed.free;   // 권을 쓰는 중인가
+function speedSet(v){ S.spdSel = v; if (typeof saveNow === 'function') saveNow(); return v; }
+// 공짜 칸 안에서 다음 칸
+function speedNextFree(v){
+  const o = BM.speed.opts, i = o.indexOf(v);
+  return o[(i + 1) % o.length];
+}
+// ×2 에서 한 번 더 누르면 ×3 이 걸린다 (권이 없으면 광고·상점)
+const speedAtTop = () => !speedBoost() && speedSel() === BM.speed.free;
+// 버튼 밑에 적을 다음 칸
+function speedNext(){
+  if (speedBoost()) return speedNextFree(BM.speed.free);              // ×3 다음은 ×0.5
+  if (speedAtTop()) return S.spdT > 0 ? speedTop() : BM.speed.mul;    // ×3 (권이 없으면 광고)
+  return speedNextFree(speedSel());
+}
+/* 버튼 한 번 = 다음 칸.
+   (v2.99 사용자 확정 "배속 버튼은 2까지는 그냥 가능하게, ×3부터 광고시청")
+   광고가 없으면 다음 칸으로 넘기고 상점을 연다 — 안 그러면 ×2 에서 순환이 막힌다. */
+function speedCycle(){
+  if (typeof adBusy === 'function' && adBusy()) return speedSel();    // 광고를 보는 중엔 손대지 않는다
+  if (speedBoost()) return speedSet(speedNextFree(BM.speed.free));    // ×3 → ×0.5
+  if (speedAtTop()){
+    if (S.spdT > 0) return speedSet(speedTop());                      // 권이 남아 있으면 바로 ×3
+    if (typeof adLeft === 'function' && adLeft('speed') > 0 && adSpeed()) return speedSel();
+    speedSet(speedNextFree(speedSel()));
+    if (typeof closeSheets === 'function') closeSheets();
+    if (typeof openShop === 'function') openShop();
+    return speedSel();
+  }
+  return speedSet(speedNextFree(speedSel()));
+}
+// 옛 저장·옛 호출 자리 (v2.99 의 ×1↔×2 토글)
+function speedToggle(){ return speedSet(speedSel() > 1 ? 1 : BM.speed.free) > 1; }
 const speedLeft = () => Math.max(0, S.spdT || 0);
 // 남은 시간을 더한다 (상한까지)
 function speedAdd(minutes){
   const cap = BM.speed.capMin * 60;
   S.spdT = Math.min(cap, (S.spdT || 0) + minutes * 60);
+  speedSet(speedTop());                                   // 켠 김에 그 배수로 올려 준다 (v3.0)
   if (typeof toast === 'function') toast('배속 ×' + speedMul() + '\n남은 시간 ' + fmtMin(speedLeft()));
   return S.spdT;
 }
 // 매 프레임 (70-main loop) — **화면을 보는 동안에만** 줄어든다
-function speedStep(dt){ if (S.spdT > 0) S.spdT = Math.max(0, S.spdT - dt); }
+function speedStep(dt){ if (speedBoost()) S.spdT = Math.max(0, S.spdT - dt); }   // 고른 동안에만 닳는다 (v3.0)
 const fmtMin = sec => sec >= 3600 ? Math.floor(sec / 3600) + '시간 ' + Math.floor(sec % 3600 / 60) + '분'
                     : sec >= 60 ? Math.floor(sec / 60) + '분' : Math.ceil(sec) + '초';
 function buySpeed(){
@@ -278,6 +317,7 @@ function closeShop(){ const el = $('gpanel'); if (el) el.classList.remove('show'
 let shopSig = '';
 function shopHud(force){
   const el = $('gpanel'); if (!el || (!force && !el.classList.contains('show'))) return;
+  if (!force && typeof uiBusy === 'function' && uiBusy()) return;   // 손가락이 닿은 직후엔 다시 만들지 않는다 (v3.0)
   const a = adState();
   const sig = [S.jade | 0, a.n, a.L, a.d, a.f | 0, a.pend | 0, Math.ceil(speedLeft() / 10), Math.round(S.silver), S.pity | 0, summonLast ? summonLast.length + ':' + summonLast.map(x=>x.k+x.g).join() : ''].join('|');
   if (!force && sig === shopSig) return; shopSig = sig;

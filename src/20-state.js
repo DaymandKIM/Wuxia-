@@ -69,7 +69,7 @@ const S = {
   pay: null,                     // 현금 상품 { own:{}, sub:{구매시각}, claim:{날짜}, pass, starter } (v2.97.3)
   spdT: 0,                       // 배속권 남은 초 (v2.98) — 화면을 보는 동안에만 줄어든다
   artSlots: null,                // 장착한 초식 키 배열 (v2.99) — 칸 수는 경지로 는다
-  spd2: false,                   // ×2 배속 켬 (v2.99, 공짜 토글)
+  spdSel: 1,                     // 고른 배속 (v3.0) — 0.5 · 1 · 2 · (권이 있으면 3·4)
   ptsBonus: 0,                   // 본진에서 얻은 무공점 (skillPtsTotal 에 더한다)
   achvNote: {},                  // 업적 { k: 알린 단계 수 } — 달성 토스트 중복 방지 (저장 안 함)
   fatePending: 0,                // >0 이면 기연이 기다린다
