@@ -11,7 +11,7 @@ function rollFate(){
   const frags = ['guyang', 'geongon'].filter(k => !S.arts[k]);
   let pool = ['scroll', 'elixir'];
   if (cand.length) pool.push('master');
-  if (typeof discipleSlotsFree === 'function' && discipleSlotsFree() > 0) pool.push('disciple');   // 제자 자리가 있으면 입문 청 (v2.92)
+  if (!LOCKED.sect && typeof discipleSlotsFree === 'function' && discipleSlotsFree() > 0) pool.push('disciple');   // 제자 자리가 있으면 입문 청 (v2.92, 잠그면 안 뜬다 v3.1)
   if (S.fates + 1 >= FATE.fragFrom && frags.length && Math.random() < FATE.fragW)
     pool = ['frag'];
   const k = pool[Math.floor(Math.random() * pool.length)];

@@ -19,6 +19,7 @@ const ctxStub=new Proxy({},{get:(t,k)=>{
 function boot(preSave){
   const errs=[];
   const dom=new JSDOM(html,{url:'http://wuxia.test/',runScripts:'dangerously',pretendToBeVisual:true,beforeParse(w){
+    w.WUXIA_UNLOCK={sect:false};   // 이 검사는 문파 자체를 본다 — **파싱 전에** 푼다(저장 복원이 S.hq 를 잠금에 맞춰 지운다, v3.1)
     w.HTMLCanvasElement.prototype.getContext=function(){return ctxStub;};
     w.addEventListener('error',e=>errs.push(e.message));
     if(preSave!==undefined) w.localStorage.setItem('wuxia1',preSave);

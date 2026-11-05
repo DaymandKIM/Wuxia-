@@ -38,6 +38,7 @@ function showHqLoad(k){
 }
 // 본진으로 이동 — 단계 10(제자 젠). 사냥터로 돌아오는 건 gotoZone(S.hq=null)
 function gotoHq(k){
+  if (LOCKED.sect) return false;                  // 문파를 잠그면 본진도 잠근다 (v3.1)
   if (DUEL.gBase[k] === undefined) return false;
   S.hq = k; S.stage = BOSS_STAGE - 1; S.kills = 0;
   if (typeof closeZonePanel === 'function') closeZonePanel();

@@ -4,7 +4,7 @@
    손가락처럼 300ms 눌러 본다. NOHOLD=1 로 가드를 끄고 비교할 수 있다.
    크로뮴 경로는 PW_CHROME 로 바꾼다. node taptest.js */
 const {chromium}=require('playwright-core');
-const EXE = process.env.PW_CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const EXE = process.env.PW_CHROME || '/opt/pw-browsers/chromium-1243/chrome-linux64/chrome';
 (async()=>{
   const b=await chromium.launch({executablePath:EXE,args:['--no-sandbox']});
   const p=await b.newPage({viewport:{width:390,height:844},deviceScaleFactor:2});

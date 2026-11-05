@@ -54,6 +54,8 @@ function hud(){
   const bars = showing && !panelOpen && !(typeof sectView !== 'undefined' && sectView);   // 문파 마당에서도 스킬창·시험 버튼은 숨긴다 (v2.92.4)
   const sb = $('sbar'); sb.style.opacity = bars ? '1' : '0'; sb.style.pointerEvents = bars ? '' : 'none';
   const tb = $('tbtn'); if (tb){ tb.style.opacity = bars ? '1' : '0'; tb.style.pointerEvents = bars ? '' : 'none'; }   // [테스트 전용]
+  // 잠근 탭 (v3.1) — `if (!showing) return` **앞**이어야 한다. 뒤에 두면 로딩·타이틀 동안 자물쇠가 안 붙는다
+  { const st = $('tab-sect'); if (st) st.classList.toggle('lock', !!LOCKED.sect); }
   // 배속 버튼 (v2.99) — **'auto' 를 명시해야 한다**: #ui 가 pointer-events:none 이라 '' 로 비우면 캔버스가 탭을 먹었다 (v3.0)
   const spb = $('spdbtn'); if (spb){ spb.style.opacity = bars ? '1' : '0'; spb.style.pointerEvents = bars ? 'auto' : 'none'; }
   if (!showing) return;
@@ -319,6 +321,7 @@ function buildZonePanel(){
     if (bb) bb.onclick = e => { e.stopPropagation(); S.autoBoss = !S.autoBoss; saveNow(); buildZonePanel();
       toast(S.autoBoss ? '10단계를 깨면 보스에 도전한다' : '보스 앞에서 멈춘다'); }; }
   b.querySelectorAll('.hqnode').forEach(el => { el.onclick = e => { e.stopPropagation(); const q = el.dataset.q;
+    if (LOCKED.sect){ toast('문파 본진 — 아직 이용 불가\n' + LOCKED.why.sect); return; }   // 잠금 (v3.1)
     if (q === 'home'){ toast((typeof sectName === 'function' ? sectName() : SECT.name) + ' — 문파 탭에서 마당으로'); return; }
     if (typeof gotoHq === 'function') gotoHq(q); }; });   // 본진으로 이동 (v2.94)
   b.querySelectorAll('.znode[data-z], .zn[data-z]').forEach(el => {

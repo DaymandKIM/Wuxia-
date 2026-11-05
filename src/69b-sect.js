@@ -42,6 +42,7 @@ function fameAdd(n){
   const t0 = fameTier();
   S.fame = (S.fame || 0) + n * (1 + sectBonus('fame') / 100);
   const t1 = fameTier();
+  if (t1 > t0 && LOCKED.sect) return true;   // 잠근 동안엔 조용히 쌓기만 한다 (v3.1) — 열면 그만큼 올라가 있다
   if (t1 > t0){
     const joined = [];                                                                                    // 이름이 알려지면 제자가 찾아온다 (v2.92)
     for (let t = t0 + 1; t <= t1; t++) if (discipleSlotsFree() > 0){ const d = rollDisciple(); if (discipleAdd(d, 'fame', true)) joined.push(d.n); }
@@ -371,7 +372,7 @@ function refreshSect(){
       fb.querySelector('.abar i').style.width = Math.round(Math.max(0, Math.min(1, ((S.fame || 0) - cur.need) / (nxt.need - cur.need))) * 100) + '%'; } }
 }
 // 문파 탭 = 마당만 (v2.92.4). 시트는 배지·✎를 누를 때만
-function openSect(){ sectSig = ''; sectView = true; sceneSync(); const o = $('sover'); if (o) o.hidden = false; refreshOverlay(); }
+function openSect(){ if (LOCKED.sect) return; sectSig = ''; sectView = true; sceneSync(); const o = $('sover'); if (o) o.hidden = false; refreshOverlay(); }
 function openSectSheet(){ buildSectPanel(); $('spanel').classList.add('show'); }
 function closeSectSheet(){ const p = $('spanel'); if (p) p.classList.remove('show'); }
 function closeSect(){ closeSectSheet(); const o = $('sover'); if (o) o.hidden = true; sectView = false; sceneBubble = null; closeHallPop(); }
@@ -416,6 +417,12 @@ function refreshHallPop(){
 let sectLastSilver = -1, sectLastFame = -1;
 function sectHud(){
   const tab = $('tab-sect'); if (!tab) return;
+  if (LOCKED.sect){                                    // 잠금 (v3.1) — 탭은 남기되 흐리게, 알림점 끔
+    tab.classList.add('lock');
+    const d0 = tab.querySelector('.dot'); if (d0 && d0.classList) d0.classList.remove('on');
+    return;
+  }
+  tab.classList.remove('lock');
   const dot = tab.querySelector('.dot'); if (dot && dot.classList) dot.classList.toggle('on', canBuildAny());
   if (!sectView) return;
   if (typeof uiBusy === 'function' && uiBusy()) return;   // 손가락이 닿은 직후엔 다시 만들지 않는다 (v3.0)

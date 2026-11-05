@@ -383,6 +383,10 @@
   #tabs button .dot{position:absolute;top:9px;right:calc(50% - 24px);width:6px;height:6px;
     border-radius:50%;background:#e8c96a;display:none;}
   #tabs button .dot.on{display:block;}
+  /* 잠근 탭 (v3.1) — 탭은 남기되 흐리게 + 자물쇠. 눌러도 안내만 뜬다 */
+  #tabs button.lock{color:#5a636e;}
+  #tabs button.lock .ti{opacity:.22;filter:grayscale(1);}
+  #tabs button.lock::after{content:'🔒';position:absolute;top:7px;right:calc(50% - 22px);font-size:11px;opacity:.75;}
   /* [테스트 전용] 시험 버튼·패널 — TEST 끄면 안 보인다. 출시 전에 걷어낸다 */
   /* 스킬창 — 익힌 초식의 쿨다운 표시 (자동 시전이라 누르는 게 아니다).
      버튼이 아니라 "기운이 차는 원판"처럼 보이게: 둥근 원, 눌리는 테두리 없음.

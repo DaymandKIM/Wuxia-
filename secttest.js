@@ -14,6 +14,7 @@ const ctxStub=new Proxy({},{get:(t,k)=>{
 function boot(preSave){
   const errs=[];
   const dom=new JSDOM(html,{url:'http://wuxia.test/',runScripts:'dangerously',pretendToBeVisual:true,beforeParse(w){
+    w.WUXIA_UNLOCK={sect:false};   // 이 검사는 문파 자체를 본다 — **파싱 전에** 푼다(저장 복원이 S.hq 를 잠금에 맞춰 지운다, v3.1)
     w.HTMLCanvasElement.prototype.getContext=function(){return ctxStub;};
     w.addEventListener('error',e=>errs.push(e.message));
     if(preSave!==undefined) w.localStorage.setItem('wuxia1',preSave);
@@ -111,6 +112,24 @@ setTimeout(()=>{
     ok(w2.hallLv('gate')===5 && w2.hallLv('library')===4 && S2.fame>d.fame && w2.sectName()==='벽력문' && S2.disciples.length>=d2.disciples.length && S2.disciples[0].n===d2.disciples[0].n,'복원: 산문 5·장경각 4·이름 '+w2.sectName()+'·제자 '+S2.disciples.length+'명 · 3시간 오프라인 명성 '+Math.round(d.fame)+' → '+Math.round(S2.fame));
     ok(S2.silver>d2.silver && w2.document.getElementById('obody').innerHTML.includes('제자 수익'),'오프라인 제자 수익이 정산에 붙는다 (복귀 카드에 줄)');
     ok(e2.length===0,'런타임 오류 0 (복원)'+(e2.length?': '+e2[0]:''));
+
+    /* 잠금 (v3.1, 사용자 "문파탭은 잠시 잠구고, 아직 이용 불가하다 이렇게 가자")
+       **딸린 입구를 다 막아야 잠근 것이다** — 탭 말고도 사냥터 지도의 본진 점(gotoHq)과
+       기연 '입문 청' 카드가 문파로 들어가는 문이다. 새 입구를 내면 여기에 줄을 더한다. */
+    w2.eval('LOCKED.sect = true');
+    const tab = w2.document.getElementById('tab-sect');
+    w2.eval('closeSheets()'); tab.click();
+    ok(w2.eval('sectView')===false, '잠그면 문파 탭을 눌러도 마당이 안 열린다');
+    ok(w2.eval('(openSect(), sectView)')===false, 'openSect 를 직접 불러도 안 열린다');
+    ok(w2.gotoHq('gaebang')===false && !w2.eval('S.hq'), '잠그면 본진(gotoHq)도 막힌다');
+    w2.eval('hud()');
+    ok(tab.className.indexOf('lock') >= 0, '탭에 자물쇠 표시');
+    let hasDisc = false;
+    for (let i = 0; i < 300; i++) if (w2.eval('rollFate().k') === 'disciple') hasDisc = true;
+    ok(!hasDisc, "잠그면 기연 '입문 청' 카드가 안 뜬다");
+    w2.eval('LOCKED.sect = false');
+    ok(w2.eval('(openSect(), sectView)')===true, '풀면 다시 열린다 (false 하나로 복구)');
+
     console.log(bad?('\n★ 실패 '+bad+'건'):'\n문제 없음'); process.exit(bad?1:0);
   },900);
 },1200);

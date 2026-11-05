@@ -25,7 +25,7 @@ const R=new Function(code+`;return {S,P,step:dt=>step(dt),zone:()=>zone(),lv:()=
   traitDefs:k=>traitDefs(k),hasTrait:(k,id)=>hasTrait(k,id),traitBuy:(k,id)=>traitBuy(k,id),
   EQUIP,BM,eqSummon:n=>eqSummon(n),eqMergeAll:()=>eqMergeAll(),eqAutoEquipAll:()=>eqAutoEquipAll(),lvCost:(k,g)=>lvCost(k,g),canLevelItem:(k,g)=>canLevelItem(k,g),levelItem:(k,g)=>levelItem(k,g),achvClaimAll:()=>achvClaimAll(),SECT,hallLv:k=>hallLv(k),hallCost:k=>hallCost(k),hallCap:()=>hallCap(),canBuildHall:k=>canBuildHall(k),buildHall:k=>buildHall(k),fameTier:()=>fameTier(),
   // 본진 비무 (v2.94) — 본진 이동·단·복귀. gotoZone 은 TEST 게이트라 자유롭게 부를 수 있다
-  DUEL,ZONES,SCHOOLS,realmLv:()=>realmLv(),gotoHq:k=>gotoHq(k),hqRank:k=>hqRank(k),gotoZone:(i,st)=>gotoZone(i,st)};`)();
+  LOCKED,DUEL,ZONES,SCHOOLS,realmLv:()=>realmLv(),gotoHq:k=>gotoHq(k),hqRank:k=>hqRank(k),gotoZone:(i,st)=>gotoZone(i,st)};`)();
 const {S,P}=R;
 
 // 본진 비무 흉내 (v2.94) — 조각이 모자란 상승 무공이 있고 그 문파 본진이 지금 사냥터보다 약하면 간다.
@@ -40,7 +40,7 @@ function fragWants(){
 function hqG(k){ return R.DUEL.gBase[k]+R.DUEL.gPerRank*(R.hqRank(k)-1); }   // 그 본진의 지금 단 g
 let hqTrips=0;   // 본진 왕복 횟수(보고용)
 function hqStep(){
-  if(NOHQ)return;
+  if(NOHQ||R.LOCKED.sect)return;   // 잠근 축은 안 산다 (v3.1) — 안 쓰는 소비처를 사면 곡선이 거짓말을 한다
   const g=huntG();
   if(S.hq){
     // 복귀 조건: 목표를 배웠거나(조각 차서 learnArt 됨) · 본진 단 g 가 사냥터 g 를 넘었거나 · 이 문파에 조각 모자란 무공이 더 없을 때
@@ -110,8 +110,8 @@ function spend(){
   // 장비 (v2.70 표준형) — 일괄 합성·자동 장착 버튼을 누르는 셈, 그다음 낀 아이템부터 싼 강화 3회
   R.eqMergeAll(); R.eqAutoEquipAll();
   R.achvClaimAll();   // 업적 보상도 받는다 (v2.90)
-  // 문파 전각 (v2.91) — 싼 전각부터 틱당 최대 3회 (수련과 같은 결의 sink)
-  for(let n=0;n<3;n++){
+  // 문파 전각 (v2.91) — 싼 전각부터 틱당 최대 3회 (수련과 같은 결의 sink). 잠그면 건너뛴다 (v3.1)
+  if(!R.LOCKED.sect) for(let n=0;n<3;n++){
     let b=null,c=1e18;
     for(const h of R.SECT.halls){ if(R.hallLv(h.k)>=R.hallCap())continue; const cc=R.hallCost(h.k); if(cc<c){c=cc;b=h.k;} }
     if(!b||S.silver<c)break;

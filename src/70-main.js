@@ -115,6 +115,7 @@ $('tab-equip').onclick = () => {
   if (!open) openEquip();
 };
 $('tab-sect').onclick = () => {                 // 문파 (v2.91) — 같은 탭 재클릭이면 마당을 닫는다 (v2.92.4 시트가 아니라 sectView로)
+  if (LOCKED.sect){ toast('문파 — 아직 이용 불가\n' + LOCKED.why.sect); return; }   // 잠금 (v3.1)
   const open = sectView;
   closeSheets();
   if (!open) openSect();

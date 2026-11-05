@@ -84,7 +84,8 @@ function applySave(d){
   S.reach = Array.isArray(d.reach) ? d.reach.slice(0, ZONES.length).map(v => clamp(v|0, 0, BOSS_STAGE)) : [];   // 옛 저장엔 없다 → 지금 단계에서 시작
   for (let i = 0; i < S.zi; i++) if (!S.reach[i]) S.reach[i] = BOSS_STAGE;   // 지나온 구역은 끝까지 가 본 것
   // 본진 비무 (v2.94) — 문파 키는 화이트리스트, 단·조각은 정수. 본진에 있었으면 단계는 10(제자 젠)·11(장로)만
-  S.hq = (d.hq && DUEL.gBase[d.hq] !== undefined) ? d.hq : null;
+  // 본진에 있는 채로 저장해 둔 판을 잠긴 뒤에 열면 나올 길이 애매하다 — 사냥터로 돌려놓는다 (v3.1)
+  S.hq = (!LOCKED.sect && d.hq && DUEL.gBase[d.hq] !== undefined) ? d.hq : null;
   S.duel = {}; if (d.duel && typeof d.duel === 'object') for (const k in DUEL.gBase) if (d.duel[k]) S.duel[k] = Math.max(1, d.duel[k] | 0);
   S.hqDone = {}; if (d.hqDone && typeof d.hqDone === 'object') for (const k in DUEL.gBase) if (d.hqDone[k]) S.hqDone[k] = Math.max(0, d.hqDone[k] | 0);
   S.frag = {}; if (d.frag && typeof d.frag === 'object') for (const k in d.frag) if (ARTS.list.some(a => a.k === k) && (d.frag[k] | 0) > 0) S.frag[k] = d.frag[k] | 0;

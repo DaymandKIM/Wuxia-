@@ -23,6 +23,7 @@ const ctxStub=new Proxy({},{get:(t,k)=>{
 const errs=[];
 const dom=new JSDOM(html,{url:'http://wuxia.test/',runScripts:'dangerously',
   pretendToBeVisual:true,beforeParse(w){
+    w.WUXIA_UNLOCK={sect:false};   // 문파 마당·본진 그림 검사가 있다 — 잠금과 무관하게 에셋은 계속 본다 (v3.1)
   w.HTMLCanvasElement.prototype.getContext=function(){return ctxStub;};
   // jsdom은 data: 이미지를 디코드하지 않는다 — draw()의 complete 게이트를 통과시킨다
   w.Image=class{ set src(v){this._s=v;} get src(){return this._s;}
