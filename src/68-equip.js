@@ -152,6 +152,7 @@ function eqCard(k, g, worn){
     (seen ? '<em>Lv' + lv + '</em>' : '') + (n > 0 ? '<b>×' + n + '</b>' : '') + (worn ? '<i>착용</i>' : '') +
     (canMerge(k, g) ? '<s>합</s>' : '') + '</button>';
 }
+const eqOpenG = {};   // 손으로 펼친 등급 줄 (v3.2) — 저장 안 한다, 그 자리에서만
 function buildEquipPanel(){
   const b = $('ebody'), sl = eqSlot(eqTab);
   let h = '<div id="eqhead"><div id="etabs">';   // 탭·상세·버튼 덩어리는 스크롤해도 머리글 아래에 붙어 있다 (v2.90.3)
@@ -163,15 +164,28 @@ function buildEquipPanel(){
   // 아이템 카드 — 등급 줄
   // **상위 등급이 위**(v2.94.30, 사용자: "더 상위 등급이 위에 보이게 하자, 내려가기 귀찮다") — 옛 v2.70.2 의 반대다.
   // 후반엔 쓰는 게 전부 위쪽 등급이라 매번 끝까지 스크롤해야 했다.
+  /* 아직 **한 번도 못 본** 등급 줄은 접는다 (v3.2, "첫 화면이 못 가진 것 112칸의 흑백 벽")
+     등급 순서(상위가 위)는 v2.94.30 사용자 확정이라 그대로 두고, 벽의 진짜 원인인
+     '아무것도 없는 흑백 줄 여섯'만 한 줄로 줄인다. 새로 깐 판은 일반 한 줄만 펼쳐진다.
+     한 칸이라도 **본 적 있으면 저절로 펼쳐진다** — 접는 걸 손으로 관리할 일이 없다. */
   for (let g = EQUIP.grades.length - 1; g >= 0; g--){
     const G = EQUIP.grades[g];
+    const kinds = eqKinds(sl);
+    const any = kinds.some(kd => eqSeen(kd[0], g) || eqInv(kd[0])[g] > 0);
+    const open = any || eqOpenG[sl.k + g];
+    if (!open){
+      h += '<button class="eqsec eqfold" data-fg="' + g + '" style="color:' + G.c + '">' + G.n +
+           ' <i>아직 본 적 없다 · 장착 ' + G.base + '%</i><s>펼치기</s></button>';
+      continue;
+    }
     h += '<div class="eqsec" style="color:' + G.c + '">' + G.n + ' <i>장착 ' + G.base + '% · Lv 상한 ' + G.lvCap + '</i></div><div class="eqcards">';
-    for (const kd of eqKinds(sl)){ const w0 = eqWornOf(kd[0]); const worn = w0 && w0.k === kd[0] && w0.g === g; h += eqCard(kd[0], g, worn); }
+    for (const kd of kinds){ const w0 = eqWornOf(kd[0]); const worn = w0 && w0.k === kd[0] && w0.g === g; h += eqCard(kd[0], g, worn); }
     h += '</div>';
   }
   h += '<div class="znote" id="eqlog"></div>';
   if (sl.perKind) h += '<div class="znote">장신구는 종류마다 하나씩 낀다.</div>';   // 긴 설명은 뺐다 (v2.93.5 사용자 "설명이 기니까 힘들어")
   b.innerHTML = h;
+  b.querySelectorAll('.eqfold').forEach(el => { el.onclick = () => { eqOpenG[sl.k + el.dataset.fg] = true; buildEquipPanel(); }; });
   b.querySelectorAll('#etabs .askind').forEach(el => { el.onclick = () => { eqTab = el.dataset.t; eqSel = null; buildEquipPanel(); }; });
   $('eqmerge').onclick = () => { const n = eqMergeAll(); if (n) toast('합성 ' + n + '회'); buildEquipPanel(); };
   $('eqauto').onclick  = () => { const n = eqAutoEquipAll(); toast(n ? '더 좋은 장비로 갈아입었다' : '이미 가장 좋은 장비다'); buildEquipPanel(); };

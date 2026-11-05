@@ -110,7 +110,21 @@ setTimeout(()=>{
       d3.getElementById('tab-equip').click();
       ok(d3.getElementById('epanel').classList.contains('show'),'장비 탭이 패널을 연다');
       ok(d3.querySelectorAll('#etabs .askind').length===3,'[무기][방어구][장신구] 탭');
+      /* 못 본 등급 줄 접기 (v3.2, "첫 화면이 못 가진 것 112칸의 흑백 벽") —
+         새로 깐 판은 일반 한 줄만 펼쳐지고 나머지 여섯은 한 줄짜리 '펼치기'다. */
+      const nG=w3.eval('EQUIP.grades.length'), nK=w3.eval('eqKinds(eqSlot(eqTab)).length');
+      const fold0=d3.querySelectorAll('.eqfold').length, card0=d3.querySelectorAll('.eqcard').length;
+      ok(fold0>0 && fold0+card0/nK===nG, '못 본 등급은 접힌다 — 접힘 '+fold0+'줄 · 펼침 '+(card0/nK)+'줄 (합 '+nG+')');
+      d3.querySelector('.eqfold').click();                       // 손으로 펼치면 열린다
+      ok(d3.querySelectorAll('.eqcard').length===card0+nK,'접힌 줄을 누르면 그 등급이 펼쳐진다');
+      w3.eval('for(const sl of EQUIP.slots) for(let g=0;g<EQUIP.grades.length;g++) eqOpenG[sl.k+g]=true; buildEquipPanel();');
       ok(d3.querySelectorAll('.eqcard').length===42,'무기 탭 카드 = 6종×7등급 (v2.81 신화·초월)');
+      // 한 칸이라도 본 등급은 **저절로** 펼쳐진다 — 접기를 손으로 관리할 일이 없다
+      w3.eval('for(const k in eqOpenG) delete eqOpenG[k]; eqGain("sword",2); buildEquipPanel();');
+      const g2n=w3.eval('EQUIP.grades[2].n');
+      ok([...d3.querySelectorAll('.eqsec:not(.eqfold)')].some(e=>e.textContent.indexOf(g2n)===0),
+         '얻어 본 등급('+g2n+')은 저절로 펼쳐진다');
+      w3.eval('for(const sl of EQUIP.slots) for(let g=0;g<EQUIP.grades.length;g++) eqOpenG[sl.k+g]=true; buildEquipPanel();');
       const firstUnseen=[...d3.querySelectorAll('.eqcard')].find(e=>!e.classList.contains('seen')); firstUnseen.click();
       ok(!!d3.getElementById('eqdlv') && d3.getElementById('eqtop').textContent.includes('미보유') && d3.getElementById('eqdwear').disabled,
          '안 가진 카드를 누르면 위쪽 창에 그 장비(미보유·장착 비활성)가 보인다 (v2.83)');

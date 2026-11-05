@@ -90,6 +90,12 @@ function uiTopUnits(){
   if (!tb || !tb.offsetHeight || !VIEW.h) return 0;
   return Math.ceil(tb.offsetHeight * VH / VIEW.h);
 }
+// 탭바가 가리는 아래 높이 — 전경 소품의 '보이는 바닥'은 화면 끝이 아니라 여기다 (v3.2)
+function uiBotUnits(){
+  const tb = document.getElementById('tabs');
+  if (!tb || !tb.offsetHeight || !VIEW.h) return 0;
+  return Math.ceil(tb.offsetHeight * VH / VIEW.h);
+}
 function backdropClear(zk, sw, sh){ return bdClear[zk + ':' + sw + 'x' + sh] || 0; }
 // 디졸브 길이 — 그림 높이 비율과 '아래 균일 띠 + 여유' 중 큰 쪽. 띠 윗변이 불투명 선으로 남지 않게 (v2.87.4 "원경 아래 선이 거슬림")
 function backdropFade(zk, sw, sh){
@@ -221,6 +227,52 @@ function propSprite(D, x, y, cx, cy, hy){
   pixShadow(x, y, Math.round(gw * 0.66));
   draw(img, Math.round(x - gw/2), Math.round(y - gh), gw, gh);
 }
+/* ── 전경 레이어 (v3.2) ─────────────────────────────
+   화면 맨 아래 띠에 가까운 소품을 크게 깔아 빈 풀밭을 메운다. 인물 **앞**에 그린다.
+   세로는 **화면 고정**이다(월드 좌표가 아니다) — 카메라가 인물 y 를 따라 오르내려도
+   띠가 늘 화면 아래에 붙어 있어야 액자 구실을 한다. 가로만 par 배로 흘린다. */
+const foreCache = {};
+function foreDark(img, key){                            // 어둡게 구운 판 — **스크래치 캔버스**에서 source-atop (화면에 쓰면 사각형이 남는다)
+  if (foreCache[key] !== undefined) return foreCache[key];
+  let out = null;
+  try {
+    const w = img.naturalWidth, h = img.naturalHeight;
+    const c = document.createElement('canvas'); c.width = w; c.height = h;
+    const g = c.getContext('2d');
+    if (g && g.drawImage){
+      g.drawImage(img, 0, 0);
+      g.globalCompositeOperation = 'source-atop';
+      g.globalAlpha = FORE.dark; g.fillStyle = FORE.tint; g.fillRect(0, 0, w, h);
+      out = c;
+    }
+  } catch(e){ out = null; }
+  foreCache[key] = out; return out;
+}
+function drawFore(ox){
+  const D = PROPS[rzone().k]; if (!D || !D.pick) return;
+  // 큰 소품만 — 작은 건 키워도 바닥에 안 닿아 허공에 뜬 덩어리가 된다 (v3.2)
+  let pick = D.pick.filter(p => p[1] >= FORE.minH);
+  if (!pick.length) pick = [D.pick.reduce((a, b) => b[1] > a[1] ? b : a)];
+  const G = FORE.grid, fx = ox * FORE.par;
+  const c0 = Math.floor(fx / G) - 1, c1 = Math.floor((fx + VW) / G) + 1;
+  let tot = 0; for (const p of pick) tot += p[2];
+  for (let c = c0; c <= c1; c++){
+    if (thash(c, 777, 41) > FORE.dens) continue;
+    let r = thash(c, 777, 44) * tot, sel = pick[0];
+    for (const p of pick){ r -= p[2]; if (r <= 0){ sel = p; break; } }
+    const img = IMG[sel[0]]; if (!img || !img.complete || !img.naturalWidth) continue;
+    const gh = Math.round(sel[1] * FORE.scale);
+    const gw = Math.max(1, Math.round(gh * img.naturalWidth / img.naturalHeight));
+    const x = Math.round(c * G + thash(c, 777, 42) * G - fx);
+    // 바닥은 화면 끝이 아니라 **탭바 바로 위**에서 잰다 — 안 그러면 소품이 탭바 뒤에 숨는다
+    const base = VH - uiBotUnits();
+    const y = Math.round(base + FORE.sink - thash(c, 777, 43) * FORE.rise);
+    const dk = foreDark(img, sel[0]);
+    if (dk) ctx.drawImage(dk, Math.round(x - gw/2), y - gh, gw, gh);   // 캔버스는 draw() 가 거른다 — 직접 그린다
+    else draw(img, Math.round(x - gw/2), y - gh, gw, gh);
+  }
+}
+
 function pixShadow(x, y, w){                            // 픽셀 타원 그림자 3단
   ctx.fillStyle = 'rgba(0,0,0,.17)';
   ctx.fillRect(Math.round(x - w*0.32), Math.round(y),   Math.round(w*0.64), 1);
@@ -922,6 +974,7 @@ function render(){
   }
   drawShots(ox, oy);
   drawFx(ox, oy);
+  drawFore(ox);                              // 전경 레이어 (v3.2) — 화면 아래 빈 풀밭을 가까운 소품으로 메운다
   drawAmbient(true);                         // 앞층 — 눈·낙엽·반딧불이 인물 위로 흩날린다
   drawSweep(ox, oy);
   drawSummon(ox, oy);
