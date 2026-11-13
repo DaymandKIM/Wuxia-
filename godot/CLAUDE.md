@@ -25,7 +25,7 @@ python3 tools/godot.py --headless --script res://tools/sync_art.gd  # ../assets 
 python3 tools/godot.py --headless --import                          # 새 그림·글꼴을 고도가 읽게 (.import 생성)
 python3 tools/export_web.py                                          # 웹 내보내기 → dist/ (아티팩트용으로 엔진을 조각냄)
 (cd dist && python3 -m http.server 8770 &) ; NODE_PATH=../node_modules node tools/shot.js   # 기기 5종 실기 → ../review/godot/
-NODE_PATH=../node_modules node tools/shot.js skills 14 350      # 시험 차림(#demo=skills|pick|boss)으로 폰 화면을 14장 이어 찍는다
+NODE_PATH=../node_modules node tools/shot.js skills 14 350      # 시험 차림(#demo=skills|pick|boss|arts|info)으로 폰 화면을 14장 이어 찍는다
 TAP=72,676 NODE_PATH=../node_modules node tools/shot.js pick 1  # 찍기 전에 그 자리를 눌러 본다 (카드가 눌리는지)
 ```
 시험 차림은 `main.gd` 의 `_demo()` — 웹은 주소 끝 `#demo=이름`, 그 밖엔 환경 변수 `WUXIA_DEMO`. 저장을 안 건드린다. **새 화면 상태를 만들면 차림을 하나 더한다**(이펙트는 그 순간을 찍어야 보인다).
@@ -60,6 +60,10 @@ tools/          godot.py · export_web.py · sync_art.gd · shot.js
 - 적 그림은 전부 오른쪽 보기라 **항상 뒤집어** 그린다. 맞은 순간 번쩍임은 modulate 를 1 넘게(곱).
 - 글자는 값이 바뀔 때만 다시 그려진다(Label). 카드는 Button 위에 자식을 얹은 것 — 자식은 전부 `MOUSE_FILTER_IGNORE`.
 - 맨 위 여백 `_sat()`: 웹에서 iframe 이면 40(아티팩트 앱 바), 폰은 안전 영역.
+- **패널 맨 아래는 탭 바**(v0.4 사용자 "스킬창이나 스탯창 등을 이동할 수 있는 버튼 UI가 없네"): 수련 · 무공 · 정보.
+  탭 내용은 셋 다 같은 높이(`TAB_H`)라 바꿔도 화면이 안 움직인다. 새 탭은 `_tab_box` 로 만들고 `_ui()` 의 보이기 줄과 탭 바 목록에 더한다.
+  **탭을 저절로 바꾸지 않는다** — 누르려던 자리에 딴 카드가 끼어들면 잘못 고른다(깨달음도 금빛 점으로만 알린다).
+  무공 표의 칸을 누르면 맨 아래 한 줄에 그 무공의 설명이 뜬다. 칸은 처음에 한 번만 만들고 글자·색만 바꾼다.
 
 ## 싸움의 박자
 
@@ -73,7 +77,7 @@ tools/          godot.py · export_web.py · sync_art.gd · shot.js
 방치·오프라인 정산·누적 성장이 지속 전투에 묶여 있어서다. 단판으로 바꾸려면 이 결정부터 다시 한다.
 
 - **깨달음**: 경지가 오를 때마다 1번(`insight`). 석 장(`offer`)을 내밀고 하나를 고른다 — 새 초식 / 연마(+30%) / 심법(스탯 %).
-  안 배운 초식이 있으면 한 장은 꼭 그것이다(need = 경지). 고를 것이 있으면 **패널의 수련 자리를 깨달음 카드가 대신 차지한다** — 싸움은 위에서 계속된다.
+  안 배운 초식이 있으면 한 장은 꼭 그것이다(need = 경지). **깨달음은 무공 탭 안에서 고른다**(탭에 금빛 점 + 맨 아래 안내 한 줄) — 싸움은 위에서 계속된다.
 - **초식 5**(선풍퇴·파공권·암향지·활인기공·붕산장)는 쿨이 차면 알아서 쓴다. **한 번에 하나**(`CAST_GAP`). **심법 3**(공격·체력·회복)은 곱.
 - 스킬창은 장면의 땅 띠 위(쿨이 시계 방향으로 걷힌다). 시전하면 이름을 외친다(세리프, 초식 색).
 - **새 초식을 넣으면**: `data.gd ARTS` 한 줄(strip·hand·col) → `game.gd _art_fire` 에 효과 → `scene.gd _glow` 에 이펙트 → `test.gd` 무공 항목 → `_demo()` 로 찍어 확인.
@@ -93,4 +97,4 @@ tools/          godot.py · export_web.py · sync_art.gd · shot.js
 고도라서 새로 쓸 수 있는 것(아직 안 씀): 2D 조명 · 셰이더 · 진짜 물리 엔진(지금 날아가는 적은 손으로 푼 포물선이다).
 
 박자 실측(v0.3, 깨달음은 첫 장·수련은 싼 것부터): 5분 죽림 6 · 10분 죽림 9 · 15분 수호자 격파 — 옛 판(5분 죽림 6~7)과 비슷해졌다.
-알려진 거친 곳: 적이 주인공 앞 한 점에 겹쳐 선다 · 30분에 한 번도 안 쓰러진다(너무 쉽다) · 패널 아래가 비어 있다 · 첫 로딩이 무겁다(엔진 38MB).
+알려진 거친 곳: 적이 주인공 앞 한 점에 겹쳐 선다 · 30분에 한 번도 안 쓰러진다(너무 쉽다) · 첫 로딩이 무겁다(엔진 38MB) · 탭 아이콘이 마름모 하나뿐이다(그림 없음).

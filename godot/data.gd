@@ -6,6 +6,8 @@ extends RefCounted
 const VW := 440.0
 const EM := 15.9                 # 글자 기준 크기
 const PANEL_H := 404.0           # 아래 패널이 다 보이려면 필요한 높이 — 패널에 줄을 더하면 올린다
+const TAB_H := 222.0             # 탭 내용 높이 (제목 줄 + 카드) — 탭 셋이 같아야 바꿔도 화면이 안 움직인다
+const TABBAR_H := 46.0
 const SCENE_MIN := 418.0         # 장면 높이 범위. 창 기본 높이 = SCENE_MIN + PANEL_H
 const SCENE_MAX := 572.0
 const GROUND := 54.0             # 땅 띠 두께
@@ -221,7 +223,7 @@ const SAVE_EVERY := 8.0
 const HINT := "10단계를 넘으면 죽림의 수호자가 나타난다"
 const HINT_BOSS := "수호자를 넘으면 다음 땅이 열린다 — 준비 중"
 const HINT_DONE := "죽림을 넘었다 — 다음 땅은 준비 중"
-const HINT_INSIGHT := "경지가 올랐다 — 깨달음을 하나 고른다"
+const HINT_INSIGHT := "경지가 올랐다 — 무공 탭에서 깨달음을 고른다"
 
 ## 게임에 싣는 그림 키 전부 (tools/sync_art.py 가 이걸 읽어 ../assets 에서 복사한다)
 static func asset_keys() -> Array:

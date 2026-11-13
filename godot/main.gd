@@ -108,6 +108,40 @@ class SkillBar extends Control:                   # 익힌 초식 — 땅 띠 �
 				draw_circle(c + Vector2(R - 2.0, R - 3.0), 6.5, Color(0.043, 0.063, 0.094))
 				draw_string(font, c + Vector2(R - 12.0, R + 0.5), str(lv), HORIZONTAL_ALIGNMENT_CENTER, 20.0, 9, D2.C_GOLD)
 
+class TabBtn extends Button:                      # 탭 바 단추 — 마름모 + 이름. 고를 것이 있으면 금빛 점
+	const D2 = preload("res://data.gd")
+	const Art2 = preload("res://art.gd")
+	var label := ""
+	var on := false:
+		set(v):
+			if v != on:
+				on = v
+				queue_redraw()
+	var dot := false:
+		set(v):
+			if v != dot:
+				dot = v
+				queue_redraw()
+	func _ready() -> void:
+		focus_mode = Control.FOCUS_NONE
+		for st in ["normal", "hover", "pressed", "disabled", "focus"]: add_theme_stylebox_override(st, StyleBoxEmpty.new())
+	func _draw() -> void:
+		draw_rect(Rect2(0, 0, size.x, 1), D2.C_LINE)
+		if on: draw_rect(Rect2(size.x * 0.28, 0, size.x * 0.44, 2), D2.C_ACC)
+		var col := D2.C_ACC if on else D2.C_DIM
+		var f := Art2.font("sans-semibold")
+		var w := f.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 14).x
+		var x0 := (size.x - w - 16.0) / 2.0
+		var c := Vector2(x0 + 4.0, size.y / 2.0)
+		var pts := PackedVector2Array([c + Vector2(0, -4.5), c + Vector2(4.5, 0), c + Vector2(0, 4.5), c + Vector2(-4.5, 0)])
+		if on: draw_colored_polygon(pts, col)
+		pts.append(pts[0])
+		draw_polyline(pts, col, 1.0, true)
+		draw_string(f, Vector2(x0 + 16.0, size.y / 2.0 + 5.0), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 14, D2.C_INK if on else D2.C_MUTE)
+		if dot:
+			draw_circle(Vector2(x0 + w + 23.0, size.y / 2.0 - 7.0), 5.5, Color(D2.C_GOLD, 0.25))
+			draw_circle(Vector2(x0 + w + 23.0, size.y / 2.0 - 7.0), 3.2, D2.C_GOLD)
+
 class PanelBg extends Control:
 	const D2 = preload("res://data.gd")
 	func _draw() -> void:
@@ -125,6 +159,14 @@ var leaves: CPUParticles2D
 var texts: Node2D
 var sbar: SkillBar
 var train_box: VBoxContainer
+var arts_box: VBoxContainer
+var info_box: VBoxContainer
+var tab := "train"
+var tabs := {}
+var tiles := {}
+var info := {}
+var sel_art := ""
+var sb_tile_on: StyleBoxFlat
 var ins_box: VBoxContainer
 var ins_cards: HBoxContainer
 var l_ins: Label
@@ -147,7 +189,6 @@ var b_hp: Bar
 var l_hp: Label
 var track: Track
 var cards := {}
-var l_stat: Label
 var l_hint: Label
 var save_t := 0.0
 var sb_cap: StyleBoxFlat
@@ -241,6 +282,15 @@ func _demo() -> void:
 			g.arts = { "whirl": 2, "pagong": 3, "baekbo": 1, "hwalin": 1, "bungsan": 1, "honwon": 2 }
 		"pick":                                   # 깨달음 고르는 순간
 			g.realm = 3; g.stage = 2; g.arts = { "whirl": 1 }; g.insight = 2; g.make_offer()
+			tab = "arts"
+		"arts":                                   # 무공 탭 (몇 개 익힌 상태)
+			g.realm = 6; g.stage = 4; g.tr = { "atk": 12, "hp": 12, "regen": 14 }
+			g.arts = { "whirl": 2, "pagong": 1, "baekbo": 1, "honwon": 3, "samjae": 1 }
+			tab = "arts"; sel_art = "pagong"
+		"info":
+			g.realm = 6; g.stage = 4; g.tr = { "atk": 12, "hp": 12, "regen": 14 }
+			g.arts = { "whirl": 2, "pagong": 1, "honwon": 3 }
+			tab = "info"
 		"boss":
 			g.realm = 12; g.stage = D.STAGE_N + 1; g.tr = { "atk": 22, "hp": 24, "regen": 28 }
 			g.arts = { "whirl": 2, "pagong": 3, "baekbo": 1, "hwalin": 1, "bungsan": 1 }
@@ -258,6 +308,7 @@ func _build() -> void:
 	sb_cost_can = sbox(Color(D.C_GOLD, 0.07), Color(D.C_GOLD, 0.45), 99, 11, 2.5)
 	sb_cost_full = sbox(Color(0, 0, 0, 0), Color(D.C_TEAL, 0.3), 99, 11, 2.5)
 	sb_ins = sbox(Color("221f24"), Color(D.C_GOLD, 0.5), 13, 0, 0)
+	sb_tile_on = sbox(Color("222d3d"), D.C_ACC, 13, 0, 0)
 
 	col = Control.new()
 	col.clip_contents = true
@@ -343,11 +394,15 @@ func _build() -> void:
 	# ── 패널
 	panel = PanelBg.new()
 	col.add_child(panel)
+	var root := vbox(0)                              # 내용 + 맨 아래 탭 바
+	root.set_anchors_preset(Control.PRESET_FULL_RECT)
+	panel.add_child(root)
 	var mg := MarginContainer.new()
-	mg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	mg.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	mg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	mg.add_theme_constant_override("margin_left", 18); mg.add_theme_constant_override("margin_right", 18)
-	mg.add_theme_constant_override("margin_top", 15); mg.add_theme_constant_override("margin_bottom", 12)
-	panel.add_child(mg)
+	mg.add_theme_constant_override("margin_top", 15); mg.add_theme_constant_override("margin_bottom", 9)
+	root.add_child(mg)
 	var pv := vbox(14)
 	mg.add_child(pv)
 	var r1 := hbox(14)
@@ -370,39 +425,106 @@ func _build() -> void:
 	track.custom_minimum_size = Vector2(0, 22)
 	track.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	r2.add_child(track)
-	train_box = vbox(14)
+	# ── 탭 내용 — 셋 다 같은 높이(TAB_H)라 탭을 바꿔도 화면이 안 움직인다
+	# 수련
+	train_box = _tab_box("수련", D.C_INK, D.C_LINE)
 	pv.add_child(train_box)
-	var r3 := hbox(12)
-	train_box.add_child(r3)
-	r3.add_child(lab("수련", 16.2, D.C_INK, "serif-bold", 5))
-	r3.add_child(_rule(D.C_LINE))
 	var ch := hbox(11)
 	train_box.add_child(ch)
 	for s in D.TRAIN: ch.add_child(_card(s))
-	# 깨달음 — 고를 것이 있으면 수련 자리를 대신 차지한다 (싸움은 위에서 계속된다)
-	ins_box = vbox(14)
-	ins_box.visible = false
-	pv.add_child(ins_box)
-	var r4 := hbox(12)
-	ins_box.add_child(r4)
-	r4.add_child(lab("깨달음", 16.2, D.C_GOLD, "serif-bold", 5))
-	r4.add_child(_rule(Color(D.C_GOLD, 0.35)))
+	# 무공 — 익힌 것·아직인 것을 한눈에. 깨달음이 있으면 이 자리에 석 장이 먼저 뜬다
+	arts_box = _tab_box("무공", D.C_INK, D.C_LINE)
+	pv.add_child(arts_box)
+	var grid := GridContainer.new()
+	grid.columns = 4
+	grid.add_theme_constant_override("h_separation", 8)
+	grid.add_theme_constant_override("v_separation", 8)
+	arts_box.add_child(grid)
+	for a in D.ARTS: grid.add_child(_art_tile(a))
+	ins_box = _tab_box("깨달음", D.C_GOLD, Color(D.C_GOLD, 0.35))
 	l_ins = lab("", 11.6, D.C_MUTE)
-	r4.add_child(l_ins)
+	ins_box.get_child(0).add_child(l_ins)
+	pv.add_child(ins_box)
 	ins_cards = hbox(11)
 	ins_box.add_child(ins_cards)
+	# 정보
+	info_box = _tab_box("정보", D.C_INK, D.C_LINE)
+	pv.add_child(info_box)
+	var iv := vbox(0)
+	info_box.add_child(iv)
+	var names := ["경지", "다음 경지", "공격", "체력", "회복", "무공", "처치", "쓰러짐", "수호자", "판"]
+	for r in 5:
+		var row := hbox(22)
+		row.custom_minimum_size = Vector2(0, 35)
+		iv.add_child(row)
+		for c in 2:
+			var cell := hbox(6)
+			cell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			row.add_child(cell)
+			var nm: String = names[r * 2 + c]
+			cell.add_child(lab(nm, 12, D.C_MUTE))
+			var val := lab("", 13, D.C_INK, "sans-semibold")
+			val.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			val.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+			cell.add_child(val)
+			info[nm] = val
+		if r < 4: iv.add_child(_rule(Color(D.C_LINE, 0.09)))
 	var sp := Control.new()
 	sp.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	sp.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	pv.add_child(sp)
-	var foot := vbox(4)
-	pv.add_child(foot)
-	l_stat = lab("", 12, D.C_MUTE)
-	l_hint = lab("", 12.6, D.C_TEAL)
-	var l_ver := lab("가로판 v%s" % ProjectSettings.get_setting("application/config/version", "0"), 10.4, D.C_DIM, "sans-regular", 1)
-	for l in [l_stat, l_hint, l_ver]:
-		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		foot.add_child(l)
+	l_hint = lab("", 12.4, D.C_TEAL)
+	l_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	l_hint.clip_text = true
+	pv.add_child(l_hint)
+	# ── 탭 바
+	var tb := hbox(0)
+	tb.custom_minimum_size = Vector2(0, D.TABBAR_H)
+	root.add_child(tb)
+	for t in [["train", "수련"], ["arts", "무공"], ["info", "정보"]]:
+		var btn := TabBtn.new()
+		btn.label = t[1]
+		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		var key: String = t[0]
+		btn.pressed.connect(func():
+			tab = key
+			_ui())
+		tb.add_child(btn)
+		tabs[key] = btn
+
+func _tab_box(title: String, tc: Color, lc: Color) -> VBoxContainer:
+	var v := vbox(14)
+	v.custom_minimum_size = Vector2(0, D.TAB_H)
+	var r := hbox(12)
+	v.add_child(r)
+	r.add_child(lab(title, 16.2, tc, "serif-bold", 5))
+	r.add_child(_rule(lc))
+	return v
+
+func _art_tile(a: Dictionary) -> Button:
+	var k: String = a["k"]
+	var b := Button.new()
+	b.custom_minimum_size = Vector2(0, 89)
+	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	b.focus_mode = Control.FOCUS_NONE
+	for st in ["normal", "hover", "pressed", "disabled"]: b.add_theme_stylebox_override(st, sb_card)
+	var v := vbox(0)
+	v.set_anchors_preset(Control.PRESET_FULL_RECT)
+	v.alignment = BoxContainer.ALIGNMENT_CENTER
+	b.add_child(v)
+	var ic := icon("art_%s" % k, 40, true)
+	v.add_child(ic)
+	var nm := lab(a["n"], 11.6, D.C_INK, "sans-semibold")
+	nm.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	v.add_child(nm)
+	var stl := lab("", 10.2, D.C_DIM)
+	stl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	v.add_child(stl)
+	tiles[k] = { "b": b, "ic": ic, "nm": nm, "st": stl, "sig": "" }
+	b.pressed.connect(func():
+		sel_art = "" if sel_art == k else k
+		_ui())
+	return b
 
 func _rule(c: Color) -> ColorRect:
 	var ln := ColorRect.new()
@@ -636,8 +758,58 @@ func _ui() -> void:
 			c.queue_free()
 		if pending:
 			for i in g.offer.size(): ins_cards.add_child(_ins_card(g.offer[i], i))
-		ins_box.visible = pending
-		train_box.visible = not pending
 	if pending: l_ins.text = "하나를 고른다" if g.insight == 1 else "하나를 고른다 · %d번 남음" % g.insight
-	l_hint.text = D.HINT_INSIGHT if pending else (D.HINT_DONE if g.cleared else (D.HINT_BOSS if boss else D.HINT))
-	l_stat.text = "공격 %s · 회복 %.1f/초 · 처치 %s" % [g.fmt(roundf(g.hero_dmg())), g.hero_regen(), g.fmt(g.total)]
+	# 탭 — 깨달음은 무공 탭 안에서 고른다. **탭을 저절로 바꾸지 않는다**: 누르려던 자리에 딴 카드가 끼어들면 잘못 고른다
+	train_box.visible = tab == "train"
+	ins_box.visible = tab == "arts" and pending
+	arts_box.visible = tab == "arts" and not pending
+	info_box.visible = tab == "info"
+	for k in tabs:
+		tabs[k].on = tab == k
+	tabs["arts"].dot = pending
+	# 무공 표
+	for a in D.ARTS:
+		var k: String = a["k"]
+		var t: Dictionary = tiles[k]
+		var lv: int = g.art_lv(k)
+		var locked: bool = lv == 0 and int(a["need"]) > g.realm
+		var tsig := "%d|%s|%s" % [lv, locked, sel_art == k]
+		if tsig == t["sig"]: continue
+		t["sig"] = tsig
+		t["st"].text = ("Lv %d / %d" % [lv, g.art_max(a)]) if lv > 0 else ((g.realm_name(int(a["need"])) + "부터") if locked else "아직 안 익힘")
+		t["st"].add_theme_color_override("font_color", Color(a["col"]).lerp(Color.WHITE, 0.25) if lv > 0 else D.C_DIM)
+		t["nm"].add_theme_color_override("font_color", D.C_INK if lv > 0 else D.C_MUTE)
+		t["ic"].modulate = Color.WHITE if lv > 0 else (Color(0.2, 0.22, 0.27) if locked else Color(0.42, 0.45, 0.52))
+		var sbt: StyleBoxFlat = sb_tile_on if sel_art == k else (sb_card_can if lv > 0 else sb_card)
+		for n in ["normal", "hover", "pressed", "disabled"]: t["b"].add_theme_stylebox_override(n, sbt)
+	# 정보
+	if tab == "info":
+		var na := 0
+		var np := 0
+		for a in D.ARTS:
+			if g.art_lv(a["k"]) > 0:
+				if a["type"] == "active": na += 1
+				else: np += 1
+		info["경지"].text = g.realm_name(g.realm)
+		info["다음 경지"].text = "%d%%" % int(floor(g.rexp / g.realm_need(g.realm) * 100.0))
+		info["공격"].text = g.fmt(roundf(g.hero_dmg()))
+		info["체력"].text = g.fmt(hm)
+		info["회복"].text = "%.1f / 초" % g.hero_regen()
+		info["무공"].text = "초식 %d · 심법 %d" % [na, np]
+		info["처치"].text = g.fmt(g.total)
+		info["쓰러짐"].text = "%d번" % g.downs
+		info["수호자"].text = "넘었다" if g.cleared else "아직"
+		info["판"].text = "v%s" % ProjectSettings.get_setting("application/config/version", "0")
+	# 맨 아래 한 줄 — 고른 무공의 설명이 먼저
+	if tab == "arts" and not pending and sel_art != "":
+		var sa: Dictionary = g.art_def(sel_art)
+		var slv: int = maxi(1, g.art_lv(sel_art))
+		var eff := ""
+		if sa.has("heal"): eff = "체력 %d%% 회복 · %d초" % [int(round(g.art_heal(sel_art, slv) * 100.0)), int(sa["cd"])]
+		elif sa["type"] == "active": eff = "공격의 %d%% · %d초" % [int(round(g.art_power(sel_art, slv) * 100.0)), int(sa["cd"])]
+		else: eff = "%s +%d%%" % [D.STAT_NAME[sa["stat"]], int(round(float(sa["inc"]) * slv * 100.0))]
+		l_hint.text = "%s — %s · %s" % [sa["n"], sa["d"], eff]
+		l_hint.add_theme_color_override("font_color", Color(sa["col"]).lerp(Color.WHITE, 0.3))
+	else:
+		l_hint.text = (D.HINT_INSIGHT if pending else (D.HINT_DONE if g.cleared else (D.HINT_BOSS if boss else D.HINT)))
+		l_hint.add_theme_color_override("font_color", D.C_GOLD if pending else D.C_TEAL)
