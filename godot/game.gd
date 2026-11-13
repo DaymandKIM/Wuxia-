@@ -33,6 +33,22 @@ var hit_done := false
 var flash := 0.0
 var down_t := 0.0
 var dust_t := 0.0
+# 무공
+var arts := {}                 # 키 → 단계
+var insight := 0               # 아직 안 고른 깨달음
+var offer: Array = []          # 지금 내민 석 장 (키)
+var cds := {}                  # 키 → 남은 쿨
+var cast_k := ""
+var cast_t := 0.0
+var cast_dur := 0.0
+var cast_hit := false
+var cast_gap := 0.0
+var casts := 0
+var shots: Array = []
+var hitstop := 0.0             # 멈칫 — main 이 이만큼 step 을 쉰다 (검사·박자와 무관)
+var call_k := ""               # 외치는 초식 이름
+var call_t := 9.0
+var _fid := 0
 
 func _init() -> void:
 	hp = hero_hp_max()
@@ -53,9 +69,52 @@ func train_def(k: String) -> Dictionary:
 		if s["k"] == k: return s
 	return {}
 func train_mul(k: String) -> float: return 1.0 + int(tr[k]) * float(train_def(k)["inc"]) / 100.0
-func hero_dmg() -> float: return D.HERO_DMG * pow(D.GROW, realm) * train_mul("atk")
-func hero_hp_max() -> float: return roundf(D.HERO_HP * pow(D.GROW, realm) * train_mul("hp"))
-func hero_regen() -> float: return D.HERO_REGEN * pow(D.GROW, realm) * train_mul("regen")
+func hero_dmg() -> float: return D.HERO_DMG * pow(D.GROW, realm) * train_mul("atk") * passive_mul("atk")
+func hero_hp_max() -> float: return roundf(D.HERO_HP * pow(D.GROW, realm) * train_mul("hp") * passive_mul("hp"))
+func hero_regen() -> float: return D.HERO_REGEN * pow(D.GROW, realm) * train_mul("regen") * passive_mul("regen")
+
+# ── 무공 ──
+func art_def(k: String) -> Dictionary:
+	for a in D.ARTS:
+		if a["k"] == k: return a
+	return {}
+func art_lv(k: String) -> int: return int(arts.get(k, 0))
+func art_max(a: Dictionary) -> int: return D.ART_MAX if a["type"] == "active" else D.PASSIVE_MAX
+func art_power(k: String, lv: int) -> float:       # 초식 위력 배수 (단계 반영)
+	return float(art_def(k).get("mul", 0.0)) * (1.0 + D.ART_LV * (lv - 1))
+func art_heal(k: String, lv: int) -> float:
+	var a := art_def(k)
+	return float(a.get("heal", 0.0)) + float(a.get("heal_lv", 0.0)) * (lv - 1)
+func passive_mul(stat: String) -> float:
+	var m := 1.0
+	for a in D.ARTS:
+		if a["type"] == "passive" and a["stat"] == stat: m += art_lv(a["k"]) * float(a["inc"])
+	return m
+func learned_actives() -> Array:
+	return D.ARTS.filter(func(a): return a["type"] == "active" and art_lv(a["k"]) > 0)
+## 석 장을 내민다 — 아직 안 배운 초식이 있으면 한 장은 꼭 그것이다 (새 초식을 놓치지 않게)
+func make_offer() -> void:
+	if not offer.is_empty() or insight <= 0: return
+	var pool: Array = []
+	var fresh := ""
+	for a in D.ARTS:
+		if int(a["need"]) > realm or art_lv(a["k"]) >= art_max(a): continue
+		if a["type"] == "active" and art_lv(a["k"]) == 0 and fresh == "": fresh = a["k"]
+		else: pool.append(a["k"])
+	pool.shuffle()
+	if fresh != "": offer.append(fresh)
+	while offer.size() < 3 and not pool.is_empty(): offer.append(pool.pop_back())
+	if offer.is_empty(): insight = 0                # 더 배울 것이 없다
+func pick(i: int) -> bool:
+	if i < 0 or i >= offer.size(): return false
+	var k: String = offer[i]
+	var before := hero_hp_max()
+	arts[k] = art_lv(k) + 1
+	hp += hero_hp_max() - before
+	insight -= 1
+	offer = []
+	make_offer()
+	return true
 func realm_need(k: int) -> float: return roundf(D.EXP_BASE * pow(D.EXP_GROW, k))
 func kill_exp() -> float: return pow(D.KILL_GROW, gstage() - 1)
 func kill_silver() -> float: return roundf(D.SILVER_BASE * pow(D.SILVER_GROW, gstage() - 1))
@@ -97,7 +156,8 @@ func move_of(k: String) -> Dictionary:
 	return D.MOVES[0]
 
 func _new_foe(k: String, x: float, boss: bool, hpv: float) -> Dictionary:
-	return { "k": k, "boss": boss, "x": x, "y": 0.0, "hp": hpv, "hp_max": hpv, "st": "walk", "af": 0.0, "atk_t": 0.0, "cd": 0.0,
+	_fid += 1
+	return { "id": _fid, "vx": 0.0, "vy": 0.0, "fy": 0.0, "rot": 0.0, "k": k, "boss": boss, "x": x, "y": 0.0, "hp": hpv, "hp_max": hpv, "st": "walk", "af": 0.0, "atk_t": 0.0, "cd": 0.0,
 		"skill_cd": D.SKILL_CD, "hit_done": false, "hit_t": 0.0, "flash": 0.0, "dead": 0.0, "stop": 0.0, "swept": false }
 
 func spawn_wave() -> void:
@@ -139,24 +199,33 @@ func fx_add(o: Dictionary) -> void:
 	fx.append(o)
 	if fx.size() > 90: fx.pop_front()
 
-func hurt_foe(f: Dictionary, dmg: float) -> void:
+func hurt_foe(f: Dictionary, dmg: float, kb := 1.0, art := "") -> void:
+	var skill := art != ""
 	f["hp"] -= dmg
-	f["flash"] = D.FLASH
-	f["x"] += D.HERO_KB * (0.3 if f["boss"] else 1.0)
+	f["flash"] = D.FLASH * (2.0 if skill else 1.0)
+	f["x"] += D.HERO_KB * kb * (0.3 if f["boss"] else 1.0)
 	if f["st"] != "atk" and f["st"] != "skill":
 		f["st"] = "hit"; f["hit_t"] = D.FOE_HITT
 	var m := foe_m(f)
 	var hy := float(m.get("bh", m["h"])) * float(m.get("sc", 1.0))
-	fx_add({ "k": "dmg", "x": f["x"] + randf_range(-6, 6), "y": -hy - 4.0, "v": roundf(dmg), "hero": false })
-	for i in D.SPARK_N:
+	var col: Color = art_def(art)["col"] if skill else D.SPARK_C
+	fx_add({ "k": "dmg", "x": f["x"] + randf_range(-6, 6), "y": -hy - 4.0, "v": roundf(dmg), "hero": false, "skill": skill, "col": col })
+	fx_add({ "k": "hit", "x": f["x"] - foe_rad(f) * 0.5, "y": -hy * 0.5 + f["y"], "col": col, "seed": randi(), "big": skill })
+	for i in D.SPARK_N + (5 if skill else 0):
 		var a := randf_range(-1.1, 1.1)
-		fx_add({ "k": "spark", "x": f["x"] - foe_rad(f) * 0.6, "y": -hy * 0.5 + f["y"], "vx": cos(a) * randf_range(40, D.SPARK_SPD), "vy": sin(a) * randf_range(40, D.SPARK_SPD) - 30.0 })
-	if f["hp"] <= 0.0 and f["dead"] <= 0.0: kill_foe(f)
+		fx_add({ "k": "spark", "x": f["x"] - foe_rad(f) * 0.6, "y": -hy * 0.5 + f["y"], "col": col, "vx": cos(a) * randf_range(40, D.SPARK_SPD), "vy": sin(a) * randf_range(40, D.SPARK_SPD) - 30.0 })
+	if skill: hitstop = maxf(hitstop, D.HITSTOP)
+	if f["hp"] <= 0.0 and f["dead"] <= 0.0: kill_foe(f, kb if skill else 0.0)
 
-func kill_foe(f: Dictionary) -> void:
+func kill_foe(f: Dictionary, launch := 0.0) -> void:
 	f["dead"] = 0.001; f["st"] = "death"; f["af"] = 0.0; f["hp"] = 0.0
 	total += 1
 	var boss: bool = f["boss"]
+	if not boss:                                # 쓰러지며 뒤로 튄다 — 초식에 맞으면 멀리 날아간다
+		if launch > 0.0:
+			f["vx"] = randf_range(D.LAUNCH[0], D.LAUNCH[1]) * minf(1.6, 0.7 + launch * 0.3); f["vy"] = -randf_range(150.0, 230.0)
+		else:
+			f["vx"] = randf_range(30.0, 60.0); f["vy"] = -randf_range(50.0, 90.0)
 	rexp += kill_exp() * (D.BOSS_EXP if boss else 1.0)
 	var sv := kill_silver() * (D.SILVER_BOSS if boss else 1.0)
 	if boss:
@@ -165,6 +234,7 @@ func kill_foe(f: Dictionary) -> void:
 			sv += kill_silver() * D.SILVER_FIRST
 		cleared = true
 		shake = D.SHAKE_T * 1.6
+		hitstop = 0.14
 		stage = D.STAGE_N                      # 다음 구역은 아직 없다 — 마지막 단계에서 계속 사냥한다
 		enter_stage()
 	else:
@@ -173,9 +243,52 @@ func kill_foe(f: Dictionary) -> void:
 	fx_add({ "k": "coin", "x": f["x"], "y": -30.0, "v": sv })
 	while rexp >= realm_need(realm):
 		rexp -= realm_need(realm); realm += 1; hp = hero_hp_max(); realm_up = 2.2
+		insight += 1
+	make_offer()
 	if not boss and kills >= stage_need():
 		stage += 1
 		enter_stage()
+
+# ── 초식 — 쿨이 찬 것을 알아서 쓴다. 한 번에 하나만. ──
+func _try_cast(nd: float) -> bool:
+	for a in learned_actives():
+		var k: String = a["k"]
+		if float(cds.get(k, 0.0)) > 0.0: continue
+		if a.has("heal"):
+			if hp >= hero_hp_max() * float(a["below"]): continue
+		elif nd > float(a["range"]) * 0.85: continue
+		st = "cast"; af = 0.0; cast_k = k; cast_t = 0.0; cast_hit = false
+		cast_dur = int(a["strip"][2]) / D.CAST_FPS
+		cds[k] = float(a["cd"])
+		call_k = k; call_t = 0.0
+		casts += 1
+		return true
+	return false
+
+func _art_fire(k: String) -> void:
+	var a := art_def(k)
+	var lv := art_lv(k)
+	if a.has("heal"):
+		var amt := hero_hp_max() * art_heal(k, lv)
+		hp = minf(hero_hp_max(), hp + amt)
+		fx_add({ "k": "heal", "x": px, "y": 0.0, "seed": randi() })
+		fx_add({ "k": "dmg", "x": px, "y": -56.0, "v": roundf(amt), "hero": false, "skill": true, "col": a["col"], "plus": true })
+		return
+	var dmg := hero_dmg() * art_power(k, lv)
+	var rng := float(a["range"])
+	var kb := float(a.get("kb", 1.0))
+	if k == "pagong":
+		shots.append({ "x": px + 18.0, "x0": px + 18.0, "range": rng, "dmg": dmg, "kb": kb, "art": k, "hit": [], "t": 0.0 })
+		return
+	for f in foes.duplicate():
+		if f["dead"] > 0.0: continue
+		if f["x"] - px < rng + foe_rad(f): hurt_foe(f, dmg, kb, k)
+	match k:
+		"whirl": fx_add({ "k": "whirl", "x": px, "y": 0.0, "r": rng })
+		"baekbo": fx_add({ "k": "beam", "x": px + float(a["hand"][0]), "y": -float(a["hand"][1]), "len": rng })
+		"bungsan":
+			fx_add({ "k": "quake", "x": px, "y": 0.0, "r": rng })
+			shake = D.SHAKE_T * 2.0; hitstop = maxf(hitstop, 0.09)
 
 func hurt_hero(d: float) -> void:
 	if st == "down": return
@@ -184,6 +297,7 @@ func hurt_hero(d: float) -> void:
 	fx_add({ "k": "dmg", "x": px + randf_range(-5, 5), "y": -52.0, "v": roundf(d), "hero": true })
 	if hp <= 0.0:
 		hp = 0.0; st = "down"; af = 0.0; down_t = D.HERO_DOWN; downs += 1; shake = D.SHAKE_T
+		shots.clear()
 		if is_boss(): stage = D.STAGE_N         # 수호자에게 지면 10단계로 물러난다
 		_sweep()
 		kills = 0; wave_x = 0.0
@@ -222,7 +336,17 @@ func step(dt: float) -> void:
 				if any: fx_add({ "k": "slash", "x": px + float(m["reach"]) + 8.0, "y": -26.0 })
 			if af >= int(D.ANIM["atk"][0]):
 				st = "idle"; af = 0.0
-		if st != "atk":
+		if cast_gap > 0.0: cast_gap -= dt
+		for k in cds: cds[k] = maxf(0.0, float(cds[k]) - dt)
+		if st == "cast":
+			cast_t += dt; af = cast_t * D.CAST_FPS
+			if not cast_hit and cast_t >= cast_dur * D.CAST_HITAT:
+				cast_hit = true
+				_art_fire(cast_k)
+			if cast_t >= cast_dur:
+				st = "idle"; af = 0.0; cast_gap = D.CAST_GAP
+		elif st != "atk" and cast_gap <= 0.0: _try_cast(nd)
+		if st != "atk" and st != "cast":
 			var list := moves()
 			var m2: Dictionary = list[mv % list.size()]
 			var in_reach: bool = near != null and nd < float(m2["reach"]) + foe_rad(near) + D.HERO_REACH
@@ -250,7 +374,13 @@ func step(dt: float) -> void:
 		var anim: Dictionary = m["anim"]
 		if f["flash"] > 0.0: f["flash"] -= dt
 		if f["dead"] > 0.0:
-			f["dead"] += dt; f["af"] += dt * float(fps["death"]); continue
+			f["dead"] += dt; f["af"] += dt * float(fps["death"])
+			if f["vx"] != 0.0 or f["fy"] < 0.0:      # 날아가는 중
+				f["x"] += f["vx"] * dt; f["fy"] += f["vy"] * dt; f["vy"] += 620.0 * dt; f["rot"] += dt * f["vx"] * 0.045
+				if f["fy"] >= 0.0:
+					f["fy"] = 0.0; f["vx"] = 0.0; f["vy"] = 0.0
+					fx_add({ "k": "dust", "x": f["x"], "y": -2.0, "r": 5.0 })
+			continue
 		alive += 1
 		var boss: bool = f["boss"]
 		var d: float = f["x"] - px
@@ -304,6 +434,16 @@ func step(dt: float) -> void:
 	down = st == "down"
 	if not is_boss() and not down and alive <= D.WAVE_LEFT: spawn_wave()
 	if is_boss() and alive == 0 and not down and not foes.any(func(f): return f["boss"]): spawn_boss()
+	# ── 탄 (파공권) — 지나가며 닿는 적을 한 번씩 친다
+	for i in range(shots.size() - 1, -1, -1):
+		var s: Dictionary = shots[i]
+		s["x"] += D.SHOT_SPD * dt; s["t"] += dt
+		for f in foes.duplicate():
+			if f["dead"] > 0.0 or s["hit"].has(f["id"]): continue
+			if f["x"] - foe_rad(f) < s["x"] + 14.0:
+				s["hit"].append(f["id"]); hurt_foe(f, s["dmg"], s["kb"], s["art"])
+		if s["x"] - s["x0"] > s["range"]: shots.remove_at(i)
+	call_t += dt
 	# ── 연출·카메라
 	for i in range(fx.size() - 1, -1, -1):
 		var e: Dictionary = fx[i]
@@ -313,6 +453,11 @@ func step(dt: float) -> void:
 			"dmg", "coin": life = D.DMG_LIFE
 			"dust": life = D.DUST_LIFE
 			"ring": life = D.RING_LIFE
+			"hit": life = 0.14
+			"whirl": life = 0.42
+			"beam": life = 0.32
+			"heal": life = 0.9
+			"quake": life = 0.6
 			"slash": life = D.SLASH_LIFE
 		if e["t"] > life: fx.remove_at(i)
 		elif e["k"] == "spark":
@@ -321,7 +466,8 @@ func step(dt: float) -> void:
 
 # ── 저장 — 막힌 환경에선 조용히 넘어간다 ──
 func save_data() -> Dictionary:
-	return { "stage": stage, "kills": kills, "exp": rexp, "realm": realm, "silver": silver, "tr": tr, "downs": downs, "total": total, "boss_done": boss_done, "cleared": cleared }
+	return { "stage": stage, "kills": kills, "exp": rexp, "realm": realm, "silver": silver, "tr": tr, "downs": downs, "total": total, "boss_done": boss_done, "cleared": cleared,
+		"arts": arts, "insight": insight, "offer": offer }
 func save_now() -> bool:
 	var f := FileAccess.open(D.SAVE_PATH, FileAccess.WRITE)
 	if f == null: return false
@@ -343,6 +489,19 @@ func apply_save(d: Variant) -> bool:
 	boss_done = bd if typeof(bd) == TYPE_DICTIONARY else {}
 	cleared = bool(d.get("cleared", false))
 	if is_boss(): stage = D.STAGE_N
+	arts = {}
+	var ad: Variant = d.get("arts", {})
+	if typeof(ad) == TYPE_DICTIONARY:
+		for a in D.ARTS:
+			var lv := clampi(int(ad.get(a["k"], 0)), 0, art_max(a))
+			if lv > 0: arts[a["k"]] = lv
+	insight = maxi(0, int(d.get("insight", 0)))
+	offer = []
+	var od: Variant = d.get("offer", [])
+	if typeof(od) == TYPE_ARRAY:
+		for k in od:
+			if not art_def(str(k)).is_empty() and art_lv(str(k)) < art_max(art_def(str(k))) and offer.size() < 3: offer.append(str(k))
+	make_offer()
 	hp = hero_hp_max()
 	return true
 func load_save() -> bool:

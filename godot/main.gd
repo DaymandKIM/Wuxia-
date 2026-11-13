@@ -70,6 +70,44 @@ class Track extends Control:                     # 여정 — 마름모 10개 + 
 			elif s < stage: _dia(c, r, D2.C_ACC2, D2.C_ACC2)
 			else: _dia(c, r, D2.C_PANEL, Color(D2.C_ROSE, 0.6) if boss else D2.C_LINE2)
 
+class SkillBar extends Control:                   # 익힌 초식 — 땅 띠 위에 얹는다. 쿨은 시계 방향으로 걷힌다
+	const D2 = preload("res://data.gd")
+	const Art2 = preload("res://art.gd")
+	var g
+	func _ready() -> void:
+		texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+		mouse_filter = Control.MOUSE_FILTER_IGNORE
+	func _draw() -> void:
+		if g == null: return
+		var font := Art2.font("sans-semibold")
+		var list: Array = g.learned_actives()
+		var R := 16.0
+		for i in list.size():
+			var a: Dictionary = list[list.size() - 1 - i]
+			var c := Vector2(size.x - 30.0 - i * 40.0, size.y / 2.0)
+			var cd: float = g.cds.get(a["k"], 0.0)
+			var ready := cd <= 0.0
+			var casting: bool = g.st == "cast" and g.cast_k == a["k"]
+			draw_circle(c, R + 2.0, Color(0.043, 0.063, 0.094, 0.82))
+			var im: Texture2D = Art2.tex("art_%s" % a["k"])
+			if im != null: draw_texture_rect(im, Rect2(c - Vector2(R, R), Vector2(R, R) * 2.0), false, Color.WHITE if ready else Color(0.55, 0.58, 0.64))
+			if not ready:                           # 남은 쿨만큼 어두운 부채꼴
+				var fr := clampf(cd / float(a["cd"]), 0.0, 1.0)
+				var pts := PackedVector2Array([c])
+				var n := maxi(3, int(40 * fr))
+				for j in n + 1:
+					var an := -PI / 2.0 + TAU * (1.0 - fr) + TAU * fr * j / float(n)
+					pts.append(c + Vector2(cos(an), sin(an)) * (R + 1.0))
+				draw_colored_polygon(pts, Color(0.031, 0.047, 0.078, 0.68))
+				var txt := str(int(ceil(cd)))
+				draw_string_outline(font, c + Vector2(-20, 4.5), txt, HORIZONTAL_ALIGNMENT_CENTER, 40.0, 12, 3, Color(0.024, 0.039, 0.063))
+				draw_string(font, c + Vector2(-20, 4.5), txt, HORIZONTAL_ALIGNMENT_CENTER, 40.0, 12, D2.C_INK)
+			draw_arc(c, R + 1.5, 0.0, TAU, 40, Color(a["col"], 1.0) if (ready or casting) else D2.C_LINE2, 2.2 if casting else 1.3, true)
+			var lv: int = g.art_lv(a["k"])
+			if lv > 1:
+				draw_circle(c + Vector2(R - 2.0, R - 3.0), 6.5, Color(0.043, 0.063, 0.094))
+				draw_string(font, c + Vector2(R - 12.0, R + 0.5), str(lv), HORIZONTAL_ALIGNMENT_CENTER, 20.0, 9, D2.C_GOLD)
+
 class PanelBg extends Control:
 	const D2 = preload("res://data.gd")
 	func _draw() -> void:
@@ -82,6 +120,16 @@ var col: Control
 var scene_box: Control
 var back: Node2D
 var scene: Node2D
+var glow: Node2D
+var leaves: CPUParticles2D
+var texts: Node2D
+var sbar: SkillBar
+var train_box: VBoxContainer
+var ins_box: VBoxContainer
+var ins_cards: HBoxContainer
+var l_ins: Label
+var ins_sig := "-"
+var sb_ins: StyleBoxFlat
 var panel: Control
 var rpill: PanelContainer
 var spill: PanelContainer
@@ -172,10 +220,32 @@ func vbox(sep: int) -> VBoxContainer:
 func _ready() -> void:
 	g = Game.new()
 	g.load_save()
+	_demo()
 	_build()
 	get_viewport().size_changed.connect(_layout)
 	_layout()
 	_ui()
+
+## [시험 전용] 화면 검사용 차림 — 웹은 주소 끝 #demo=이름, 그 밖엔 환경 변수 WUXIA_DEMO. 저장은 건드리지 않는다(자동 저장도 끈다).
+var demo := ""
+func _demo() -> void:
+	if OS.has_feature("web"):
+		var h: Variant = JavaScriptBridge.eval("location.hash", true)
+		if typeof(h) == TYPE_STRING and str(h).begins_with("#demo="): demo = str(h).substr(6)
+	else: demo = OS.get_environment("WUXIA_DEMO")
+	if demo == "": return
+	g = Game.new()
+	match demo:
+		"skills":                                 # 초식을 다 익힌 중반
+			g.realm = 12; g.stage = 6; g.tr = { "atk": 22, "hp": 24, "regen": 28 }
+			g.arts = { "whirl": 2, "pagong": 3, "baekbo": 1, "hwalin": 1, "bungsan": 1, "honwon": 2 }
+		"pick":                                   # 깨달음 고르는 순간
+			g.realm = 3; g.stage = 2; g.arts = { "whirl": 1 }; g.insight = 2; g.make_offer()
+		"boss":
+			g.realm = 12; g.stage = D.STAGE_N + 1; g.tr = { "atk": 22, "hp": 24, "regen": 28 }
+			g.arts = { "whirl": 2, "pagong": 3, "baekbo": 1, "hwalin": 1, "bungsan": 1 }
+			g.enter_stage()
+	g.hp = g.hero_hp_max()
 
 func _build() -> void:
 	sb_cap = sbox(D.C_CAP, D.C_LINE, 99, 15, 6.5)
@@ -187,6 +257,7 @@ func _build() -> void:
 	sb_cost = sbox(Color(0, 0, 0, 0), D.C_LINE, 99, 11, 2.5)
 	sb_cost_can = sbox(Color(D.C_GOLD, 0.07), Color(D.C_GOLD, 0.45), 99, 11, 2.5)
 	sb_cost_full = sbox(Color(0, 0, 0, 0), Color(D.C_TEAL, 0.3), 99, 11, 2.5)
+	sb_ins = sbox(Color("221f24"), Color(D.C_GOLD, 0.5), 13, 0, 0)
 
 	col = Control.new()
 	col.clip_contents = true
@@ -199,9 +270,23 @@ func _build() -> void:
 	back = preload("res://back.gd").new()
 	back.g = g
 	scene_box.add_child(back)
-	scene = preload("res://scene.gd").new()
+	var SceneScript := preload("res://scene.gd")
+	scene = SceneScript.new()
 	scene.g = g
 	scene_box.add_child(scene)
+	leaves = _leaves()
+	scene_box.add_child(leaves)
+	glow = SceneScript.new()
+	glow.g = g
+	glow.layer = 1
+	scene_box.add_child(glow)
+	texts = SceneScript.new()
+	texts.g = g
+	texts.layer = 2
+	scene_box.add_child(texts)
+	sbar = SkillBar.new()
+	sbar.g = g
+	scene_box.add_child(sbar)
 	# 경지 캡슐
 	rpill = PanelContainer.new()
 	rpill.add_theme_stylebox_override("panel", sb_cap)
@@ -285,18 +370,27 @@ func _build() -> void:
 	track.custom_minimum_size = Vector2(0, 22)
 	track.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	r2.add_child(track)
+	train_box = vbox(14)
+	pv.add_child(train_box)
 	var r3 := hbox(12)
-	pv.add_child(r3)
+	train_box.add_child(r3)
 	r3.add_child(lab("수련", 16.2, D.C_INK, "serif-bold", 5))
-	var ln := ColorRect.new()
-	ln.color = D.C_LINE
-	ln.custom_minimum_size = Vector2(0, 1)
-	ln.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	ln.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	r3.add_child(ln)
+	r3.add_child(_rule(D.C_LINE))
 	var ch := hbox(11)
-	pv.add_child(ch)
+	train_box.add_child(ch)
 	for s in D.TRAIN: ch.add_child(_card(s))
+	# 깨달음 — 고를 것이 있으면 수련 자리를 대신 차지한다 (싸움은 위에서 계속된다)
+	ins_box = vbox(14)
+	ins_box.visible = false
+	pv.add_child(ins_box)
+	var r4 := hbox(12)
+	ins_box.add_child(r4)
+	r4.add_child(lab("깨달음", 16.2, D.C_GOLD, "serif-bold", 5))
+	r4.add_child(_rule(Color(D.C_GOLD, 0.35)))
+	l_ins = lab("", 11.6, D.C_MUTE)
+	r4.add_child(l_ins)
+	ins_cards = hbox(11)
+	ins_box.add_child(ins_cards)
 	var sp := Control.new()
 	sp.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	sp.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -309,6 +403,76 @@ func _build() -> void:
 	for l in [l_stat, l_hint, l_ver]:
 		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		foot.add_child(l)
+
+func _rule(c: Color) -> ColorRect:
+	var ln := ColorRect.new()
+	ln.color = c
+	ln.custom_minimum_size = Vector2(0, 1)
+	ln.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	ln.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	ln.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return ln
+
+func _leaves() -> CPUParticles2D:                 # 흩날리는 댓잎 — 장면이 살아 있게
+	var p := CPUParticles2D.new()
+	p.amount = D.LEAF_N
+	p.lifetime = 9.0
+	p.preprocess = 9.0
+	p.emission_shape = CPUParticles2D.EMISSION_SHAPE_RECTANGLE
+	p.emission_rect_extents = Vector2(D.VW * 0.6, 4.0)
+	p.position = Vector2(D.VW * 0.65, 120.0)
+	p.direction = Vector2(-0.55, 1.0)
+	p.spread = 18.0
+	p.gravity = Vector2(-5.0, 6.0)
+	p.initial_velocity_min = 22.0
+	p.initial_velocity_max = 46.0
+	p.angular_velocity_min = -160.0
+	p.angular_velocity_max = 160.0
+	p.scale_amount_min = 1.6
+	p.scale_amount_max = 3.2
+	p.color = D.LEAF_C
+	return p
+
+func _ins_card(k: String, i: int) -> Button:
+	var a: Dictionary = g.art_def(k)
+	var lv: int = g.art_lv(k)
+	var active: bool = a["type"] == "active"
+	var b := Button.new()
+	b.custom_minimum_size = Vector2(0, 186)
+	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	b.focus_mode = Control.FOCUS_NONE
+	for st in ["normal", "hover", "pressed", "disabled"]: b.add_theme_stylebox_override(st, sb_ins)
+	var v := vbox(2)
+	v.set_anchors_preset(Control.PRESET_FULL_RECT)
+	v.offset_left = 7; v.offset_right = -7
+	v.alignment = BoxContainer.ALIGNMENT_CENTER
+	b.add_child(v)
+	v.add_child(icon("art_%s" % k, 50, true))
+	var nm := lab(a["n"], 15.4, D.C_INK, "serif-bold", 1)
+	nm.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	v.add_child(nm)
+	var tag := ("새 초식" if active else "새 심법") if lv == 0 else (("연마 %d → %d" if active else "심법 %d → %d") % [lv, lv + 1])
+	var tl := lab(tag, 11, D.C_GOLD if lv == 0 else D.C_ACC, "sans-semibold")
+	tl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	v.add_child(tl)
+	var fxl := ""
+	if a.has("heal"): fxl = "체력 %d%% 회복" % int(round(g.art_heal(k, lv + 1) * 100.0))
+	elif active: fxl = "공격의 %d%% · %d초" % [int(round(g.art_power(k, lv + 1) * 100.0)), int(a["cd"])]
+	else: fxl = "%s +%d%%" % [D.STAT_NAME[a["stat"]], int(round(float(a["inc"]) * (lv + 1) * 100.0))]
+	var el := lab(fxl, 11.6, Color(a["col"]).lerp(Color.WHITE, 0.3), "sans-semibold")
+	el.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	v.add_child(el)
+	var dl := lab(a["d"], 10.6, D.C_MUTE)
+	dl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	dl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	dl.custom_minimum_size = Vector2(100, 30)
+	dl.add_theme_constant_override("line_spacing", -4)
+	v.add_child(dl)
+	b.pressed.connect(func():
+		if g.pick(i):
+			if demo == "": g.save_now()
+			_ui())
+	return b
 
 func _card(s: Dictionary) -> Button:
 	var b := Button.new()
@@ -381,6 +545,11 @@ func _layout() -> void:
 	scene_box.size = Vector2(D.VW, sh)
 	back.vh = sh
 	scene.vh = sh
+	glow.vh = sh
+	texts.vh = sh
+	leaves.position = Vector2(D.VW * 0.65, sh * 0.42)      # 숲이 보이기 시작하는 높이에서 흩날린다 (제목 위로는 안 온다)
+	sbar.position = Vector2(0, sh - D.GROUND + 9.0)
+	sbar.size = Vector2(D.VW, 38)
 	panel.position = Vector2(0, sh)
 	panel.size = Vector2(D.VW, vp.y - sh)
 	var sat := _sat()
@@ -391,18 +560,23 @@ func _layout() -> void:
 
 func _process(dt: float) -> void:
 	dt = minf(dt, 0.05)
-	g.step(dt)
-	scene.position.x = randf_range(-0.5, 0.5) * D.SHAKE_PX if g.shake > 0.0 else 0.0
+	if g.hitstop > 0.0: g.hitstop -= dt            # 멈칫 — 초식이 맞는 순간 세계가 잠깐 선다
+	else: g.step(dt)
+	var shx := randf_range(-0.5, 0.5) * D.SHAKE_PX if g.shake > 0.0 else 0.0
+	scene.position.x = shx; glow.position.x = shx; texts.position.x = shx
 	back.queue_redraw()
 	scene.queue_redraw()
+	glow.queue_redraw()
+	texts.queue_redraw()
+	sbar.queue_redraw()
 	_ui()
 	save_t += dt
-	if save_t > D.SAVE_EVERY:
+	if save_t > D.SAVE_EVERY and demo == "":
 		save_t = 0.0
 		g.save_now()
 
 func _notification(what: int) -> void:
-	if g != null and (what == NOTIFICATION_WM_CLOSE_REQUEST or what == NOTIFICATION_APPLICATION_PAUSED or what == NOTIFICATION_WM_WINDOW_FOCUS_OUT): g.save_now()
+	if g != null and demo == "" and (what == NOTIFICATION_WM_CLOSE_REQUEST or what == NOTIFICATION_APPLICATION_PAUSED or what == NOTIFICATION_WM_WINDOW_FOCUS_OUT): g.save_now()
 
 func _ui() -> void:
 	var z: Dictionary = g.zone()
@@ -452,5 +626,18 @@ func _ui() -> void:
 			c["coin"].visible = stt != "full"
 			c["coin"].modulate = Color.WHITE if stt == "can" else Color(1, 1, 1, 0.45)
 			c["ic"].modulate = Color.WHITE if stt == "can" else Color(0.82, 0.84, 0.88)
-	l_hint.text = D.HINT_DONE if g.cleared else (D.HINT_BOSS if boss else D.HINT)
+	# 깨달음 — 내민 장이 바뀔 때만 카드를 다시 만든다 (매번 다시 만들면 탭이 먹힌다)
+	var pending: bool = g.insight > 0 and not g.offer.is_empty()
+	var sig: String = ",".join(g.offer) + "|" + str(g.arts) if pending else ""
+	if sig != ins_sig:
+		ins_sig = sig
+		for c in ins_cards.get_children():
+			ins_cards.remove_child(c)
+			c.queue_free()
+		if pending:
+			for i in g.offer.size(): ins_cards.add_child(_ins_card(g.offer[i], i))
+		ins_box.visible = pending
+		train_box.visible = not pending
+	if pending: l_ins.text = "하나를 고른다" if g.insight == 1 else "하나를 고른다 · %d번 남음" % g.insight
+	l_hint.text = D.HINT_INSIGHT if pending else (D.HINT_DONE if g.cleared else (D.HINT_BOSS if boss else D.HINT))
 	l_stat.text = "공격 %s · 회복 %.1f/초 · 처치 %s" % [g.fmt(roundf(g.hero_dmg())), g.hero_regen(), g.fmt(g.total)]

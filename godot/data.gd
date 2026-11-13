@@ -185,12 +185,43 @@ const SLASH_LIFE := 0.16
 const SLASH_R := 20.0
 const SLASH_C := Color(0.784, 0.894, 1.0)
 const RING_LIFE := 0.5
+const LEAF_N := 16               # 흩날리는 댓잎
+const LEAF_C := Color(0.42, 0.6, 0.5, 0.5)
+
+# ── 무공 — 경지가 오를 때마다 깨달음 한 번: 석 장 중 하나를 고른다 (배우기·연마·심법) ──
+const ART_MAX := 5               # 초식 연마 상한
+const ART_LV := 0.30             # 연마 한 단계당 위력 +30%
+const PASSIVE_MAX := 10          # 심법 상한
+const CAST_FPS := 14.0
+const CAST_HITAT := 0.5          # 시전 동작의 이 지점에서 터진다
+const CAST_GAP := 0.35           # 초식과 초식 사이 숨 고르기 (동시 시전 금지 — 옛 판 v2.15)
+const SHOT_SPD := 430.0
+const HITSTOP := 0.05            # 초식이 맞는 순간 멈칫
+const LAUNCH := [150.0, 260.0]   # 초식에 쓰러진 적이 날아가는 빠르기 (가로) — 평타는 살짝만 튄다
+## strip = [시전 스트립 키, 한 컷 폭, 컷 수] · hand = 빛이 맺히는 손끝 [앞으로, 위로]
+const ARTS := [
+	{ "k": "whirl", "n": "선풍퇴", "type": "active", "need": 0, "d": "휘돌아 차서 앞을 쓸어낸다", "cd": 9.0, "mul": 1.5, "range": 74.0, "kb": 3.0,
+		"strip": ["castw", 94, 9], "hand": [0.0, 10.0], "col": Color(0.84, 0.75, 0.55) },
+	{ "k": "pagong", "n": "파공권", "type": "active", "need": 2, "d": "주먹 기운이 줄지은 적을 꿰뚫는다", "cd": 6.0, "mul": 2.4, "range": 190.0, "kb": 1.0,
+		"strip": ["cast", 50, 7], "hand": [15.0, 27.0], "col": Color(1.0, 0.78, 0.35) },
+	{ "k": "baekbo", "n": "암향지", "type": "active", "need": 5, "d": "손끝의 빛이 멀리 한 줄로 닿는다", "cd": 14.0, "mul": 4.0, "range": 300.0, "kb": 1.0,
+		"strip": ["castb", 68, 6], "hand": [16.0, 28.0], "col": Color(0.77, 0.43, 1.0) },
+	{ "k": "hwalin", "n": "활인기공", "type": "active", "need": 8, "d": "위태로우면 숨을 불어넣는다", "cd": 18.0, "heal": 0.30, "heal_lv": 0.04, "below": 0.45,
+		"strip": ["casth", 36, 8], "hand": [0.0, 24.0], "col": Color(0.51, 0.9, 0.63) },
+	{ "k": "bungsan", "n": "붕산장", "type": "active", "need": 11, "d": "산을 무너뜨리듯 눈앞을 다 친다", "cd": 30.0, "mul": 4.0, "range": 330.0, "kb": 2.2,
+		"strip": ["castm", 90, 6], "hand": [11.0, 25.0], "col": Color(1.0, 0.36, 0.26) },
+	{ "k": "honwon", "n": "혼원일기공", "type": "passive", "need": 0, "d": "흩어진 기운이 하나로 돈다", "stat": "atk", "inc": 0.06, "col": Color(0.62, 0.73, 0.88) },
+	{ "k": "chulwoo", "n": "청죽공", "type": "passive", "need": 0, "d": "휘되 부러지지 않는다", "stat": "hp", "inc": 0.06, "col": Color(0.45, 0.82, 0.76) },
+	{ "k": "samjae", "n": "삼재심법", "type": "passive", "need": 0, "d": "숨을 고르는 첫걸음", "stat": "regen", "inc": 0.10, "col": Color(0.87, 0.38, 0.46) },
+]
+const STAT_NAME := { "atk": "공격", "hp": "체력", "regen": "회복" }
 
 const SAVE_PATH := "user://side1.json"
 const SAVE_EVERY := 8.0
 const HINT := "10단계를 넘으면 죽림의 수호자가 나타난다"
 const HINT_BOSS := "수호자를 넘으면 다음 땅이 열린다 — 준비 중"
 const HINT_DONE := "죽림을 넘었다 — 다음 땅은 준비 중"
+const HINT_INSIGHT := "경지가 올랐다 — 깨달음을 하나 고른다"
 
 ## 게임에 싣는 그림 키 전부 (tools/sync_art.py 가 이걸 읽어 ../assets 에서 복사한다)
 static func asset_keys() -> Array:
@@ -199,6 +230,10 @@ static func asset_keys() -> Array:
 	for z in ZONES: ks.append(z["bg"])
 	for k in MID_PICK:
 		if not ks.has(k): ks.append(k)
+	for a in ARTS:
+		ks.append("art_%s" % a["k"])
+		if a.has("strip"): ks.append(a["strip"][0])
+	ks.append("pashot")
 	for k in FOES:
 		var anim: Dictionary = FOES[k]["anim"]
 		for a in anim:
