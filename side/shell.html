@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>무협 가로판</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@500;700&display=swap">
+<style>
+/* 한 가지 밤 톤으로만 간다 (게임 화면) — 색은 전부 여기 토큰에서 */
+:root{
+  --bg:#0b1018; --panel:#1a222e; --panel2:#0f151e; --card:#1f2937; --card2:#161e2a;
+  --line:rgba(160,182,214,.16); --line2:rgba(160,182,214,.34);
+  --ink:#e6edf7; --mute:#8a98ad; --dim:#5b6779;
+  --acc:#9dbbe0; --acc2:#5f7fa8; --teal:#74d2c2; --rose:#de6176; --gold:#ecd08a;
+  --fs:'IBM Plex Sans KR',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  --fd:'Noto Serif KR','Nanum Myeongjo',Georgia,serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--ink);overflow:hidden;overscroll-behavior:none}
+body{display:flex;justify-content:center;font-family:var(--fs)}
+#app{position:relative;height:100%;display:flex;flex-direction:column;background:var(--panel2);font-size:calc(var(--w,390px) * .0362);line-height:1.35;user-select:none;-webkit-user-select:none}
+
+/* ── 장면 (위) ── */
+#scene{position:relative;flex:none;height:var(--sceneh,52vh);overflow:hidden;background:#0f1520}
+#cv{display:block;width:100%;height:100%}
+#hud{position:absolute;left:0;right:0;top:0;padding:calc(var(--sat,0px) + .8em) 1.1em 0;display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none}
+.cap{display:flex;align-items:center;gap:.5em;padding:.42em .85em;border-radius:99em;background:rgba(14,20,32,.58);border:1px solid var(--line);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+#rpill{position:relative;flex-direction:column;align-items:stretch;gap:.28em;padding:.42em .95em .46em;min-width:7.6em;transition:border-color .3s,box-shadow .3s}
+#rpill .row{display:flex;align-items:center;gap:.5em}
+#rpill .gem{width:.5em;height:.5em;background:var(--acc);transform:rotate(45deg)}
+#realm{font-weight:600;letter-spacing:.02em}
+#rline{height:2px;border-radius:2px;background:rgba(160,182,214,.2);overflow:hidden}
+#rbar{height:100%;width:0;background:var(--acc)}
+#rpill.up{border-color:var(--gold);box-shadow:0 0 1.2em rgba(236,208,138,.45)}
+#rpill.up #realm{color:var(--gold)}
+#rpill.up .gem,#rpill.up #rbar{background:var(--gold)}
+#coin{width:1.15em;height:1.15em;image-rendering:pixelated}
+#silver{font-weight:600;font-variant-numeric:tabular-nums}
+
+#zhead{position:absolute;left:0;right:0;top:calc(var(--sat,0px) + 4.6em);display:flex;flex-direction:column;align-items:center;gap:.35em;pointer-events:none;text-shadow:0 1px 6px rgba(6,10,16,.9)}
+#pill{font-size:.82em;font-weight:600;letter-spacing:.12em;padding:.14em .9em;border-radius:99em;border:1px solid var(--line2);color:var(--acc);background:rgba(14,20,32,.5);font-variant-numeric:tabular-nums}
+#ztitle{font-family:var(--fd);font-weight:700;font-size:1.9em;letter-spacing:.18em;padding-left:.18em;line-height:1.15}
+#zdiv{position:relative;width:46%;height:1px;background:rgba(160,182,214,.22);margin:.3em 0 .2em}
+#zbar{position:absolute;left:0;top:-.5px;height:2px;width:0;background:var(--acc);box-shadow:0 0 .5em rgba(157,187,224,.7);transition:width .18s linear}
+#zdiv i{position:absolute;left:50%;top:50%;width:.52em;height:.52em;background:#0f1520;border:1px solid var(--acc);transform:translate(-50%,-50%) rotate(45deg)}
+#zsub{font-size:.8em;color:var(--mute);letter-spacing:.08em;font-variant-numeric:tabular-nums}
+#zhead.boss #pill{color:var(--rose);border-color:rgba(222,97,118,.5)}
+#zhead.boss #zbar{background:var(--rose);box-shadow:0 0 .5em rgba(222,97,118,.7)}
+#zhead.boss #zdiv i{border-color:var(--rose)}
+
+/* ── 패널 (아래) ── */
+#panel{flex:1;min-height:0;display:flex;flex-direction:column;gap:.95em;padding:1em 1.15em calc(env(safe-area-inset-bottom,0px) + .8em);background:linear-gradient(var(--panel),var(--panel2) 42%);overflow:hidden}
+.lab{font-size:.74em;color:var(--mute);letter-spacing:.16em;flex:none}
+.rowl{display:flex;align-items:center;gap:.9em}
+#hp{flex:1;height:.42em;border-radius:99em;background:rgba(160,182,214,.14);overflow:hidden}
+#hpbar{height:100%;width:100%;background:linear-gradient(90deg,#b9475c,var(--rose));border-radius:99em;transition:width .12s linear}
+#hp.down #hpbar{background:var(--teal)}
+#hpt{font-size:.78em;color:var(--mute);font-variant-numeric:tabular-nums;min-width:7.2em;text-align:right}
+#track{flex:1;display:flex;align-items:center;justify-content:space-between;padding:0 .3em;position:relative}
+#track::before{content:'';position:absolute;left:.5em;right:.6em;top:50%;height:1px;background:var(--line)}
+#track i{position:relative;width:.56em;height:.56em;transform:rotate(45deg);background:var(--panel);border:1px solid var(--line2)}
+#track i.done{background:var(--acc2);border-color:var(--acc2)}
+#track i.now{background:var(--acc);border-color:#fff;box-shadow:0 0 .7em rgba(157,187,224,.9)}
+#track i.boss{width:.86em;height:.86em;border-color:rgba(222,97,118,.6)}
+#track i.boss.now{background:var(--rose);box-shadow:0 0 .8em rgba(222,97,118,.9)}
+.sec{display:flex;align-items:center;gap:.8em;margin-top:.15em}
+.sec::after{content:'';flex:1;height:1px;background:var(--line)}
+.sec b{font-family:var(--fd);font-weight:700;font-size:1.02em;letter-spacing:.3em}
+#train{display:grid;grid-template-columns:repeat(3,1fr);gap:.7em}
+.tcard{font:inherit;color:inherit;display:flex;flex-direction:column;align-items:center;gap:.16em;padding:.95em .3em .7em;border-radius:.85em;background:linear-gradient(var(--card),var(--card2));border:1px solid var(--line);cursor:pointer;transition:border-color .15s,transform .08s;touch-action:manipulation}
+.tcard:active{transform:scale(.97)}
+.tcard:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.tico{width:3em;height:3em;object-fit:contain;margin-bottom:.3em;filter:saturate(.75) brightness(.92)}
+.tn{font-weight:600;font-size:1.02em;letter-spacing:.14em;padding-left:.14em}
+.tl{font-style:normal;font-size:.72em;color:var(--dim);font-variant-numeric:tabular-nums}
+.tv{font-size:1.1em;font-weight:700;color:var(--acc);font-variant-numeric:tabular-nums;margin:.1em 0 .25em}
+.tc{display:flex;align-items:center;gap:.3em;font-size:.82em;color:var(--dim);padding:.18em .7em;border-radius:99em;border:1px solid var(--line);font-variant-numeric:tabular-nums}
+.tc em{font-style:normal}
+.tc .coin{width:1em;height:1em;image-rendering:pixelated;opacity:.45}
+.tcard.can{border-color:var(--line2)}
+.tcard.can .tico{filter:none}
+.tcard.can .tc{color:var(--gold);border-color:rgba(236,208,138,.45);background:rgba(236,208,138,.07)}
+.tcard.can .tc .coin{opacity:1}
+.tcard.full .tc{color:var(--teal);border-color:rgba(116,210,194,.3)}
+.tcard.full .tc .coin{display:none}
+.tcard.pop{animation:pop .22s ease-out}
+@keyframes pop{0%{box-shadow:0 0 0 0 rgba(157,187,224,.55)}100%{box-shadow:0 0 0 .7em rgba(157,187,224,0)}}
+#foot{margin-top:auto;display:flex;flex-direction:column;gap:.4em;align-items:center;text-align:center}
+#stat{font-size:.76em;color:var(--mute);font-variant-numeric:tabular-nums;letter-spacing:.02em}
+#hint{font-size:.8em;color:var(--teal);letter-spacing:.02em}
+#ver{font-size:.66em;color:var(--dim);letter-spacing:.08em}
+#err{position:absolute;left:1em;right:1em;bottom:1em;padding:.6em .8em;border-radius:.5em;background:#3a1620;color:#ffc2cc;font-size:.8em}
+@media (prefers-reduced-motion:reduce){.tcard.pop{animation:none}#zbar,#hpbar{transition:none}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="scene">
+    <canvas id="cv"></canvas>
+    <div id="hud">
+      <div class="cap" id="rpill"><div class="row"><span class="gem"></span><span id="realm">삼류 1성</span></div><div id="rline"><div id="rbar"></div></div></div>
+      <div class="cap"><img id="coin" alt="은자"><span id="silver">0</span></div>
+    </div>
+    <div id="zhead">
+      <span id="pill">1-1</span>
+      <span id="ztitle">죽림</span>
+      <span id="zdiv"><span id="zbar"></span><i></i></span>
+      <span id="zsub">0 / 30</span>
+    </div>
+  </div>
+  <div id="panel">
+    <div class="rowl"><span class="lab">체력</span><div id="hp"><div id="hpbar"></div></div><span id="hpt"></span></div>
+    <div class="rowl"><span class="lab">여정</span><div id="track"></div></div>
+    <div class="sec"><b>수련</b></div>
+    <div id="train"></div>
+    <div id="foot"><span id="stat"></span><span id="hint"></span><span id="ver"></span></div>
+  </div>
+  <div id="err" hidden></div>
+</div>
+<script>
+/*__CODE__*/
+</script>
+</body>
+</html>
